@@ -86,6 +86,19 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl":
+/*!****************************************************************************!*\
+  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl ***!
+  \****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ("varying vec4 vColor;\r\n\r\nvoid main()\r\n{\r\n    gl_FragColor = vColor;\r\n}");
+
+/***/ }),
+
 /***/ "./src/generic.ts":
 /*!************************!*\
   !*** ./src/generic.ts ***!
@@ -95,10 +108,16 @@
 
 "use strict";
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _a;
+Object.defineProperty(exports, "__esModule", { value: true });
+const default_frag_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-frag.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl"));
 const canvas = document.querySelector("#canvas");
 const ctx = canvas.getContext("2d");
 (_a = ctx) === null || _a === void 0 ? void 0 : _a.fillRect(0, 0, 100, 100);
+console.log(default_frag_glsl_1.default);
 
 
 /***/ })

@@ -38,6 +38,17 @@ module.exports = {
                 loaders: ['style-loader', 'css-loader', 'sass-loader']
             },
             {
+                test: /\.glsl$i/,
+                use: [
+                    {
+                        loader: 'raw-loader',
+                        options: {
+                            esModule: false
+                        }
+                    }
+                ]
+            },
+            {
                 test: /\.jpe?g|\.png|\.webp/,
                 use: [
                     {

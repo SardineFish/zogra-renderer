@@ -1,4 +1,24 @@
 import { panicNull } from "./util";
+import { GL } from "./global";
+import { DefaultShaderResources } from "./builtin-asset";
+
+interface AttributeBlock
+{
+    vert: number;
+    color: number;
+    uv: number;
+    normal: number;
+}
+
+export interface ShaderAttributes
+{
+    [key: string]: string;
+    vert: string;
+    color: string;
+    uv: string;
+    normal: string;
+}
+
 
 export class Shader
 {
@@ -8,11 +28,13 @@ export class Shader
     vertexShader: WebGLShader;
     fragmentShader: WebGLShader;
 
+    attributes: AttributeBlock;
+
     private _compiled = false;
 
     get compiled() { return this._compiled; }
     
-    constructor(gl: WebGL2RenderingContext, vertexShader: string, fragmentShader: string)
+    constructor(vertexShader: string, fragmentShader: string, attributes = DefaultShaderResources.attributes , gl = GL())
     {
         this.gl = gl;
         this.program = panicNull(gl.createProgram(), "Failed to create shader program");
@@ -20,6 +42,14 @@ export class Shader
         this.fragmentShader = panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
         gl.shaderSource(this.vertexShader, vertexShader);
         gl.shaderSource(this.fragmentShader, fragmentShader);
+        this.compile();
+
+        this.attributes = {
+            vert: this.gl.getAttribLocation(this.program, attributes.vert),
+            color: this.gl.getAttribLocation(this.program, attributes.color),
+            uv: this.gl.getAttribLocation(this.program, attributes.uv),
+            normal: this.gl.getAttribLocation(this.program, attributes.normal)
+        };
     }
 
     compile()
