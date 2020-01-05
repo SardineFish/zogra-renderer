@@ -1,4 +1,3 @@
-import { Shader } from "./shader";
 import { panicNull, getUniformsLocation } from "./util";
 import { DefaultMaterialType } from "./material-type";
 import { makeDefaultMateiral, DefaultShaderResources } from "./builtin-asset";
@@ -23,9 +22,12 @@ export class ZograRenderer
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         
-        this.DefaultMaterial = makeDefaultMateiral(this.gl);
+        this.DefaultMaterial = null as any;// makeDefaultMateiral(this.gl);
         mat4.identity(this.viewProjectionMatrix);
 
         if (!GL())
@@ -55,9 +57,9 @@ export class ZograRenderer
         mat4.mul(mvp, transform, this.viewProjectionMatrix);
 
         // Setup transforms
-        gl.uniformMatrix4fv(locations.matM, false, transform);
-        gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
-        gl.uniformMatrix4fv(locations.matMVP, false, mvp);
+        locations.matM ?? gl.uniformMatrix4fv(locations.matM, false, transform);
+        locations.matVP ?? gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
+        locations.matMVP ?? gl.uniformMatrix4fv(locations.matMVP, false, mvp);
         
         const [vertBuffer, elementBuffer] = mesh.setup(gl);
 

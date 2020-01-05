@@ -38,6 +38,10 @@ module.exports = {
                 loaders: ['style-loader', 'css-loader', 'sass-loader']
             },
             {
+                test: /\.css$/i,
+                loaders: ['style-loader', 'css-loader']
+            },
+            {
                 test: /\.glsl$i/,
                 use: [
                     {

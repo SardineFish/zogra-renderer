@@ -25,6 +25,8 @@ export class Shader
     gl: WebGL2RenderingContext;
     program: WebGLProgram;
 
+    vertexShaderSource: string;
+    fragmentShaderSouce: string;
     vertexShader: WebGLShader;
     fragmentShader: WebGLShader;
 
@@ -38,10 +40,11 @@ export class Shader
     {
         this.gl = gl;
         this.program = panicNull(gl.createProgram(), "Failed to create shader program");
+        this.vertexShaderSource = vertexShader;
+        this.fragmentShaderSouce = fragmentShader;
         this.vertexShader = panicNull(gl.createShader(gl.VERTEX_SHADER), "Failed to create vertex shader");
         this.fragmentShader = panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
-        gl.shaderSource(this.vertexShader, vertexShader);
-        gl.shaderSource(this.fragmentShader, fragmentShader);
+
         this.compile();
 
         this.attributes = {
@@ -54,15 +57,20 @@ export class Shader
 
     compile()
     {
+        
+        this.gl.shaderSource(this.vertexShader, this.vertexShaderSource);
         this.gl.compileShader(this.vertexShader);
         if (!this.gl.getShaderParameter(this.vertexShader, this.gl.COMPILE_STATUS))
         {
-            throw new Error("Failed to compile vertex shader:\r\n" + this.gl.getShaderInfoLog(this.vertexShader));    
+            //this.gl.deleteShader(this.vertexShader);
+            throw new Error("Failed to compile vertex shader:\r\n" + this.gl.getShaderInfoLog(this.vertexShader));
         }
+        this.gl.shaderSource(this.fragmentShader, this.fragmentShaderSouce);
         this.gl.compileShader(this.fragmentShader);
-        if (!this.gl.getShaderParameter(this.vertexShader, this.gl.COMPILE_STATUS))
+        if (!this.gl.getShaderParameter(this.fragmentShader, this.gl.COMPILE_STATUS))
         {
-            throw new Error("Failed to compile fragment shader:\r\n" + this.gl.getShaderInfoLog(this.fragmentShader));  
+            //this.gl.deleteShader(this.fragmentShader);
+            throw new Error("Failed to compile fragment shader:\r\n" + this.gl.getShaderInfoLog(this.fragmentShader));
         }
 
         this.gl.attachShader(this.program, this.vertexShader);

@@ -14,16 +14,16 @@ const DefaultFrag = `
 
 const DefaultShaderAttributes: ShaderAttributes =
 {
-    vert: "a_Pos",
-    color: "a_Color",
-    uv: "a_UV",
-    normal: "a_Normal",
+    vert: "aPos",
+    color: "aColor",
+    uv: "aUV",
+    normal: "aNormal",
 };
 
 const TransformUniforms = {
-    matM: "u_Transform_M",
-    matVP: "u_Transform_VP",
-    matMVP: "u_Transform_MVP",
+    matM: "uTransformM",
+    matVP: "uTransformVP",
+    matMVP: "uTransformMVP",
 };
 
 export const DefaultShaderResources = {

@@ -37,12 +37,12 @@ export function decorator<T, TargetT = any, S = T>(name: string, defaultValue: T
     ];
 }
 
-export function getUniformsLocation<U extends { [key: string]: string }>(gl: WebGL2RenderingContext, program: WebGLProgram, uniforms: U): { [key in keyof U]: WebGLUniformLocation }
+export function getUniformsLocation<U extends { [key: string]: string }>(gl: WebGL2RenderingContext, program: WebGLProgram, uniforms: U): { [key in keyof U]: WebGLUniformLocation | null }
 {
-    const out: { [key in keyof U]: WebGLUniformLocation } = {} as any;
+    const out: { [key in keyof U]: WebGLUniformLocation | null } = {} as any;
     for (const key in uniforms)
     {
-        out[key] = gl.getUniformLocation(program, uniforms[key]) ?? panic(`Failed to get location of uniform '${uniforms[key]}'.`);
+        out[key] = gl.getUniformLocation(program, uniforms[key]);
     }
     return out;
 }

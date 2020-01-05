@@ -74,5 +74,9 @@
   "include": [
     "src/**/*", 
     "src/raw-loader.d.ts",
+  ],
+  "exclude": [
+    "../src/**/*",
+    "../dist/**/*"
   ]
 }

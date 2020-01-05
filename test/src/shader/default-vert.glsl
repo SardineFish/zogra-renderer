@@ -1,13 +1,20 @@
-attribute vec3 aPos;
-attribute vec3 aColor;
-attribute vec2 aUV;
+#version 300 es
 
-varying vec4 vColor;
+in vec3 aPos;
+in vec4 aColor;
+in vec2 aUV;
+in vec3 aNormal;
+
+uniform mat4 uTransformM;
+uniform mat4 uTransformVP;
+uniform mat4 uTransformMVP;
+
+out vec4 vColor;
 
 uniform mat4 mvp;
 
 void main()
 {
-    gl_Position = mul(mvp, vec4(aPos, 1.0));
-    vColor = gl_Position.xy;
+    gl_Position = vec4(aPos, 1.0);
+    vColor = vec4(1, 1, 1, 1);
 }
