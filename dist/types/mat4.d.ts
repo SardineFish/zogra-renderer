@@ -3,6 +3,7 @@ export declare type mat4 = glMat4;
 export declare function Matrix4x4(values: number[]): glMat4;
 export declare namespace Matrix4x4 {
     var identity: () => glMat4;
+    var rts: (rotation: import("gl-matrix").quat, translation: import("./vec3").Vector3, scale: import("./vec3").Vector3) => glMat4;
     var mul: ArithmetricFunction<glMat4>;
 }
 declare type ArithmetricFunction<T> = {

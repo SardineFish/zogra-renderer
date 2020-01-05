@@ -449,11 +449,11 @@ class ZograRenderer {
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
         const locations = util_1.getUniformsLocation(gl, program, builtin_asset_1.DefaultShaderResources.uniforms);
-        const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
         // Setup transforms
+        const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
         locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
         locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
-        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mat4_1.mat4.identity());
+        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mvp);
         const [vertBuffer, elementBuffer] = mesh.setup(gl);
         // Setup VAO
         const stride = 12 * 4;
@@ -630,6 +630,11 @@ Matrix4x4.identity = () => {
     const mat = gl_matrix_1.mat4.create();
     return gl_matrix_1.mat4.identity(mat);
 };
+Matrix4x4.rts = (rotation, translation, scale) => {
+    const m = exports.mat4.identity();
+    gl_matrix_1.mat4.fromRotationTranslationScale(m, rotation, translation, scale);
+    return m;
+};
 Matrix4x4.mul = ((out, a, b) => {
     if (!b) {
         b = a;
@@ -709,6 +714,40 @@ exports.cross = cross;
 
 /***/ }),
 
+/***/ "../dist/types/quat.js":
+/*!*****************************!*\
+  !*** ../dist/types/quat.js ***!
+  \*****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const gl_matrix_1 = __webpack_require__(/*! gl-matrix */ "../node_modules/gl-matrix/esm/index.js");
+function Quaternion() {
+    const quat = gl_matrix_1.quat.create();
+    return quat;
+}
+exports.Quaternion = Quaternion;
+Quaternion.identity = () => {
+    const quat = gl_matrix_1.quat.create();
+    gl_matrix_1.quat.identity(quat);
+    return quat;
+};
+/**
+ * @param axis - Axis to rotate around.
+ * @param rad - Rotation angle in radians
+ */
+Quaternion.axis = (axis, rad) => {
+    const quat = gl_matrix_1.quat.create();
+    gl_matrix_1.quat.setAxisAngle(quat, axis, rad);
+};
+exports.quat = Quaternion;
+//# sourceMappingURL=quat.js.map
+
+/***/ }),
+
 /***/ "../dist/types/types.js":
 /*!******************************!*\
   !*** ../dist/types/types.js ***!
@@ -728,6 +767,7 @@ __export(__webpack_require__(/*! ./vec4 */ "../dist/types/vec4.js"));
 __export(__webpack_require__(/*! ./color */ "../dist/types/color.js"));
 __export(__webpack_require__(/*! ./math */ "../dist/types/math.js"));
 __export(__webpack_require__(/*! ./mat4 */ "../dist/types/mat4.js"));
+__export(__webpack_require__(/*! ./quat */ "../dist/types/quat.js"));
 //# sourceMappingURL=types.js.map
 
 /***/ }),
@@ -10237,7 +10277,7 @@ process.umask = function() { return 0; };
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\n\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = vColor;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = vec4(vUV.xy, 0, 1);\r\n}");
 
 /***/ }),
 
@@ -10250,7 +10290,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nuniform vec4 uColor;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vColor = aColor * uColor;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nuniform vec4 uColor;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vColor = aColor * uColor;\r\n    vUV = aUV;\r\n}");
 
 /***/ }),
 
@@ -10611,13 +10651,19 @@ mesh.verts = [
     zogra_renderer_1.vec3(1, 1, 0),
     zogra_renderer_1.vec3(0, 1, 0)
 ];
+mesh.uvs = [
+    zogra_renderer_1.vec2(0, 0),
+    zogra_renderer_1.vec2(1, 0),
+    zogra_renderer_1.vec2(1, 1),
+    zogra_renderer_1.vec2(0, 1)
+];
 mesh.triangles = [
     0, 1, 2,
     2, 3, 0
 ];
 mesh.calculateNormals(0);
 renderer.clear();
-renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), material);
+renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
 
 
 /***/ })

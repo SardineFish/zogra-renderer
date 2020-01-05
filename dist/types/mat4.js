@@ -10,6 +10,11 @@ Matrix4x4.identity = () => {
     const mat = gl_matrix_1.mat4.create();
     return gl_matrix_1.mat4.identity(mat);
 };
+Matrix4x4.rts = (rotation, translation, scale) => {
+    const m = exports.mat4.identity();
+    gl_matrix_1.mat4.fromRotationTranslationScale(m, rotation, translation, scale);
+    return m;
+};
 Matrix4x4.mul = ((out, a, b) => {
     if (!b) {
         b = a;

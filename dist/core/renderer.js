@@ -34,11 +34,11 @@ class ZograRenderer {
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
         const locations = util_1.getUniformsLocation(gl, program, builtin_asset_1.DefaultShaderResources.uniforms);
-        const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
         // Setup transforms
+        const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
         locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
         locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
-        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mat4_1.mat4.identity());
+        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mvp);
         const [vertBuffer, elementBuffer] = mesh.setup(gl);
         // Setup VAO
         const stride = 12 * 4;

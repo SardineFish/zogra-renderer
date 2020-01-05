@@ -3,6 +3,7 @@ precision mediump float;
 
 in vec4 vColor;
 in vec4 vPos;
+in vec2 vUV;
 
 uniform mat4 uTransformMVP;
 
@@ -10,5 +11,5 @@ out vec4 fragColor;
 
 void main()
 {
-    fragColor = vColor;
+    fragColor = vec4(vUV.xy, 0, 1);
 }

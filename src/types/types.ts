@@ -4,3 +4,4 @@ export * from "./vec4";
 export * from "./color";
 export * from "./math";
 export * from "./mat4";
+export * from "./quat";

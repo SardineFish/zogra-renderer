@@ -9,4 +9,5 @@ __export(require("./vec4"));
 __export(require("./color"));
 __export(require("./math"));
 __export(require("./mat4"));
+__export(require("./quat"));
 //# sourceMappingURL=types.js.map

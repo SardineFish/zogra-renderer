@@ -1,4 +1,6 @@
 import { mat4 as glMat4 } from "gl-matrix";
+import { quat } from "./quat";
+import { vec3 } from "./vec3";
 
 export type mat4 = glMat4;
 
@@ -11,6 +13,13 @@ Matrix4x4.identity = () =>
 {
     const mat = glMat4.create();
     return glMat4.identity(mat);
+}
+
+Matrix4x4.rts = (rotation: quat, translation: vec3, scale: vec3) =>
+{
+    const m = mat4.identity();
+    glMat4.fromRotationTranslationScale(m, rotation, translation, scale);
+    return m;
 }
 
 type ArithmetricFunction<T> = {
