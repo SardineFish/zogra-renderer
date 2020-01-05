@@ -13,4 +13,20 @@ Matrix4x4.identity = () =>
     return glMat4.identity(mat);
 }
 
+type ArithmetricFunction<T> = {
+    (out: T, a: T, b: T): T;
+    (a: T, b: T): T;
+};
+
+Matrix4x4.mul = ((out: mat4, a: mat4, b: mat4) =>
+{
+    if (!b)
+    {
+        b = a;
+        a = out;
+        out = glMat4.create();
+    }
+    return glMat4.mul(out, a, b);
+}) as ArithmetricFunction<mat4>;
+
 export const mat4 = Matrix4x4;

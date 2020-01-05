@@ -208,17 +208,9 @@ const global_1 = __webpack_require__(/*! ./global */ "../dist/global.js");
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
 class Material {
     constructor(shader, gl = global_1.GL()) {
-        var _a;
-        this.shader = shader;
         this.propertyBlock = {};
-        for (const key in this) {
-            const prop = getShaderProp(this, key);
-            if (prop)
-                this.propertyBlock[key] = {
-                    type: prop.type,
-                    location: (_a = gl.getUniformLocation(shader.program, prop.name), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to get uniform location.")))
-                };
-        }
+        this.gl = gl;
+        this.shader = shader;
     }
     setup(gl) {
         gl.useProgram(this.shader.program);
@@ -264,6 +256,27 @@ function MaterialFromShader(shader) {
     };
 }
 exports.MaterialFromShader = MaterialFromShader;
+function materialType(constructor) {
+    return class extends constructor {
+        constructor(...arg) {
+            var _a;
+            super(...arg);
+            const gl = this.gl;
+            const shader = this.shader;
+            const propertyBlock = this.propertyBlock;
+            for (const key in this) {
+                const prop = getShaderProp(this, key);
+                if (prop)
+                    propertyBlock[key] = {
+                        type: prop.type,
+                        location: (_a = gl.getUniformLocation(shader.program, prop.name), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to get uniform location.")))
+                    };
+                this.propertyBlock = propertyBlock;
+            }
+        }
+    };
+}
+exports.materialType = materialType;
 //# sourceMappingURL=material.js.map
 
 /***/ }),
@@ -397,10 +410,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = __webpack_require__(/*! ./util */ "../dist/util.js");
 const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/builtin-asset.js");
 const global_1 = __webpack_require__(/*! ./global */ "../dist/global.js");
-const gl_matrix_1 = __webpack_require__(/*! gl-matrix */ "../node_modules/gl-matrix/esm/index.js");
+const color_1 = __webpack_require__(/*! ./types/color */ "../dist/types/color.js");
+const mat4_1 = __webpack_require__(/*! ./types/mat4 */ "../dist/types/mat4.js");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
-        this.viewProjectionMatrix = gl_matrix_1.mat4.create();
+        this.viewProjectionMatrix = mat4_1.mat4.identity();
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
@@ -408,7 +422,6 @@ class ZograRenderer {
         this.canvas.height = this.height;
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         this.DefaultMaterial = null; // makeDefaultMateiral(this.gl);
-        gl_matrix_1.mat4.identity(this.viewProjectionMatrix);
         if (!global_1.GL())
             this.use();
     }
@@ -418,37 +431,47 @@ class ZograRenderer {
     setViewProjection(mat) {
         this.viewProjectionMatrix = mat;
     }
+    clear(color = color_1.Color.black, clearDepth = true) {
+        this.gl.clearColor(color.r, color.g, color.b, color.a);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
+    }
     drawMesh(mesh, transform, mateiral) {
-        var _a, _b, _c;
         const gl = this.gl;
         mateiral.setup(gl);
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
         const locations = util_1.getUniformsLocation(gl, program, builtin_asset_1.DefaultShaderResources.uniforms);
-        const mvp = gl_matrix_1.mat4.create();
-        gl_matrix_1.mat4.mul(mvp, transform, this.viewProjectionMatrix);
+        const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
         // Setup transforms
-        _a = locations.matM, (_a !== null && _a !== void 0 ? _a : gl.uniformMatrix4fv(locations.matM, false, transform));
-        _b = locations.matVP, (_b !== null && _b !== void 0 ? _b : gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix));
-        _c = locations.matMVP, (_c !== null && _c !== void 0 ? _c : gl.uniformMatrix4fv(locations.matMVP, false, mvp));
+        locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
+        locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
+        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mat4_1.mat4.identity());
         const [vertBuffer, elementBuffer] = mesh.setup(gl);
         // Setup VAO
         const stride = 12 * 4;
         gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
         // vert: vec3
-        gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
-        gl.enableVertexAttribArray(attributes.vert);
+        if (attributes.vert >= 0) {
+            gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
+            gl.enableVertexAttribArray(attributes.vert);
+        }
         // color: vec4
-        gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
-        gl.enableVertexAttribArray(attributes.color);
+        if (attributes.color >= 0) {
+            gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
+            gl.enableVertexAttribArray(attributes.color);
+        }
         // uv: vec2
-        gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
-        gl.enableVertexAttribArray(attributes.uv);
+        if (attributes.uv >= 0) {
+            gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
+            gl.enableVertexAttribArray(attributes.uv);
+        }
         // normal: vec3
-        gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-        gl.enableVertexAttribArray(attributes.uv);
+        if (attributes.normal >= 0) {
+            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
+            gl.enableVertexAttribArray(attributes.uv);
+        }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
-        gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }
 }
 exports.ZograRenderer = ZograRenderer;
@@ -570,6 +593,14 @@ Matrix4x4.identity = () => {
     const mat = gl_matrix_1.mat4.create();
     return gl_matrix_1.mat4.identity(mat);
 };
+Matrix4x4.mul = ((out, a, b) => {
+    if (!b) {
+        b = a;
+        a = out;
+        out = gl_matrix_1.mat4.create();
+    }
+    return gl_matrix_1.mat4.mul(out, a, b);
+});
 exports.mat4 = Matrix4x4;
 //# sourceMappingURL=mat4.js.map
 
@@ -9848,7 +9879,7 @@ var Reflect;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "body {\r\n    margin: 0;\r\n    padding: 0;\r\n    width: 100vw;\r\n    height: 100vh;\r\n    display: flex;\r\n    flex-flow: column nowrap;\r\n    align-items: center;\r\n    justify-content: center;\r\n    background-color: #EEE;\r\n    font-family: 'Open Sans', Roboto, Segoe UI, Microsoft Yahei UI, Tahoma, Geneva, Verdana, sans-serif;\r\n}\r\n\r\n#root {\r\n    max-width: 100%;\r\n    max-height: 100%;\r\n}\r\n\r\n#canvas {\r\n    max-width: 100%;\r\n    max-height: 100%;\r\n}", ""]);
+exports.push([module.i, "\r\nbody {\r\n    margin: 0;\r\n    padding: 0;\r\n    width: 100vw;\r\n    height: 100vh;\r\n    display: flex;\r\n    flex-flow: column nowrap;\r\n    align-items: center;\r\n    justify-content: center;\r\n    background-color: #EEE;\r\n    font-family: 'Open Sans', Roboto, Segoe UI, Microsoft Yahei UI, Tahoma, Geneva, Verdana, sans-serif;\r\n\r\n    background-position: 0px 0px,\r\n    16px 16px;\r\n    background-size: 32px 32px;\r\n    background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),\r\n    linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);\r\n\r\n}\r\n\r\n#root {\r\n    max-width: 100%;\r\n    max-height: 100%;\r\n}\r\n\r\n#canvas {\r\n    max-width: 100%;\r\n    max-height: 100%;\r\n}", ""]);
 // Exports
 module.exports = exports;
 
@@ -10146,7 +10177,7 @@ process.umask = function() { return 0; };
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = vColor;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\n\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = vColor;\r\n}");
 
 /***/ }),
 
@@ -10159,7 +10190,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 vColor;\r\n\r\nuniform mat4 mvp;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = vec4(aPos, 1.0);\r\n    vColor = vec4(1, 1, 1, 1);\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nuniform vec4 uColor;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vColor = aColor * uColor;\r\n}");
 
 /***/ }),
 
@@ -10483,6 +10514,12 @@ module.exports = exported;
 
 "use strict";
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -10493,9 +10530,20 @@ const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../dist/inde
 __webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
 const canvas = document.querySelector("#canvas");
 const renderer = new zogra_renderer_1.ZograRenderer(canvas, 1280, 720);
-class TestMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, default_frag_glsl_1.default)) {
-}
+let TestMaterial = class TestMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, default_frag_glsl_1.default)) {
+    constructor() {
+        super(...arguments);
+        this.color = zogra_renderer_1.Color.white;
+    }
+};
+__decorate([
+    zogra_renderer_1.shaderProp("uColor", "color")
+], TestMaterial.prototype, "color", void 0);
+TestMaterial = __decorate([
+    zogra_renderer_1.materialType
+], TestMaterial);
 const material = new TestMaterial();
+material.color = zogra_renderer_1.rgb(1, .5, .25);
 const mesh = new zogra_renderer_1.Mesh();
 mesh.verts = [
     zogra_renderer_1.vec3(0, 0, 0),
@@ -10508,8 +10556,8 @@ mesh.triangles = [
     2, 3, 0
 ];
 mesh.calculateNormals(0);
+renderer.clear();
 renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), material);
-console.log(default_frag_glsl_1.default);
 
 
 /***/ })

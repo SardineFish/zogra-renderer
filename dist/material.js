@@ -6,17 +6,9 @@ const global_1 = require("./global");
 require("reflect-metadata");
 class Material {
     constructor(shader, gl = global_1.GL()) {
-        var _a;
-        this.shader = shader;
         this.propertyBlock = {};
-        for (const key in this) {
-            const prop = getShaderProp(this, key);
-            if (prop)
-                this.propertyBlock[key] = {
-                    type: prop.type,
-                    location: (_a = gl.getUniformLocation(shader.program, prop.name), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to get uniform location.")))
-                };
-        }
+        this.gl = gl;
+        this.shader = shader;
     }
     setup(gl) {
         gl.useProgram(this.shader.program);
@@ -62,4 +54,25 @@ function MaterialFromShader(shader) {
     };
 }
 exports.MaterialFromShader = MaterialFromShader;
+function materialType(constructor) {
+    return class extends constructor {
+        constructor(...arg) {
+            var _a;
+            super(...arg);
+            const gl = this.gl;
+            const shader = this.shader;
+            const propertyBlock = this.propertyBlock;
+            for (const key in this) {
+                const prop = getShaderProp(this, key);
+                if (prop)
+                    propertyBlock[key] = {
+                        type: prop.type,
+                        location: (_a = gl.getUniformLocation(shader.program, prop.name), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to get uniform location.")))
+                    };
+                this.propertyBlock = propertyBlock;
+            }
+        }
+    };
+}
+exports.materialType = materialType;
 //# sourceMappingURL=material.js.map

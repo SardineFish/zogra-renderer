@@ -23,20 +23,12 @@ export class Material
 {
     [key: string]: any;
     shader: Shader;
-    propertyBlock: PropertyBlock;
+    propertyBlock: PropertyBlock = {};
+    gl: WebGL2RenderingContext;
     constructor(shader: Shader, gl = GL())
     {
+        this.gl = gl;
         this.shader = shader;
-        this.propertyBlock = {};
-        for (const key in this)
-        {
-            const prop = getShaderProp(this, key);
-            if (prop)
-                this.propertyBlock[key] = {
-                    type: prop.type,
-                    location: gl.getUniformLocation(shader.program, prop.name) ?? panic("Failed to get uniform location.")
-                };
-        }
     }
 
     setup(gl: WebGL2RenderingContext)
@@ -91,4 +83,28 @@ export function MaterialFromShader(shader: Shader): typeof MaterialType
             super(shader, gl);
         }
     };
+}
+
+export function materialType<T extends { new(...arg:any[]): {} }>(constructor: T) : T
+{
+    return class extends constructor
+    {
+        constructor(...arg: any[])
+        {
+            super(...arg);
+            const gl = (this as any as Material).gl;
+            const shader = (this as any as Material).shader;
+            const propertyBlock = (this as any as Material).propertyBlock;
+            for (const key in this)
+            {
+                const prop = getShaderProp(this as any as Material, key);
+                if (prop)
+                    propertyBlock[key] = {
+                        type: prop.type,
+                        location: gl.getUniformLocation(shader.program, prop.name) ?? panic("Failed to get uniform location.")
+                    };
+                (this as any as Material).propertyBlock = propertyBlock;
+            }
+        }
+    }
 }

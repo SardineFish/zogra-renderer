@@ -13,6 +13,7 @@ export declare class Material {
     [key: string]: any;
     shader: Shader;
     propertyBlock: PropertyBlock;
+    gl: WebGL2RenderingContext;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
     setup(gl: WebGL2RenderingContext): void;
 }
@@ -21,4 +22,7 @@ export declare function shaderProp(name: string, type: ShaderPropType): {
     (target: Object, propertyKey: string | symbol): void;
 };
 export declare function MaterialFromShader(shader: Shader): typeof MaterialType;
+export declare function materialType<T extends {
+    new (...arg: any[]): {};
+}>(constructor: T): T;
 export {};

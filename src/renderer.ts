@@ -4,8 +4,10 @@ import { makeDefaultMateiral, DefaultShaderResources } from "./builtin-asset";
 import { setGL, GL } from "./global";
 import { Mesh } from "./mesh";
 import { vec3 } from "./types/vec3";
-import { quat, mat4 } from "gl-matrix";
+import { quat} from "gl-matrix";
 import { Material } from "./material";
+import { Color } from "./types/color";
+import { mat4 } from "./types/mat4";
 
 export class ZograRenderer
 {
@@ -15,7 +17,7 @@ export class ZograRenderer
     gl: WebGL2RenderingContext;
     DefaultMaterial: typeof DefaultMaterialType;
 
-    viewProjectionMatrix = mat4.create();
+    viewProjectionMatrix = mat4.identity();
 
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number)
     {
@@ -24,11 +26,10 @@ export class ZograRenderer
         this.height = height === undefined ? canvasElement.height : height;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        
+
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         
         this.DefaultMaterial = null as any;// makeDefaultMateiral(this.gl);
-        mat4.identity(this.viewProjectionMatrix);
 
         if (!GL())
             this.use();
@@ -44,6 +45,12 @@ export class ZograRenderer
         this.viewProjectionMatrix = mat;
     }
 
+    clear(color = Color.black, clearDepth = true)
+    {
+        this.gl.clearColor(color.r, color.g, color.b, color.a);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
+    }
+
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material)
     {
         const gl = this.gl;
@@ -53,13 +60,12 @@ export class ZograRenderer
         const attributes = mateiral.shader.attributes;
         const locations = getUniformsLocation(gl, program, DefaultShaderResources.uniforms);
 
-        const mvp = mat4.create();
-        mat4.mul(mvp, transform, this.viewProjectionMatrix);
+        const mvp = mat4.mul(transform, this.viewProjectionMatrix);
 
         // Setup transforms
-        locations.matM ?? gl.uniformMatrix4fv(locations.matM, false, transform);
-        locations.matVP ?? gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
-        locations.matMVP ?? gl.uniformMatrix4fv(locations.matMVP, false, mvp);
+        locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
+        locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
+        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mat4.identity());
         
         const [vertBuffer, elementBuffer] = mesh.setup(gl);
 
@@ -67,19 +73,34 @@ export class ZograRenderer
         const stride = 12 * 4;
         gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
         // vert: vec3
-        gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
-        gl.enableVertexAttribArray(attributes.vert);
+        if (attributes.vert >= 0)
+        {
+            gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
+            gl.enableVertexAttribArray(attributes.vert);
+        }
         // color: vec4
-        gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
-        gl.enableVertexAttribArray(attributes.color);
+        if (attributes.color >= 0)
+        {
+            gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
+            gl.enableVertexAttribArray(attributes.color);
+        }
         // uv: vec2
-        gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
-        gl.enableVertexAttribArray(attributes.uv);
+        if (attributes.uv >= 0)
+        {
+            gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
+            gl.enableVertexAttribArray(attributes.uv);
+        }
         // normal: vec3
-        gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-        gl.enableVertexAttribArray(attributes.uv);
+        if (attributes.normal >= 0)
+        {
+            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
+            gl.enableVertexAttribArray(attributes.uv);
+        }
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
-        gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+
+
+
+        gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }
 }
