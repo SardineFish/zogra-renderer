@@ -20,6 +20,6 @@ export declare class Vector4 extends Array<number> {
     dot(v: Vector4): number;
     normalise(): Vector4;
     clone(): Vector4;
-    to(type: Function): Vector2 | Vector4 | Vector3;
+    to(type: Function): Vector3 | Vector4 | Vector2;
 }
 export declare function vec4(x: number, y: number, z: number, w: number): Vector4;

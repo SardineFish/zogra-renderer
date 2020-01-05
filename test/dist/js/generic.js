@@ -86,10 +86,10 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "../dist/builtin-asset.js":
-/*!********************************!*\
-  !*** ../dist/builtin-asset.js ***!
-  \********************************/
+/***/ "../dist/core/builtin-asset.js":
+/*!*************************************!*\
+  !*** ../dist/core/builtin-asset.js ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -102,9 +102,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const shader_1 = __webpack_require__(/*! ./shader */ "../dist/shader.js");
-const material_1 = __webpack_require__(/*! ./material */ "../dist/material.js");
-const color_1 = __webpack_require__(/*! ./types/color */ "../dist/types/color.js");
+const shader_1 = __webpack_require__(/*! ./shader */ "../dist/core/shader.js");
+const material_1 = __webpack_require__(/*! ./material */ "../dist/core/material.js");
+const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
 const DefaultVert = `
 
 `;
@@ -146,10 +146,32 @@ exports.makeDefaultMateiral = makeDefaultMateiral;
 
 /***/ }),
 
-/***/ "../dist/global.js":
-/*!*************************!*\
-  !*** ../dist/global.js ***!
-  \*************************/
+/***/ "../dist/core/core.js":
+/*!****************************!*\
+  !*** ../dist/core/core.js ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./material */ "../dist/core/material.js"));
+__export(__webpack_require__(/*! ./material-type */ "../dist/core/material-type.js"));
+__export(__webpack_require__(/*! ./mesh */ "../dist/core/mesh.js"));
+__export(__webpack_require__(/*! ./renderer */ "../dist/core/renderer.js"));
+__export(__webpack_require__(/*! ./shader */ "../dist/core/shader.js"));
+//# sourceMappingURL=core.js.map
+
+/***/ }),
+
+/***/ "../dist/core/global.js":
+/*!******************************!*\
+  !*** ../dist/core/global.js ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -163,48 +185,34 @@ exports.setGL = (_gl) => gl = _gl;
 
 /***/ }),
 
-/***/ "../dist/index.js":
-/*!************************!*\
-  !*** ../dist/index.js ***!
-  \************************/
+/***/ "../dist/core/material-type.js":
+/*!*************************************!*\
+  !*** ../dist/core/material-type.js ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
 Object.defineProperty(exports, "__esModule", { value: true });
-const renderer_1 = __webpack_require__(/*! ./renderer */ "../dist/renderer.js");
-exports.ZograRenderer = renderer_1.ZograRenderer;
-__export(__webpack_require__(/*! ./mesh */ "../dist/mesh.js"));
-__export(__webpack_require__(/*! ./material */ "../dist/material.js"));
-__export(__webpack_require__(/*! ./builtin-asset */ "../dist/builtin-asset.js"));
-__export(__webpack_require__(/*! ./types/vec2 */ "../dist/types/vec2.js"));
-__export(__webpack_require__(/*! ./types/vec3 */ "../dist/types/vec3.js"));
-__export(__webpack_require__(/*! ./types/vec4 */ "../dist/types/vec4.js"));
-__export(__webpack_require__(/*! ./types/color */ "../dist/types/color.js"));
-__export(__webpack_require__(/*! ./types/math */ "../dist/types/math.js"));
-__export(__webpack_require__(/*! ./types/mat4 */ "../dist/types/mat4.js"));
-__export(__webpack_require__(/*! ./shader */ "../dist/shader.js"));
-//# sourceMappingURL=index.js.map
+const material_1 = __webpack_require__(/*! ./material */ "../dist/core/material.js");
+//# sourceMappingURL=material-type.js.map
 
 /***/ }),
 
-/***/ "../dist/material.js":
-/*!***************************!*\
-  !*** ../dist/material.js ***!
-  \***************************/
+/***/ "../dist/core/material.js":
+/*!********************************!*\
+  !*** ../dist/core/material.js ***!
+  \********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const util_1 = __webpack_require__(/*! ./util */ "../dist/util.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
-const global_1 = __webpack_require__(/*! ./global */ "../dist/global.js");
+const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
 class Material {
     constructor(shader, gl = global_1.GL()) {
@@ -281,22 +289,22 @@ exports.materialType = materialType;
 
 /***/ }),
 
-/***/ "../dist/mesh.js":
-/*!***********************!*\
-  !*** ../dist/mesh.js ***!
-  \***********************/
+/***/ "../dist/core/mesh.js":
+/*!****************************!*\
+  !*** ../dist/core/mesh.js ***!
+  \****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const vec3_1 = __webpack_require__(/*! ./types/vec3 */ "../dist/types/vec3.js");
-const vec2_1 = __webpack_require__(/*! ./types/vec2 */ "../dist/types/vec2.js");
-const color_1 = __webpack_require__(/*! ./types/color */ "../dist/types/color.js");
-const global_1 = __webpack_require__(/*! ./global */ "../dist/global.js");
-const util_1 = __webpack_require__(/*! ./util */ "../dist/util.js");
-const math_1 = __webpack_require__(/*! ./types/math */ "../dist/types/math.js");
+const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js");
+const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
+const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
+const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+const math_1 = __webpack_require__(/*! ../types/math */ "../dist/types/math.js");
 class Mesh {
     constructor(gl = global_1.GL()) {
         var _a, _b;
@@ -397,21 +405,21 @@ exports.Mesh = Mesh;
 
 /***/ }),
 
-/***/ "../dist/renderer.js":
-/*!***************************!*\
-  !*** ../dist/renderer.js ***!
-  \***************************/
+/***/ "../dist/core/renderer.js":
+/*!********************************!*\
+  !*** ../dist/core/renderer.js ***!
+  \********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const util_1 = __webpack_require__(/*! ./util */ "../dist/util.js");
-const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/builtin-asset.js");
-const global_1 = __webpack_require__(/*! ./global */ "../dist/global.js");
-const color_1 = __webpack_require__(/*! ./types/color */ "../dist/types/color.js");
-const mat4_1 = __webpack_require__(/*! ./types/mat4 */ "../dist/types/mat4.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/core/builtin-asset.js");
+const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
+const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
+const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
@@ -479,19 +487,19 @@ exports.ZograRenderer = ZograRenderer;
 
 /***/ }),
 
-/***/ "../dist/shader.js":
-/*!*************************!*\
-  !*** ../dist/shader.js ***!
-  \*************************/
+/***/ "../dist/core/shader.js":
+/*!******************************!*\
+  !*** ../dist/core/shader.js ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const util_1 = __webpack_require__(/*! ./util */ "../dist/util.js");
-const global_1 = __webpack_require__(/*! ./global */ "../dist/global.js");
-const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/builtin-asset.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
+const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/core/builtin-asset.js");
 class Shader {
     constructor(vertexShader, fragmentShader, attributes = builtin_asset_1.DefaultShaderResources.attributes, gl = global_1.GL()) {
         this._compiled = false;
@@ -533,6 +541,35 @@ class Shader {
 }
 exports.Shader = Shader;
 //# sourceMappingURL=shader.js.map
+
+/***/ }),
+
+/***/ "../dist/index.js":
+/*!************************!*\
+  !*** ../dist/index.js ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// export * from "./core/mesh";
+// export * from "./core/material";
+// export * from "./core/builtin-asset";
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+// export * from "./types/vec2";
+// export * from "./types/vec3";
+// export * from "./types/vec4";
+// export * from "./types/color";
+// export * from "./types/math";
+// export * from "./types/mat4";
+// export * from "./core/shader";
+__export(__webpack_require__(/*! ./types/types */ "../dist/types/types.js"));
+__export(__webpack_require__(/*! ./core/core */ "../dist/core/core.js"));
+//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -669,6 +706,29 @@ function cross(a, b) {
 }
 exports.cross = cross;
 //# sourceMappingURL=math.js.map
+
+/***/ }),
+
+/***/ "../dist/types/types.js":
+/*!******************************!*\
+  !*** ../dist/types/types.js ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./vec2 */ "../dist/types/vec2.js"));
+__export(__webpack_require__(/*! ./vec3 */ "../dist/types/vec3.js"));
+__export(__webpack_require__(/*! ./vec4 */ "../dist/types/vec4.js"));
+__export(__webpack_require__(/*! ./color */ "../dist/types/color.js"));
+__export(__webpack_require__(/*! ./math */ "../dist/types/math.js"));
+__export(__webpack_require__(/*! ./mat4 */ "../dist/types/mat4.js"));
+//# sourceMappingURL=types.js.map
 
 /***/ }),
 
@@ -942,10 +1002,10 @@ exports.vec4 = vec4;
 
 /***/ }),
 
-/***/ "../dist/util.js":
-/*!***********************!*\
-  !*** ../dist/util.js ***!
-  \***********************/
+/***/ "../dist/utils/util.js":
+/*!*****************************!*\
+  !*** ../dist/utils/util.js ***!
+  \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 

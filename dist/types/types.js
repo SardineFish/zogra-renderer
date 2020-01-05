@@ -8,4 +8,5 @@ __export(require("./vec3"));
 __export(require("./vec4"));
 __export(require("./color"));
 __export(require("./math"));
+__export(require("./mat4"));
 //# sourceMappingURL=types.js.map
