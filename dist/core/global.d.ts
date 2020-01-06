@@ -1,2 +1,9 @@
+export interface GLContext {
+    gl: WebGL2RenderingContext;
+    width: number;
+    height: number;
+    usedTextureUnit: number;
+}
+export declare const setGlobalContext: (_ctx: GLContext) => GLContext;
+export declare const GlobalContext: () => GLContext;
 export declare const GL: () => WebGL2RenderingContext;
-export declare const setGL: (_gl: WebGL2RenderingContext) => WebGL2RenderingContext;

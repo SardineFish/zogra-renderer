@@ -105,6 +105,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const shader_1 = __webpack_require__(/*! ./shader */ "../dist/core/shader.js");
 const material_1 = __webpack_require__(/*! ./material */ "../dist/core/material.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
+const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
+const texture_1 = __webpack_require__(/*! ./texture */ "../dist/core/texture.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+const texture_format_1 = __webpack_require__(/*! ./texture-format */ "../dist/core/texture-format.js");
 const DefaultVert = `
 
 `;
@@ -142,6 +146,37 @@ function makeDefaultMateiral(gl) {
     return DefaultMaterial;
 }
 exports.makeDefaultMateiral = makeDefaultMateiral;
+const assetsMap = new Map();
+function GlobalAssets(ctx = global_1.GlobalContext()) {
+    return assetsMap.get(ctx.gl);
+}
+exports.GlobalAssets = GlobalAssets;
+function initGlobalAssets(ctx) {
+    assetsMap.set(ctx.gl, new BuiltinAssets(ctx.gl));
+}
+exports.initGlobalAssets = initGlobalAssets;
+class BuiltinAssets {
+    constructor(gl) {
+        this.gl = gl;
+        this.DefaultMaterial = null; // makeDefaultMateiral(gl);
+        this.defaultTexture = new texture_1.Texture2D(0, 0, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest, gl);
+        this.defaultTexture.wrapMode = texture_1.WrapMode.Repeat;
+        this.defaultTexture.setData(makeDefaultTexture());
+    }
+}
+function makeDefaultTexture() {
+    var _a;
+    const size = 64;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const ctx = (_a = canvas.getContext("2d"), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create default texture.")));
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "cyan";
+    ctx.fillRect(0, 0, size / 2, size / 2);
+    ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
+    return canvas;
+}
 //# sourceMappingURL=builtin-asset.js.map
 
 /***/ }),
@@ -178,9 +213,10 @@ __export(__webpack_require__(/*! ./shader */ "../dist/core/shader.js"));
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-let gl;
-exports.GL = () => gl;
-exports.setGL = (_gl) => gl = _gl;
+let ctx;
+exports.setGlobalContext = (_ctx) => ctx = _ctx;
+exports.GlobalContext = () => ctx;
+exports.GL = () => exports.GlobalContext().gl;
 //# sourceMappingURL=global.js.map
 
 /***/ }),
@@ -210,17 +246,19 @@ const material_1 = __webpack_require__(/*! ./material */ "../dist/core/material.
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
+const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/core/builtin-asset.js");
 class Material {
     constructor(shader, gl = global_1.GL()) {
         this.propertyBlock = {};
         this.gl = gl;
         this.shader = shader;
     }
-    setup(gl) {
+    setup(ctx) {
+        var _a, _b;
+        const gl = ctx.gl;
         gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock) {
             const prop = this.propertyBlock[key];
@@ -242,6 +280,12 @@ class Material {
                     break;
                 case "mat4":
                     gl.uniformMatrix4fv(prop.location, false, this[key]);
+                    break;
+                case "tex2d":
+                    if (!this[key])
+                        (_a = builtin_asset_1.GlobalAssets(ctx)) === null || _a === void 0 ? void 0 : _a.defaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                    else
+                        (_b = (this[key] || null)) === null || _b === void 0 ? void 0 : _b.bind(prop.location, ctx.usedTextureUnit++, ctx);
                     break;
             }
         }
@@ -274,13 +318,17 @@ function materialType(constructor) {
             const propertyBlock = this.propertyBlock;
             for (const key in this) {
                 const prop = getShaderProp(this, key);
-                if (prop)
-                    propertyBlock[key] = {
-                        type: prop.type,
-                        location: (_a = gl.getUniformLocation(shader.program, prop.name), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to get uniform location.")))
-                    };
-                this.propertyBlock = propertyBlock;
+                if (!prop)
+                    continue;
+                const loc = gl.getUniformLocation(shader.program, (_a = prop) === null || _a === void 0 ? void 0 : _a.name);
+                if (!loc)
+                    continue;
+                propertyBlock[key] = {
+                    type: prop.type,
+                    location: loc,
+                };
             }
+            this.propertyBlock = propertyBlock;
         }
     };
 }
@@ -405,6 +453,85 @@ exports.Mesh = Mesh;
 
 /***/ }),
 
+/***/ "../dist/core/render-target.js":
+/*!*************************************!*\
+  !*** ../dist/core/render-target.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+const FrameBufferAttachment = {
+    canvasOutput: { tex: null },
+    fromRenderTexture: (rt) => ({ tex: rt.glTex })
+};
+class RenderTarget {
+    constructor(width = 0, height = 0, ctx = global_1.GlobalContext()) {
+        var _a;
+        this.colorAttachments = [];
+        this.depthAttachment = FrameBufferAttachment.canvasOutput;
+        this.isCanvasTarget = true;
+        this.width = width;
+        this.height = height;
+        if (!ctx)
+            this.frameBuffer = null;
+        else
+            this.frameBuffer = (_a = ctx.gl.createFramebuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer")));
+    }
+    addColorAttachment(rt) {
+        if (rt === null)
+            return;
+        this.isCanvasTarget = false;
+        if (this.width == 0 && this.height == 0) {
+            this.width = rt.width;
+            this.height = rt.height;
+        }
+        if (this.width != rt.width || this.height != rt.height)
+            throw new Error("Framebuffer attachments must in same resolution.");
+        this.colorAttachments.push(FrameBufferAttachment.fromRenderTexture(rt));
+    }
+    setDepthAttachment(rt) {
+        var _a, _b;
+        if (this.width == 0 && this.height == 0) {
+            this.width = rt.width;
+            this.height = rt.height;
+        }
+        if (this.width != rt.width || this.height != rt.height)
+            throw new Error("Framebuffer attachments must in same resolution.");
+        this.depthAttachment = { tex: (_b = (_a = rt) === null || _a === void 0 ? void 0 : _a.glTex, (_b !== null && _b !== void 0 ? _b : null)) };
+    }
+    bind(ctx = global_1.GlobalContext()) {
+        const gl = ctx.gl;
+        if (this.isCanvasTarget) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, ctx.width, ctx.height);
+        }
+        else {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+            for (let i = 0; i < this.colorAttachments.length; i++) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, this.colorAttachments[i].tex, 0);
+            }
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthAttachment.tex, 0);
+            gl.viewport(0, 0, this.width, this.height);
+        }
+    }
+    release(ctx = global_1.GlobalContext()) {
+        if (this.isCanvasTarget)
+            return;
+        const gl = ctx.gl;
+        gl.deleteFramebuffer(this.frameBuffer);
+    }
+}
+exports.RenderTarget = RenderTarget;
+RenderTarget.CanvasTarget = Object.freeze(new RenderTarget());
+//# sourceMappingURL=render-target.js.map
+
+/***/ }),
+
 /***/ "../dist/core/renderer.js":
 /*!********************************!*\
   !*** ../dist/core/renderer.js ***!
@@ -420,9 +547,12 @@ const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/core
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
 const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
+const render_target_1 = __webpack_require__(/*! ./render-target */ "../dist/core/render-target.js");
+const texture_1 = __webpack_require__(/*! ./texture */ "../dist/core/texture.js");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
+        this.target = render_target_1.RenderTarget.CanvasTarget;
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
@@ -430,14 +560,42 @@ class ZograRenderer {
         this.canvas.height = this.height;
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         this.DefaultMaterial = null; // makeDefaultMateiral(this.gl);
-        if (!global_1.GL())
+        this.ctx = {
+            gl: this.gl,
+            width: this.width,
+            height: this.height,
+            usedTextureUnit: 0,
+        };
+        builtin_asset_1.initGlobalAssets(this.ctx);
+        if (!global_1.GlobalContext())
             this.use();
     }
     use() {
-        global_1.setGL(this.gl);
+        global_1.setGlobalContext(this.ctx);
     }
     setViewProjection(mat) {
         this.viewProjectionMatrix = mat;
+    }
+    setRenderTarget(colorAttachments, depthAttachment) {
+        if (colorAttachments instanceof render_target_1.RenderTarget) {
+            if (this.target !== colorAttachments)
+                this.target.release();
+            this.target = colorAttachments;
+        }
+        else if (colorAttachments instanceof Array) {
+            this.target.release();
+            this.target = new render_target_1.RenderTarget(colorAttachments[0].width, colorAttachments[0].height, this.ctx);
+            for (let i = 0; i < colorAttachments.length; i++)
+                this.target.addColorAttachment(colorAttachments[i]);
+        }
+        else if (colorAttachments instanceof texture_1.RenderTexture) {
+            this.target.release();
+            this.target = new render_target_1.RenderTarget(colorAttachments.width, colorAttachments.height, this.ctx);
+            this.target.addColorAttachment(colorAttachments);
+        }
+        if (depthAttachment)
+            this.target.setDepthAttachment(depthAttachment);
+        this.target.bind(this.ctx);
     }
     clear(color = color_1.Color.black, clearDepth = true) {
         this.gl.clearColor(color.r, color.g, color.b, color.a);
@@ -445,7 +603,7 @@ class ZograRenderer {
     }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
-        mateiral.setup(gl);
+        mateiral.setup(this.ctx);
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
         const locations = util_1.getUniformsLocation(gl, program, builtin_asset_1.DefaultShaderResources.uniforms);
@@ -541,6 +699,198 @@ class Shader {
 }
 exports.Shader = Shader;
 //# sourceMappingURL=shader.js.map
+
+/***/ }),
+
+/***/ "../dist/core/texture-format.js":
+/*!**************************************!*\
+  !*** ../dist/core/texture-format.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var TextureFormat;
+(function (TextureFormat) {
+    TextureFormat[TextureFormat["RGB"] = 1] = "RGB";
+    TextureFormat[TextureFormat["RGBA"] = 2] = "RGBA";
+    TextureFormat[TextureFormat["LUMINANCE_ALPHA"] = 3] = "LUMINANCE_ALPHA";
+    TextureFormat[TextureFormat["LUMINANCE"] = 4] = "LUMINANCE";
+    TextureFormat[TextureFormat["ALPHA"] = 5] = "ALPHA";
+    TextureFormat[TextureFormat["R8"] = 6] = "R8";
+    TextureFormat[TextureFormat["R16F"] = 7] = "R16F";
+    TextureFormat[TextureFormat["R32F"] = 8] = "R32F";
+    TextureFormat[TextureFormat["R8UI"] = 9] = "R8UI";
+    TextureFormat[TextureFormat["RG8"] = 10] = "RG8";
+    TextureFormat[TextureFormat["RG16F"] = 11] = "RG16F";
+    TextureFormat[TextureFormat["RG32F"] = 12] = "RG32F";
+    TextureFormat[TextureFormat["RG8UI"] = 13] = "RG8UI";
+    TextureFormat[TextureFormat["RGB8"] = 14] = "RGB8";
+    TextureFormat[TextureFormat["SRGB8"] = 15] = "SRGB8";
+    TextureFormat[TextureFormat["RGB565"] = 16] = "RGB565";
+    TextureFormat[TextureFormat["R11F_G11F_B10F"] = 17] = "R11F_G11F_B10F";
+    TextureFormat[TextureFormat["RGB9_E5"] = 18] = "RGB9_E5";
+    TextureFormat[TextureFormat["RGB16F"] = 19] = "RGB16F";
+    TextureFormat[TextureFormat["RGB32F"] = 20] = "RGB32F";
+    TextureFormat[TextureFormat["RGB8UI"] = 21] = "RGB8UI";
+    TextureFormat[TextureFormat["RGBA8"] = 22] = "RGBA8";
+    TextureFormat[TextureFormat["SRGB8_ALPHA8"] = 23] = "SRGB8_ALPHA8";
+    TextureFormat[TextureFormat["RGB5_A1"] = 24] = "RGB5_A1";
+    TextureFormat[TextureFormat["RGB10_A2"] = 25] = "RGB10_A2";
+    TextureFormat[TextureFormat["RGBA4"] = 26] = "RGBA4";
+    TextureFormat[TextureFormat["RGBA16F"] = 27] = "RGBA16F";
+    TextureFormat[TextureFormat["RGBA32F"] = 28] = "RGBA32F";
+    TextureFormat[TextureFormat["RGBA8UI"] = 29] = "RGBA8UI";
+    TextureFormat[TextureFormat["DEPTH_COMPONENT"] = 30] = "DEPTH_COMPONENT";
+    TextureFormat[TextureFormat["DEPTH_STENCIL"] = 31] = "DEPTH_STENCIL";
+})(TextureFormat = exports.TextureFormat || (exports.TextureFormat = {}));
+;
+function mapGLFormat(gl, format) {
+    const map = {
+        [TextureFormat.RGB]: [gl.RGB, gl.RGB, gl.UNSIGNED_BYTE],
+        [TextureFormat.RGBA]: [gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE],
+        [TextureFormat.LUMINANCE_ALPHA]: [gl.LUMINANCE_ALPHA, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE],
+        [TextureFormat.LUMINANCE]: [gl.LUMINANCE, gl.LUMINANCE, gl.UNSIGNED_BYTE],
+        [TextureFormat.ALPHA]: [gl.ALPHA, gl.ALPHA, gl.UNSIGNED_BYTE],
+        [TextureFormat.R8]: [gl.R8, gl.RED, gl.UNSIGNED_BYTE],
+        [TextureFormat.R16F]: [gl.R16F, gl.RED, gl.HALF_FLOAT],
+        [TextureFormat.R32F]: [gl.R32F, gl.RED, gl.FLOAT],
+        [TextureFormat.R8UI]: [gl.R8UI, gl.RED_INTEGER, gl.UNSIGNED_BYTE],
+        [TextureFormat.RG8]: [gl.RG8, gl.RG, gl.UNSIGNED_BYTE],
+        [TextureFormat.RG16F]: [gl.RG16F, gl.RG, gl.HALF_FLOAT],
+        [TextureFormat.RG32F]: [gl.RG32F, gl.RG, gl.FLOAT],
+        [TextureFormat.RG8UI]: [gl.RG8UI, gl.RG_INTEGER, gl.UNSIGNED_BYTE],
+        [TextureFormat.RGB8]: [gl.RGB8, gl.RGB, gl.UNSIGNED_BYTE],
+        [TextureFormat.SRGB8]: [gl.SRGB8, gl.RGB, gl.UNSIGNED_BYTE],
+        [TextureFormat.RGB565]: [gl.RGB565, gl.RGB, gl.UNSIGNED_BYTE],
+        [TextureFormat.R11F_G11F_B10F]: [gl.R11F_G11F_B10F, gl.RGB, gl.UNSIGNED_INT_10F_11F_11F_REV],
+        [TextureFormat.RGB9_E5]: [gl.RGB9_E5, gl.RGB, gl.HALF_FLOAT],
+        [TextureFormat.RGB16F]: [gl.RGB16F, gl.RGB, gl.HALF_FLOAT],
+        [TextureFormat.RGB32F]: [gl.RGB32F, gl.RGB, gl.FLOAT],
+        [TextureFormat.RGB8UI]: [gl.RGB8UI, gl.RGB_INTEGER, gl.UNSIGNED_BYTE],
+        [TextureFormat.RGBA8]: [gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE],
+        [TextureFormat.SRGB8_ALPHA8]: [gl.SRGB8_ALPHA8, gl.RGBA, gl.UNSIGNED_BYTE],
+        [TextureFormat.RGB5_A1]: [gl.RGB5_A1, gl.RGBA, gl.UNSIGNED_BYTE],
+        [TextureFormat.RGB10_A2]: [gl.RGB10_A2, gl.RGBA, gl.UNSIGNED_INT_2_10_10_10_REV],
+        [TextureFormat.RGBA4]: [gl.RGBA4, gl.RGBA, gl.UNSIGNED_BYTE],
+        [TextureFormat.RGBA16F]: [gl.RGBA16F, gl.RGBA, gl.HALF_FLOAT],
+        [TextureFormat.RGBA32F]: [gl.RGBA32F, gl.RGBA, gl.FLOAT],
+        [TextureFormat.RGBA8UI]: [gl.RGBA8UI, gl.RGBA_INTEGER, gl.UNSIGNED_BYTE],
+        [TextureFormat.DEPTH_COMPONENT]: [gl.DEPTH_COMPONENT, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT],
+        [TextureFormat.DEPTH_STENCIL]: [gl.DEPTH_STENCIL, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT],
+    };
+    return map[format];
+}
+exports.mapGLFormat = mapGLFormat;
+//# sourceMappingURL=texture-format.js.map
+
+/***/ }),
+
+/***/ "../dist/core/texture.js":
+/*!*******************************!*\
+  !*** ../dist/core/texture.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
+const texture_format_1 = __webpack_require__(/*! ./texture-format */ "../dist/core/texture-format.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+var FilterMode;
+(function (FilterMode) {
+    FilterMode[FilterMode["Linear"] = WebGL2RenderingContext.LINEAR] = "Linear";
+    FilterMode[FilterMode["Nearest"] = WebGL2RenderingContext.NEAREST] = "Nearest";
+})(FilterMode = exports.FilterMode || (exports.FilterMode = {}));
+var WrapMode;
+(function (WrapMode) {
+    WrapMode[WrapMode["Repeat"] = WebGL2RenderingContext.REPEAT] = "Repeat";
+    WrapMode[WrapMode["Clamp"] = WebGL2RenderingContext.CLAMP_TO_EDGE] = "Clamp";
+    WrapMode[WrapMode["Mirror"] = WebGL2RenderingContext.MIRRORED_REPEAT] = "Mirror";
+})(WrapMode = exports.WrapMode || (exports.WrapMode = {}));
+class TextureBase {
+    constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
+        var _a;
+        this.mipmapLevel = 0;
+        this.wrapMode = WrapMode.Repeat;
+        this.gl = gl;
+        this.format = format;
+        this.width = width;
+        this.height = height;
+        this.filterMode = filterMode;
+        this.glTex = (_a = gl.createTexture(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.")));
+    }
+    setup() {
+        const gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.filterMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this.wrapMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
+    }
+    bind(location, unit, ctx = global_1.GlobalContext()) {
+        const gl = ctx.gl;
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        gl.uniform1i(location, unit);
+    }
+}
+class Texture2D extends TextureBase {
+    constructor(width = 0, height = 0, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
+        super(width, height, format, filterMode, gl);
+    }
+    setData(pixels) {
+        const gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
+        if (pixels.width !== undefined && pixels.height !== undefined) {
+            pixels = pixels;
+            this.width = pixels.width;
+            this.height = pixels.height;
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, format, type, pixels);
+        }
+        else {
+            pixels = pixels;
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, pixels);
+        }
+        super.setup();
+    }
+}
+exports.Texture2D = Texture2D;
+class DepthTexture extends TextureBase {
+    constructor(width, height, gl = global_1.GL()) {
+        super(width, height, texture_format_1.TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, gl);
+    }
+    create() {
+        super.setup();
+        const gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, texture_format_1.TextureFormat.DEPTH_COMPONENT);
+        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+    }
+}
+exports.DepthTexture = DepthTexture;
+class RenderTexture extends TextureBase {
+    constructor(width, height, depth, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
+        super(width, height, format, filterMode, gl);
+        this.depthTexture = null;
+        if (depth) {
+            this.depthTexture = new DepthTexture(width, height, gl);
+        }
+    }
+    create() {
+        super.setup();
+        const gl = this.gl;
+        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
+        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+    }
+}
+exports.RenderTexture = RenderTexture;
+//# sourceMappingURL=texture.js.map
 
 /***/ }),
 
@@ -1063,6 +1413,11 @@ function panic(msg) {
     throw new Error(msg);
 }
 exports.panic = panic;
+function warn(msg) {
+    console.warn(msg);
+    return null;
+}
+exports.warn = warn;
 function decorator(name, defaultValue = undefined, dataWrapper = v => v) {
     const metadataKey = Symbol(name);
     return [
@@ -10277,7 +10632,7 @@ process.umask = function() { return 0; };
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = vec4(vUV.xy, 0, 1);\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform mat4 uTransformMVP;\r\nuniform sampler2D uMainTex;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    color = 1. - color;\r\n    fragColor = vec4(color, 1.0f);\r\n}");
 
 /***/ }),
 
@@ -10628,17 +10983,23 @@ const default_frag_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!
 const default_vert_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-vert.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl"));
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../dist/index.js");
 __webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
+const texture_1 = __webpack_require__(/*! ../../dist/core/texture */ "../dist/core/texture.js");
+const render_target_1 = __webpack_require__(/*! ../../dist/core/render-target */ "../dist/core/render-target.js");
 const canvas = document.querySelector("#canvas");
 const renderer = new zogra_renderer_1.ZograRenderer(canvas, 1280, 720);
 let TestMaterial = class TestMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, default_frag_glsl_1.default)) {
     constructor() {
         super(...arguments);
         this.color = zogra_renderer_1.Color.white;
+        this.texture = null;
     }
 };
 __decorate([
     zogra_renderer_1.shaderProp("uColor", "color")
 ], TestMaterial.prototype, "color", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uMainTex", "tex2d")
+], TestMaterial.prototype, "texture", void 0);
 TestMaterial = __decorate([
     zogra_renderer_1.materialType
 ], TestMaterial);
@@ -10662,6 +11023,13 @@ mesh.triangles = [
     2, 3, 0
 ];
 mesh.calculateNormals(0);
+const rt = new texture_1.RenderTexture(canvas.width, canvas.height, false);
+rt.create();
+renderer.setRenderTarget(rt);
+renderer.clear();
+renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
+renderer.setRenderTarget(render_target_1.RenderTarget.CanvasTarget);
+material.texture = rt;
 renderer.clear();
 renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
 

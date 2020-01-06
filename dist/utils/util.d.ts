@@ -1,6 +1,7 @@
 import "reflect-metadata";
 export declare function panicNull<T>(t: T | null, msg?: string): T;
 export declare function panic(msg?: string): never;
+export declare function warn(msg: string): never;
 declare type DecoratorFunc<T> = (value?: T) => {
     (target: Function): void;
     (target: Object, propertyKey: string | symbol): void;

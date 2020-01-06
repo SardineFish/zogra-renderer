@@ -10,6 +10,11 @@ export function panic(msg?: string): never
 {
     throw new Error(msg);
 }
+export function warn(msg: string): never
+{
+    console.warn(msg);
+    return null as any as never;
+}
 
 type DecoratorFunc<T> = (value?: T) => {
     (target: Function): void;

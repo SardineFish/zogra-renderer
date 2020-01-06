@@ -11,6 +11,11 @@ function panic(msg) {
     throw new Error(msg);
 }
 exports.panic = panic;
+function warn(msg) {
+    console.warn(msg);
+    return null;
+}
+exports.warn = warn;
 function decorator(name, defaultValue = undefined, dataWrapper = v => v) {
     const metadataKey = Symbol(name);
     return [

@@ -1,8 +1,9 @@
 import { Shader } from "./shader";
 import "reflect-metadata";
+import { GLContext } from "./global";
 import { MaterialType } from "./material-type";
 import "reflect-metadata";
-declare type ShaderPropType = "mat4" | "float" | "vec2" | "vec3" | "vec4" | "color";
+declare type ShaderPropType = "mat4" | "float" | "vec2" | "vec3" | "vec4" | "color" | "tex2d";
 export interface PropertyBlock {
     [key: string]: {
         type: ShaderPropType;
@@ -15,7 +16,7 @@ export declare class Material {
     propertyBlock: PropertyBlock;
     gl: WebGL2RenderingContext;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
-    setup(gl: WebGL2RenderingContext): void;
+    setup(ctx: GLContext): void;
 }
 export declare function shaderProp(name: string, type: ShaderPropType): {
     (target: Function): void;

@@ -14,7 +14,7 @@ var WrapMode;
     WrapMode[WrapMode["Clamp"] = WebGL2RenderingContext.CLAMP_TO_EDGE] = "Clamp";
     WrapMode[WrapMode["Mirror"] = WebGL2RenderingContext.MIRRORED_REPEAT] = "Mirror";
 })(WrapMode = exports.WrapMode || (exports.WrapMode = {}));
-class Texture {
+class TextureBase {
     constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
         var _a;
         this.mipmapLevel = 0;
@@ -30,20 +30,26 @@ class Texture {
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.filterMode);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this.wrapMode);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
     }
+    bind(location, unit, ctx = global_1.GlobalContext()) {
+        const gl = ctx.gl;
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        gl.uniform1i(location, unit);
+    }
 }
-exports.Texture = Texture;
-class Texture2D extends Texture {
+class Texture2D extends TextureBase {
     constructor(width = 0, height = 0, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
         super(width, height, format, filterMode, gl);
     }
     setData(pixels) {
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
-        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, texture_format_1.TextureFormat.DEPTH_COMPONENT);
-        if (pixels.hasOwnProperty("width") && pixels.hasOwnProperty("height")) {
+        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
+        if (pixels.width !== undefined && pixels.height !== undefined) {
             pixels = pixels;
             this.width = pixels.width;
             this.height = pixels.height;
@@ -57,20 +63,20 @@ class Texture2D extends Texture {
     }
 }
 exports.Texture2D = Texture2D;
-class DepthTexture extends Texture {
+class DepthTexture extends TextureBase {
     constructor(width, height, gl = global_1.GL()) {
         super(width, height, texture_format_1.TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, gl);
     }
     create() {
+        super.setup();
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, texture_format_1.TextureFormat.DEPTH_COMPONENT);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
-        super.setup();
     }
 }
 exports.DepthTexture = DepthTexture;
-class RenderTexture extends Texture {
+class RenderTexture extends TextureBase {
     constructor(width, height, depth, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
         super(width, height, format, filterMode, gl);
         this.depthTexture = null;
@@ -79,10 +85,10 @@ class RenderTexture extends Texture {
         }
     }
     create() {
+        super.setup();
         const gl = this.gl;
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
-        super.setup();
     }
 }
 exports.RenderTexture = RenderTexture;

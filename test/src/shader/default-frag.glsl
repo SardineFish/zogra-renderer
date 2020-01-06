@@ -6,10 +6,13 @@ in vec4 vPos;
 in vec2 vUV;
 
 uniform mat4 uTransformMVP;
+uniform sampler2D uMainTex;
 
 out vec4 fragColor;
 
 void main()
 {
-    fragColor = vec4(vUV.xy, 0, 1);
+    vec3 color = texture(uMainTex, vUV.xy).rgb;
+    color = 1. - color;
+    fragColor = vec4(color, 1.0f);
 }

@@ -2,14 +2,16 @@ import { Shader } from "./shader";
 import { Color } from "../types/color";
 import { decorator, panic } from "../utils/util";
 import "reflect-metadata";
-import { GL } from "./global";
+import { GL, GLContext } from "./global";
 import { MaterialType } from "./material-type";
 import "reflect-metadata";
 import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
 import { vec4, mat4 } from "gl-matrix";
+import { Texture } from "./texture";
+import { GlobalAssets } from "./builtin-asset";
 
-type ShaderPropType = "mat4" | "float" | "vec2" | "vec3" | "vec4" | "color";
+type ShaderPropType = "mat4" | "float" | "vec2" | "vec3" | "vec4" | "color" | "tex2d";
 
 export interface PropertyBlock
 {
@@ -31,8 +33,9 @@ export class Material
         this.shader = shader;
     }
 
-    setup(gl: WebGL2RenderingContext)
+    setup(ctx: GLContext)
     {
+        const gl = ctx.gl;
         gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock)
         {
@@ -57,6 +60,13 @@ export class Material
                 case "mat4":
                     gl.uniformMatrix4fv(prop.location, false, this[key] as mat4);
                     break;
+                case "tex2d":
+                    if (!this[key])
+                        GlobalAssets(ctx)?.defaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                    else
+                        (this[key] as Texture || null)?.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                    break;
+                    
             }
         }
     }
@@ -98,13 +108,16 @@ export function materialType<T extends { new(...arg:any[]): {} }>(constructor: T
             for (const key in this)
             {
                 const prop = getShaderProp(this as any as Material, key);
-                if (prop)
-                    propertyBlock[key] = {
-                        type: prop.type,
-                        location: gl.getUniformLocation(shader.program, prop.name) ?? panic("Failed to get uniform location.")
-                    };
-                (this as any as Material).propertyBlock = propertyBlock;
+                if (!prop)
+                    continue;
+                const loc = gl.getUniformLocation(shader.program, prop?.name);
+                if (!loc) continue;
+                propertyBlock[key] = {
+                    type: prop.type,
+                    location: loc,
+                };
             }
+            (this as any as Material).propertyBlock = propertyBlock;
         }
     }
 }

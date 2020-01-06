@@ -5,9 +5,12 @@ const builtin_asset_1 = require("./builtin-asset");
 const global_1 = require("./global");
 const color_1 = require("../types/color");
 const mat4_1 = require("../types/mat4");
+const render_target_1 = require("./render-target");
+const texture_1 = require("./texture");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
+        this.target = render_target_1.RenderTarget.CanvasTarget;
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
@@ -15,14 +18,42 @@ class ZograRenderer {
         this.canvas.height = this.height;
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         this.DefaultMaterial = null; // makeDefaultMateiral(this.gl);
-        if (!global_1.GL())
+        this.ctx = {
+            gl: this.gl,
+            width: this.width,
+            height: this.height,
+            usedTextureUnit: 0,
+        };
+        builtin_asset_1.initGlobalAssets(this.ctx);
+        if (!global_1.GlobalContext())
             this.use();
     }
     use() {
-        global_1.setGL(this.gl);
+        global_1.setGlobalContext(this.ctx);
     }
     setViewProjection(mat) {
         this.viewProjectionMatrix = mat;
+    }
+    setRenderTarget(colorAttachments, depthAttachment) {
+        if (colorAttachments instanceof render_target_1.RenderTarget) {
+            if (this.target !== colorAttachments)
+                this.target.release();
+            this.target = colorAttachments;
+        }
+        else if (colorAttachments instanceof Array) {
+            this.target.release();
+            this.target = new render_target_1.RenderTarget(colorAttachments[0].width, colorAttachments[0].height, this.ctx);
+            for (let i = 0; i < colorAttachments.length; i++)
+                this.target.addColorAttachment(colorAttachments[i]);
+        }
+        else if (colorAttachments instanceof texture_1.RenderTexture) {
+            this.target.release();
+            this.target = new render_target_1.RenderTarget(colorAttachments.width, colorAttachments.height, this.ctx);
+            this.target.addColorAttachment(colorAttachments);
+        }
+        if (depthAttachment)
+            this.target.setDepthAttachment(depthAttachment);
+        this.target.bind(this.ctx);
     }
     clear(color = color_1.Color.black, clearDepth = true) {
         this.gl.clearColor(color.r, color.g, color.b, color.a);
@@ -30,7 +61,7 @@ class ZograRenderer {
     }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
-        mateiral.setup(gl);
+        mateiral.setup(this.ctx);
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
         const locations = util_1.getUniformsLocation(gl, program, builtin_asset_1.DefaultShaderResources.uniforms);

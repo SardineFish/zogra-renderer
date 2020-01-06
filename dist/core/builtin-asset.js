@@ -9,6 +9,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const shader_1 = require("./shader");
 const material_1 = require("./material");
 const color_1 = require("../types/color");
+const global_1 = require("./global");
+const texture_1 = require("./texture");
+const util_1 = require("../utils/util");
+const texture_format_1 = require("./texture-format");
 const DefaultVert = `
 
 `;
@@ -46,4 +50,35 @@ function makeDefaultMateiral(gl) {
     return DefaultMaterial;
 }
 exports.makeDefaultMateiral = makeDefaultMateiral;
+const assetsMap = new Map();
+function GlobalAssets(ctx = global_1.GlobalContext()) {
+    return assetsMap.get(ctx.gl);
+}
+exports.GlobalAssets = GlobalAssets;
+function initGlobalAssets(ctx) {
+    assetsMap.set(ctx.gl, new BuiltinAssets(ctx.gl));
+}
+exports.initGlobalAssets = initGlobalAssets;
+class BuiltinAssets {
+    constructor(gl) {
+        this.gl = gl;
+        this.DefaultMaterial = null; // makeDefaultMateiral(gl);
+        this.defaultTexture = new texture_1.Texture2D(0, 0, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest, gl);
+        this.defaultTexture.wrapMode = texture_1.WrapMode.Repeat;
+        this.defaultTexture.setData(makeDefaultTexture());
+    }
+}
+function makeDefaultTexture() {
+    var _a;
+    const size = 64;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const ctx = (_a = canvas.getContext("2d"), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create default texture.")));
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "cyan";
+    ctx.fillRect(0, 0, size / 2, size / 2);
+    ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
+    return canvas;
+}
 //# sourceMappingURL=builtin-asset.js.map

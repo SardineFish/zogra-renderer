@@ -1,29 +1,45 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const global_1 = require("./global");
-const util_1 = require("../utils/util");
+import { RenderTexture, DepthTexture } from "./texture";
+import { GL, GlobalContext, GLContext } from "./global";
+import { panic } from "../utils/util";
+
+interface FrameBufferAttachment
+{
+    tex: WebGLTexture | null;
+}
 const FrameBufferAttachment = {
-    canvasOutput: { tex: null },
-    fromRenderTexture: (rt) => ({ tex: rt.glTex })
+    canvasOutput: { tex: null } as FrameBufferAttachment,
+    fromRenderTexture: (rt: RenderTexture) => ({ tex: rt.glTex } as FrameBufferAttachment)
 };
-class RenderTarget {
-    constructor(width = 0, height = 0, ctx = global_1.GlobalContext()) {
-        var _a;
-        this.colorAttachments = [];
-        this.depthAttachment = FrameBufferAttachment.canvasOutput;
-        this.isCanvasTarget = true;
+
+export class RenderTarget
+{
+    width: number;
+    height: number;
+    colorAttachments: FrameBufferAttachment[] = [];
+    depthAttachment: FrameBufferAttachment = FrameBufferAttachment.canvasOutput;
+    frameBuffer: WebGLFramebuffer | null;
+
+    isCanvasTarget = true;
+
+    static CanvasTarget = Object.freeze(new RenderTarget());
+
+    constructor(width = 0, height = 0, ctx = GlobalContext())
+    {
         this.width = width;
-        this.height = height;
+        this.height = height
         if (!ctx)
             this.frameBuffer = null;
         else
-            this.frameBuffer = (_a = ctx.gl.createFramebuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer")));
+            this.frameBuffer = ctx.gl.createFramebuffer() ?? panic("Failed to create frame buffer");
     }
-    addColorAttachment(rt) {
+
+    addColorAttachment(rt: RenderTexture)
+    {
         if (rt === null)
             return;
         this.isCanvasTarget = false;
-        if (this.width == 0 && this.height == 0) {
+        if (this.width == 0 && this.height == 0)
+        {
             this.width = rt.width;
             this.height = rt.height;
         }
@@ -31,38 +47,47 @@ class RenderTarget {
             throw new Error("Framebuffer attachments must in same resolution.");
         this.colorAttachments.push(FrameBufferAttachment.fromRenderTexture(rt));
     }
-    setDepthAttachment(rt) {
-        var _a, _b;
-        if (this.width == 0 && this.height == 0) {
+
+    setDepthAttachment(rt: DepthTexture)
+    {
+        if (this.width == 0 && this.height == 0)
+        {
             this.width = rt.width;
             this.height = rt.height;
         }
         if (this.width != rt.width || this.height != rt.height)
             throw new Error("Framebuffer attachments must in same resolution.");
-        this.depthAttachment = { tex: (_b = (_a = rt) === null || _a === void 0 ? void 0 : _a.glTex, (_b !== null && _b !== void 0 ? _b : null)) };
+        this.depthAttachment = { tex: rt?.glTex ?? null };
     }
-    bind(ctx = global_1.GlobalContext()) {
+
+    bind(ctx: GLContext = GlobalContext())
+    {
         const gl = ctx.gl;
-        if (this.isCanvasTarget) {
+        if (this.isCanvasTarget)
+        {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.viewport(0, 0, ctx.width, ctx.height);
         }
-        else {
+        else
+        {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-            for (let i = 0; i < this.colorAttachments.length; i++) {
+
+            for (let i = 0; i < this.colorAttachments.length; i++)
+            {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, this.colorAttachments[i].tex, 0);
             }
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthAttachment.tex, 0);
+
+
             gl.viewport(0, 0, this.width, this.height);
         }
     }
-    release(ctx = global_1.GlobalContext()) {
+
+    release(ctx: GLContext = GlobalContext())
+    {
         if (this.isCanvasTarget)
             return;
         const gl = ctx.gl;
         gl.deleteFramebuffer(this.frameBuffer);
     }
 }
-exports.RenderTarget = RenderTarget;
-RenderTarget.CanvasTarget = Object.freeze(new RenderTarget());
-//# sourceMappingURL=render-target.js.map

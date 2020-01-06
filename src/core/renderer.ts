@@ -1,23 +1,28 @@
 import { panicNull, getUniformsLocation } from "../utils/util";
 import { DefaultMaterialType } from "./material-type";
-import { makeDefaultMateiral, DefaultShaderResources } from "./builtin-asset";
-import { setGL, GL } from "./global";
+import { makeDefaultMateiral, DefaultShaderResources, initGlobalAssets } from "./builtin-asset";
+import { GL, setGlobalContext, GLContext, GlobalContext } from "./global";
 import { Mesh } from "./mesh";
 import { vec3 } from "../types/vec3";
 import { quat} from "gl-matrix";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
+import { RenderTarget } from "./render-target";
+import { RenderTexture, DepthTexture } from "./texture";
 
 export class ZograRenderer
 {
     canvas: HTMLCanvasElement;
-    width: number;
-    height: number;
+    readonly width: number;
+    readonly height: number;
     gl: WebGL2RenderingContext;
     DefaultMaterial: typeof DefaultMaterialType;
+    ctx: GLContext;
 
     viewProjectionMatrix = mat4.identity();
+
+    private target: RenderTarget = RenderTarget.CanvasTarget;
 
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number)
     {
@@ -30,19 +35,58 @@ export class ZograRenderer
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         
         this.DefaultMaterial = null as any;// makeDefaultMateiral(this.gl);
+        this.ctx = {
+            gl: this.gl,
+            width: this.width,
+            height: this.height,
+            usedTextureUnit: 0,
+        };
 
-        if (!GL())
+        initGlobalAssets(this.ctx);
+        if (!GlobalContext())
             this.use();
     }
 
     use()
     {
-        setGL(this.gl);
+        setGlobalContext(this.ctx);
     }
 
     setViewProjection(mat: mat4)
     {
         this.viewProjectionMatrix = mat;
+    }
+
+    setRenderTarget(rt: RenderTarget) : void
+    setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture):void
+    setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture):void
+    setRenderTarget(colorAttachments: RenderTexture[] | RenderTexture | RenderTarget, depthAttachment?: DepthTexture)
+    {
+        if (colorAttachments instanceof RenderTarget)
+        {
+            if (this.target !== colorAttachments)
+                this.target.release();
+            this.target = colorAttachments;
+            
+        }
+        else if (colorAttachments instanceof Array)
+        {
+            this.target.release();
+            this.target = new RenderTarget(colorAttachments[0].width, colorAttachments[0].height, this.ctx);
+            for (let i = 0; i < colorAttachments.length; i++)
+                this.target.addColorAttachment(colorAttachments[i]);
+        }
+        else if (colorAttachments instanceof RenderTexture)
+        {
+            this.target.release();
+            this.target = new RenderTarget(colorAttachments.width, colorAttachments.height, this.ctx);
+            this.target.addColorAttachment(colorAttachments);
+        }
+
+        if (depthAttachment)
+            this.target.setDepthAttachment(depthAttachment);
+        
+        this.target.bind(this.ctx);
     }
 
     clear(color = Color.black, clearDepth = true)
@@ -54,7 +98,8 @@ export class ZograRenderer
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material)
     {
         const gl = this.gl;
-        mateiral.setup(gl);
+        
+        mateiral.setup(this.ctx);
 
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
@@ -98,8 +143,6 @@ export class ZograRenderer
         }
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
-
-
 
         gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }

@@ -1,16 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const util_1 = require("../utils/util");
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
+const builtin_asset_1 = require("./builtin-asset");
 class Material {
     constructor(shader, gl = global_1.GL()) {
         this.propertyBlock = {};
         this.gl = gl;
         this.shader = shader;
     }
-    setup(gl) {
+    setup(ctx) {
+        var _a, _b;
+        const gl = ctx.gl;
         gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock) {
             const prop = this.propertyBlock[key];
@@ -32,6 +34,12 @@ class Material {
                     break;
                 case "mat4":
                     gl.uniformMatrix4fv(prop.location, false, this[key]);
+                    break;
+                case "tex2d":
+                    if (!this[key])
+                        (_a = builtin_asset_1.GlobalAssets(ctx)) === null || _a === void 0 ? void 0 : _a.defaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                    else
+                        (_b = (this[key] || null)) === null || _b === void 0 ? void 0 : _b.bind(prop.location, ctx.usedTextureUnit++, ctx);
                     break;
             }
         }
@@ -64,13 +72,17 @@ function materialType(constructor) {
             const propertyBlock = this.propertyBlock;
             for (const key in this) {
                 const prop = getShaderProp(this, key);
-                if (prop)
-                    propertyBlock[key] = {
-                        type: prop.type,
-                        location: (_a = gl.getUniformLocation(shader.program, prop.name), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to get uniform location.")))
-                    };
-                this.propertyBlock = propertyBlock;
+                if (!prop)
+                    continue;
+                const loc = gl.getUniformLocation(shader.program, (_a = prop) === null || _a === void 0 ? void 0 : _a.name);
+                if (!loc)
+                    continue;
+                propertyBlock[key] = {
+                    type: prop.type,
+                    location: loc,
+                };
             }
+            this.propertyBlock = propertyBlock;
         }
     };
 }
