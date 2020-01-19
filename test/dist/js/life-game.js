@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/generic.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/life-game.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -10690,16 +10690,16 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
-/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl":
-/*!****************************************************************************!*\
-  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl ***!
-  \****************************************************************************/
+/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/blit.glsl":
+/*!********************************************************************!*\
+  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/blit.glsl ***!
+  \********************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform mat4 uTransformMVP;\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uColor;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    color = 1. - color;\r\n    fragColor = vec4(color, 1.0f) * .5 + uColor * .5;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = texture(uMainTex, vUV).rgba;\r\n}");
 
 /***/ }),
 
@@ -10713,6 +10713,19 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nuniform vec4 uColor;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vColor = aColor * uColor;\r\n    vUV = aUV;\r\n    vNormal = aNormal;\r\n}");
+
+/***/ }),
+
+/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game.glsl":
+/*!*************************************************************************!*\
+  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game.glsl ***!
+  \*************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform vec4 uSize;\r\nuniform float uBlockSize;\r\nuniform sampler2D uLastFrame;\r\n\r\nlayout (location = 0) out vec4 nextFrame;\r\nlayout (location = 1) out vec4 fragColor;\r\n\r\nint neighbors(vec2 pos)\r\n{\r\n    int n = 0;\r\n    vec3 delta = vec3(-1, 0, 1);\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xy).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xz).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.yx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.yz).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zy).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zz).r));\r\n    return n;\r\n}\r\n\r\nvoid main()\r\n{\r\n    float current = step(.5, texture(uLastFrame, vUV).r);\r\n    int n = neighbors(vUV);\r\n    if(current == 1.0)\r\n    {\r\n        if(n < 2)\r\n            nextFrame = vec4(0);\r\n        else if (n > 3)\r\n            nextFrame = vec4(0);\r\n        else\r\n            nextFrame = vec4(current);\r\n    }\r\n    else\r\n    {\r\n        if(n == 3)\r\n            nextFrame = vec4(1);\r\n    }\r\n    nextFrame = vec4(1.0 - current);\r\n    vec2 pos = vUV;\r\n    vec3 color = vec3(texture(uLastFrame, vUV).rrr);\r\n    color = vec3(vUV, 0);\r\n    fragColor = vec4(color, 1);\r\n    fragColor = nextFrame;\r\n}");
 
 /***/ }),
 
@@ -11027,57 +11040,58 @@ module.exports = exported;
 
 /***/ }),
 
-/***/ "./src/generic.ts":
-/*!************************!*\
-  !*** ./src/generic.ts ***!
-  \************************/
+/***/ "./src/life-game.ts":
+/*!**************************!*\
+  !*** ./src/life-game.ts ***!
+  \**************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const default_frag_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-frag.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl"));
-const default_vert_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-vert.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl"));
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../dist/index.js");
+const default_vert_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-vert.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl"));
+const life_game_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/life-game.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game.glsl"));
+const blit_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/blit.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/blit.glsl"));
 __webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
 const texture_1 = __webpack_require__(/*! ../../dist/core/texture */ "../dist/core/texture.js");
+const texture_format_1 = __webpack_require__(/*! ../../dist/core/texture-format */ "../dist/core/texture-format.js");
 const render_target_1 = __webpack_require__(/*! ../../dist/core/render-target */ "../dist/core/render-target.js");
+const Width = 1280;
+const Height = 720;
+const BlockSize = 1;
+const FPS = 5;
 const canvas = document.querySelector("#canvas");
-const renderer = new zogra_renderer_1.ZograRenderer(canvas, 1280, 720);
-let TestMaterial = class TestMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, default_frag_glsl_1.default)) {
-    constructor() {
-        super(...arguments);
-        this.color = zogra_renderer_1.Color.white;
-        this.texture = null;
-    }
-};
-__decorate([
-    zogra_renderer_1.shaderProp("uColor", "color")
-], TestMaterial.prototype, "color", void 0);
-__decorate([
-    zogra_renderer_1.shaderProp("uMainTex", "tex2d")
-], TestMaterial.prototype, "texture", void 0);
-TestMaterial = __decorate([
-    zogra_renderer_1.materialType
-], TestMaterial);
-const material = new TestMaterial();
-material.color = zogra_renderer_1.rgb(1, .5, .25);
+const renderer = new zogra_renderer_1.ZograRenderer(canvas, Width, Height);
+class LifeGameMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_glsl_1.default)) {
+}
+class BlitMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, blit_glsl_1.default)) {
+}
+const material = new LifeGameMaterial();
+const blitMat = new BlitMaterial();
+renderer.clear();
+const rts = [
+    new texture_1.RenderTexture(Width, Height, false, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest),
+    new texture_1.RenderTexture(Width, Height, false, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest),
+];
+const backBuffer = new texture_1.RenderTexture(Width, Height, false);
+backBuffer.create();
+rts[0].create();
+rts[1].create();
 const mesh = new zogra_renderer_1.Mesh();
 mesh.verts = [
-    zogra_renderer_1.vec3(0, 0, 0),
-    zogra_renderer_1.vec3(1, 0, 0),
+    zogra_renderer_1.vec3(-1, -1, 0),
+    zogra_renderer_1.vec3(1, -1, 0),
     zogra_renderer_1.vec3(1, 1, 0),
-    zogra_renderer_1.vec3(0, 1, 0)
+    zogra_renderer_1.vec3(-1, 1, 0),
+];
+mesh.triangles = [
+    0, 1, 3,
+    1, 2, 3,
 ];
 mesh.uvs = [
     zogra_renderer_1.vec2(0, 0),
@@ -11085,24 +11099,50 @@ mesh.uvs = [
     zogra_renderer_1.vec2(1, 1),
     zogra_renderer_1.vec2(0, 1)
 ];
-mesh.triangles = [
-    0, 1, 2,
-    2, 3, 0
-];
-mesh.calculateNormals(0);
-const rt = new texture_1.RenderTexture(canvas.width, canvas.height, false);
-rt.create();
-renderer.setRenderTarget(rt);
-renderer.setGlobalUniform("uColor", "color", zogra_renderer_1.Color.green);
-renderer.clear();
-renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
-renderer.setRenderTarget(render_target_1.RenderTarget.CanvasTarget);
-material.texture = rt;
-renderer.clear();
-renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
+mesh.calculateNormals();
+(() => {
+    let previousTime = 0;
+    let startDelay = 0;
+    const update = lifeGame();
+    const updateFrame = (delay) => {
+        if (previousTime === 0) {
+            previousTime = delay;
+            startDelay = delay;
+        }
+        const dt = (delay - previousTime) / 1000;
+        previousTime = delay;
+        update(dt, (delay - startDelay) / 1000);
+        requestAnimationFrame(updateFrame);
+    };
+    requestAnimationFrame(updateFrame);
+})();
+function lifeGame() {
+    let nextUpdate = 1 / FPS;
+    let frameIdx = 0;
+    return (dt, time) => {
+        if (time < nextUpdate)
+            return;
+        nextUpdate += 1 / FPS;
+        frameIdx++;
+        const src = rts[frameIdx % 2];
+        const dst = rts[(frameIdx + 1) % 2];
+        renderer.setGlobalTexture("uLastFrame", src);
+        renderer.setGlobalUniform("uSize", "vec4", zogra_renderer_1.vec4(Width, Height, 1 / Width, 1 / Height));
+        renderer.setGlobalUniform("uBlockSize", "float", BlockSize);
+        renderer.setGlobalUniform("uRenderSize", "vec4", zogra_renderer_1.vec4(Width, Height, 1 / Width, 1 / Height));
+        const target = new render_target_1.RenderTarget(Width, Height);
+        target.addColorAttachment(dst);
+        target.addColorAttachment(backBuffer);
+        renderer.setRenderTarget(target);
+        renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), material);
+        renderer.setRenderTarget(render_target_1.RenderTarget.CanvasTarget);
+        renderer.setGlobalTexture("uMainTex", backBuffer);
+        renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), blitMat);
+    };
+}
 
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=generic.js.map
+//# sourceMappingURL=life-game.js.map

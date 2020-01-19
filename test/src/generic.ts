@@ -43,6 +43,8 @@ rt.create();
 
 renderer.setRenderTarget(rt);
 
+renderer.setGlobalUniform("uColor", "color", Color.green);
+
 renderer.clear();
 renderer.drawMesh(mesh, mat4.rts(quat.identity(), vec3(-.5, -.5, 0), vec3(1, 1, 1)), material);
 

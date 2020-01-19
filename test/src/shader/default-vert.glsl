@@ -15,10 +15,12 @@ uniform vec4 uColor;
 out vec4 vColor;
 out vec4 vPos;
 out vec2 vUV;
+out vec3 vNormal;
 
 void main()
 {
     gl_Position = uTransformMVP * vec4(aPos, 1);
     vColor = aColor * uColor;
     vUV = aUV;
+    vNormal = aNormal;
 }

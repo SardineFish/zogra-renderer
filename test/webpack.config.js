@@ -6,6 +6,7 @@ module.exports = {
     // mode:"production",
     entry: {
         generic: "./src/generic.ts",
+        "life-game": "./src/life-game.ts",
     },
     output: {
         path: path.resolve("./dist"),
@@ -73,6 +74,13 @@ module.exports = {
             inject: true,
             minify: false,
             chunks: ["generic"],
+        }),
+        new HtmlWebpackPlugin({
+            filename: "life-game.html",
+            template: "html/base.html",
+            inject: true,
+            minify: false,
+            chunks: ["life-game"],
         }),
     ]
 };

@@ -2,6 +2,7 @@ import { RenderTexture, DepthTexture } from "./texture";
 import { GLContext } from "./global";
 interface FrameBufferAttachment {
     tex: WebGLTexture | null;
+    attachPoint: number;
 }
 declare const FrameBufferAttachment: {
     canvasOutput: FrameBufferAttachment;

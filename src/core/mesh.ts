@@ -67,7 +67,7 @@ export class Mesh
     }
 
     // https://schemingdeveloper.com/2014/10/17/better-method-recalculate-normals-unity/
-    calculateNormals(angleThreshold: number)
+    calculateNormals(angleThreshold: number = 0)
     {
         if (this.triangles.length % 3 !== 0)
             throw new Error("Invalid triangles.");

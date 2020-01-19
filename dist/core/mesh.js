@@ -54,7 +54,7 @@ class Mesh {
         this.normals = [];
     }
     // https://schemingdeveloper.com/2014/10/17/better-method-recalculate-normals-unity/
-    calculateNormals(angleThreshold) {
+    calculateNormals(angleThreshold = 0) {
         if (this.triangles.length % 3 !== 0)
             throw new Error("Invalid triangles.");
         this.normals = util_1.fillArray(() => vec3_1.vec3(0, 0, 0), this.verts.length);

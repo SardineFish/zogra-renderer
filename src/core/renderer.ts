@@ -3,13 +3,15 @@ import { DefaultMaterialType } from "./material-type";
 import { makeDefaultMateiral, DefaultShaderResources, initGlobalAssets } from "./builtin-asset";
 import { GL, setGlobalContext, GLContext, GlobalContext } from "./global";
 import { Mesh } from "./mesh";
-import { vec3 } from "../types/vec3";
+import { vec3, Vector3 } from "../types/vec3";
 import { quat} from "gl-matrix";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
 import { RenderTarget } from "./render-target";
-import { RenderTexture, DepthTexture } from "./texture";
+import { RenderTexture, DepthTexture, Texture } from "./texture";
+import { vec4 } from "../types/vec4";
+import { vec2, Vector2 } from "../types/vec2";
 
 export class ZograRenderer
 {
@@ -23,6 +25,8 @@ export class ZograRenderer
     viewProjectionMatrix = mat4.identity();
 
     private target: RenderTarget = RenderTarget.CanvasTarget;
+    private globalUniforms = new Map<string, GlobalUniform>();
+    private globalTextures = new Map<string, GlobalTexture>();
 
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number)
     {
@@ -98,6 +102,8 @@ export class ZograRenderer
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material)
     {
         const gl = this.gl;
+
+        this.ctx.usedTextureUnit = this.globalTextures.size;
         
         mateiral.setup(this.ctx);
 
@@ -111,6 +117,46 @@ export class ZograRenderer
         locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
         locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
         locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mvp);
+
+        // Setup global uniforms
+        {
+            for (const val of this.globalUniforms.values()) {
+                const location = gl.getUniformLocation(program, val.name);
+                if (!location)
+                    continue;
+                switch (val.type)
+                {
+                    case "int":
+                        gl.uniform1i(location, val.value as number);
+                        break;
+                    case "float":
+                        gl.uniform1f(location, val.value as number);
+                        break;
+                    case "vec2":
+                        gl.uniform2fv(location, val.value as vec2, 0, 2);
+                        break;
+                    case "vec3":
+                        gl.uniform3fv(location, val.value as vec3, 0, 3);
+                        break;
+                    case "vec4":
+                        gl.uniform4fv(location, val.value as vec4, 0, 4);
+                        break;
+                    case "color":
+                        gl.uniform4fv(location, val.value as Color, 0, 4);
+                        break;
+                }
+            }
+        }
+        // Setup global textures
+        {
+            for (const tex of this.globalTextures.values())
+            {
+                const location = gl.getUniformLocation(program, tex.name);
+                if (!location)
+                    continue;
+                tex.texture.bind(location, this.ctx.usedTextureUnit++, this.ctx);
+            }
+        }
         
         const [vertBuffer, elementBuffer] = mesh.setup(gl);
 
@@ -145,5 +191,54 @@ export class ZograRenderer
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
 
         gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        this.ctx.usedTextureUnit = 0;
+    }
+
+    setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
+    {
+        this.globalUniforms.set(name, {
+            name: name,
+            type: type,
+            value: value,
+        });
+    }
+    unsetGlobalUniform(name: string)
+    {
+        this.globalUniforms.delete(name);
+    }
+
+    setGlobalTexture(name: string, texture: Texture)
+    {
+        this.globalTextures.set(name, {
+            name: name,
+            texture: texture,
+        });
+    }
+    unsetGlobalTexture(name: string)
+    {
+        this.globalTextures.delete(name);   
     }
 }
+
+interface GlobalUniform
+{
+    name: string;
+    type: "int" | "float" | "vec4" | "vec3" | "vec2" | "tex2d" | "color";
+    value: number | vec4 | vec3 | vec2 | Texture;
+}
+
+interface GlobalTexture
+{
+    name: string;
+    texture: Texture;
+}
+
+type UniformType = "int" | "float" | "vec4" | "vec3" | "vec2" | "tex2d" | "color";
+type UniformValueType<T extends UniformType> = (
+    T extends "int" ? number
+    : T extends "float" ? number
+    : T extends "vec4" ? vec4
+    : T extends "vec3" ? vec3
+    : T extends "vec2" ? vec2
+    : T extends "color" ? Color
+    : Texture);

@@ -11,6 +11,8 @@ class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         this.target = render_target_1.RenderTarget.CanvasTarget;
+        this.globalUniforms = new Map();
+        this.globalTextures = new Map();
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
@@ -61,6 +63,7 @@ class ZograRenderer {
     }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
+        this.ctx.usedTextureUnit = this.globalTextures.size;
         mateiral.setup(this.ctx);
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
@@ -70,6 +73,43 @@ class ZograRenderer {
         locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
         locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
         locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mvp);
+        // Setup global uniforms
+        {
+            for (const val of this.globalUniforms.values()) {
+                const location = gl.getUniformLocation(program, val.name);
+                if (!location)
+                    continue;
+                switch (val.type) {
+                    case "int":
+                        gl.uniform1i(location, val.value);
+                        break;
+                    case "float":
+                        gl.uniform1f(location, val.value);
+                        break;
+                    case "vec2":
+                        gl.uniform2fv(location, val.value, 0, 2);
+                        break;
+                    case "vec3":
+                        gl.uniform3fv(location, val.value, 0, 3);
+                        break;
+                    case "vec4":
+                        gl.uniform4fv(location, val.value, 0, 4);
+                        break;
+                    case "color":
+                        gl.uniform4fv(location, val.value, 0, 4);
+                        break;
+                }
+            }
+        }
+        // Setup global textures
+        {
+            for (const tex of this.globalTextures.values()) {
+                const location = gl.getUniformLocation(program, tex.name);
+                if (!location)
+                    continue;
+                tex.texture.bind(location, this.ctx.usedTextureUnit++, this.ctx);
+            }
+        }
         const [vertBuffer, elementBuffer] = mesh.setup(gl);
         // Setup VAO
         const stride = 12 * 4;
@@ -96,6 +136,26 @@ class ZograRenderer {
         }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
         gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        this.ctx.usedTextureUnit = 0;
+    }
+    setGlobalUniform(name, type, value) {
+        this.globalUniforms.set(name, {
+            name: name,
+            type: type,
+            value: value,
+        });
+    }
+    unsetGlobalUniform(name) {
+        this.globalUniforms.delete(name);
+    }
+    setGlobalTexture(name, texture) {
+        this.globalTextures.set(name, {
+            name: name,
+            texture: texture,
+        });
+    }
+    unsetGlobalTexture(name) {
+        this.globalTextures.delete(name);
     }
 }
 exports.ZograRenderer = ZograRenderer;

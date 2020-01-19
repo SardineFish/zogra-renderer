@@ -25,7 +25,7 @@ export declare class Mesh {
     get normals(): vec3[];
     set normals(normals: vec3[]);
     clear(): void;
-    calculateNormals(angleThreshold: number): void;
+    calculateNormals(angleThreshold?: number): void;
     update(): void;
     setup(gl: WebGL2RenderingContext): WebGLBuffer[];
 }

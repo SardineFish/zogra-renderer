@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const global_1 = require("./global");
 const util_1 = require("../utils/util");
 const FrameBufferAttachment = {
-    canvasOutput: { tex: null },
+    canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK },
     fromRenderTexture: (rt) => ({ tex: rt.glTex })
 };
 class RenderTarget {
@@ -20,8 +20,9 @@ class RenderTarget {
             this.frameBuffer = (_a = ctx.gl.createFramebuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer")));
     }
     addColorAttachment(rt) {
-        if (rt === null)
+        if (rt === null) {
             return;
+        }
         this.isCanvasTarget = false;
         if (this.width == 0 && this.height == 0) {
             this.width = rt.width;
@@ -39,7 +40,7 @@ class RenderTarget {
         }
         if (this.width != rt.width || this.height != rt.height)
             throw new Error("Framebuffer attachments must in same resolution.");
-        this.depthAttachment = { tex: (_b = (_a = rt) === null || _a === void 0 ? void 0 : _a.glTex, (_b !== null && _b !== void 0 ? _b : null)) };
+        this.depthAttachment = { tex: (_b = (_a = rt) === null || _a === void 0 ? void 0 : _a.glTex, (_b !== null && _b !== void 0 ? _b : null)), attachPoint: WebGL2RenderingContext.DEPTH_ATTACHMENT };
     }
     bind(ctx = global_1.GlobalContext()) {
         const gl = ctx.gl;
@@ -49,11 +50,17 @@ class RenderTarget {
         }
         else {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+            let attachIdx = 0;
             for (let i = 0; i < this.colorAttachments.length; i++) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, this.colorAttachments[i].tex, 0);
+                if (this.colorAttachments[i].tex) {
+                    this.colorAttachments[i].attachPoint = gl.COLOR_ATTACHMENT0 + attachIdx++;
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, this.colorAttachments[i].attachPoint, gl.TEXTURE_2D, this.colorAttachments[i].tex, 0);
+                }
             }
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthAttachment.tex, 0);
             gl.viewport(0, 0, this.width, this.height);
+            const buffers = this.colorAttachments.map(t => t.attachPoint);
+            gl.drawBuffers(buffers);
         }
     }
     release(ctx = global_1.GlobalContext()) {

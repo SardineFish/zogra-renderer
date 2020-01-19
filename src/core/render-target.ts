@@ -5,9 +5,10 @@ import { panic } from "../utils/util";
 interface FrameBufferAttachment
 {
     tex: WebGLTexture | null;
+    attachPoint: number;
 }
 const FrameBufferAttachment = {
-    canvasOutput: { tex: null } as FrameBufferAttachment,
+    canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK } as FrameBufferAttachment,
     fromRenderTexture: (rt: RenderTexture) => ({ tex: rt.glTex } as FrameBufferAttachment)
 };
 
@@ -36,7 +37,9 @@ export class RenderTarget
     addColorAttachment(rt: RenderTexture)
     {
         if (rt === null)
+        {
             return;
+        }
         this.isCanvasTarget = false;
         if (this.width == 0 && this.height == 0)
         {
@@ -57,7 +60,7 @@ export class RenderTarget
         }
         if (this.width != rt.width || this.height != rt.height)
             throw new Error("Framebuffer attachments must in same resolution.");
-        this.depthAttachment = { tex: rt?.glTex ?? null };
+        this.depthAttachment = { tex: rt?.glTex ?? null, attachPoint: WebGL2RenderingContext.DEPTH_ATTACHMENT };
     }
 
     bind(ctx: GLContext = GlobalContext())
@@ -71,15 +74,22 @@ export class RenderTarget
         else
         {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-
+            let attachIdx = 0;
             for (let i = 0; i < this.colorAttachments.length; i++)
             {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, this.colorAttachments[i].tex, 0);
+                if (this.colorAttachments[i].tex)
+                {
+                    this.colorAttachments[i].attachPoint = gl.COLOR_ATTACHMENT0 + attachIdx++;
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, this.colorAttachments[i].attachPoint, gl.TEXTURE_2D, this.colorAttachments[i].tex, 0);
+                }
+                
             }
+
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthAttachment.tex, 0);
 
-
             gl.viewport(0, 0, this.width, this.height);
+            const buffers = this.colorAttachments.map(t => t.attachPoint);
+            gl.drawBuffers(buffers);
         }
     }
 
