@@ -54,17 +54,13 @@ module.exports = {
                 ]
             },
             {
-                test: /\.jpe?g|\.png|\.webp/,
-                use: [
-                    {
-                        loader: "url-loader",
-                        options: {
-                            name: "img/[name].[hash:7].[ext]",
-                            limit: 10000,
-                        }
-                    }
-                ]
-            },
+                test: /\.(png|jpe?g|gif|webp)$/i,
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                    outputPath: 'static/img'
+                },
+            }
         ]
     },
     plugins: [

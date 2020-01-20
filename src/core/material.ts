@@ -9,7 +9,6 @@ import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
 import { vec4, mat4 } from "gl-matrix";
 import { Texture } from "./texture";
-import { GlobalAssets } from "./builtin-asset";
 
 type ShaderPropType = "mat4" | "float" | "vec2" | "vec3" | "vec4" | "color" | "tex2d";
 
@@ -62,7 +61,7 @@ export class Material
                     break;
                 case "tex2d":
                     if (!this[key])
-                        GlobalAssets(ctx)?.defaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        ctx.assets.DefaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
                     else
                         (this[key] as Texture || null)?.bind(prop.location, ctx.usedTextureUnit++, ctx);
                     break;
@@ -95,7 +94,7 @@ export function MaterialFromShader(shader: Shader): typeof MaterialType
     };
 }
 
-export function materialType<T extends { new(...arg:any[]): {} }>(constructor: T) : T
+export function materialDefine<T extends { new(...arg:any[]): {} }>(constructor: T) : T
 {
     return class extends constructor
     {

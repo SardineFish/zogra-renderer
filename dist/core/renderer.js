@@ -1,12 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("../utils/util");
-const builtin_asset_1 = require("./builtin-asset");
 const global_1 = require("./global");
+const vec3_1 = require("../types/vec3");
 const color_1 = require("../types/color");
 const mat4_1 = require("../types/mat4");
 const render_target_1 = require("./render-target");
 const texture_1 = require("./texture");
+const assets_1 = require("../builtin-assets/assets");
+const quat_1 = require("../types/quat");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
@@ -19,14 +21,14 @@ class ZograRenderer {
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
-        this.DefaultMaterial = null; // makeDefaultMateiral(this.gl);
+        this.assets = new assets_1.BuiltinAssets(this.gl);
         this.ctx = {
             gl: this.gl,
             width: this.width,
             height: this.height,
             usedTextureUnit: 0,
+            assets: this.assets,
         };
-        builtin_asset_1.initGlobalAssets(this.ctx);
         if (!global_1.GlobalContext())
             this.use();
     }
@@ -61,18 +63,40 @@ class ZograRenderer {
         this.gl.clearColor(color.r, color.g, color.b, color.a);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
     }
+    blit(src, dst, material = this.assets.materials.blitCopy) {
+        if (dst instanceof texture_1.RenderTexture) {
+            const target = new render_target_1.RenderTarget(dst.width, dst.height, this.ctx);
+            target.addColorAttachment(dst);
+            dst = target;
+        }
+        else if (dst instanceof Array) {
+            const target = new render_target_1.RenderTarget(0, 0, this.ctx);
+            for (let i = 0; i < dst.length; i++) {
+                target.addColorAttachment(dst[i]);
+            }
+            dst = target;
+        }
+        const prevVP = this.viewProjectionMatrix;
+        dst.bind(this.ctx);
+        this.viewProjectionMatrix = mat4_1.mat4.identity();
+        this.setGlobalTexture("uMainTex", src);
+        this.drawMesh(this.assets.meshes.quad, mat4_1.mat4.rts(quat_1.quat.identity(), vec3_1.vec3(0, 0, 0), vec3_1.vec3(2, 2, 1)), material);
+        this.unsetGlobalTexture("uMainTex");
+        this.target.bind();
+        this.viewProjectionMatrix = prevVP;
+    }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
         this.ctx.usedTextureUnit = this.globalTextures.size;
         mateiral.setup(this.ctx);
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
-        const locations = util_1.getUniformsLocation(gl, program, builtin_asset_1.DefaultShaderResources.uniforms);
+        const transformLocations = util_1.getUniformsLocation(gl, program, this.assets.BuiltinUniforms);
         // Setup transforms
         const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
-        locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
-        locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
-        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mvp);
+        transformLocations.matM && gl.uniformMatrix4fv(transformLocations.matM, false, transform);
+        transformLocations.matVP && gl.uniformMatrix4fv(transformLocations.matVP, false, this.viewProjectionMatrix);
+        transformLocations.matMVP && gl.uniformMatrix4fv(transformLocations.matMVP, false, mvp);
         // Setup global uniforms
         {
             for (const val of this.globalUniforms.values()) {

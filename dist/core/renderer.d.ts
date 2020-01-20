@@ -1,5 +1,4 @@
 /// <reference types="gl-matrix" />
-import { DefaultMaterialType } from "./material-type";
 import { GLContext } from "./global";
 import { Mesh } from "./mesh";
 import { vec3 } from "../types/vec3";
@@ -10,13 +9,14 @@ import { RenderTarget } from "./render-target";
 import { RenderTexture, DepthTexture, Texture } from "./texture";
 import { vec4 } from "../types/vec4";
 import { vec2 } from "../types/vec2";
+import { BuiltinAssets } from "../builtin-assets/assets";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
     readonly width: number;
     readonly height: number;
     gl: WebGL2RenderingContext;
-    DefaultMaterial: typeof DefaultMaterialType;
     ctx: GLContext;
+    assets: BuiltinAssets;
     viewProjectionMatrix: import("gl-matrix").mat4;
     private target;
     private globalUniforms;
@@ -28,6 +28,7 @@ export declare class ZograRenderer {
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture): void;
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture): void;
     clear(color?: Color, clearDepth?: boolean): void;
+    blit(src: Texture, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material): void;
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material): void;
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
     unsetGlobalUniform(name: string): void;

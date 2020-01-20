@@ -73,7 +73,7 @@
   },
   "include": [
     "src/**/*", 
-    "src/raw-loader.d.ts",
+    "src/loader.d.ts",
   ],
   "exclude": [
     "../src/**/*",

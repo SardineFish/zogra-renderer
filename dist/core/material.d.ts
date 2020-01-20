@@ -23,7 +23,7 @@ export declare function shaderProp(name: string, type: ShaderPropType): {
     (target: Object, propertyKey: string | symbol): void;
 };
 export declare function MaterialFromShader(shader: Shader): typeof MaterialType;
-export declare function materialType<T extends {
+export declare function materialDefine<T extends {
     new (...arg: any[]): {};
 }>(constructor: T): T;
 export {};

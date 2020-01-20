@@ -17,13 +17,15 @@ export class Mesh
 
     private vertices = new Float32Array(0);
     private indices = new Uint32Array(0);
-    public VBO: WebGLBuffer = GL().createBuffer() ?? panic("Failed to create buffer.");
-    private EBO: WebGLBuffer = GL().createBuffer() ?? panic("Failed to create buffer.");
+    public VBO: WebGLBuffer;
+    private EBO: WebGLBuffer;
     private gl: WebGL2RenderingContext;
 
     constructor(gl = GL())
     {
         this.gl = gl;
+        this.VBO = gl.createBuffer() ?? panic("Failed to create vertex buffer.");
+        this.EBO = gl.createBuffer() ?? panic("Failed to create element buffer.");
     }
 
     get verts() { return this._verts; }

@@ -4,16 +4,15 @@ precision mediump float;
 in vec4 vColor;
 in vec4 vPos;
 in vec2 vUV;
+in vec3 vNormal;
 
-uniform mat4 uTransformMVP;
 uniform sampler2D uMainTex;
-uniform vec4 uColor;
+uniform vec2 uFlip;
 
 out vec4 fragColor;
 
 void main()
 {
-    vec3 color = texture(uMainTex, vUV.xy).rgb;
-    color = 1. - color;
-    fragColor = vec4(color, 1.0f) * .5 + uColor * .5;
+    vec2 uv = (uFlip * (vec2(1) - vUV)) + ((vec2(1) - uFlip) * vUV);
+    fragColor = texture(uMainTex, uv).rgba;
 }

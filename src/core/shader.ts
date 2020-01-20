@@ -1,6 +1,6 @@
 import { panicNull } from "../utils/util";
 import { GL } from "./global";
-import { DefaultShaderResources } from "./builtin-asset";
+import { BuiltinShaders } from "../builtin-assets/shaders";
 
 interface AttributeBlock
 {
@@ -36,7 +36,7 @@ export class Shader
 
     get compiled() { return this._compiled; }
     
-    constructor(vertexShader: string, fragmentShader: string, attributes = DefaultShaderResources.attributes , gl = GL())
+    constructor(vertexShader: string, fragmentShader: string, attributes = BuiltinShaders.DefaultShaderAttributes , gl = GL())
     {
         this.gl = gl;
         this.program = panicNull(gl.createProgram(), "Failed to create shader program");

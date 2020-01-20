@@ -1,17 +1,17 @@
 import { panicNull, getUniformsLocation } from "../utils/util";
 import { DefaultMaterialType } from "./material-type";
-import { makeDefaultMateiral, DefaultShaderResources, initGlobalAssets } from "./builtin-asset";
 import { GL, setGlobalContext, GLContext, GlobalContext } from "./global";
 import { Mesh } from "./mesh";
 import { vec3, Vector3 } from "../types/vec3";
-import { quat} from "gl-matrix";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
 import { RenderTarget } from "./render-target";
-import { RenderTexture, DepthTexture, Texture } from "./texture";
+import { RenderTexture, DepthTexture, Texture, Texture2D } from "./texture";
 import { vec4 } from "../types/vec4";
 import { vec2, Vector2 } from "../types/vec2";
+import { BuiltinAssets } from "../builtin-assets/assets";
+import { quat } from "../types/quat";
 
 export class ZograRenderer
 {
@@ -19,8 +19,8 @@ export class ZograRenderer
     readonly width: number;
     readonly height: number;
     gl: WebGL2RenderingContext;
-    DefaultMaterial: typeof DefaultMaterialType;
     ctx: GLContext;
+    assets: BuiltinAssets;
 
     viewProjectionMatrix = mat4.identity();
 
@@ -37,16 +37,17 @@ export class ZograRenderer
         this.canvas.height = this.height;
 
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
+
+        this.assets = new BuiltinAssets(this.gl);
         
-        this.DefaultMaterial = null as any;// makeDefaultMateiral(this.gl);
         this.ctx = {
             gl: this.gl,
             width: this.width,
             height: this.height,
             usedTextureUnit: 0,
+            assets: this.assets,
         };
 
-        initGlobalAssets(this.ctx);
         if (!GlobalContext())
             this.use();
     }
@@ -99,6 +100,38 @@ export class ZograRenderer
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
     }
 
+    blit(src: Texture, dst: RenderTarget | RenderTexture | RenderTexture[], material: Material = this.assets.materials.blitCopy)
+    {
+        
+        if (dst instanceof RenderTexture)
+        {
+            const target = new RenderTarget(dst.width, dst.height, this.ctx);
+            target.addColorAttachment(dst);
+            dst = target;
+        }
+        else if (dst instanceof Array)
+        {
+            const target = new RenderTarget(0, 0, this.ctx);
+            for (let i = 0; i < dst.length; i++)
+            {
+                target.addColorAttachment(dst[i]);
+            }
+            dst = target;
+        }
+
+        const prevVP = this.viewProjectionMatrix;
+
+        dst.bind(this.ctx);
+        this.viewProjectionMatrix = mat4.identity();
+        this.setGlobalTexture("uMainTex", src);
+
+        this.drawMesh(this.assets.meshes.quad, mat4.rts(quat.identity(), vec3(0, 0, 0), vec3(2, 2, 1)), material);
+
+        this.unsetGlobalTexture("uMainTex");
+        this.target.bind();
+        this.viewProjectionMatrix = prevVP;
+    }
+
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material)
     {
         const gl = this.gl;
@@ -109,14 +142,14 @@ export class ZograRenderer
 
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
-        const locations = getUniformsLocation(gl, program, DefaultShaderResources.uniforms);
+        const transformLocations = getUniformsLocation(gl, program, this.assets.BuiltinUniforms);
 
 
         // Setup transforms
         const mvp = mat4.mul(transform, this.viewProjectionMatrix);
-        locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
-        locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
-        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mvp);
+        transformLocations.matM && gl.uniformMatrix4fv(transformLocations.matM, false, transform);
+        transformLocations.matVP && gl.uniformMatrix4fv(transformLocations.matVP, false, this.viewProjectionMatrix);
+        transformLocations.matMVP && gl.uniformMatrix4fv(transformLocations.matMVP, false, mvp);
 
         // Setup global uniforms
         {

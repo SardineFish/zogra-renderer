@@ -86,10 +86,40 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "../dist/core/builtin-asset.js":
-/*!*************************************!*\
-  !*** ../dist/core/builtin-asset.js ***!
-  \*************************************/
+/***/ "../dist/builtin-assets/assets.js":
+/*!****************************************!*\
+  !*** ../dist/builtin-assets/assets.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const materials_1 = __webpack_require__(/*! ./materials */ "../dist/builtin-assets/materials.js");
+const shaders_1 = __webpack_require__(/*! ./shaders */ "../dist/builtin-assets/shaders.js");
+const textures_1 = __webpack_require__(/*! ./textures */ "../dist/builtin-assets/textures.js");
+const mesh_1 = __webpack_require__(/*! ./mesh */ "../dist/builtin-assets/mesh.js");
+class BuiltinAssets {
+    constructor(gl) {
+        this.gl = gl;
+        this.DefaultTexture = textures_1.createDefaultTexture(gl);
+        this.types = materials_1.createBuiltinMaterialTypes(gl, this.DefaultTexture);
+        this.materials = materials_1.createBuiltinMaterial(gl, this.types);
+        this.meshes = mesh_1.createBuiltinMesh(gl);
+        this.shaders = shaders_1.BuiltinShaders;
+        this.BuiltinUniforms = shaders_1.BuiltinUniforms;
+    }
+}
+exports.BuiltinAssets = BuiltinAssets;
+//# sourceMappingURL=assets.js.map
+
+/***/ }),
+
+/***/ "../dist/builtin-assets/materials.js":
+/*!*******************************************!*\
+  !*** ../dist/builtin-assets/materials.js ***!
+  \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -102,17 +132,194 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const shader_1 = __webpack_require__(/*! ./shader */ "../dist/core/shader.js");
-const material_1 = __webpack_require__(/*! ./material */ "../dist/core/material.js");
+const shader_1 = __webpack_require__(/*! ../core/shader */ "../dist/core/shader.js");
+const shaders_1 = __webpack_require__(/*! ./shaders */ "../dist/builtin-assets/shaders.js");
+const material_1 = __webpack_require__(/*! ../core/material */ "../dist/core/material.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
-const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
-const texture_1 = __webpack_require__(/*! ./texture */ "../dist/core/texture.js");
-const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
-const texture_format_1 = __webpack_require__(/*! ./texture-format */ "../dist/core/texture-format.js");
-const DefaultVert = `
+const material_type_1 = __webpack_require__(/*! ../core/material-type */ "../dist/core/material-type.js");
+const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
+function createDefaultMaterialType(gl, defaultTex) {
+    const shader = new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.DefaultFrag, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl);
+    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(shader) {
+        constructor() {
+            super(...arguments);
+            this.color = color_1.Color.white;
+            this.mainTexture = defaultTex;
+        }
+    };
+    __decorate([
+        material_1.shaderProp("uColor", "color")
+    ], DefaultMaterial.prototype, "color", void 0);
+    __decorate([
+        material_1.shaderProp("uMainTex,", "tex2d")
+    ], DefaultMaterial.prototype, "mainTexture", void 0);
+    DefaultMaterial = __decorate([
+        material_1.materialDefine
+    ], DefaultMaterial);
+    ;
+    return DefaultMaterial;
+}
+exports.createDefaultMaterialType = createDefaultMaterialType;
+function createBuiltinMaterial(gl, types) {
+    return {
+        default: new types.DefaultMaterial(gl),
+        blitCopy: new types.BlitCopy(gl),
+    };
+}
+exports.createBuiltinMaterial = createBuiltinMaterial;
+function createBuiltinMaterialTypes(gl, defaultTex) {
+    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.DefaultFrag, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl)) {
+        constructor() {
+            super(...arguments);
+            this.color = color_1.Color.white;
+            this.mainTexture = defaultTex;
+        }
+    };
+    __decorate([
+        material_1.shaderProp("uColor", "color")
+    ], DefaultMaterial.prototype, "color", void 0);
+    __decorate([
+        material_1.shaderProp("uMainTex,", "tex2d")
+    ], DefaultMaterial.prototype, "mainTexture", void 0);
+    DefaultMaterial = __decorate([
+        material_1.materialDefine
+    ], DefaultMaterial);
+    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.BlitCopy, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl)) {
+        constructor() {
+            super(...arguments);
+            this.flip = vec2_1.vec2(0, 0);
+        }
+    };
+    __decorate([
+        material_1.shaderProp("uFlip", "vec2")
+    ], BlitCopy.prototype, "flip", void 0);
+    BlitCopy = __decorate([
+        material_1.materialDefine
+    ], BlitCopy);
+    return {
+        DefaultMaterial: DefaultMaterial,
+        BlitCopy: BlitCopy,
+    };
+}
+exports.createBuiltinMaterialTypes = createBuiltinMaterialTypes;
+//# sourceMappingURL=materials.js.map
 
+/***/ }),
+
+/***/ "../dist/builtin-assets/mesh.js":
+/*!**************************************!*\
+  !*** ../dist/builtin-assets/mesh.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const mesh_1 = __webpack_require__(/*! ../core/mesh */ "../dist/core/mesh.js");
+const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js");
+const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
+function createBuiltinMesh(gl) {
+    const quad = new mesh_1.Mesh(gl);
+    quad.verts = [
+        vec3_1.vec3(-.5, -.5, 0),
+        vec3_1.vec3(.5, -.5, 0),
+        vec3_1.vec3(.5, .5, 0),
+        vec3_1.vec3(-.5, .5, 0),
+    ];
+    quad.triangles = [
+        0, 1, 3,
+        1, 2, 3,
+    ];
+    quad.uvs = [
+        vec2_1.vec2(0, 0),
+        vec2_1.vec2(1, 0),
+        vec2_1.vec2(1, 1),
+        vec2_1.vec2(0, 1)
+    ];
+    quad.calculateNormals();
+    return {
+        quad: quad
+    };
+}
+exports.createBuiltinMesh = createBuiltinMesh;
+//# sourceMappingURL=mesh.js.map
+
+/***/ }),
+
+/***/ "../dist/builtin-assets/shaders.js":
+/*!*****************************************!*\
+  !*** ../dist/builtin-assets/shaders.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const defaultVert = `#version 300 es
+precision mediump float;
+
+in vec3 aPos;
+in vec4 aColor;
+in vec2 aUV;
+in vec3 aNormal;
+
+uniform mat4 uTransformM;
+uniform mat4 uTransformVP;
+uniform mat4 uTransformMVP;
+
+uniform vec4 uColor;
+uniform vec2 uFlipUV;
+
+out vec4 vColor;
+out vec4 vPos;
+out vec2 vUV;
+out vec3 vNormal;
+
+void main()
+{
+    gl_Position = uTransformMVP * vec4(aPos, 1);
+    vColor = aColor * uColor;
+    vUV = (uFlipUV * (vec2(1) - aUV)) + ((vec2(1) - uFlipUV) * aUV);
+    vNormal = aNormal;
+}
 `;
-const DefaultFrag = `
+const defaultFrag = `#version 300 es
+precision mediump float;
+
+in vec4 vColor;
+in vec4 vPos;
+in vec2 vUV;
+
+uniform sampler2D uMainTex;
+uniform vec4 uColor;
+
+out vec4 fragColor;
+
+void main()
+{
+    vec4 color = texture(uMainTex, vUV.xy).rgba;
+    color = color * uColor;
+    fragColor = color;
+}
+`;
+const blitCopy = `#version 300 es
+precision mediump float;
+
+in vec4 vColor;
+in vec4 vPos;
+in vec2 vUV;
+in vec3 vNormal;
+
+uniform sampler2D uMainTex;
+
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = texture(uMainTex, vUV).rgba;
+}
 `;
 const DefaultShaderAttributes = {
     vert: "aPos",
@@ -120,51 +327,36 @@ const DefaultShaderAttributes = {
     uv: "aUV",
     normal: "aNormal",
 };
-const TransformUniforms = {
+exports.BuiltinShaders = {
+    DefaultVert: defaultVert,
+    DefaultFrag: defaultFrag,
+    BlitCopy: blitCopy,
+    DefaultShaderAttributes: DefaultShaderAttributes
+};
+exports.BuiltinUniforms = {
     matM: "uTransformM",
     matVP: "uTransformVP",
     matMVP: "uTransformMVP",
+    flipUV: "uFlipUV",
 };
-exports.DefaultShaderResources = {
-    vertShader: DefaultVert,
-    fragShader: DefaultFrag,
-    attributes: DefaultShaderAttributes,
-    uniforms: TransformUniforms
-};
-function makeDefaultMateiral(gl) {
-    const shader = new shader_1.Shader(DefaultVert, DefaultFrag, DefaultShaderAttributes, gl);
-    class DefaultMaterial extends material_1.MaterialFromShader(shader) {
-        constructor() {
-            super(...arguments);
-            this.color = color_1.Color.white;
-        }
-    }
-    __decorate([
-        material_1.shaderProp("u_Color", "color")
-    ], DefaultMaterial.prototype, "color", void 0);
-    ;
-    return DefaultMaterial;
-}
-exports.makeDefaultMateiral = makeDefaultMateiral;
-const assetsMap = new Map();
-function GlobalAssets(ctx = global_1.GlobalContext()) {
-    return assetsMap.get(ctx.gl);
-}
-exports.GlobalAssets = GlobalAssets;
-function initGlobalAssets(ctx) {
-    assetsMap.set(ctx.gl, new BuiltinAssets(ctx.gl));
-}
-exports.initGlobalAssets = initGlobalAssets;
-class BuiltinAssets {
-    constructor(gl) {
-        this.gl = gl;
-        this.DefaultMaterial = null; // makeDefaultMateiral(gl);
-        this.defaultTexture = new texture_1.Texture2D(0, 0, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest, gl);
-        this.defaultTexture.wrapMode = texture_1.WrapMode.Repeat;
-        this.defaultTexture.setData(makeDefaultTexture());
-    }
-}
-function makeDefaultTexture() {
+//# sourceMappingURL=shaders.js.map
+
+/***/ }),
+
+/***/ "../dist/builtin-assets/textures.js":
+/*!******************************************!*\
+  !*** ../dist/builtin-assets/textures.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+const texture_1 = __webpack_require__(/*! ../core/texture */ "../dist/core/texture.js");
+const texture_format_1 = __webpack_require__(/*! ../core/texture-format */ "../dist/core/texture-format.js");
+function createDefaultTexture(gl) {
     var _a;
     const size = 64;
     const canvas = document.createElement("canvas");
@@ -175,9 +367,12 @@ function makeDefaultTexture() {
     ctx.fillStyle = "cyan";
     ctx.fillRect(0, 0, size / 2, size / 2);
     ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
-    return canvas;
+    const texture = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, gl);
+    texture.setData(canvas);
+    return texture;
 }
-//# sourceMappingURL=builtin-asset.js.map
+exports.createDefaultTexture = createDefaultTexture;
+//# sourceMappingURL=textures.js.map
 
 /***/ }),
 
@@ -249,7 +444,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
-const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/core/builtin-asset.js");
 class Material {
     constructor(shader, gl = global_1.GL()) {
         this.propertyBlock = {};
@@ -257,7 +451,7 @@ class Material {
         this.shader = shader;
     }
     setup(ctx) {
-        var _a, _b;
+        var _a;
         const gl = ctx.gl;
         gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock) {
@@ -283,9 +477,9 @@ class Material {
                     break;
                 case "tex2d":
                     if (!this[key])
-                        (_a = builtin_asset_1.GlobalAssets(ctx)) === null || _a === void 0 ? void 0 : _a.defaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        ctx.assets.DefaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
                     else
-                        (_b = (this[key] || null)) === null || _b === void 0 ? void 0 : _b.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, ctx.usedTextureUnit++, ctx);
                     break;
             }
         }
@@ -308,7 +502,7 @@ function MaterialFromShader(shader) {
     };
 }
 exports.MaterialFromShader = MaterialFromShader;
-function materialType(constructor) {
+function materialDefine(constructor) {
     return class extends constructor {
         constructor(...arg) {
             var _a;
@@ -332,7 +526,7 @@ function materialType(constructor) {
         }
     };
 }
-exports.materialType = materialType;
+exports.materialDefine = materialDefine;
 //# sourceMappingURL=material.js.map
 
 /***/ }),
@@ -364,9 +558,9 @@ class Mesh {
         this.dirty = true;
         this.vertices = new Float32Array(0);
         this.indices = new Uint32Array(0);
-        this.VBO = (_a = global_1.GL().createBuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create buffer.")));
-        this.EBO = (_b = global_1.GL().createBuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create buffer.")));
         this.gl = gl;
+        this.VBO = (_a = gl.createBuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.")));
+        this.EBO = (_b = gl.createBuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.")));
     }
     get verts() { return this._verts; }
     set verts(verts) {
@@ -550,12 +744,14 @@ RenderTarget.CanvasTarget = Object.freeze(new RenderTarget());
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
-const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/core/builtin-asset.js");
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
+const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
 const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
 const render_target_1 = __webpack_require__(/*! ./render-target */ "../dist/core/render-target.js");
 const texture_1 = __webpack_require__(/*! ./texture */ "../dist/core/texture.js");
+const assets_1 = __webpack_require__(/*! ../builtin-assets/assets */ "../dist/builtin-assets/assets.js");
+const quat_1 = __webpack_require__(/*! ../types/quat */ "../dist/types/quat.js");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
@@ -568,14 +764,14 @@ class ZograRenderer {
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
-        this.DefaultMaterial = null; // makeDefaultMateiral(this.gl);
+        this.assets = new assets_1.BuiltinAssets(this.gl);
         this.ctx = {
             gl: this.gl,
             width: this.width,
             height: this.height,
             usedTextureUnit: 0,
+            assets: this.assets,
         };
-        builtin_asset_1.initGlobalAssets(this.ctx);
         if (!global_1.GlobalContext())
             this.use();
     }
@@ -610,18 +806,40 @@ class ZograRenderer {
         this.gl.clearColor(color.r, color.g, color.b, color.a);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
     }
+    blit(src, dst, material = this.assets.materials.blitCopy) {
+        if (dst instanceof texture_1.RenderTexture) {
+            const target = new render_target_1.RenderTarget(dst.width, dst.height, this.ctx);
+            target.addColorAttachment(dst);
+            dst = target;
+        }
+        else if (dst instanceof Array) {
+            const target = new render_target_1.RenderTarget(0, 0, this.ctx);
+            for (let i = 0; i < dst.length; i++) {
+                target.addColorAttachment(dst[i]);
+            }
+            dst = target;
+        }
+        const prevVP = this.viewProjectionMatrix;
+        dst.bind(this.ctx);
+        this.viewProjectionMatrix = mat4_1.mat4.identity();
+        this.setGlobalTexture("uMainTex", src);
+        this.drawMesh(this.assets.meshes.quad, mat4_1.mat4.rts(quat_1.quat.identity(), vec3_1.vec3(0, 0, 0), vec3_1.vec3(2, 2, 1)), material);
+        this.unsetGlobalTexture("uMainTex");
+        this.target.bind();
+        this.viewProjectionMatrix = prevVP;
+    }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
         this.ctx.usedTextureUnit = this.globalTextures.size;
         mateiral.setup(this.ctx);
         const program = mateiral.shader.program;
         const attributes = mateiral.shader.attributes;
-        const locations = util_1.getUniformsLocation(gl, program, builtin_asset_1.DefaultShaderResources.uniforms);
+        const transformLocations = util_1.getUniformsLocation(gl, program, this.assets.BuiltinUniforms);
         // Setup transforms
         const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
-        locations.matM && gl.uniformMatrix4fv(locations.matM, false, transform);
-        locations.matVP && gl.uniformMatrix4fv(locations.matVP, false, this.viewProjectionMatrix);
-        locations.matMVP && gl.uniformMatrix4fv(locations.matMVP, false, mvp);
+        transformLocations.matM && gl.uniformMatrix4fv(transformLocations.matM, false, transform);
+        transformLocations.matVP && gl.uniformMatrix4fv(transformLocations.matVP, false, this.viewProjectionMatrix);
+        transformLocations.matMVP && gl.uniformMatrix4fv(transformLocations.matMVP, false, mvp);
         // Setup global uniforms
         {
             for (const val of this.globalUniforms.values()) {
@@ -724,9 +942,9 @@ exports.ZograRenderer = ZograRenderer;
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
-const builtin_asset_1 = __webpack_require__(/*! ./builtin-asset */ "../dist/core/builtin-asset.js");
+const shaders_1 = __webpack_require__(/*! ../builtin-assets/shaders */ "../dist/builtin-assets/shaders.js");
 class Shader {
-    constructor(vertexShader, fragmentShader, attributes = builtin_asset_1.DefaultShaderResources.attributes, gl = global_1.GL()) {
+    constructor(vertexShader, fragmentShader, attributes = shaders_1.BuiltinShaders.DefaultShaderAttributes, gl = global_1.GL()) {
         this._compiled = false;
         this.gl = gl;
         this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
@@ -10715,7 +10933,7 @@ process.umask = function() { return 0; };
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform mat4 uTransformMVP;\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uColor;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    color = 1. - color;\r\n    fragColor = vec4(color, 1.0f) * .5 + uColor * .5;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uColor;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    color = color * uColor;\r\n    fragColor = vec4(color, 1.0f);\r\n}");
 
 /***/ }),
 
@@ -10728,7 +10946,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nuniform vec4 uColor;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vColor = aColor * uColor;\r\n    vUV = aUV;\r\n    vNormal = aNormal;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nuniform vec4 uColor;\r\nuniform vec2 uFlipUV;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vColor = aColor * uColor;\r\n    vUV = (uFlipUV * (vec2(1) - aUV)) + ((vec2(1) - uFlipUV) * aUV);\r\n    vNormal = aNormal;\r\n}");
 
 /***/ }),
 

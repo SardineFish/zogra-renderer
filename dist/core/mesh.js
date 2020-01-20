@@ -17,9 +17,9 @@ class Mesh {
         this.dirty = true;
         this.vertices = new Float32Array(0);
         this.indices = new Uint32Array(0);
-        this.VBO = (_a = global_1.GL().createBuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create buffer.")));
-        this.EBO = (_b = global_1.GL().createBuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create buffer.")));
         this.gl = gl;
+        this.VBO = (_a = gl.createBuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.")));
+        this.EBO = (_b = gl.createBuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.")));
     }
     get verts() { return this._verts; }
     set verts(verts) {

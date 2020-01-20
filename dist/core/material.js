@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
-const builtin_asset_1 = require("./builtin-asset");
 class Material {
     constructor(shader, gl = global_1.GL()) {
         this.propertyBlock = {};
@@ -11,7 +10,7 @@ class Material {
         this.shader = shader;
     }
     setup(ctx) {
-        var _a, _b;
+        var _a;
         const gl = ctx.gl;
         gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock) {
@@ -37,9 +36,9 @@ class Material {
                     break;
                 case "tex2d":
                     if (!this[key])
-                        (_a = builtin_asset_1.GlobalAssets(ctx)) === null || _a === void 0 ? void 0 : _a.defaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        ctx.assets.DefaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
                     else
-                        (_b = (this[key] || null)) === null || _b === void 0 ? void 0 : _b.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, ctx.usedTextureUnit++, ctx);
                     break;
             }
         }
@@ -62,7 +61,7 @@ function MaterialFromShader(shader) {
     };
 }
 exports.MaterialFromShader = MaterialFromShader;
-function materialType(constructor) {
+function materialDefine(constructor) {
     return class extends constructor {
         constructor(...arg) {
             var _a;
@@ -86,5 +85,5 @@ function materialType(constructor) {
         }
     };
 }
-exports.materialType = materialType;
+exports.materialDefine = materialDefine;
 //# sourceMappingURL=material.js.map

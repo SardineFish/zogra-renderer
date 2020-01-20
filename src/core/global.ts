@@ -1,3 +1,4 @@
+import { BuiltinAssets } from "../builtin-assets/assets";
 
 
 export interface GLContext
@@ -6,6 +7,7 @@ export interface GLContext
     width: number;
     height: number;
     usedTextureUnit: number;
+    assets: BuiltinAssets;
 }
 
 let ctx: GLContext;
