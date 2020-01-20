@@ -39,7 +39,6 @@ mesh.triangles = [
 mesh.calculateNormals(0);
 
 const rt = new RenderTexture(canvas.width, canvas.height, false);
-rt.create();
 
 renderer.setRenderTarget(rt);
 

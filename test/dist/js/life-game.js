@@ -948,12 +948,28 @@ class RenderTexture extends TextureBase {
         if (depth) {
             this.depthTexture = new DepthTexture(width, height, gl);
         }
+        this.update();
     }
-    create() {
+    update() {
         super.setup();
         const gl = this.gl;
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+    }
+    setData(pixels) {
+        const gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
+        if (pixels.width !== undefined && pixels.height !== undefined) {
+            pixels = pixels;
+            this.width = pixels.width;
+            this.height = pixels.height;
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, format, type, pixels);
+        }
+        else {
+            pixels = pixels;
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, pixels);
+        }
     }
 }
 exports.RenderTexture = RenderTexture;
@@ -10725,7 +10741,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform vec4 uSize;\r\nuniform float uBlockSize;\r\nuniform sampler2D uLastFrame;\r\n\r\nlayout (location = 0) out vec4 nextFrame;\r\nlayout (location = 1) out vec4 fragColor;\r\n\r\nint neighbors(vec2 pos)\r\n{\r\n    int n = 0;\r\n    vec3 delta = vec3(-1, 0, 1);\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xy).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xz).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.yx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.yz).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zy).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zz).r));\r\n    return n;\r\n}\r\n\r\nvoid main()\r\n{\r\n    float current = step(.5, texture(uLastFrame, vUV).r);\r\n    int n = neighbors(vUV);\r\n    if(current == 1.0)\r\n    {\r\n        if(n < 2)\r\n            nextFrame = vec4(0);\r\n        else if (n > 3)\r\n            nextFrame = vec4(0);\r\n        else\r\n            nextFrame = vec4(current);\r\n    }\r\n    else\r\n    {\r\n        if(n == 3)\r\n            nextFrame = vec4(1);\r\n    }\r\n    nextFrame = vec4(1.0 - current);\r\n    vec2 pos = vUV;\r\n    vec3 color = vec3(texture(uLastFrame, vUV).rrr);\r\n    color = vec3(vUV, 0);\r\n    fragColor = vec4(color, 1);\r\n    fragColor = nextFrame;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform vec4 uSize;\r\nuniform float uBlockSize;\r\nuniform sampler2D uLastFrame;\r\n\r\nlayout (location = 0) out vec4 nextFrame;\r\nlayout (location = 1) out vec4 fragColor;\r\n\r\nint neighbors(vec2 pos)\r\n{\r\n    int n = 0;\r\n    vec3 delta = vec3(-1, 0, 1);\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xy).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.xz).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.yx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.yz).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zx).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zy).r));\r\n    n += int(step(.5, texture(uLastFrame, pos + uSize.zw * delta.zz).r));\r\n    return n;\r\n}\r\n\r\nvoid main()\r\n{\r\n    float current = step(.5, texture(uLastFrame, vUV).r);\r\n    int n = neighbors(vUV);\r\n    if(current == 1.0)\r\n    {\r\n        if(n < 2)\r\n            nextFrame = vec4(0);\r\n        else if (n > 3)\r\n            nextFrame = vec4(0);\r\n        else\r\n            nextFrame = vec4(current);\r\n    }\r\n    else\r\n    {\r\n        if(n == 3)\r\n            nextFrame = vec4(1);\r\n    }\r\n    //nextFrame = vec4(1.0 - current);\r\n    vec2 pos = vUV;\r\n    vec3 color = vec3(texture(uLastFrame, vUV).rrr);\r\n    color = vec3(vUV, 0);\r\n    fragColor = vec4(current, current, current, 1);\r\n}");
 
 /***/ }),
 
@@ -11064,7 +11080,7 @@ const render_target_1 = __webpack_require__(/*! ../../dist/core/render-target */
 const Width = 1280;
 const Height = 720;
 const BlockSize = 1;
-const FPS = 5;
+const FPS = 100;
 const canvas = document.querySelector("#canvas");
 const renderer = new zogra_renderer_1.ZograRenderer(canvas, Width, Height);
 class LifeGameMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_glsl_1.default)) {
@@ -11079,9 +11095,6 @@ const rts = [
     new texture_1.RenderTexture(Width, Height, false, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest),
 ];
 const backBuffer = new texture_1.RenderTexture(Width, Height, false);
-backBuffer.create();
-rts[0].create();
-rts[1].create();
 const mesh = new zogra_renderer_1.Mesh();
 mesh.verts = [
     zogra_renderer_1.vec3(-1, -1, 0),
@@ -11119,6 +11132,15 @@ mesh.calculateNormals();
 function lifeGame() {
     let nextUpdate = 1 / FPS;
     let frameIdx = 0;
+    const initial = new ImageData(Width, Height);
+    const M = Width * Height;
+    const N = 0.8 * M;
+    for (let i = 0; i < N; i++) {
+        const idx = Math.floor(Math.random() * M) * 4;
+        initial.data[idx] = 255;
+    }
+    rts[0].setData(initial);
+    rts[1].setData(initial);
     return (dt, time) => {
         if (time < nextUpdate)
             return;
@@ -11140,6 +11162,7 @@ function lifeGame() {
         renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), blitMat);
     };
 }
+// TODO: R/W Render Texture
 
 
 /***/ })

@@ -10,7 +10,7 @@ import { RenderTarget } from "../../dist/core/render-target";
 const Width = 1280;
 const Height = 720;
 const BlockSize = 1;
-const FPS = 5;
+const FPS = 100;
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const renderer = new ZograRenderer(canvas, Width, Height);
@@ -30,9 +30,6 @@ const rts = [
     new RenderTexture(Width, Height, false, TextureFormat.RGBA, FilterMode.Nearest),
 ] as [RenderTexture, RenderTexture];
 const backBuffer = new RenderTexture(Width, Height, false);
-backBuffer.create();
-rts[0].create();
-rts[1].create();
 const mesh = new Mesh();
 mesh.verts = [
     vec3(-1, -1, 0),
@@ -83,6 +80,17 @@ function lifeGame()
     let nextUpdate = 1 / FPS;
     let frameIdx = 0;
 
+    const initial = new ImageData(Width, Height);
+    const M = Width * Height;
+    const N = 0.8 * M;
+    for (let i = 0; i < N; i++)
+    {
+        const idx = Math.floor(Math.random() * M) * 4;
+        initial.data[idx] = 255;
+    }
+    rts[0].setData(initial);
+    rts[1].setData(initial);
+
     return (dt: number, time: number) =>
     {
         if (time < nextUpdate)
@@ -109,3 +117,4 @@ function lifeGame()
         renderer.drawMesh(mesh, mat4.identity(), blitMat);
     };
 }
+// TODO: R/W Render Texture

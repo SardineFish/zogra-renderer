@@ -44,6 +44,7 @@ export declare class DepthTexture extends TextureBase {
 export declare class RenderTexture extends TextureBase {
     depthTexture: DepthTexture | null;
     constructor(width: number, height: number, depth: boolean, format?: TextureFormat, filterMode?: FilterMode, gl?: WebGL2RenderingContext);
-    create(): void;
+    update(): void;
+    setData(pixels: ArrayBufferView | TexImageSource): void;
 }
 export {};

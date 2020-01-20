@@ -45,10 +45,9 @@ void main()
         if(n == 3)
             nextFrame = vec4(1);
     }
-    nextFrame = vec4(1.0 - current);
+    //nextFrame = vec4(1.0 - current);
     vec2 pos = vUV;
     vec3 color = vec3(texture(uLastFrame, vUV).rrr);
     color = vec3(vUV, 0);
-    fragColor = vec4(color, 1);
-    fragColor = nextFrame;
+    fragColor = vec4(current, current, current, 1);
 }

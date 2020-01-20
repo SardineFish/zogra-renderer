@@ -127,13 +127,32 @@ export class RenderTexture extends TextureBase
         {
             this.depthTexture = new DepthTexture(width, height, gl);
         }
+        this.update();
     }
-    create()
+    update()
     {
         super.setup();
         const gl = this.gl;
         const [internalFormat, format, type] = mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+    }
+    setData(pixels: ArrayBufferView | TexImageSource)
+    {
+        const gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
 
+        const [internalFormat, format, type] = mapGLFormat(gl, this.format);
+        if ((pixels as TexImageSource).width !== undefined && (pixels as TexImageSource).height !== undefined)
+        {
+            pixels = pixels as TexImageSource;
+            this.width = pixels.width;
+            this.height = pixels.height;
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, format, type, pixels);
+        }
+        else
+        {
+            pixels = pixels as ArrayBufferView;
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, pixels);
+        }
     }
 }
