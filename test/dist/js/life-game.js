@@ -102,13 +102,20 @@ const textures_1 = __webpack_require__(/*! ./textures */ "../dist/builtin-assets
 const mesh_1 = __webpack_require__(/*! ./mesh */ "../dist/builtin-assets/mesh.js");
 class BuiltinAssets {
     constructor(gl) {
+        let ctx = {
+            assets: this,
+            gl: gl,
+            width: 0,
+            height: 0,
+        };
         this.gl = gl;
-        this.DefaultTexture = textures_1.createDefaultTexture(gl);
+        this.BuiltinUniforms = shaders_1.BuiltinUniforms;
+        this.shaderSources = shaders_1.BuiltinShaderSources;
+        this.shaders = shaders_1.compileBuiltinShaders(gl);
+        this.meshes = mesh_1.createBuiltinMesh(gl);
+        this.DefaultTexture = textures_1.createDefaultTexture(ctx);
         this.types = materials_1.createBuiltinMaterialTypes(gl, this.DefaultTexture);
         this.materials = materials_1.createBuiltinMaterial(gl, this.types);
-        this.meshes = mesh_1.createBuiltinMesh(gl);
-        this.shaders = shaders_1.BuiltinShaders;
-        this.BuiltinUniforms = shaders_1.BuiltinUniforms;
     }
 }
 exports.BuiltinAssets = BuiltinAssets;
@@ -139,7 +146,7 @@ const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.j
 const material_type_1 = __webpack_require__(/*! ../core/material-type */ "../dist/core/material-type.js");
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
 function createDefaultMaterialType(gl, defaultTex) {
-    const shader = new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.DefaultFrag, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl);
+    const shader = new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.DefaultFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl);
     let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(shader) {
         constructor() {
             super(...arguments);
@@ -168,7 +175,7 @@ function createBuiltinMaterial(gl, types) {
 }
 exports.createBuiltinMaterial = createBuiltinMaterial;
 function createBuiltinMaterialTypes(gl, defaultTex) {
-    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.DefaultFrag, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl)) {
+    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.DefaultFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl)) {
         constructor() {
             super(...arguments);
             this.color = color_1.Color.white;
@@ -184,7 +191,7 @@ function createBuiltinMaterialTypes(gl, defaultTex) {
     DefaultMaterial = __decorate([
         material_1.materialDefine
     ], DefaultMaterial);
-    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.BlitCopy, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl)) {
+    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.BlitCopyFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl)) {
         constructor() {
             super(...arguments);
             this.flip = vec2_1.vec2(0, 0);
@@ -238,8 +245,27 @@ function createBuiltinMesh(gl) {
         vec2_1.vec2(0, 1)
     ];
     quad.calculateNormals();
+    const screenQuad = new mesh_1.Mesh(gl);
+    screenQuad.verts = [
+        vec3_1.vec3(-1, -1, 0),
+        vec3_1.vec3(1, -1, 0),
+        vec3_1.vec3(1, 1, 0),
+        vec3_1.vec3(-1, 1, 0),
+    ];
+    screenQuad.triangles = [
+        0, 1, 3,
+        1, 2, 3,
+    ];
+    screenQuad.uvs = [
+        vec2_1.vec2(0, 0),
+        vec2_1.vec2(1, 0),
+        vec2_1.vec2(1, 1),
+        vec2_1.vec2(0, 1)
+    ];
+    screenQuad.calculateNormals();
     return {
-        quad: quad
+        quad: quad,
+        screenQuad: screenQuad
     };
 }
 exports.createBuiltinMesh = createBuiltinMesh;
@@ -257,6 +283,7 @@ exports.createBuiltinMesh = createBuiltinMesh;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+const shader_1 = __webpack_require__(/*! ../core/shader */ "../dist/core/shader.js");
 const defaultVert = `#version 300 es
 precision mediump float;
 
@@ -270,7 +297,6 @@ uniform mat4 uTransformVP;
 uniform mat4 uTransformMVP;
 
 uniform vec4 uColor;
-uniform vec2 uFlipUV;
 
 out vec4 vColor;
 out vec4 vPos;
@@ -281,7 +307,7 @@ void main()
 {
     gl_Position = uTransformMVP * vec4(aPos, 1);
     vColor = aColor * uColor;
-    vUV = (uFlipUV * (vec2(1) - aUV)) + ((vec2(1) - uFlipUV) * aUV);
+    vUV = aUV;
     vNormal = aNormal;
 }
 `;
@@ -321,24 +347,47 @@ void main()
     fragColor = texture(uMainTex, vUV).rgba;
 }
 `;
+const flipVert = `#version 300 es
+precision mediump float;
+
+in vec3 aPos;
+in vec2 aUV;
+
+out vec2 vUV;
+
+void main()
+{
+    gl_Position = vec4(aPos, 1);
+    vUV = vec2(aUV.x, vec2(1) - aUV.y);
+}`;
 const DefaultShaderAttributes = {
     vert: "aPos",
     color: "aColor",
     uv: "aUV",
     normal: "aNormal",
 };
-exports.BuiltinShaders = {
+exports.BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
-    BlitCopy: blitCopy,
-    DefaultShaderAttributes: DefaultShaderAttributes
+    BlitCopyFrag: blitCopy,
+    FlipTexVert: flipVert,
+    DefaultShaderAttributes: DefaultShaderAttributes,
 };
 exports.BuiltinUniforms = {
     matM: "uTransformM",
     matVP: "uTransformVP",
     matMVP: "uTransformMVP",
     flipUV: "uFlipUV",
+    mainTex: "uMainTex",
 };
+function compileBuiltinShaders(gl) {
+    return {
+        DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
+        BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
+        FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
+    };
+}
+exports.compileBuiltinShaders = compileBuiltinShaders;
 //# sourceMappingURL=shaders.js.map
 
 /***/ }),
@@ -356,7 +405,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 const texture_1 = __webpack_require__(/*! ../core/texture */ "../dist/core/texture.js");
 const texture_format_1 = __webpack_require__(/*! ../core/texture-format */ "../dist/core/texture-format.js");
-function createDefaultTexture(gl) {
+function createDefaultTexture(context) {
     var _a;
     const size = 64;
     const canvas = document.createElement("canvas");
@@ -367,7 +416,7 @@ function createDefaultTexture(gl) {
     ctx.fillStyle = "cyan";
     ctx.fillRect(0, 0, size / 2, size / 2);
     ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
-    const texture = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, gl);
+    const texture = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
     texture.setData(canvas);
     return texture;
 }
@@ -450,9 +499,9 @@ class Material {
         this.gl = gl;
         this.shader = shader;
     }
-    setup(ctx) {
+    setup(data) {
         var _a;
-        const gl = ctx.gl;
+        const gl = data.gl;
         gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock) {
             const prop = this.propertyBlock[key];
@@ -477,9 +526,9 @@ class Material {
                     break;
                 case "tex2d":
                     if (!this[key])
-                        ctx.assets.DefaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        data.assets.DefaultTexture.bind(prop.location, data);
                     else
-                        (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, data);
                     break;
             }
         }
@@ -556,6 +605,7 @@ class Mesh {
         this._colors = [];
         this._normals = [];
         this.dirty = true;
+        this.uploaded = false;
         this.vertices = new Float32Array(0);
         this.indices = new Uint32Array(0);
         this.gl = gl;
@@ -631,15 +681,47 @@ class Mesh {
                 throw new Error("Buffer with invalid length.");
             this.indices = new Uint32Array(this.triangles.flat());
             this.dirty = false;
+            this.uploaded = false;
         }
     }
     setup(gl) {
         this.update();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
-        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+        if (!this.uploaded) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+            gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+            this.uploaded = true;
+        }
         return [this.VBO, this.EBO];
+    }
+    bind(shader, gl) {
+        this.setup(gl);
+        const attributes = shader.attributes;
+        // Setup VAO
+        const stride = 12 * 4;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        // vert: vec3
+        if (attributes.vert >= 0) {
+            gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
+            gl.enableVertexAttribArray(attributes.vert);
+        }
+        // color: vec4
+        if (attributes.color >= 0) {
+            gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
+            gl.enableVertexAttribArray(attributes.color);
+        }
+        // uv: vec2
+        if (attributes.uv >= 0) {
+            gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
+            gl.enableVertexAttribArray(attributes.uv);
+        }
+        // normal: vec3
+        if (attributes.normal >= 0) {
+            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
+            gl.enableVertexAttribArray(attributes.uv);
+        }
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
     }
 }
 exports.Mesh = Mesh;
@@ -750,6 +832,7 @@ const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.j
 const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
 const render_target_1 = __webpack_require__(/*! ./render-target */ "../dist/core/render-target.js");
 const texture_1 = __webpack_require__(/*! ./texture */ "../dist/core/texture.js");
+const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
 const assets_1 = __webpack_require__(/*! ../builtin-assets/assets */ "../dist/builtin-assets/assets.js");
 const quat_1 = __webpack_require__(/*! ../types/quat */ "../dist/types/quat.js");
 class ZograRenderer {
@@ -769,7 +852,6 @@ class ZograRenderer {
             gl: this.gl,
             width: this.width,
             height: this.height,
-            usedTextureUnit: 0,
             assets: this.assets,
         };
         if (!global_1.GlobalContext())
@@ -820,26 +902,31 @@ class ZograRenderer {
             dst = target;
         }
         const prevVP = this.viewProjectionMatrix;
-        dst.bind(this.ctx);
+        const prevTarget = this.target;
+        this.target = dst;
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         this.setGlobalTexture("uMainTex", src);
         this.drawMesh(this.assets.meshes.quad, mat4_1.mat4.rts(quat_1.quat.identity(), vec3_1.vec3(0, 0, 0), vec3_1.vec3(2, 2, 1)), material);
         this.unsetGlobalTexture("uMainTex");
-        this.target.bind();
+        this.target = prevTarget;
         this.viewProjectionMatrix = prevVP;
     }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
-        this.ctx.usedTextureUnit = this.globalTextures.size;
-        mateiral.setup(this.ctx);
+        const data = {
+            assets: this.assets,
+            gl: gl,
+            nextTextureUnit: 0,
+            size: vec2_1.vec2(this.width, this.height),
+        };
+        this.target.bind(this.ctx);
+        mateiral.setup(data);
         const program = mateiral.shader.program;
-        const attributes = mateiral.shader.attributes;
-        const transformLocations = util_1.getUniformsLocation(gl, program, this.assets.BuiltinUniforms);
         // Setup transforms
         const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
-        transformLocations.matM && gl.uniformMatrix4fv(transformLocations.matM, false, transform);
-        transformLocations.matVP && gl.uniformMatrix4fv(transformLocations.matVP, false, this.viewProjectionMatrix);
-        transformLocations.matMVP && gl.uniformMatrix4fv(transformLocations.matMVP, false, mvp);
+        mateiral.shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matM, false, transform);
+        mateiral.shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
+        mateiral.shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matMVP, false, mvp);
         // Setup global uniforms
         {
             for (const val of this.globalUniforms.values()) {
@@ -874,36 +961,12 @@ class ZograRenderer {
                 const location = gl.getUniformLocation(program, tex.name);
                 if (!location)
                     continue;
-                tex.texture.bind(location, this.ctx.usedTextureUnit++, this.ctx);
+                tex.texture.bind(location, data);
             }
         }
-        const [vertBuffer, elementBuffer] = mesh.setup(gl);
-        // Setup VAO
-        const stride = 12 * 4;
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
-        // vert: vec3
-        if (attributes.vert >= 0) {
-            gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
-            gl.enableVertexAttribArray(attributes.vert);
-        }
-        // color: vec4
-        if (attributes.color >= 0) {
-            gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
-            gl.enableVertexAttribArray(attributes.color);
-        }
-        // uv: vec2
-        if (attributes.uv >= 0) {
-            gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
-        }
-        // normal: vec3
-        if (attributes.normal >= 0) {
-            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
-        }
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
+        mesh.setup(gl);
+        mesh.bind(mateiral.shader, gl);
         gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
-        this.ctx.usedTextureUnit = 0;
     }
     setGlobalUniform(name, type, value) {
         this.globalUniforms.set(name, {
@@ -943,8 +1006,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 const shaders_1 = __webpack_require__(/*! ../builtin-assets/shaders */ "../dist/builtin-assets/shaders.js");
+const util_2 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 class Shader {
-    constructor(vertexShader, fragmentShader, attributes = shaders_1.BuiltinShaders.DefaultShaderAttributes, gl = global_1.GL()) {
+    constructor(vertexShader, fragmentShader, attributes = shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl = global_1.GL()) {
         this._compiled = false;
         this.gl = gl;
         this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
@@ -959,6 +1023,7 @@ class Shader {
             uv: this.gl.getAttribLocation(this.program, attributes.uv),
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
         };
+        this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniforms);
     }
     get compiled() { return this._compiled; }
     compile() {
@@ -1098,11 +1163,12 @@ var WrapMode;
     WrapMode[WrapMode["Mirror"] = WebGL2RenderingContext.MIRRORED_REPEAT] = "Mirror";
 })(WrapMode = exports.WrapMode || (exports.WrapMode = {}));
 class TextureBase {
-    constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
+    constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
         var _a;
         this.mipmapLevel = 0;
         this.wrapMode = WrapMode.Repeat;
-        this.gl = gl;
+        const gl = ctx.gl;
+        this.ctx = ctx;
         this.format = format;
         this.width = width;
         this.height = height;
@@ -1110,49 +1176,48 @@ class TextureBase {
         this.glTex = (_a = gl.createTexture(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.")));
     }
     setup() {
-        const gl = this.gl;
+        const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.filterMode);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this.wrapMode);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
     }
-    bind(location, unit, ctx = global_1.GlobalContext()) {
-        const gl = ctx.gl;
-        gl.activeTexture(gl.TEXTURE0 + unit);
+    bind(location, data) {
+        const gl = data.gl;
+        gl.activeTexture(gl.TEXTURE0 + data.nextTextureUnit);
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
-        gl.uniform1i(location, unit);
+        gl.uniform1i(location, data.nextTextureUnit);
+        data.nextTextureUnit++;
     }
 }
 class Texture2D extends TextureBase {
-    constructor(width = 0, height = 0, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
-        super(width, height, format, filterMode, gl);
+    constructor(width = 0, height = 0, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
+        super(width, height, format, filterMode, ctx);
     }
     setData(pixels) {
-        const gl = this.gl;
-        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        super.setup();
+        const gl = this.ctx.gl;
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
         if (pixels.width !== undefined && pixels.height !== undefined) {
             pixels = pixels;
             this.width = pixels.width;
             this.height = pixels.height;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, format, type, pixels);
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
         }
-        else {
-            pixels = pixels;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, pixels);
-        }
-        super.setup();
+        else
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+        flipTexture(this.ctx, this.glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
     }
 }
 exports.Texture2D = Texture2D;
 class DepthTexture extends TextureBase {
-    constructor(width, height, gl = global_1.GL()) {
-        super(width, height, texture_format_1.TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, gl);
+    constructor(width, height, ctx = global_1.GlobalContext()) {
+        super(width, height, texture_format_1.TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
     }
     create() {
         super.setup();
-        const gl = this.gl;
+        const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, texture_format_1.TextureFormat.DEPTH_COMPONENT);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
@@ -1160,37 +1225,64 @@ class DepthTexture extends TextureBase {
 }
 exports.DepthTexture = DepthTexture;
 class RenderTexture extends TextureBase {
-    constructor(width, height, depth, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = global_1.GL()) {
-        super(width, height, format, filterMode, gl);
+    constructor(width, height, depth, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
+        super(width, height, format, filterMode, ctx);
         this.depthTexture = null;
         if (depth) {
-            this.depthTexture = new DepthTexture(width, height, gl);
+            this.depthTexture = new DepthTexture(width, height, ctx);
         }
         this.update();
     }
     update() {
         super.setup();
-        const gl = this.gl;
+        const gl = this.ctx.gl;
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
     }
     setData(pixels) {
-        const gl = this.gl;
+        const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
-        if (pixels.width !== undefined && pixels.height !== undefined) {
-            pixels = pixels;
-            this.width = pixels.width;
-            this.height = pixels.height;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, format, type, pixels);
-        }
-        else {
-            pixels = pixels;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, pixels);
-        }
+        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+        flipTexture(this.ctx, this.glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
     }
 }
 exports.RenderTexture = RenderTexture;
+function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMode, mipmapLevel) {
+    var _a, _b;
+    const gl = ctx.gl;
+    const srcTex = (_a = gl.createTexture(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.")));
+    const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, texFormat);
+    gl.bindTexture(gl.TEXTURE_2D, srcTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapMode);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapMode);
+    if (src.width !== undefined && src.height !== undefined) {
+        src = src;
+        gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, internalFormat, format, type, src);
+    }
+    else {
+        src = src;
+        gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, internalFormat, width, height, 0, format, type, src);
+    }
+    const fbo = (_b = gl.createFramebuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create frame buffer")));
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst, 0);
+    gl.viewport(0, 0, width, height);
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+    const shader = ctx.assets.shaders.FlipTexture;
+    gl.useProgram(shader.program);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, srcTex);
+    gl.uniform1i(shader.builtinUniformLocations.mainTex, 0);
+    const mesh = ctx.assets.meshes.screenQuad;
+    mesh.bind(shader, gl);
+    gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+    gl.deleteFramebuffer(fbo);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteTexture(srcTex);
+}
 //# sourceMappingURL=texture.js.map
 
 /***/ }),
@@ -11387,10 +11479,7 @@ function lifeGame() {
             initial.data[idx] = 255;
         }
         const seed = yield util_1.loadImage(p960_2c5gun_png_1.default);
-        //rts[0].setData(seed);
-        const seedTex = new texture_1.Texture2D();
-        seedTex.setData(seed);
-        renderer.blit(seedTex, rts[0]);
+        rts[0].setData(seed);
         return (dt, time) => {
             if (time < nextUpdate)
                 return;
@@ -11407,9 +11496,6 @@ function lifeGame() {
             target.addColorAttachment(backBuffer);
             renderer.setRenderTarget(target);
             renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), material);
-            // renderer.setRenderTarget(RenderTarget.CanvasTarget);
-            // renderer.setGlobalTexture("uMainTex", backBuffer);
-            // renderer.drawMesh(mesh, mat4.identity(), blitMat);
             renderer.blit(backBuffer, render_target_1.RenderTarget.CanvasTarget);
         };
     });

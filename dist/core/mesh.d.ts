@@ -1,6 +1,7 @@
 import { vec3 } from "../types/vec3";
 import { vec2 } from "../types/vec2";
 import { Color } from "../types/color";
+import { Shader } from "./shader";
 export declare class Mesh {
     private _verts;
     private _triangles;
@@ -8,6 +9,7 @@ export declare class Mesh {
     private _colors;
     private _normals;
     private dirty;
+    private uploaded;
     private vertices;
     private indices;
     VBO: WebGLBuffer;
@@ -28,4 +30,5 @@ export declare class Mesh {
     calculateNormals(angleThreshold?: number): void;
     update(): void;
     setup(gl: WebGL2RenderingContext): WebGLBuffer[];
+    bind(shader: Shader, gl: WebGL2RenderingContext): void;
 }

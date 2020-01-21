@@ -1,2 +1,3 @@
 import { Texture2D } from "../core/texture";
-export declare function createDefaultTexture(gl: WebGL2RenderingContext): Texture2D;
+import { GLContext } from "../core/global";
+export declare function createDefaultTexture(context: GLContext): Texture2D;

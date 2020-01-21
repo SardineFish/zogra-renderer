@@ -3,8 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("../utils/util");
 const global_1 = require("./global");
 const shaders_1 = require("../builtin-assets/shaders");
+const util_2 = require("../utils/util");
 class Shader {
-    constructor(vertexShader, fragmentShader, attributes = shaders_1.BuiltinShaders.DefaultShaderAttributes, gl = global_1.GL()) {
+    constructor(vertexShader, fragmentShader, attributes = shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl = global_1.GL()) {
         this._compiled = false;
         this.gl = gl;
         this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
@@ -19,6 +20,7 @@ class Shader {
             uv: this.gl.getAttribLocation(this.program, attributes.uv),
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
         };
+        this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniforms);
     }
     get compiled() { return this._compiled; }
     compile() {

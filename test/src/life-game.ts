@@ -96,10 +96,7 @@ async function lifeGame()
     }
 
     const seed = await loadImage(seedTest);
-    //rts[0].setData(seed);
-    const seedTex = new Texture2D();
-    seedTex.setData(seed);
-    renderer.blit(seedTex, rts[0]);
+    rts[0].setData(seed);
     
 
     return (dt: number, time: number) =>
@@ -123,9 +120,6 @@ async function lifeGame()
         renderer.setRenderTarget(target);
         renderer.drawMesh(mesh, mat4.identity(), material);
 
-        // renderer.setRenderTarget(RenderTarget.CanvasTarget);
-        // renderer.setGlobalTexture("uMainTex", backBuffer);
-        // renderer.drawMesh(mesh, mat4.identity(), blitMat);
         renderer.blit(backBuffer, RenderTarget.CanvasTarget);
     };
 }

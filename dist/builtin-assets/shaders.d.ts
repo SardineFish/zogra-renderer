@@ -1,8 +1,9 @@
-import { ShaderAttributes } from "../core/shader";
-export declare const BuiltinShaders: {
+import { ShaderAttributes, Shader } from "../core/shader";
+export declare const BuiltinShaderSources: {
     DefaultVert: string;
     DefaultFrag: string;
-    BlitCopy: string;
+    BlitCopyFrag: string;
+    FlipTexVert: string;
     DefaultShaderAttributes: ShaderAttributes;
 };
 export declare const BuiltinUniforms: {
@@ -10,4 +11,10 @@ export declare const BuiltinUniforms: {
     matVP: string;
     matMVP: string;
     flipUV: string;
+    mainTex: string;
+};
+export declare function compileBuiltinShaders(gl: WebGL2RenderingContext): {
+    DefaultShader: Shader;
+    BlitCopy: Shader;
+    FlipTexture: Shader;
 };

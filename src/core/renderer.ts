@@ -12,6 +12,7 @@ import { vec4 } from "../types/vec4";
 import { vec2, Vector2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { quat } from "../types/quat";
+import { RenderData } from "./types";
 
 export class ZograRenderer
 {
@@ -44,7 +45,6 @@ export class ZograRenderer
             gl: this.gl,
             width: this.width,
             height: this.height,
-            usedTextureUnit: 0,
             assets: this.assets,
         };
 
@@ -120,36 +120,42 @@ export class ZograRenderer
         }
 
         const prevVP = this.viewProjectionMatrix;
+        const prevTarget = this.target;
 
-        dst.bind(this.ctx);
+        this.target = dst;
         this.viewProjectionMatrix = mat4.identity();
         this.setGlobalTexture("uMainTex", src);
 
         this.drawMesh(this.assets.meshes.quad, mat4.rts(quat.identity(), vec3(0, 0, 0), vec3(2, 2, 1)), material);
 
         this.unsetGlobalTexture("uMainTex");
-        this.target.bind();
+
+        this.target = prevTarget;
         this.viewProjectionMatrix = prevVP;
     }
 
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material)
     {
         const gl = this.gl;
-
-        this.ctx.usedTextureUnit = this.globalTextures.size;
+        const data: RenderData = {
+            assets: this.assets,
+            gl: gl,
+            nextTextureUnit: 0,
+            size: vec2(this.width, this.height),
+        };
         
-        mateiral.setup(this.ctx);
+        this.target.bind(this.ctx);
+        
+        mateiral.setup(data);
 
         const program = mateiral.shader.program;
-        const attributes = mateiral.shader.attributes;
-        const transformLocations = getUniformsLocation(gl, program, this.assets.BuiltinUniforms);
 
 
         // Setup transforms
         const mvp = mat4.mul(transform, this.viewProjectionMatrix);
-        transformLocations.matM && gl.uniformMatrix4fv(transformLocations.matM, false, transform);
-        transformLocations.matVP && gl.uniformMatrix4fv(transformLocations.matVP, false, this.viewProjectionMatrix);
-        transformLocations.matMVP && gl.uniformMatrix4fv(transformLocations.matMVP, false, mvp);
+        mateiral.shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matM, false, transform);
+        mateiral.shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
+        mateiral.shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matMVP, false, mvp);
 
         // Setup global uniforms
         {
@@ -187,44 +193,14 @@ export class ZograRenderer
                 const location = gl.getUniformLocation(program, tex.name);
                 if (!location)
                     continue;
-                tex.texture.bind(location, this.ctx.usedTextureUnit++, this.ctx);
+                tex.texture.bind(location, data);
             }
         }
         
-        const [vertBuffer, elementBuffer] = mesh.setup(gl);
-
-        // Setup VAO
-        const stride = 12 * 4;
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
-        // vert: vec3
-        if (attributes.vert >= 0)
-        {
-            gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
-            gl.enableVertexAttribArray(attributes.vert);
-        }
-        // color: vec4
-        if (attributes.color >= 0)
-        {
-            gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
-            gl.enableVertexAttribArray(attributes.color);
-        }
-        // uv: vec2
-        if (attributes.uv >= 0)
-        {
-            gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
-        }
-        // normal: vec3
-        if (attributes.normal >= 0)
-        {
-            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
-        }
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
+        mesh.setup(gl);
+        mesh.bind(mateiral.shader, gl);
 
         gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
-        this.ctx.usedTextureUnit = 0;
     }
 
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
@@ -265,7 +241,6 @@ interface GlobalTexture
     name: string;
     texture: Texture;
 }
-
 type UniformType = "int" | "float" | "vec4" | "vec3" | "vec2" | "tex2d" | "color";
 type UniformValueType<T extends UniformType> = (
     T extends "int" ? number

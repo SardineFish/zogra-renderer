@@ -1,8 +1,9 @@
 import { panicNull } from "../utils/util";
 import { GL } from "./global";
-import { BuiltinShaders } from "../builtin-assets/shaders";
+import { BuiltinShaderSources, BuiltinUniforms } from "../builtin-assets/shaders";
+import { getUniformsLocation } from "../utils/util";
 
-interface AttributeBlock
+export interface AttributeBlock
 {
     vert: number;
     color: number;
@@ -32,11 +33,13 @@ export class Shader
 
     attributes: AttributeBlock;
 
+    builtinUniformLocations: { [key in keyof typeof BuiltinUniforms]: WebGLUniformLocation | null };
+
     private _compiled = false;
 
     get compiled() { return this._compiled; }
     
-    constructor(vertexShader: string, fragmentShader: string, attributes = BuiltinShaders.DefaultShaderAttributes , gl = GL())
+    constructor(vertexShader: string, fragmentShader: string, attributes = BuiltinShaderSources.DefaultShaderAttributes , gl = GL())
     {
         this.gl = gl;
         this.program = panicNull(gl.createProgram(), "Failed to create shader program");
@@ -53,6 +56,7 @@ export class Shader
             uv: this.gl.getAttribLocation(this.program, attributes.uv),
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
         };
+        this.builtinUniformLocations = getUniformsLocation(gl, this.program, BuiltinUniforms);
     }
 
     compile()

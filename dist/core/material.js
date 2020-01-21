@@ -9,9 +9,9 @@ class Material {
         this.gl = gl;
         this.shader = shader;
     }
-    setup(ctx) {
+    setup(data) {
         var _a;
-        const gl = ctx.gl;
+        const gl = data.gl;
         gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock) {
             const prop = this.propertyBlock[key];
@@ -36,9 +36,9 @@ class Material {
                     break;
                 case "tex2d":
                     if (!this[key])
-                        ctx.assets.DefaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        data.assets.DefaultTexture.bind(prop.location, data);
                     else
-                        (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, data);
                     break;
             }
         }

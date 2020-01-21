@@ -13,7 +13,7 @@ const color_1 = require("../types/color");
 const material_type_1 = require("../core/material-type");
 const vec2_1 = require("../types/vec2");
 function createDefaultMaterialType(gl, defaultTex) {
-    const shader = new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.DefaultFrag, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl);
+    const shader = new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.DefaultFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl);
     let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(shader) {
         constructor() {
             super(...arguments);
@@ -42,7 +42,7 @@ function createBuiltinMaterial(gl, types) {
 }
 exports.createBuiltinMaterial = createBuiltinMaterial;
 function createBuiltinMaterialTypes(gl, defaultTex) {
-    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.DefaultFrag, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl)) {
+    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.DefaultFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl)) {
         constructor() {
             super(...arguments);
             this.color = color_1.Color.white;
@@ -58,7 +58,7 @@ function createBuiltinMaterialTypes(gl, defaultTex) {
     DefaultMaterial = __decorate([
         material_1.materialDefine
     ], DefaultMaterial);
-    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaders.DefaultVert, shaders_1.BuiltinShaders.BlitCopy, shaders_1.BuiltinShaders.DefaultShaderAttributes, gl)) {
+    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.BlitCopyFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl)) {
         constructor() {
             super(...arguments);
             this.flip = vec2_1.vec2(0, 0);

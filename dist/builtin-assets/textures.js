@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("../utils/util");
 const texture_1 = require("../core/texture");
 const texture_format_1 = require("../core/texture-format");
-function createDefaultTexture(gl) {
+function createDefaultTexture(context) {
     var _a;
     const size = 64;
     const canvas = document.createElement("canvas");
@@ -14,7 +14,7 @@ function createDefaultTexture(gl) {
     ctx.fillStyle = "cyan";
     ctx.fillRect(0, 0, size / 2, size / 2);
     ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
-    const texture = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, gl);
+    const texture = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
     texture.setData(canvas);
     return texture;
 }

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const shader_1 = require("../core/shader");
 const defaultVert = `#version 300 es
 precision mediump float;
 
@@ -13,7 +14,6 @@ uniform mat4 uTransformVP;
 uniform mat4 uTransformMVP;
 
 uniform vec4 uColor;
-uniform vec2 uFlipUV;
 
 out vec4 vColor;
 out vec4 vPos;
@@ -24,7 +24,7 @@ void main()
 {
     gl_Position = uTransformMVP * vec4(aPos, 1);
     vColor = aColor * uColor;
-    vUV = (uFlipUV * (vec2(1) - aUV)) + ((vec2(1) - uFlipUV) * aUV);
+    vUV = aUV;
     vNormal = aNormal;
 }
 `;
@@ -64,22 +64,45 @@ void main()
     fragColor = texture(uMainTex, vUV).rgba;
 }
 `;
+const flipVert = `#version 300 es
+precision mediump float;
+
+in vec3 aPos;
+in vec2 aUV;
+
+out vec2 vUV;
+
+void main()
+{
+    gl_Position = vec4(aPos, 1);
+    vUV = vec2(aUV.x, vec2(1) - aUV.y);
+}`;
 const DefaultShaderAttributes = {
     vert: "aPos",
     color: "aColor",
     uv: "aUV",
     normal: "aNormal",
 };
-exports.BuiltinShaders = {
+exports.BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
-    BlitCopy: blitCopy,
-    DefaultShaderAttributes: DefaultShaderAttributes
+    BlitCopyFrag: blitCopy,
+    FlipTexVert: flipVert,
+    DefaultShaderAttributes: DefaultShaderAttributes,
 };
 exports.BuiltinUniforms = {
     matM: "uTransformM",
     matVP: "uTransformVP",
     matMVP: "uTransformMVP",
     flipUV: "uFlipUV",
+    mainTex: "uMainTex",
 };
+function compileBuiltinShaders(gl) {
+    return {
+        DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
+        BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
+        FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
+    };
+}
+exports.compileBuiltinShaders = compileBuiltinShaders;
 //# sourceMappingURL=shaders.js.map

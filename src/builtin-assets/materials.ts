@@ -1,6 +1,6 @@
 import { Shader } from "../core/shader";
-import { BuiltinShaders } from "./shaders";
-import { MaterialFromShader, materialDefine, shaderProp } from "../core/material";
+import { BuiltinShaderSources } from "./shaders";
+import { MaterialFromShader, materialDefine, shaderProp, Material } from "../core/material";
 import { Color } from "../types/color";
 import { MaterialType } from "../core/material-type";
 import { Texture } from "../core/texture";
@@ -8,7 +8,7 @@ import { vec2 } from "../types/vec2";
 
 export function createDefaultMaterialType(gl: WebGL2RenderingContext, defaultTex: Texture): typeof DefaultMaterialType
 {
-    const shader = new Shader(BuiltinShaders.DefaultVert, BuiltinShaders.DefaultFrag, BuiltinShaders.DefaultShaderAttributes, gl);
+    const shader = new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, BuiltinShaderSources.DefaultShaderAttributes, gl);
 
     @materialDefine
     class DefaultMaterial extends MaterialFromShader(shader)
@@ -33,7 +33,7 @@ export function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnT
 export function createBuiltinMaterialTypes(gl: WebGL2RenderingContext, defaultTex: Texture)
 {
     @materialDefine
-    class DefaultMaterial extends MaterialFromShader(new Shader(BuiltinShaders.DefaultVert, BuiltinShaders.DefaultFrag, BuiltinShaders.DefaultShaderAttributes, gl))
+    class DefaultMaterial extends MaterialFromShader(new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, BuiltinShaderSources.DefaultShaderAttributes, gl))
     {
         @shaderProp("uColor", "color")
         color: Color = Color.white;
@@ -42,7 +42,7 @@ export function createBuiltinMaterialTypes(gl: WebGL2RenderingContext, defaultTe
     }
 
     @materialDefine
-    class BlitCopy extends MaterialFromShader(new Shader(BuiltinShaders.DefaultVert, BuiltinShaders.BlitCopy, BuiltinShaders.DefaultShaderAttributes, gl))
+    class BlitCopy extends MaterialFromShader(new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, BuiltinShaderSources.DefaultShaderAttributes, gl))
     {
         @shaderProp("uFlip", "vec2")
         flip: vec2 = vec2(0, 0);

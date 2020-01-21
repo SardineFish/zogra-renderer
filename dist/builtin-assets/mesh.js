@@ -22,8 +22,27 @@ function createBuiltinMesh(gl) {
         vec2_1.vec2(0, 1)
     ];
     quad.calculateNormals();
+    const screenQuad = new mesh_1.Mesh(gl);
+    screenQuad.verts = [
+        vec3_1.vec3(-1, -1, 0),
+        vec3_1.vec3(1, -1, 0),
+        vec3_1.vec3(1, 1, 0),
+        vec3_1.vec3(-1, 1, 0),
+    ];
+    screenQuad.triangles = [
+        0, 1, 3,
+        1, 2, 3,
+    ];
+    screenQuad.uvs = [
+        vec2_1.vec2(0, 0),
+        vec2_1.vec2(1, 0),
+        vec2_1.vec2(1, 1),
+        vec2_1.vec2(0, 1)
+    ];
+    screenQuad.calculateNormals();
     return {
-        quad: quad
+        quad: quad,
+        screenQuad: screenQuad
     };
 }
 exports.createBuiltinMesh = createBuiltinMesh;

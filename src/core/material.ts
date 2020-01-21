@@ -9,6 +9,7 @@ import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
 import { vec4, mat4 } from "gl-matrix";
 import { Texture } from "./texture";
+import { RenderData } from "./types";
 
 type ShaderPropType = "mat4" | "float" | "vec2" | "vec3" | "vec4" | "color" | "tex2d";
 
@@ -32,9 +33,9 @@ export class Material
         this.shader = shader;
     }
 
-    setup(ctx: GLContext)
+    setup(data: RenderData)
     {
-        const gl = ctx.gl;
+        const gl = data.gl;
         gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock)
         {
@@ -61,9 +62,9 @@ export class Material
                     break;
                 case "tex2d":
                     if (!this[key])
-                        ctx.assets.DefaultTexture.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        data.assets.DefaultTexture.bind(prop.location, data);
                     else
-                        (this[key] as Texture || null)?.bind(prop.location, ctx.usedTextureUnit++, ctx);
+                        (this[key] as Texture || null)?.bind(prop.location, data);
                     break;
                     
             }

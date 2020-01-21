@@ -1,4 +1,4 @@
-import { ShaderAttributes } from "../core/shader";
+import { ShaderAttributes, Shader } from "../core/shader";
 
 const defaultVert = `#version 300 es
 precision mediump float;
@@ -13,7 +13,6 @@ uniform mat4 uTransformVP;
 uniform mat4 uTransformMVP;
 
 uniform vec4 uColor;
-uniform vec2 uFlipUV;
 
 out vec4 vColor;
 out vec4 vPos;
@@ -24,7 +23,7 @@ void main()
 {
     gl_Position = uTransformMVP * vec4(aPos, 1);
     vColor = aColor * uColor;
-    vUV = (uFlipUV * (vec2(1) - aUV)) + ((vec2(1) - uFlipUV) * aUV);
+    vUV = aUV;
     vNormal = aNormal;
 }
 `;
@@ -68,6 +67,20 @@ void main()
 }
 `;
 
+const flipVert = `#version 300 es
+precision mediump float;
+
+in vec3 aPos;
+in vec2 aUV;
+
+out vec2 vUV;
+
+void main()
+{
+    gl_Position = vec4(aPos, 1);
+    vUV = vec2(aUV.x, vec2(1) - aUV.y);
+}`;
+
 
 const DefaultShaderAttributes: ShaderAttributes =
 {
@@ -77,11 +90,12 @@ const DefaultShaderAttributes: ShaderAttributes =
     normal: "aNormal",
 };
 
-export const BuiltinShaders = {
+export const BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
-    BlitCopy: blitCopy,
-    DefaultShaderAttributes: DefaultShaderAttributes
+    BlitCopyFrag: blitCopy,
+    FlipTexVert: flipVert,
+    DefaultShaderAttributes: DefaultShaderAttributes,
 };
 
 export const BuiltinUniforms = {
@@ -89,4 +103,14 @@ export const BuiltinUniforms = {
     matVP: "uTransformVP",
     matMVP: "uTransformMVP",
     flipUV: "uFlipUV",
+    mainTex: "uMainTex",
 };
+
+export function compileBuiltinShaders(gl: WebGL2RenderingContext)
+{
+    return {
+        DefaultShader: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, BuiltinShaderSources.DefaultShaderAttributes, gl),
+        BlitCopy: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, BuiltinShaderSources.DefaultShaderAttributes, gl),
+        FlipTexture: new Shader(BuiltinShaderSources.FlipTexVert, BuiltinShaderSources.BlitCopyFrag, BuiltinShaderSources.DefaultShaderAttributes, gl),
+    };
+}

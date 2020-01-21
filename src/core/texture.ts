@@ -1,6 +1,7 @@
 import { GL, GLContext, GlobalContext } from "./global";
 import { TextureFormat, mapGLFormat } from "./texture-format";
 import { panic } from "../utils/util";
+import { RenderData } from "./types";
 
 export enum FilterMode
 {
@@ -17,7 +18,7 @@ export enum WrapMode
 
 export interface Texture
 {
-    gl: WebGL2RenderingContext;
+    ctx: GLContext;
     format: TextureFormat;
     width: number;
     height: number;
@@ -26,12 +27,12 @@ export interface Texture
     filterMode: FilterMode;
     wrapMode: WrapMode;
 
-    bind: (location: WebGLUniformLocation, unit: number, ctx?: GLContext) => void;
+    bind: (location: WebGLUniformLocation, data: RenderData) => void;
 }
 
 class TextureBase implements Texture
 {
-    gl: WebGL2RenderingContext;
+    ctx: GLContext;
     format: TextureFormat;
     width: number;
     height: number;
@@ -40,9 +41,10 @@ class TextureBase implements Texture
     filterMode: FilterMode;
     wrapMode = WrapMode.Repeat;
 
-    constructor(width: number, height: number, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = GL())
+    constructor(width: number, height: number, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
     {
-        this.gl = gl;
+        const gl = ctx.gl;
+        this.ctx = ctx;
         this.format = format;
         this.width = width;
         this.height = height;
@@ -52,7 +54,7 @@ class TextureBase implements Texture
 
     protected setup()
     {
-        const gl = this.gl;
+        const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.filterMode);
@@ -60,25 +62,26 @@ class TextureBase implements Texture
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
     }
 
-    bind(location: WebGLUniformLocation, unit: number, ctx = GlobalContext())
+    bind(location: WebGLUniformLocation, data: RenderData)
     {
-        const gl = ctx.gl;
-        gl.activeTexture(gl.TEXTURE0 + unit);
+        const gl = data.gl;
+        gl.activeTexture(gl.TEXTURE0 + data.nextTextureUnit);
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
-        gl.uniform1i(location, unit);
+        gl.uniform1i(location, data.nextTextureUnit);
+        data.nextTextureUnit++;
     }
 }
 
 export class Texture2D extends TextureBase
 {
-    constructor(width = 0, height = 0, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = GL())
+    constructor(width = 0, height = 0, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
     {
-        super(width, height, format, filterMode, gl);
+        super(width, height, format, filterMode, ctx);
     }
     setData(pixels: ArrayBufferView | TexImageSource)
     {
-        const gl = this.gl;
-        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        super.setup();
+        const gl = this.ctx.gl;
 
         const [internalFormat, format, type] = mapGLFormat(gl, this.format);
         if ((pixels as TexImageSource).width !== undefined && (pixels as TexImageSource).height !== undefined)
@@ -86,28 +89,25 @@ export class Texture2D extends TextureBase
             pixels = pixels as TexImageSource;
             this.width = pixels.width;
             this.height = pixels.height;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, format, type, pixels);
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
         }
         else
-        {
-            pixels = pixels as ArrayBufferView;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, pixels);
-        }
+            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
 
-        super.setup();
+        flipTexture(this.ctx, this.glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
     }
 }
 
 export class DepthTexture extends TextureBase
 {
-    constructor(width: number, height: number, gl = GL())
+    constructor(width: number, height: number, ctx = GlobalContext())
     {
-        super(width, height, TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, gl);
+        super(width, height, TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
     }
     create()
     {
         super.setup();
-        const gl = this.gl;
+        const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
 
         const [internalFormat, format, type] = mapGLFormat(gl, TextureFormat.DEPTH_COMPONENT);
@@ -119,40 +119,83 @@ export class DepthTexture extends TextureBase
 export class RenderTexture extends TextureBase
 {
     depthTexture: DepthTexture | null = null;
-    constructor(width: number, height: number, depth: boolean, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, gl = GL())
+    constructor(width: number, height: number, depth: boolean, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
     {
-        super(width, height, format, filterMode, gl);
+        super(width, height, format, filterMode, ctx);
 
         if (depth)
         {
-            this.depthTexture = new DepthTexture(width, height, gl);
+            this.depthTexture = new DepthTexture(width, height, ctx);
         }
         this.update();
     }
     update()
     {
         super.setup();
-        const gl = this.gl;
+        const gl = this.ctx.gl;
         const [internalFormat, format, type] = mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
     }
     setData(pixels: ArrayBufferView | TexImageSource)
     {
-        const gl = this.gl;
+        const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
 
         const [internalFormat, format, type] = mapGLFormat(gl, this.format);
-        if ((pixels as TexImageSource).width !== undefined && (pixels as TexImageSource).height !== undefined)
-        {
-            pixels = pixels as TexImageSource;
-            this.width = pixels.width;
-            this.height = pixels.height;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, format, type, pixels);
-        }
-        else
-        {
-            pixels = pixels as ArrayBufferView;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, pixels);
-        }
+        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+        flipTexture(this.ctx, this.glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
     }
+}
+
+function flipTexture(
+    ctx: GLContext,
+    dst: WebGLTexture,
+    src: ArrayBufferView | TexImageSource,
+    width: number,
+    height: number,
+    texFormat: TextureFormat,
+    filterMode: FilterMode,
+    wrapMode: WrapMode,
+    mipmapLevel: number)
+{
+    const gl = ctx.gl;
+    const srcTex = gl.createTexture() ?? panic("Failed to create texture.");
+    const [internalFormat, format, type] = mapGLFormat(gl, texFormat);
+    gl.bindTexture(gl.TEXTURE_2D, srcTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapMode);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapMode);
+    if ((src as TexImageSource).width !== undefined && (src as TexImageSource).height !== undefined)
+    {
+        src = src as TexImageSource;
+        gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, internalFormat, format, type, src);
+
+    }
+    else
+    {
+        src = src as ArrayBufferView;
+        gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, internalFormat, width, height, 0, format, type, src);
+    }
+
+    const fbo = gl.createFramebuffer() ?? panic("Failed to create frame buffer");
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst, 0);
+    gl.viewport(0, 0, width, height);
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+
+    const shader = ctx.assets.shaders.FlipTexture;
+    gl.useProgram(shader.program);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, srcTex);
+    gl.uniform1i(shader.builtinUniformLocations.mainTex, 0);
+
+    const mesh = ctx.assets.meshes.screenQuad;
+    mesh.bind(shader, gl);
+
+    gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+
+    gl.deleteFramebuffer(fbo);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteTexture(srcTex);
 }

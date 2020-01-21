@@ -14,6 +14,7 @@ export class Mesh
     private _normals: vec3[] = [];
 
     private dirty = true;
+    private uploaded = false;
 
     private vertices = new Float32Array(0);
     private indices = new Uint32Array(0);
@@ -113,18 +114,61 @@ export class Mesh
             this.indices = new Uint32Array(this.triangles.flat());
 
             this.dirty = false;
+            this.uploaded = false;
         }
     }
 
     setup(gl: WebGL2RenderingContext)
     {
         this.update();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
-        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
+        if (!this.uploaded)
+        {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+            gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+            this.uploaded = true;
+        }
 
         return [this.VBO, this.EBO];
+    }
+
+    bind(shader: Shader, gl:WebGL2RenderingContext)
+    {
+        this.setup(gl);
+
+        const attributes = shader.attributes;
+
+        // Setup VAO
+        const stride = 12 * 4;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        // vert: vec3
+        if (attributes.vert >= 0)
+        {
+            gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
+            gl.enableVertexAttribArray(attributes.vert);
+        }
+        // color: vec4
+        if (attributes.color >= 0)
+        {
+            gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
+            gl.enableVertexAttribArray(attributes.color);
+        }
+        // uv: vec2
+        if (attributes.uv >= 0)
+        {
+            gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
+            gl.enableVertexAttribArray(attributes.uv);
+        }
+        // normal: vec3
+        if (attributes.normal >= 0)
+        {
+            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
+            gl.enableVertexAttribArray(attributes.uv);
+        }
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
+
     }
 }
