@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx webpack",
     "build:watch": "npx webpack --watch",
+    "build:prod": "npx webpack --mode production --devtool none",
     "start": "browser-sync start -s ./dist -f ./dist/**/*"
   },
   "author": "SardineFish",

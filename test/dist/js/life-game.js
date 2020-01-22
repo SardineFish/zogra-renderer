@@ -533,6 +533,21 @@ class Material {
             }
         }
     }
+    setProp(name, type, value) {
+        if (this.propertyBlock[name]) {
+            this.propertyBlock[name].type = type;
+        }
+        else {
+            const loc = this.gl.getUniformLocation(this.shader.program, name);
+            if (loc) {
+                this.propertyBlock[name] = {
+                    location: loc,
+                    type: type
+                };
+            }
+        }
+        this[name] = value;
+    }
 }
 exports.Material = Material;
 const shaderPropMetaKey = Symbol("shaderProp");
@@ -11016,19 +11031,6 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
-/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/blit.glsl":
-/*!********************************************************************!*\
-  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/blit.glsl ***!
-  \********************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = texture(uMainTex, vUV).rgba;\r\n}");
-
-/***/ }),
-
 /***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl":
 /*!****************************************************************************!*\
   !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl ***!
@@ -11042,6 +11044,19 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game-render.glsl":
+/*!********************************************************************************!*\
+  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game-render.glsl ***!
+  \********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uTexelSize;\r\nuniform float uBlockSize;\r\nuniform vec2 uOffset;\r\nuniform vec3 uSize;\r\nuniform vec4 uBG;\r\nuniform vec4 uFG;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec2 uv = uOffset * uTexelSize.zw + vUV * uSize.xy / uBlockSize * uTexelSize.zw;\r\n    float alpha = texture(uMainTex, uv).r;\r\n    alpha *= uFG.a;\r\n\r\n    fragColor = vec4(uBG.rgb * vec3(1.0 - alpha) + uFG.rgb * vec3(alpha), uBG.a);\r\n}");
+
+/***/ }),
+
 /***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game.glsl":
 /*!*************************************************************************!*\
   !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game.glsl ***!
@@ -11051,7 +11066,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform vec4 uSize;\r\nuniform float uBlockSize;\r\nuniform sampler2D uLastFrame;\r\n\r\nlayout (location = 0) out vec4 nextFrame;\r\nlayout (location = 1) out vec4 fragColor;\r\n\r\nfloat clampTex(vec2 pos)\r\n{\r\n    float col = texture(uLastFrame, pos).r;\r\n    vec2 clmp = step(vec2(0), pos) * (vec2(1) - step(vec2(1), pos));\r\n    return clmp.x * clmp.y * col;\r\n}\r\n\r\nint neighbors(vec2 pos)\r\n{\r\n    int n = 0;\r\n    vec3 delta = vec3(-1, 0, 1);\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.xx)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.xy)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.xz)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.yx)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.yz)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.zx)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.zy)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.zz)));\r\n    return n;\r\n}\r\n\r\nvoid main()\r\n{\r\n    float current = step(.5, texture(uLastFrame, vUV).r);\r\n    int n = neighbors(vUV);\r\n    if(current == 1.0)\r\n    {\r\n        if(n < 2)\r\n            nextFrame = vec4(0);\r\n        else if (n > 3)\r\n            nextFrame = vec4(0);\r\n        else\r\n            nextFrame = vec4(current);\r\n    }\r\n    else\r\n    {\r\n        if(n == 3)\r\n            nextFrame = vec4(1);\r\n    }\r\n    //nextFrame = vec4(1.0 - current);\r\n    vec2 pos = vUV;\r\n    vec3 color = vec3(texture(uLastFrame, vUV).rrr);\r\n    color = vec3(vUV, 0);\r\n    fragColor = vec4(current, current, current, 1);\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform vec4 uSize;\r\nuniform sampler2D uLastFrame;\r\n\r\nlayout (location = 0) out vec4 nextFrame;\r\n//layout (location = 1) out vec4 fragColor;\r\n\r\nfloat clampTex(vec2 pos)\r\n{\r\n    float col = texture(uLastFrame, pos).r;\r\n    vec2 clmp = step(vec2(0), pos) * (vec2(1) - step(vec2(1), pos));\r\n    return clmp.x * clmp.y * col;\r\n}\r\n\r\nint neighbors(vec2 pos)\r\n{\r\n    int n = 0;\r\n    vec3 delta = vec3(-1, 0, 1);\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.xx)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.xy)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.xz)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.yx)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.yz)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.zx)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.zy)));\r\n    n += int(step(.5, clampTex(pos + uSize.zw * delta.zz)));\r\n    return n;\r\n}\r\n\r\nvoid main()\r\n{\r\n    float current = step(.5, texture(uLastFrame, vUV).r);\r\n    int n = neighbors(vUV);\r\n    if(current == 1.0)\r\n    {\r\n        if(n < 2)\r\n            nextFrame = vec4(0);\r\n        else if (n > 3)\r\n            nextFrame = vec4(0);\r\n        else\r\n            nextFrame = vec4(current);\r\n    }\r\n    else\r\n    {\r\n        if(n == 3)\r\n            nextFrame = vec4(1);\r\n    }\r\n    //nextFrame = vec4(1.0 - current);\r\n    // vec2 pos = vUV;\r\n    // vec3 color = vec3(texture(uLastFrame, vUV).rrr);\r\n    // color = vec3(vUV, 0);\r\n    // fragColor = vec4(current, current, current, 1);\r\n}");
 
 /***/ }),
 
@@ -11335,16 +11350,16 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./src/asset/img/p960_2c5gun.png":
-/*!***************************************!*\
-  !*** ./src/asset/img/p960_2c5gun.png ***!
-  \***************************************/
+/***/ "./src/asset/img/dual-gun.png":
+/*!************************************!*\
+  !*** ./src/asset/img/dual-gun.png ***!
+  \************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/img/p960_2c5gun.png");
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/img/dual-gun.png");
 
 /***/ }),
 
@@ -11400,29 +11415,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../dist/index.js");
 const default_vert_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-vert.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl"));
 const life_game_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/life-game.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game.glsl"));
-const blit_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/blit.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/blit.glsl"));
+const life_game_render_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/life-game-render.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game-render.glsl"));
 __webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
-const p960_2c5gun_png_1 = __importDefault(__webpack_require__(/*! ./asset/img/p960_2c5gun.png */ "./src/asset/img/p960_2c5gun.png"));
+const dual_gun_png_1 = __importDefault(__webpack_require__(/*! ./asset/img/dual-gun.png */ "./src/asset/img/dual-gun.png"));
 const texture_1 = __webpack_require__(/*! ../../dist/core/texture */ "../dist/core/texture.js");
 const texture_format_1 = __webpack_require__(/*! ../../dist/core/texture-format */ "../dist/core/texture-format.js");
 const render_target_1 = __webpack_require__(/*! ../../dist/core/render-target */ "../dist/core/render-target.js");
 const util_1 = __webpack_require__(/*! ./misc/util */ "./src/misc/util.ts");
-const Width = 1510;
-const Height = 1441;
-const BlockSize = 1;
-const FPS = 100;
+const Width = 2446;
+const Height = 1840;
+const BlockSize = 2;
+const FPS = parseInt((_a = /fps=(\d+)/.exec(window.location.search), (_a !== null && _a !== void 0 ? _a : ["", "60"]))[1]);
+const Offset = zogra_renderer_1.vec2(650, 850);
 const canvas = document.querySelector("#canvas");
-const renderer = new zogra_renderer_1.ZograRenderer(canvas, Width, Height);
+const renderer = new zogra_renderer_1.ZograRenderer(canvas, window.innerWidth, window.innerHeight);
 class LifeGameMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_glsl_1.default)) {
 }
-class BlitMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, blit_glsl_1.default)) {
-}
 const material = new LifeGameMaterial();
-const blitMat = new BlitMaterial();
+const blitMat = new zogra_renderer_1.Material(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_render_glsl_1.default));
+blitMat.setProp("uBlockSize", "float", BlockSize);
+blitMat.setProp("uTexelSize", "vec4", zogra_renderer_1.vec4(Width, Height, 1 / Width, 1 / Height));
+blitMat.setProp("uOffset", "vec2", Offset);
+blitMat.setProp("uSize", "vec3", zogra_renderer_1.vec3(window.innerWidth, window.innerHeight, window.innerWidth / window.innerHeight));
+blitMat.setProp("uBG", "color", zogra_renderer_1.Color.white);
+blitMat.setProp("uFG", "color", zogra_renderer_1.rgba(0, 0, 0, 0.5));
 renderer.clear();
 const rts = [
     new texture_1.RenderTexture(Width, Height, false, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest),
@@ -11478,29 +11499,29 @@ function lifeGame() {
             const idx = Math.floor(Math.random() * M) * 4;
             initial.data[idx] = 255;
         }
-        const seed = yield util_1.loadImage(p960_2c5gun_png_1.default);
+        const seed = yield util_1.loadImage(dual_gun_png_1.default);
         rts[0].setData(seed);
-        return (dt, time) => {
-            if (time < nextUpdate)
-                return;
-            nextUpdate += 1 / FPS;
+        setInterval(() => {
             const src = rts[frameIdx % 2];
             const dst = rts[(frameIdx + 1) % 2];
             frameIdx++;
             renderer.setGlobalTexture("uLastFrame", src);
             renderer.setGlobalUniform("uSize", "vec4", zogra_renderer_1.vec4(Width, Height, 1 / Width, 1 / Height));
-            renderer.setGlobalUniform("uBlockSize", "float", BlockSize);
-            renderer.setGlobalUniform("uRenderSize", "vec4", zogra_renderer_1.vec4(Width, Height, 1 / Width, 1 / Height));
-            const target = new render_target_1.RenderTarget(Width, Height);
-            target.addColorAttachment(dst);
-            target.addColorAttachment(backBuffer);
-            renderer.setRenderTarget(target);
+            renderer.setRenderTarget(dst);
             renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), material);
-            renderer.blit(backBuffer, render_target_1.RenderTarget.CanvasTarget);
+        }, 1000 / FPS);
+        return (dt, time) => {
+            renderer.blit(rts[frameIdx % 2], render_target_1.RenderTarget.CanvasTarget, blitMat);
         };
     });
 }
-// TODO: R/W Render Texture
+window.addEventListener("mousemove", (e) => {
+    const pos = zogra_renderer_1.vec2(e.clientX, e.clientY);
+    const center = zogra_renderer_1.vec2(window.innerWidth / 2, window.innerHeight / 2);
+    const d = zogra_renderer_1.minus(pos, center);
+    d.mul(zogra_renderer_1.vec2(-.2, .2));
+    blitMat.setProp("uOffset", "vec2", zogra_renderer_1.plus(Offset, d));
+});
 
 
 /***/ }),

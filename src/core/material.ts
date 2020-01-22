@@ -9,14 +9,13 @@ import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
 import { vec4, mat4 } from "gl-matrix";
 import { Texture } from "./texture";
-import { RenderData } from "./types";
-
-type ShaderPropType = "mat4" | "float" | "vec2" | "vec3" | "vec4" | "color" | "tex2d";
+import { RenderData, UniformValueType } from "./types";
+import { UniformType } from "./types"
 
 export interface PropertyBlock
 {
     [key: string]: {
-        type: ShaderPropType,
+        type: UniformType,
         location: WebGLUniformLocation
     };
 }
@@ -70,15 +69,35 @@ export class Material
             }
         }
     }
+
+    setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
+    {
+        if (this.propertyBlock[name])
+        {
+            this.propertyBlock[name].type = type;
+        }
+        else
+        {
+            const loc = this.gl.getUniformLocation(this.shader.program, name);
+            if (loc)
+            {
+                this.propertyBlock[name] = {
+                    location: loc,
+                    type: type
+                };
+            }
+        }
+        this[name] = value; 
+    }
 }
 
 
 const shaderPropMetaKey = Symbol("shaderProp");
-export function shaderProp(name: string, type: ShaderPropType)
+export function shaderProp(name: string, type: UniformType)
 {
     return Reflect.metadata(shaderPropMetaKey, { name: name, type: type });
 }
-function getShaderProp(target: Material, propKey: string): { name: string, type: ShaderPropType } | undefined
+function getShaderProp(target: Material, propKey: string): { name: string, type: UniformType } | undefined
 {
     return Reflect.getMetadata(shaderPropMetaKey, target, propKey);
 }

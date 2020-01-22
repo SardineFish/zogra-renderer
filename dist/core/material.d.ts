@@ -2,11 +2,11 @@ import { Shader } from "./shader";
 import "reflect-metadata";
 import { MaterialType } from "./material-type";
 import "reflect-metadata";
-import { RenderData } from "./types";
-declare type ShaderPropType = "mat4" | "float" | "vec2" | "vec3" | "vec4" | "color" | "tex2d";
+import { RenderData, UniformValueType } from "./types";
+import { UniformType } from "./types";
 export interface PropertyBlock {
     [key: string]: {
-        type: ShaderPropType;
+        type: UniformType;
         location: WebGLUniformLocation;
     };
 }
@@ -17,8 +17,9 @@ export declare class Material {
     gl: WebGL2RenderingContext;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
     setup(data: RenderData): void;
+    setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
 }
-export declare function shaderProp(name: string, type: ShaderPropType): {
+export declare function shaderProp(name: string, type: UniformType): {
     (target: Function): void;
     (target: Object, propertyKey: string | symbol): void;
 };
@@ -26,4 +27,3 @@ export declare function MaterialFromShader(shader: Shader): typeof MaterialType;
 export declare function materialDefine<T extends {
     new (...arg: any[]): {};
 }>(constructor: T): T;
-export {};

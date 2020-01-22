@@ -12,7 +12,7 @@ import { vec4 } from "../types/vec4";
 import { vec2, Vector2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { quat } from "../types/quat";
-import { RenderData } from "./types";
+import { RenderData, UniformType, UniformValueType } from "./types";
 
 export class ZograRenderer
 {
@@ -232,8 +232,8 @@ export class ZograRenderer
 interface GlobalUniform
 {
     name: string;
-    type: "int" | "float" | "vec4" | "vec3" | "vec2" | "tex2d" | "color";
-    value: number | vec4 | vec3 | vec2 | Texture;
+    type: UniformType;
+    value: UniformValueType<UniformType>;
 }
 
 interface GlobalTexture
@@ -241,12 +241,3 @@ interface GlobalTexture
     name: string;
     texture: Texture;
 }
-type UniformType = "int" | "float" | "vec4" | "vec3" | "vec2" | "tex2d" | "color";
-type UniformValueType<T extends UniformType> = (
-    T extends "int" ? number
-    : T extends "float" ? number
-    : T extends "vec4" ? vec4
-    : T extends "vec3" ? vec3
-    : T extends "vec2" ? vec2
-    : T extends "color" ? Color
-    : Texture);

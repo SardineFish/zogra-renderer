@@ -43,6 +43,21 @@ class Material {
             }
         }
     }
+    setProp(name, type, value) {
+        if (this.propertyBlock[name]) {
+            this.propertyBlock[name].type = type;
+        }
+        else {
+            const loc = this.gl.getUniformLocation(this.shader.program, name);
+            if (loc) {
+                this.propertyBlock[name] = {
+                    location: loc,
+                    type: type
+                };
+            }
+        }
+        this[name] = value;
+    }
 }
 exports.Material = Material;
 const shaderPropMetaKey = Symbol("shaderProp");

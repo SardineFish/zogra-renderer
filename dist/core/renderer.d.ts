@@ -1,15 +1,13 @@
 /// <reference types="gl-matrix" />
 import { GLContext } from "./global";
 import { Mesh } from "./mesh";
-import { vec3 } from "../types/vec3";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
 import { RenderTarget } from "./render-target";
 import { RenderTexture, DepthTexture, Texture } from "./texture";
-import { vec4 } from "../types/vec4";
-import { vec2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
+import { UniformType, UniformValueType } from "./types";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
     readonly width: number;
@@ -35,6 +33,3 @@ export declare class ZograRenderer {
     setGlobalTexture(name: string, texture: Texture): void;
     unsetGlobalTexture(name: string): void;
 }
-declare type UniformType = "int" | "float" | "vec4" | "vec3" | "vec2" | "tex2d" | "color";
-declare type UniformValueType<T extends UniformType> = (T extends "int" ? number : T extends "float" ? number : T extends "vec4" ? vec4 : T extends "vec3" ? vec3 : T extends "vec2" ? vec2 : T extends "color" ? Color : Texture);
-export {};

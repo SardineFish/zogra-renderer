@@ -1,29 +1,34 @@
-import { ZograRenderer, Mesh, vec3, vec2, vec4, mat4, MaterialFromShader, Shader } from "zogra-renderer";
+import { ZograRenderer, Mesh, vec3, vec2, vec4, mat4, minus, plus, MaterialFromShader, Shader, Material, Color, rgba } from "zogra-renderer";
 import vert from "!!raw-loader!./shader/default-vert.glsl";
 import frag from "!!raw-loader!./shader/life-game.glsl";
-import blitFrag from "!!raw-loader!./shader/blit.glsl";
+import blitFrag from "!!raw-loader!./shader/life-game-render.glsl";
 import "./css/base.css";
-import seedTest from "./asset/img/p960_2c5gun.png";
+import seedTest from "./asset/img/dual-gun.png";
 import { RenderTexture, FilterMode, WrapMode, Texture2D } from "../../dist/core/texture";
 import { TextureFormat } from "../../dist/core/texture-format";
 import { RenderTarget } from "../../dist/core/render-target";
 import { loadImage } from "./misc/util";
 
-const Width = 1510;
-const Height = 1441;
-const BlockSize = 1;
-const FPS = 100;
+const Width = 2446;
+const Height = 1840;
+const BlockSize = 2;
+const FPS = parseInt((/fps=(\d+)/.exec(window.location.search) ?? ["", "60"])[1]);
+const Offset = vec2(650, 850);
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
-const renderer = new ZograRenderer(canvas, Width, Height);
+const renderer = new ZograRenderer(canvas, window.innerWidth, window.innerHeight);
 
 class LifeGameMaterial extends MaterialFromShader(new Shader(vert, frag))
 {
-
 }
-class BlitMaterial extends MaterialFromShader(new Shader(vert, blitFrag)) { }
 const material = new LifeGameMaterial();
-const blitMat = new BlitMaterial();
+const blitMat = new Material(new Shader(vert, blitFrag));
+blitMat.setProp("uBlockSize", "float", BlockSize);
+blitMat.setProp("uTexelSize", "vec4", vec4(Width, Height, 1 / Width, 1 / Height));
+blitMat.setProp("uOffset", "vec2", Offset);
+blitMat.setProp("uSize", "vec3", vec3(window.innerWidth, window.innerHeight, window.innerWidth / window.innerHeight));
+blitMat.setProp("uBG", "color", Color.white);
+blitMat.setProp("uFG", "color", rgba(0, 0, 0, 0.5));
 
 renderer.clear();
 
@@ -98,29 +103,30 @@ async function lifeGame()
     const seed = await loadImage(seedTest);
     rts[0].setData(seed);
     
-
-    return (dt: number, time: number) =>
+    setInterval(() =>
     {
-        if (time < nextUpdate)
-            return;
-        
-        nextUpdate += 1 / FPS;
         const src = rts[frameIdx % 2];
         const dst = rts[(frameIdx + 1) % 2];
         frameIdx++;
 
         renderer.setGlobalTexture("uLastFrame", src);
         renderer.setGlobalUniform("uSize", "vec4", vec4(Width, Height, 1 / Width, 1 / Height));
-        renderer.setGlobalUniform("uBlockSize", "float", BlockSize);
-        renderer.setGlobalUniform("uRenderSize", "vec4", vec4(Width, Height, 1 / Width, 1 / Height));
-        
-        const target = new RenderTarget(Width, Height);
-        target.addColorAttachment(dst);
-        target.addColorAttachment(backBuffer);
-        renderer.setRenderTarget(target);
-        renderer.drawMesh(mesh, mat4.identity(), material);
 
-        renderer.blit(backBuffer, RenderTarget.CanvasTarget);
+        renderer.setRenderTarget(dst);
+        renderer.drawMesh(mesh, mat4.identity(), material);
+    }, 1000 / FPS);
+
+    return (dt: number, time: number) =>
+    {
+
+        renderer.blit(rts[frameIdx % 2], RenderTarget.CanvasTarget, blitMat);
     };
 }
-// TODO: R/W Render Texture
+window.addEventListener("mousemove", (e) =>
+{
+    const pos = vec2(e.clientX, e.clientY);
+    const center = vec2(window.innerWidth / 2, window.innerHeight / 2);
+    const d = minus(pos, center);
+    d.mul(vec2(-.2, .2));
+    blitMat.setProp("uOffset", "vec2", plus(Offset, d));
+});

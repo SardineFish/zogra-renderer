@@ -6,11 +6,10 @@ in vec4 vPos;
 in vec2 vUV;
 
 uniform vec4 uSize;
-uniform float uBlockSize;
 uniform sampler2D uLastFrame;
 
 layout (location = 0) out vec4 nextFrame;
-layout (location = 1) out vec4 fragColor;
+//layout (location = 1) out vec4 fragColor;
 
 float clampTex(vec2 pos)
 {
@@ -53,8 +52,8 @@ void main()
             nextFrame = vec4(1);
     }
     //nextFrame = vec4(1.0 - current);
-    vec2 pos = vUV;
-    vec3 color = vec3(texture(uLastFrame, vUV).rrr);
-    color = vec3(vUV, 0);
-    fragColor = vec4(current, current, current, 1);
+    // vec2 pos = vUV;
+    // vec3 color = vec3(texture(uLastFrame, vUV).rrr);
+    // color = vec3(vUV, 0);
+    // fragColor = vec4(current, current, current, 1);
 }

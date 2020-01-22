@@ -533,6 +533,21 @@ class Material {
             }
         }
     }
+    setProp(name, type, value) {
+        if (this.propertyBlock[name]) {
+            this.propertyBlock[name].type = type;
+        }
+        else {
+            const loc = this.gl.getUniformLocation(this.shader.program, name);
+            if (loc) {
+                this.propertyBlock[name] = {
+                    location: loc,
+                    type: type
+                };
+            }
+        }
+        this[name] = value;
+    }
 }
 exports.Material = Material;
 const shaderPropMetaKey = Symbol("shaderProp");
@@ -11394,7 +11409,7 @@ __decorate([
     zogra_renderer_1.shaderProp("uMainTex", "tex2d")
 ], TestMaterial.prototype, "texture", void 0);
 TestMaterial = __decorate([
-    zogra_renderer_1.materialType
+    zogra_renderer_1.materialDefine
 ], TestMaterial);
 const material = new TestMaterial();
 material.color = zogra_renderer_1.rgb(1, .5, .25);
