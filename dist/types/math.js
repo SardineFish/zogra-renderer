@@ -52,4 +52,6 @@ function cross(a, b) {
     return a.cross(b);
 }
 exports.cross = cross;
+exports.Deg2Rad = Math.PI / 180;
+exports.Rad2Deg = 180 / Math.PI;
 //# sourceMappingURL=math.js.map

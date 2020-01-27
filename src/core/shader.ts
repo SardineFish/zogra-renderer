@@ -20,6 +20,66 @@ export interface ShaderAttributes
     normal: string;
 }
 
+export enum DepthTest
+{
+    Always = WebGL2RenderingContext.ALWAYS,
+    Never = WebGL2RenderingContext.NEVER,
+    Less = WebGL2RenderingContext.LESS,
+    Equal = WebGL2RenderingContext.EQUAL,
+    LEqual = WebGL2RenderingContext.LEQUAL,
+    Greater = WebGL2RenderingContext.GREATER,
+    NotEqual = WebGL2RenderingContext.NOTEQUAL,
+    GEqual = WebGL2RenderingContext.GEQUAL,
+}
+
+export enum Blending
+{
+    Zero = WebGL2RenderingContext.ZERO,
+    One = WebGL2RenderingContext.ONE,
+    SrcColor = WebGL2RenderingContext.SRC_COLOR,
+    OneMinusSrcColor = WebGL2RenderingContext.ONE_MINUS_SRC_COLOR,
+    DstColor = WebGL2RenderingContext.DST_COLOR,
+    OneMinusDstColor = WebGL2RenderingContext.ONE_MINUS_DST_COLOR,
+    SrcAlpha = WebGL2RenderingContext.SRC_ALPHA,
+    OneMinusSrcAlpha = WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA,
+    DstAlpha = WebGL2RenderingContext.DST_ALPHA,
+    OneMinusDstAlpha = WebGL2RenderingContext.ONE_MINUS_DST_ALPHA,
+}
+
+export enum Culling
+{
+    Back = WebGL2RenderingContext.BACK,
+    Front = WebGL2RenderingContext.FRONT,
+    Both = WebGL2RenderingContext.FRONT_AND_BACK,
+}
+
+
+export interface StateSettings
+{
+    depth: DepthTest,
+    blendSrc: Blending,
+    blendDst: Blending,
+    zWrite: boolean,
+    cull: Culling
+}
+
+interface ShaderSettingsOptional
+{
+    depth?: DepthTest,
+    blendSrc?: Blending,
+    blendDst?: Blending,
+    cull?: Culling
+    zWrite?: boolean;
+    attributes?: ShaderAttributes;
+}
+
+export const DefaultShaderAttributes: ShaderAttributes =
+{
+    vert: "aPos",
+    color: "aColor",
+    uv: "aUV",
+    normal: "aNormal",
+};
 
 export class Shader
 {
@@ -31,7 +91,9 @@ export class Shader
     vertexShader: WebGLShader;
     fragmentShader: WebGLShader;
 
-    attributes: AttributeBlock;
+    readonly settings: Readonly<StateSettings>;
+
+    readonly attributes: Readonly<AttributeBlock>;
 
     builtinUniformLocations: { [key in keyof typeof BuiltinUniforms]: WebGLUniformLocation | null };
 
@@ -39,7 +101,7 @@ export class Shader
 
     get compiled() { return this._compiled; }
     
-    constructor(vertexShader: string, fragmentShader: string, attributes = BuiltinShaderSources.DefaultShaderAttributes , gl = GL())
+    constructor(vertexShader: string, fragmentShader: string, options: ShaderSettingsOptional = {}, gl = GL())
     {
         this.gl = gl;
         this.program = panicNull(gl.createProgram(), "Failed to create shader program");
@@ -50,11 +112,20 @@ export class Shader
 
         this.compile();
 
+        const attributes = options.attributes || DefaultShaderAttributes;
+
         this.attributes = {
             vert: this.gl.getAttribLocation(this.program, attributes.vert),
             color: this.gl.getAttribLocation(this.program, attributes.color),
             uv: this.gl.getAttribLocation(this.program, attributes.uv),
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
+        };
+        this.settings = {
+            depth: options.depth || DepthTest.Less,
+            blendSrc: options.blendSrc || Blending.One,
+            blendDst: options.blendDst || Blending.OneMinusSrcAlpha,
+            zWrite: options.zWrite === false ? false : true,
+            cull: options.cull || Culling.Back
         };
         this.builtinUniformLocations = getUniformsLocation(gl, this.program, BuiltinUniforms);
     }

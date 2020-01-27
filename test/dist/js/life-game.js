@@ -145,28 +145,6 @@ const material_1 = __webpack_require__(/*! ../core/material */ "../dist/core/mat
 const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
 const material_type_1 = __webpack_require__(/*! ../core/material-type */ "../dist/core/material-type.js");
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
-function createDefaultMaterialType(gl, defaultTex) {
-    const shader = new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.DefaultFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl);
-    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(shader) {
-        constructor() {
-            super(...arguments);
-            this.color = color_1.Color.white;
-            this.mainTexture = defaultTex;
-        }
-    };
-    __decorate([
-        material_1.shaderProp("uColor", "color")
-    ], DefaultMaterial.prototype, "color", void 0);
-    __decorate([
-        material_1.shaderProp("uMainTex,", "tex2d")
-    ], DefaultMaterial.prototype, "mainTexture", void 0);
-    DefaultMaterial = __decorate([
-        material_1.materialDefine
-    ], DefaultMaterial);
-    ;
-    return DefaultMaterial;
-}
-exports.createDefaultMaterialType = createDefaultMaterialType;
 function createBuiltinMaterial(gl, types) {
     return {
         default: new types.DefaultMaterial(gl),
@@ -175,7 +153,7 @@ function createBuiltinMaterial(gl, types) {
 }
 exports.createBuiltinMaterial = createBuiltinMaterial;
 function createBuiltinMaterialTypes(gl, defaultTex) {
-    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.DefaultFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl)) {
+    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.DefaultFrag, {}, gl)) {
         constructor() {
             super(...arguments);
             this.color = color_1.Color.white;
@@ -186,12 +164,12 @@ function createBuiltinMaterialTypes(gl, defaultTex) {
         material_1.shaderProp("uColor", "color")
     ], DefaultMaterial.prototype, "color", void 0);
     __decorate([
-        material_1.shaderProp("uMainTex,", "tex2d")
+        material_1.shaderProp("uMainTex", "tex2d")
     ], DefaultMaterial.prototype, "mainTexture", void 0);
     DefaultMaterial = __decorate([
         material_1.materialDefine
     ], DefaultMaterial);
-    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.BlitCopyFrag, shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl)) {
+    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.BlitCopyFrag, {}, gl)) {
         constructor() {
             super(...arguments);
             this.flip = vec2_1.vec2(0, 0);
@@ -226,7 +204,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mesh_1 = __webpack_require__(/*! ../core/mesh */ "../dist/core/mesh.js");
 const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js");
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
+const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
+const global_1 = __webpack_require__(/*! ../core/global */ "../dist/core/global.js");
 function createBuiltinMesh(gl) {
+    return {
+        quad: quad(gl),
+        screenQuad: screenQuad(gl),
+        cube: cube(gl),
+    };
+}
+exports.createBuiltinMesh = createBuiltinMesh;
+function quad(gl) {
     const quad = new mesh_1.Mesh(gl);
     quad.verts = [
         vec3_1.vec3(-.5, -.5, 0),
@@ -245,6 +233,9 @@ function createBuiltinMesh(gl) {
         vec2_1.vec2(0, 1)
     ];
     quad.calculateNormals();
+    return quad;
+}
+function screenQuad(gl) {
     const screenQuad = new mesh_1.Mesh(gl);
     screenQuad.verts = [
         vec3_1.vec3(-1, -1, 0),
@@ -263,12 +254,124 @@ function createBuiltinMesh(gl) {
         vec2_1.vec2(0, 1)
     ];
     screenQuad.calculateNormals();
-    return {
-        quad: quad,
-        screenQuad: screenQuad
-    };
+    return screenQuad;
 }
-exports.createBuiltinMesh = createBuiltinMesh;
+function cube(gl) {
+    const verts = [
+        vec3_1.vec3(-.5, -.5, -.5),
+        vec3_1.vec3(.5, -.5, -.5),
+        vec3_1.vec3(.5, .5, -.5),
+        vec3_1.vec3(-.5, .5, -.5),
+        vec3_1.vec3(-.5, -.5, .5),
+        vec3_1.vec3(.5, -.5, .5),
+        vec3_1.vec3(.5, .5, .5),
+        vec3_1.vec3(-.5, .5, .5),
+    ];
+    const uvs = [
+        vec2_1.vec2(0, 0),
+        vec2_1.vec2(1, 0),
+        vec2_1.vec2(1, 1),
+        vec2_1.vec2(0, 1)
+    ];
+    const mb = new MeshBuilder(24, gl);
+    mb.addPolygon([
+        verts[1],
+        verts[0],
+        verts[3],
+        verts[2],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[5],
+        verts[1],
+        verts[2],
+        verts[6],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[4],
+        verts[5],
+        verts[6],
+        verts[7],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[0],
+        verts[4],
+        verts[7],
+        verts[3],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[7],
+        verts[6],
+        verts[2],
+        verts[3],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[0],
+        verts[1],
+        verts[5],
+        verts[4],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    return mb.toMesh();
+}
+class MeshBuilder {
+    constructor(capacity, gl = global_1.GlobalContext().gl) {
+        this.verts = [];
+        this.triangles = [];
+        this.uvs = [];
+        this.colors = [];
+        this.gl = gl;
+    }
+    addPolygon(verts, uvs) {
+        const base = this.verts.length;
+        for (let i = 0; i < verts.length; i++) {
+            this.verts.push(verts[i]);
+            this.uvs.push(uvs[i]);
+            this.colors.push(color_1.Color.white);
+        }
+        for (let i = 2; i < verts.length; i++) {
+            this.triangles.push(base + 0, base + i - 1, base + i);
+        }
+    }
+    toMesh() {
+        const mesh = new mesh_1.Mesh(this.gl);
+        mesh.verts = this.verts;
+        mesh.triangles = this.triangles;
+        mesh.colors = this.colors;
+        mesh.uvs = this.uvs;
+        mesh.calculateNormals();
+        return mesh;
+    }
+}
+exports.MeshBuilder = MeshBuilder;
 //# sourceMappingURL=mesh.js.map
 
 /***/ }),
@@ -360,18 +463,11 @@ void main()
     gl_Position = vec4(aPos, 1);
     vUV = vec2(aUV.x, vec2(1) - aUV.y);
 }`;
-const DefaultShaderAttributes = {
-    vert: "aPos",
-    color: "aColor",
-    uv: "aUV",
-    normal: "aNormal",
-};
 exports.BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
     BlitCopyFrag: blitCopy,
     FlipTexVert: flipVert,
-    DefaultShaderAttributes: DefaultShaderAttributes,
 };
 exports.BuiltinUniforms = {
     matM: "uTransformM",
@@ -382,9 +478,9 @@ exports.BuiltinUniforms = {
 };
 function compileBuiltinShaders(gl) {
     return {
-        DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
-        BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
-        FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
+        DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, {}, gl),
+        BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
+        FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
     };
 }
 exports.compileBuiltinShaders = compileBuiltinShaders;
@@ -502,7 +598,6 @@ class Material {
     setup(data) {
         var _a;
         const gl = data.gl;
-        gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock) {
             const prop = this.propertyBlock[key];
             switch (prop.type) {
@@ -854,6 +949,7 @@ class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         this.target = render_target_1.RenderTarget.CanvasTarget;
+        this.shader = null;
         this.globalUniforms = new Map();
         this.globalTextures = new Map();
         this.canvas = canvasElement;
@@ -926,6 +1022,21 @@ class ZograRenderer {
         this.target = prevTarget;
         this.viewProjectionMatrix = prevVP;
     }
+    useShader(shader) {
+        if (shader === this.shader)
+            return;
+        const gl = this.gl;
+        this.shader = shader;
+        gl.useProgram(shader.program);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthMask(shader.settings.zWrite);
+        gl.depthFunc(shader.settings.depth);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(shader.settings.blendSrc, shader.settings.blendDst);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CCW);
+    }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
         const data = {
@@ -935,10 +1046,11 @@ class ZograRenderer {
             size: vec2_1.vec2(this.width, this.height),
         };
         this.target.bind(this.ctx);
+        this.useShader(mateiral.shader);
         mateiral.setup(data);
         const program = mateiral.shader.program;
         // Setup transforms
-        const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
+        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
         mateiral.shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matM, false, transform);
         mateiral.shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
         mateiral.shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matMVP, false, mvp);
@@ -981,7 +1093,7 @@ class ZograRenderer {
         }
         mesh.setup(gl);
         mesh.bind(mateiral.shader, gl);
-        gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }
     setGlobalUniform(name, type, value) {
         this.globalUniforms.set(name, {
@@ -1022,8 +1134,44 @@ const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js")
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 const shaders_1 = __webpack_require__(/*! ../builtin-assets/shaders */ "../dist/builtin-assets/shaders.js");
 const util_2 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+var DepthTest;
+(function (DepthTest) {
+    DepthTest[DepthTest["Always"] = WebGL2RenderingContext.ALWAYS] = "Always";
+    DepthTest[DepthTest["Never"] = WebGL2RenderingContext.NEVER] = "Never";
+    DepthTest[DepthTest["Less"] = WebGL2RenderingContext.LESS] = "Less";
+    DepthTest[DepthTest["Equal"] = WebGL2RenderingContext.EQUAL] = "Equal";
+    DepthTest[DepthTest["LEqual"] = WebGL2RenderingContext.LEQUAL] = "LEqual";
+    DepthTest[DepthTest["Greater"] = WebGL2RenderingContext.GREATER] = "Greater";
+    DepthTest[DepthTest["NotEqual"] = WebGL2RenderingContext.NOTEQUAL] = "NotEqual";
+    DepthTest[DepthTest["GEqual"] = WebGL2RenderingContext.GEQUAL] = "GEqual";
+})(DepthTest = exports.DepthTest || (exports.DepthTest = {}));
+var Blending;
+(function (Blending) {
+    Blending[Blending["Zero"] = WebGL2RenderingContext.ZERO] = "Zero";
+    Blending[Blending["One"] = WebGL2RenderingContext.ONE] = "One";
+    Blending[Blending["SrcColor"] = WebGL2RenderingContext.SRC_COLOR] = "SrcColor";
+    Blending[Blending["OneMinusSrcColor"] = WebGL2RenderingContext.ONE_MINUS_SRC_COLOR] = "OneMinusSrcColor";
+    Blending[Blending["DstColor"] = WebGL2RenderingContext.DST_COLOR] = "DstColor";
+    Blending[Blending["OneMinusDstColor"] = WebGL2RenderingContext.ONE_MINUS_DST_COLOR] = "OneMinusDstColor";
+    Blending[Blending["SrcAlpha"] = WebGL2RenderingContext.SRC_ALPHA] = "SrcAlpha";
+    Blending[Blending["OneMinusSrcAlpha"] = WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA] = "OneMinusSrcAlpha";
+    Blending[Blending["DstAlpha"] = WebGL2RenderingContext.DST_ALPHA] = "DstAlpha";
+    Blending[Blending["OneMinusDstAlpha"] = WebGL2RenderingContext.ONE_MINUS_DST_ALPHA] = "OneMinusDstAlpha";
+})(Blending = exports.Blending || (exports.Blending = {}));
+var Culling;
+(function (Culling) {
+    Culling[Culling["Back"] = WebGL2RenderingContext.BACK] = "Back";
+    Culling[Culling["Front"] = WebGL2RenderingContext.FRONT] = "Front";
+    Culling[Culling["Both"] = WebGL2RenderingContext.FRONT_AND_BACK] = "Both";
+})(Culling = exports.Culling || (exports.Culling = {}));
+exports.DefaultShaderAttributes = {
+    vert: "aPos",
+    color: "aColor",
+    uv: "aUV",
+    normal: "aNormal",
+};
 class Shader {
-    constructor(vertexShader, fragmentShader, attributes = shaders_1.BuiltinShaderSources.DefaultShaderAttributes, gl = global_1.GL()) {
+    constructor(vertexShader, fragmentShader, options = {}, gl = global_1.GL()) {
         this._compiled = false;
         this.gl = gl;
         this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
@@ -1032,11 +1180,19 @@ class Shader {
         this.vertexShader = util_1.panicNull(gl.createShader(gl.VERTEX_SHADER), "Failed to create vertex shader");
         this.fragmentShader = util_1.panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
         this.compile();
+        const attributes = options.attributes || exports.DefaultShaderAttributes;
         this.attributes = {
             vert: this.gl.getAttribLocation(this.program, attributes.vert),
             color: this.gl.getAttribLocation(this.program, attributes.color),
             uv: this.gl.getAttribLocation(this.program, attributes.uv),
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
+        };
+        this.settings = {
+            depth: options.depth || DepthTest.Less,
+            blendSrc: options.blendSrc || Blending.One,
+            blendDst: options.blendDst || Blending.OneMinusSrcAlpha,
+            zWrite: options.zWrite === false ? false : true,
+            cull: options.cull || Culling.Back
         };
         this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniforms);
     }
@@ -1302,6 +1458,426 @@ function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMo
 
 /***/ }),
 
+/***/ "../dist/engine/camera.js":
+/*!********************************!*\
+  !*** ../dist/engine/camera.js ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const texture_1 = __webpack_require__(/*! ../core/texture */ "../dist/core/texture.js");
+const render_target_1 = __webpack_require__(/*! ../core/render-target */ "../dist/core/render-target.js");
+const global_1 = __webpack_require__(/*! ../core/global */ "../dist/core/global.js");
+const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
+const entity_1 = __webpack_require__(/*! ./entity */ "../dist/engine/entity.js");
+const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
+const math_1 = __webpack_require__(/*! ../types/math */ "../dist/types/math.js");
+var Projection;
+(function (Projection) {
+    Projection[Projection["Perspective"] = 0] = "Perspective";
+    Projection[Projection["Orthographic"] = 1] = "Orthographic";
+})(Projection = exports.Projection || (exports.Projection = {}));
+class Camera extends entity_1.Entity {
+    constructor(ctx = global_1.GlobalContext()) {
+        super();
+        this.output = render_target_1.RenderTarget.CanvasTarget;
+        this.FOV = 30;
+        this.near = 0.3;
+        this.far = 1000;
+        this.viewHeight = 1;
+        this.projection = Projection.Perspective;
+        this.ctx = ctx;
+    }
+    get pixelSize() {
+        if (this.output instanceof texture_1.RenderTexture)
+            return vec2_1.vec2(this.output.width, this.output.height);
+        else
+            return vec2_1.vec2(this.ctx.width, this.ctx.height);
+    }
+    get aspectRatio() { return this.pixelSize.x / this.pixelSize.y; }
+    get viewProjectionMatrix() {
+        const matView = this.worldToLocalMatrix;
+        const matProjection = this.projection === Projection.Perspective
+            ? mat4_1.mat4.perspective(this.FOV * math_1.Deg2Rad, this.aspectRatio, this.near, this.far)
+            : mat4_1.mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
+        return mat4_1.mat4.mul(matProjection, matView);
+    }
+}
+exports.Camera = Camera;
+//# sourceMappingURL=camera.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/engine.js":
+/*!********************************!*\
+  !*** ../dist/engine/engine.js ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./camera */ "../dist/engine/camera.js"));
+__export(__webpack_require__(/*! ./render-object */ "../dist/engine/render-object.js"));
+__export(__webpack_require__(/*! ./light */ "../dist/engine/light.js"));
+__export(__webpack_require__(/*! ./entity */ "../dist/engine/entity.js"));
+__export(__webpack_require__(/*! ./scene */ "../dist/engine/scene.js"));
+__export(__webpack_require__(/*! ./transform */ "../dist/engine/transform.js"));
+__export(__webpack_require__(/*! ./zogra-engine */ "../dist/engine/zogra-engine.js"));
+//# sourceMappingURL=engine.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/entity.js":
+/*!********************************!*\
+  !*** ../dist/engine/entity.js ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const transform_1 = __webpack_require__(/*! ./transform */ "../dist/engine/transform.js");
+const NewID = (() => {
+    let nextId = 10001;
+    return () => nextId++;
+})();
+class Entity extends transform_1.Transform {
+    constructor() {
+        super(...arguments);
+        this.id = NewID();
+        this.name = `Entity_${this.id}`;
+    }
+}
+exports.Entity = Entity;
+class EntityManager {
+    constructor() {
+        this.entityMap = new Map();
+        this._entities = [];
+    }
+    get entities() { return this._entities; }
+    add(entity) {
+        this.entityMap.set(entity.id, entity);
+        this._entities = Array.from(this.entityMap.values());
+    }
+    remove(entity) {
+        this.entityMap.delete(entity.id);
+        this._entities = Array.from(this.entityMap.values());
+    }
+}
+exports.EntityManager = EntityManager;
+//# sourceMappingURL=entity.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/event.js":
+/*!*******************************!*\
+  !*** ../dist/engine/event.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class EventTrigger {
+    constructor() {
+        this.listeners = new Map();
+    }
+    on(event, listener) {
+        var _a;
+        if (!this.listeners.has(event))
+            this.listeners.set(event, []);
+        (_a = this.listeners.get(event)) === null || _a === void 0 ? void 0 : _a.push(listener);
+    }
+    off(event, listener) {
+        var _a, _b;
+        if (this.listeners.has(event))
+            this.listeners.set(event, (_b = (_a = this.listeners.get(event)) === null || _a === void 0 ? void 0 : _a.filter(f => f !== listener), (_b !== null && _b !== void 0 ? _b : [])));
+    }
+    emit(event, ...args) {
+        var _a;
+        (_a = this.listeners.get(event)) === null || _a === void 0 ? void 0 : _a.forEach(f => f(...args));
+    }
+}
+exports.EventTrigger = EventTrigger;
+//# sourceMappingURL=event.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/light.js":
+/*!*******************************!*\
+  !*** ../dist/engine/light.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const entity_1 = __webpack_require__(/*! ./entity */ "../dist/engine/entity.js");
+const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
+var LightType;
+(function (LightType) {
+    LightType[LightType["Directional"] = 0] = "Directional";
+    LightType[LightType["Point"] = 1] = "Point";
+})(LightType = exports.LightType || (exports.LightType = {}));
+class Light extends entity_1.Entity {
+    constructor(type = LightType.Directional) {
+        super();
+        this.intensity = 1;
+        this.color = color_1.Color.white;
+        this.type = type;
+    }
+}
+exports.Light = Light;
+//# sourceMappingURL=light.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/render-object.js":
+/*!***************************************!*\
+  !*** ../dist/engine/render-object.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const global_1 = __webpack_require__(/*! ../core/global */ "../dist/core/global.js");
+const entity_1 = __webpack_require__(/*! ./entity */ "../dist/engine/entity.js");
+class RenderObject extends entity_1.Entity {
+    constructor(ctx = global_1.GlobalContext()) {
+        super();
+        this.meshes = [];
+        this.material = ctx.assets.materials.default;
+    }
+}
+exports.RenderObject = RenderObject;
+//# sourceMappingURL=render-object.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/scene.js":
+/*!*******************************!*\
+  !*** ../dist/engine/scene.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const entity_1 = __webpack_require__(/*! ./entity */ "../dist/engine/entity.js");
+class Scene extends entity_1.EntityManager {
+    constructor() {
+        super(...arguments);
+        this.managers = new Map();
+    }
+    add(entity, parent) {
+        var _a;
+        super.add(entity);
+        const type = entity.constructor;
+        if (!this.managers.has(type))
+            this.managers.set(type, new entity_1.EntityManager());
+        (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.add(entity);
+        if (parent)
+            entity.parent = parent;
+    }
+    remove(entity) {
+        var _a;
+        super.remove(entity);
+        const type = entity.constructor;
+        (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.remove(entity);
+        if (entity.parent) {
+            entity.parent.children = entity.parent.children.filter(c => c !== entity);
+        }
+    }
+    rootEntities() {
+        return this._entities.filter(entity => entity.parent === null);
+    }
+    getEntities() {
+        return this._entities;
+    }
+    getEntitiesOfType(type) {
+        var _a, _b;
+        return (_b = (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.entities, (_b !== null && _b !== void 0 ? _b : []));
+    }
+}
+exports.Scene = Scene;
+//# sourceMappingURL=scene.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/transform.js":
+/*!***********************************!*\
+  !*** ../dist/engine/transform.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
+const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js");
+const quat_1 = __webpack_require__(/*! ../types/quat */ "../dist/types/quat.js");
+class Transform {
+    constructor() {
+        // private mLoc2World = mat4.identity();
+        // private mWorld2Loc = mat4.identity();
+        // private mat = mat4.identity();
+        // private matInv = mat4.identity();
+        // get localPosition() { return mat4.getTranslation(this.mat); }
+        // get localRotation() { return mat4.getRotation(this.mat); }
+        // get localScaling() { return mat4.getScaling(this.mat); }
+        // get position()
+        // {
+        //     return mat4.getTranslation(this.mLoc2World);
+        // }
+        // get rotation() { return mat4.getRotation(this.mWorld2Loc); }
+        // get scale() { return mat4.getScaling(this.mLoc2World); }
+        // set localPosition()
+        // {
+        // }
+        this._parent = null;
+        this.children = [];
+        this.localPosition = vec3_1.vec3.zero();
+        this.localRotation = quat_1.quat.identity();
+        this.localScaling = vec3_1.vec3.one();
+    }
+    get position() {
+        if (!this._parent)
+            return this.localPosition;
+        return mat4_1.mat4.mulPoint(this._parent.localToWorldMatrix, this.localPosition);
+    }
+    set position(position) {
+        if (!this._parent)
+            this.localPosition = position;
+        else
+            this.localPosition = mat4_1.mat4.mulPoint(this._parent.worldToLocalMatrix, position);
+    }
+    get rotation() {
+        if (!this._parent)
+            return this.localRotation;
+        return quat_1.quat.mul(this._parent.rotation, this.localRotation);
+    }
+    set rotation(rotation) {
+        if (!this._parent)
+            this.localRotation = rotation;
+        else
+            this.localRotation = quat_1.quat.mul(quat_1.quat.invert(this._parent.rotation), rotation);
+    }
+    /*get scaling()
+    {
+        if (!this._parent)
+            return this.localScaling;
+        return mat4.mulVector(this.localToWorldMatrix, vec3.one());
+    }
+    set scaling(scaling: vec3)
+    {
+        if (!this._parent)
+            this.localScaling = scaling;
+        else
+            this.localScaling = mat4.mulVector(this.worldToLocalMatrix)
+    }*/
+    get localToWorldMatrix() {
+        if (!this._parent)
+            return mat4_1.mat4.rts(this.localRotation, this.localPosition, this.localScaling);
+        const mat = mat4_1.mat4.rts(this.localRotation, this.localPosition, this.localScaling);
+        return mat4_1.mat4.mul(mat, this._parent.localToWorldMatrix, mat);
+    }
+    get worldToLocalMatrix() {
+        return mat4_1.mat4.invert(this.localToWorldMatrix);
+    }
+    get parent() { return this._parent; }
+    set parent(p) {
+        this._parent = p;
+        if (p) {
+            p.children.push(this);
+        }
+    }
+}
+exports.Transform = Transform;
+//# sourceMappingURL=transform.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/zogra-engine.js":
+/*!**************************************!*\
+  !*** ../dist/engine/zogra-engine.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const scene_1 = __webpack_require__(/*! ./scene */ "../dist/engine/scene.js");
+const preview_renderer_1 = __webpack_require__(/*! ../render-pipeline/preview-renderer */ "../dist/render-pipeline/preview-renderer.js");
+const camera_1 = __webpack_require__(/*! ./camera */ "../dist/engine/camera.js");
+const core_1 = __webpack_require__(/*! ../core/core */ "../dist/core/core.js");
+const event_1 = __webpack_require__(/*! ./event */ "../dist/engine/event.js");
+class ZograEngine {
+    constructor(canvas, renderPipeline = new preview_renderer_1.PreviewRenderer()) {
+        this.renderer = new core_1.ZograRenderer(canvas, canvas.width, canvas.height);
+        this.renderPipeline = renderPipeline;
+        this.scene = new scene_1.Scene();
+        this.eventEmitter = new event_1.EventTrigger();
+    }
+    renderScene() {
+        const cameras = this.scene.getEntitiesOfType(camera_1.Camera);
+        this.renderPipeline.render({
+            renderer: this.renderer,
+            scene: this.scene
+        }, cameras);
+    }
+    start() {
+        let previousDelay = 0;
+        let startDelay = 0;
+        const update = (delay) => {
+            if (previousDelay === 0) {
+                startDelay = previousDelay = delay;
+                requestAnimationFrame(update);
+                return;
+            }
+            const time = (delay - startDelay) / 1000;
+            const dt = (delay - previousDelay) / 1000;
+            previousDelay = delay;
+            const t = {
+                time: time,
+                deltaTime: dt
+            };
+            this.emit("update", t);
+            this.renderScene();
+            requestAnimationFrame(update);
+        };
+        requestAnimationFrame(update);
+    }
+    on(event, listener) {
+        this.eventEmitter.on(event, listener);
+    }
+    off(event, listener) {
+        this.eventEmitter.off(event, listener);
+    }
+    emit(event, ...args) {
+        this.eventEmitter.emit(event, ...args);
+    }
+}
+exports.ZograEngine = ZograEngine;
+//# sourceMappingURL=zogra-engine.js.map
+
+/***/ }),
+
 /***/ "../dist/index.js":
 /*!************************!*\
   !*** ../dist/index.js ***!
@@ -1327,7 +1903,121 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // export * from "./core/shader";
 __export(__webpack_require__(/*! ./types/types */ "../dist/types/types.js"));
 __export(__webpack_require__(/*! ./core/core */ "../dist/core/core.js"));
+__export(__webpack_require__(/*! ./engine/engine */ "../dist/engine/engine.js"));
+__export(__webpack_require__(/*! ./render-pipeline/rp */ "../dist/render-pipeline/rp.js"));
 //# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ "../dist/render-pipeline/preview-renderer.js":
+/*!***************************************************!*\
+  !*** ../dist/render-pipeline/preview-renderer.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
+const render_data_1 = __webpack_require__(/*! ./render-data */ "../dist/render-pipeline/render-data.js");
+const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
+const render_target_1 = __webpack_require__(/*! ../core/render-target */ "../dist/core/render-target.js");
+class PreviewRenderer {
+    render(context, cameras) {
+        for (let i = 0; i < cameras.length; i++) {
+            const data = new render_data_1.RenderData(cameras[i], context.scene);
+            this.renderCamera(context, data);
+        }
+    }
+    setupLight(context, data) {
+        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
+        context.renderer.setGlobalUniform("uLightColor", "color", color_1.Color.white);
+    }
+    renderCamera(context, data) {
+        const camera = data.camera;
+        var mat = mat4_1.mat4;
+        if (camera.output === render_target_1.RenderTarget.CanvasTarget)
+            context.renderer.setRenderTarget(render_target_1.RenderTarget.CanvasTarget);
+        else
+            context.renderer.setRenderTarget(camera.output);
+        context.renderer.clear(color_1.Color.black, true);
+        context.renderer.viewProjectionMatrix = camera.viewProjectionMatrix;
+        this.setupLight(context, data);
+        const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
+        for (const obj of objs) {
+            const modelMatrix = obj.localToWorldMatrix;
+            for (const mesh of obj.meshes) {
+                context.renderer.drawMesh(mesh, modelMatrix, obj.material);
+            }
+        }
+    }
+}
+exports.PreviewRenderer = PreviewRenderer;
+//# sourceMappingURL=preview-renderer.js.map
+
+/***/ }),
+
+/***/ "../dist/render-pipeline/render-data.js":
+/*!**********************************************!*\
+  !*** ../dist/render-pipeline/render-data.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const render_object_1 = __webpack_require__(/*! ../engine/render-object */ "../dist/engine/render-object.js");
+const light_1 = __webpack_require__(/*! ../engine/light */ "../dist/engine/light.js");
+const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
+var RenderOrder;
+(function (RenderOrder) {
+    RenderOrder[RenderOrder["NearToFar"] = 0] = "NearToFar";
+    RenderOrder[RenderOrder["FarToNear"] = 1] = "FarToNear";
+})(RenderOrder = exports.RenderOrder || (exports.RenderOrder = {}));
+class RenderData {
+    constructor(camera, scene) {
+        this.visibleObjects = [];
+        this.visibleLights = [];
+        this.camera = camera;
+        this.visibleLights = scene.getEntitiesOfType(light_1.Light);
+        this.visibleObjects = scene.getEntitiesOfType(render_object_1.RenderObject);
+    }
+    getVisibleObjects(renderOrder = RenderOrder.NearToFar) {
+        const viewMat = this.camera.worldToLocalMatrix;
+        let wrap = this.visibleObjects.map(obj => ({ pos: mat4_1.mat4.mulPoint(viewMat, obj.position), obj: obj }));
+        if (renderOrder === RenderOrder.NearToFar)
+            wrap = wrap.sort((a, b) => a.pos.z - b.pos.z);
+        else
+            wrap = wrap.sort((a, b) => b.pos.z - a.pos.z);
+        return wrap.map(t => t.obj);
+    }
+    getVisibleLights() {
+        return this.visibleLights;
+    }
+}
+exports.RenderData = RenderData;
+//# sourceMappingURL=render-data.js.map
+
+/***/ }),
+
+/***/ "../dist/render-pipeline/rp.js":
+/*!*************************************!*\
+  !*** ../dist/render-pipeline/rp.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(/*! ./preview-renderer */ "../dist/render-pipeline/preview-renderer.js"));
+__export(__webpack_require__(/*! ./render-data */ "../dist/render-pipeline/render-data.js"));
+//# sourceMappingURL=rp.js.map
 
 /***/ }),
 
@@ -1379,6 +2069,8 @@ exports.rgb = (r, g, b) => new Color(r, g, b, 1);
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const gl_matrix_1 = __webpack_require__(/*! gl-matrix */ "../node_modules/gl-matrix/esm/index.js");
+const vec3_1 = __webpack_require__(/*! ./vec3 */ "../dist/types/vec3.js");
+const vec4_1 = __webpack_require__(/*! ./vec4 */ "../dist/types/vec4.js");
 function Matrix4x4(values) {
     const mat = gl_matrix_1.mat4.clone(values);
     return mat;
@@ -1392,6 +2084,70 @@ Matrix4x4.rts = (rotation, translation, scale) => {
     const m = exports.mat4.identity();
     gl_matrix_1.mat4.fromRotationTranslationScale(m, rotation, translation, scale);
     return m;
+};
+Matrix4x4.invert = (m) => {
+    const out = gl_matrix_1.mat4.create();
+    gl_matrix_1.mat4.invert(out, m);
+    return out;
+};
+Matrix4x4.getTranslation = (m) => {
+    let out = vec3_1.vec3(0, 0, 0);
+    gl_matrix_1.mat4.getTranslation(out, m);
+    return out;
+};
+Matrix4x4.getRotation = (m) => {
+    let out = gl_matrix_1.quat.create();
+    gl_matrix_1.mat4.getRotation(out, m);
+    return out;
+};
+Matrix4x4.getScaling = (m) => {
+    let out = vec3_1.vec3(0, 0, 0);
+    gl_matrix_1.mat4.getScaling(out, m);
+    return out;
+};
+Matrix4x4.mulPoint = (m, p) => {
+    let v = vec4_1.vec4(p.x, p.y, p.z, 1);
+    let out = vec4_1.vec4.zero();
+    gl_matrix_1.vec4.transformMat4(out, v, m);
+    return vec3_1.vec3(out.x, out.y, out.z);
+};
+Matrix4x4.mulVector = (m, v) => {
+    let v4 = vec4_1.vec4(v.x, v.y, v.z, 0);
+    let out = vec4_1.vec4.zero();
+    gl_matrix_1.vec4.transformMat4(out, v4, m);
+    return vec3_1.vec3(out.x, out.y, out.z);
+};
+Matrix4x4.mulVec4 = (m, v) => {
+    let out = vec4_1.vec4.zero();
+    gl_matrix_1.vec4.transformMat4(out, v, m);
+    return out;
+};
+Matrix4x4.perspective = (fov, aspect, near, far) => {
+    const out = gl_matrix_1.mat4.create();
+    return gl_matrix_1.mat4.perspective(out, fov, aspect, near, far);
+};
+Matrix4x4.transpose = (m) => {
+    return gl_matrix_1.mat4.transpose(gl_matrix_1.mat4.create(), m);
+};
+Matrix4x4.ortho = (height, aspect, near, far) => {
+    const out = gl_matrix_1.mat4.create();
+    out[0] = 1 / (aspect * height);
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = 1 / height;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 0;
+    out[9] = 0;
+    out[10] = -2 / (far - near);
+    out[11] = -(far + near) / (far - near);
+    out[12] = 0;
+    out[13] = 0;
+    out[14] = 0;
+    out[15] = 1;
+    return out;
 };
 Matrix4x4.mul = ((out, a, b) => {
     if (!b) {
@@ -1468,6 +2224,8 @@ function cross(a, b) {
     return a.cross(b);
 }
 exports.cross = cross;
+exports.Deg2Rad = Math.PI / 180;
+exports.Rad2Deg = 180 / Math.PI;
 //# sourceMappingURL=math.js.map
 
 /***/ }),
@@ -1498,10 +2256,21 @@ Quaternion.identity = () => {
  * @param rad - Rotation angle in radians
  */
 Quaternion.axis = (axis, rad) => {
-    const quat = gl_matrix_1.quat.create();
-    gl_matrix_1.quat.setAxisAngle(quat, axis, rad);
+    return gl_matrix_1.quat.setAxisAngle(gl_matrix_1.quat.create(), axis, rad);
+};
+Quaternion.mul = (a, b) => {
+    const out = gl_matrix_1.quat.create();
+    return gl_matrix_1.quat.mul(out, a, b);
+};
+Quaternion.invert = (q) => {
+    const out = gl_matrix_1.quat.create();
+    return gl_matrix_1.quat.invert(out, q);
+};
+Quaternion.normalize = (q) => {
+    return gl_matrix_1.quat.normalize(gl_matrix_1.quat.create(), q);
 };
 exports.quat = Quaternion;
+exports.quat.identity = Quaternion.identity;
 //# sourceMappingURL=quat.js.map
 
 /***/ }),
@@ -1519,6 +2288,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
+const gl_matrix_1 = __webpack_require__(/*! gl-matrix */ "../node_modules/gl-matrix/esm/index.js");
+gl_matrix_1.glMatrix.setMatrixArrayType(Array);
 __export(__webpack_require__(/*! ./vec2 */ "../dist/types/vec2.js"));
 __export(__webpack_require__(/*! ./vec3 */ "../dist/types/vec3.js"));
 __export(__webpack_require__(/*! ./vec4 */ "../dist/types/vec4.js"));
@@ -1556,6 +2327,12 @@ class Vector2 extends Array {
     }
     constructor(x, y) {
         super(x, y);
+    }
+    static zero() {
+        return new Vector2(0, 0);
+    }
+    static one() {
+        return new Vector2(1, 1);
     }
     plus(v) {
         this[0] += v[0];
@@ -1611,6 +2388,8 @@ function vec2(x, y) {
     return new Vector2(x, y);
 }
 exports.vec2 = vec2;
+vec2.zero = Vector2.zero;
+vec2.one = Vector2.one;
 //# sourceMappingURL=vec2.js.map
 
 /***/ }),
@@ -1643,6 +2422,12 @@ class Vector3 extends Array {
     }
     constructor(x, y, z) {
         super(x, y, z);
+    }
+    static zero() {
+        return new Vector3(0, 0, 0);
+    }
+    static one() {
+        return new Vector3(1, 1, 1);
     }
     plus(v) {
         this[0] += v[0];
@@ -1703,6 +2488,8 @@ function vec3(x, y, z) {
     return new Vector3(x, y, z);
 }
 exports.vec3 = vec3;
+vec3.zero = Vector3.zero;
+vec3.one = Vector3.one;
 //# sourceMappingURL=vec3.js.map
 
 /***/ }),
@@ -1737,6 +2524,12 @@ class Vector4 extends Array {
     }
     constructor(x, y, z = 0, w = 0) {
         super(x, y, z || 0, w || 0);
+    }
+    static zero() {
+        return new Vector4(0, 0, 0, 0);
+    }
+    static one() {
+        return new Vector4(1, 1, 1, 1);
     }
     plus(v) {
         this[0] += v[0];
@@ -1796,6 +2589,8 @@ function vec4(x, y, z, w) {
     return new Vector4(x, y, z, w);
 }
 exports.vec4 = vec4;
+vec4.zero = Vector4.zero;
+vec4.one = Vector4.one;
 //# sourceMappingURL=vec4.js.map
 
 /***/ }),

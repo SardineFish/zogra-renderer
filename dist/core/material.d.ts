@@ -2,7 +2,7 @@ import { Shader } from "./shader";
 import "reflect-metadata";
 import { MaterialType } from "./material-type";
 import "reflect-metadata";
-import { RenderData, UniformValueType } from "./types";
+import { BindingData, UniformValueType } from "./types";
 import { UniformType } from "./types";
 export interface PropertyBlock {
     [key: string]: {
@@ -16,7 +16,7 @@ export declare class Material {
     propertyBlock: PropertyBlock;
     gl: WebGL2RenderingContext;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
-    setup(data: RenderData): void;
+    setup(data: BindingData): void;
     setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
 }
 export declare function shaderProp(name: string, type: UniformType): {

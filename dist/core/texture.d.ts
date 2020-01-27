@@ -1,6 +1,6 @@
 import { GLContext } from "./global";
 import { TextureFormat } from "./texture-format";
-import { RenderData } from "./types";
+import { BindingData } from "./types";
 export declare enum FilterMode {
     Linear,
     Nearest
@@ -19,7 +19,7 @@ export interface Texture {
     glTex: WebGLTexture;
     filterMode: FilterMode;
     wrapMode: WrapMode;
-    bind: (location: WebGLUniformLocation, data: RenderData) => void;
+    bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
 declare class TextureBase implements Texture {
     ctx: GLContext;
@@ -32,7 +32,7 @@ declare class TextureBase implements Texture {
     wrapMode: WrapMode;
     constructor(width: number, height: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
     protected setup(): void;
-    bind(location: WebGLUniformLocation, data: RenderData): void;
+    bind(location: WebGLUniformLocation, data: BindingData): void;
 }
 export declare class Texture2D extends TextureBase {
     constructor(width?: number, height?: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);

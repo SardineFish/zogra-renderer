@@ -2,7 +2,6 @@ import { Color } from "../types/color";
 import { MaterialType } from "../core/material-type";
 import { Texture } from "../core/texture";
 import { vec2 } from "../types/vec2";
-export declare function createDefaultMaterialType(gl: WebGL2RenderingContext, defaultTex: Texture): typeof DefaultMaterialType;
 export declare function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>): {
     default: DefaultMaterialType;
     blitCopy: BlitCopyType;

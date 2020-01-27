@@ -15,4 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // export * from "./core/shader";
 __export(require("./types/types"));
 __export(require("./core/core"));
+__export(require("./engine/engine"));
+__export(require("./render-pipeline/rp"));
 //# sourceMappingURL=index.js.map

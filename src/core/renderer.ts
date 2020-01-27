@@ -12,7 +12,8 @@ import { vec4 } from "../types/vec4";
 import { vec2, Vector2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { quat } from "../types/quat";
-import { RenderData, UniformType, UniformValueType } from "./types";
+import { BindingData, UniformType, UniformValueType } from "./types";
+import { Shader } from "./shader";
 
 export class ZograRenderer
 {
@@ -26,6 +27,7 @@ export class ZograRenderer
     viewProjectionMatrix = mat4.identity();
 
     private target: RenderTarget = RenderTarget.CanvasTarget;
+    private shader: Shader | null = null;
     private globalUniforms = new Map<string, GlobalUniform>();
     private globalTextures = new Map<string, GlobalTexture>();
 
@@ -134,10 +136,32 @@ export class ZograRenderer
         this.viewProjectionMatrix = prevVP;
     }
 
+    private useShader(shader: Shader)
+    {
+        if (shader === this.shader)
+            return;
+        
+        const gl = this.gl;
+        
+        this.shader = shader;
+        gl.useProgram(shader.program);
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthMask(shader.settings.zWrite);
+        gl.depthFunc(shader.settings.depth);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(shader.settings.blendSrc, shader.settings.blendDst);
+
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CCW);
+    }
+
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material)
     {
         const gl = this.gl;
-        const data: RenderData = {
+        const data: BindingData = {
             assets: this.assets,
             gl: gl,
             nextTextureUnit: 0,
@@ -145,6 +169,8 @@ export class ZograRenderer
         };
         
         this.target.bind(this.ctx);
+
+        this.useShader(mateiral.shader);
         
         mateiral.setup(data);
 
@@ -152,7 +178,7 @@ export class ZograRenderer
 
 
         // Setup transforms
-        const mvp = mat4.mul(transform, this.viewProjectionMatrix);
+        const mvp = mat4.mul(this.viewProjectionMatrix, transform);
         mateiral.shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matM, false, transform);
         mateiral.shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
         mateiral.shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matMVP, false, mvp);
@@ -200,7 +226,7 @@ export class ZograRenderer
         mesh.setup(gl);
         mesh.bind(mateiral.shader, gl);
 
-        gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }
 
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)

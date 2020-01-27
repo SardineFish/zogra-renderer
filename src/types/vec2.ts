@@ -26,6 +26,14 @@ export class Vector2 extends Array<number>
         super(x, y);
     }
 
+    static zero()
+    {
+        return new Vector2(0, 0);
+    }
+    static one()
+    {
+        return new Vector2(1, 1);
+    }
     plus(v: Vector2)
     {
         this[0] += v[0];
@@ -92,3 +100,5 @@ export function vec2(x: number, y: number): Vector2
 {
     return new Vector2(x, y);
 }
+vec2.zero = Vector2.zero;
+vec2.one = Vector2.one;

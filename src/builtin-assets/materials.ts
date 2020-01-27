@@ -6,22 +6,6 @@ import { MaterialType } from "../core/material-type";
 import { Texture } from "../core/texture";
 import { vec2 } from "../types/vec2";
 
-export function createDefaultMaterialType(gl: WebGL2RenderingContext, defaultTex: Texture): typeof DefaultMaterialType
-{
-    const shader = new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, BuiltinShaderSources.DefaultShaderAttributes, gl);
-
-    @materialDefine
-    class DefaultMaterial extends MaterialFromShader(shader)
-    {
-        @shaderProp("uColor", "color")
-        color: Color = Color.white;
-        @shaderProp("uMainTex,", "tex2d")
-        mainTexture: Texture = defaultTex;
-    };
-
-    return DefaultMaterial;
-}
-
 export function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>)
 {
     return {
@@ -33,16 +17,16 @@ export function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnT
 export function createBuiltinMaterialTypes(gl: WebGL2RenderingContext, defaultTex: Texture)
 {
     @materialDefine
-    class DefaultMaterial extends MaterialFromShader(new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, BuiltinShaderSources.DefaultShaderAttributes, gl))
+    class DefaultMaterial extends MaterialFromShader(new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, {}, gl))
     {
         @shaderProp("uColor", "color")
         color: Color = Color.white;
-        @shaderProp("uMainTex,", "tex2d")
+        @shaderProp("uMainTex", "tex2d")
         mainTexture: Texture = defaultTex;
     }
 
     @materialDefine
-    class BlitCopy extends MaterialFromShader(new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, BuiltinShaderSources.DefaultShaderAttributes, gl))
+    class BlitCopy extends MaterialFromShader(new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, {}, gl))
     {
         @shaderProp("uFlip", "vec2")
         flip: vec2 = vec2(0, 0);

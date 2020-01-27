@@ -3,7 +3,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mesh_1 = require("../core/mesh");
 const vec3_1 = require("../types/vec3");
 const vec2_1 = require("../types/vec2");
+const color_1 = require("../types/color");
+const global_1 = require("../core/global");
 function createBuiltinMesh(gl) {
+    return {
+        quad: quad(gl),
+        screenQuad: screenQuad(gl),
+        cube: cube(gl),
+    };
+}
+exports.createBuiltinMesh = createBuiltinMesh;
+function quad(gl) {
     const quad = new mesh_1.Mesh(gl);
     quad.verts = [
         vec3_1.vec3(-.5, -.5, 0),
@@ -22,6 +32,9 @@ function createBuiltinMesh(gl) {
         vec2_1.vec2(0, 1)
     ];
     quad.calculateNormals();
+    return quad;
+}
+function screenQuad(gl) {
     const screenQuad = new mesh_1.Mesh(gl);
     screenQuad.verts = [
         vec3_1.vec3(-1, -1, 0),
@@ -40,10 +53,122 @@ function createBuiltinMesh(gl) {
         vec2_1.vec2(0, 1)
     ];
     screenQuad.calculateNormals();
-    return {
-        quad: quad,
-        screenQuad: screenQuad
-    };
+    return screenQuad;
 }
-exports.createBuiltinMesh = createBuiltinMesh;
+function cube(gl) {
+    const verts = [
+        vec3_1.vec3(-.5, -.5, -.5),
+        vec3_1.vec3(.5, -.5, -.5),
+        vec3_1.vec3(.5, .5, -.5),
+        vec3_1.vec3(-.5, .5, -.5),
+        vec3_1.vec3(-.5, -.5, .5),
+        vec3_1.vec3(.5, -.5, .5),
+        vec3_1.vec3(.5, .5, .5),
+        vec3_1.vec3(-.5, .5, .5),
+    ];
+    const uvs = [
+        vec2_1.vec2(0, 0),
+        vec2_1.vec2(1, 0),
+        vec2_1.vec2(1, 1),
+        vec2_1.vec2(0, 1)
+    ];
+    const mb = new MeshBuilder(24, gl);
+    mb.addPolygon([
+        verts[1],
+        verts[0],
+        verts[3],
+        verts[2],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[5],
+        verts[1],
+        verts[2],
+        verts[6],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[4],
+        verts[5],
+        verts[6],
+        verts[7],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[0],
+        verts[4],
+        verts[7],
+        verts[3],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[7],
+        verts[6],
+        verts[2],
+        verts[3],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    mb.addPolygon([
+        verts[0],
+        verts[1],
+        verts[5],
+        verts[4],
+    ], [
+        uvs[0],
+        uvs[1],
+        uvs[2],
+        uvs[3]
+    ]);
+    return mb.toMesh();
+}
+class MeshBuilder {
+    constructor(capacity, gl = global_1.GlobalContext().gl) {
+        this.verts = [];
+        this.triangles = [];
+        this.uvs = [];
+        this.colors = [];
+        this.gl = gl;
+    }
+    addPolygon(verts, uvs) {
+        const base = this.verts.length;
+        for (let i = 0; i < verts.length; i++) {
+            this.verts.push(verts[i]);
+            this.uvs.push(uvs[i]);
+            this.colors.push(color_1.Color.white);
+        }
+        for (let i = 2; i < verts.length; i++) {
+            this.triangles.push(base + 0, base + i - 1, base + i);
+        }
+    }
+    toMesh() {
+        const mesh = new mesh_1.Mesh(this.gl);
+        mesh.verts = this.verts;
+        mesh.triangles = this.triangles;
+        mesh.colors = this.colors;
+        mesh.uvs = this.uvs;
+        mesh.calculateNormals();
+        return mesh;
+    }
+}
+exports.MeshBuilder = MeshBuilder;
 //# sourceMappingURL=mesh.js.map

@@ -1,6 +1,6 @@
 import { DefaultMaterialType } from "../core/material-type";
 import { Texture2D } from "../core/texture";
-import { createDefaultMaterialType, createBuiltinMaterialTypes, createBuiltinMaterial } from "./materials";
+import {  createBuiltinMaterialTypes, createBuiltinMaterial } from "./materials";
 import { BuiltinShaderSources, BuiltinUniforms, compileBuiltinShaders } from "./shaders";
 import { createDefaultTexture } from "./textures";
 import { createBuiltinMesh } from "./mesh";

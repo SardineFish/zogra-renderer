@@ -1,1 +1,1 @@
-{"version":3,"file":"render-object.js","sourceRoot":"","sources":["../../src/engine/render-object.ts"],"names":[],"mappings":""}
+{"version":3,"file":"render-object.js","sourceRoot":"","sources":["../../src/engine/render-object.ts"],"names":[],"mappings":";;AAGA,2CAA+C;AAC/C,qCAAkC;AAElC,MAAa,YAAa,SAAQ,eAAM;IAIpC,YAAY,GAAG,GAAG,sBAAa,EAAE;QAE7B,KAAK,EAAE,CAAC;QAJZ,WAAM,GAAW,EAAE,CAAC;QAKhB,IAAI,CAAC,QAAQ,GAAG,GAAG,CAAC,MAAM,CAAC,SAAS,CAAC,OAAO,CAAC;IACjD,CAAC;CACJ;AATD,oCASC"}

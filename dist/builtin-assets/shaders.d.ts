@@ -1,10 +1,9 @@
-import { ShaderAttributes, Shader } from "../core/shader";
+import { Shader } from "../core/shader";
 export declare const BuiltinShaderSources: {
     DefaultVert: string;
     DefaultFrag: string;
     BlitCopyFrag: string;
     FlipTexVert: string;
-    DefaultShaderAttributes: ShaderAttributes;
 };
 export declare const BuiltinUniforms: {
     matM: string;

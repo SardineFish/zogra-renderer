@@ -20,8 +20,22 @@ Quaternion.identity = () =>
  */
 Quaternion.axis = (axis: vec3, rad: number) =>
 {
-    const quat = glQuat.create();
-    glQuat.setAxisAngle(quat, axis, rad);
+    return glQuat.setAxisAngle(glQuat.create(), axis, rad);
+}
+Quaternion.mul = (a: quat, b: quat) =>
+{
+    const out = glQuat.create();
+    return glQuat.mul(out, a, b);
+}
+Quaternion.invert = (q: quat) =>
+{
+    const out = glQuat.create();
+    return glQuat.invert(out, q);
+};
+Quaternion.normalize = (q: quat) =>
+{
+    return glQuat.normalize(glQuat.create(), q);
 }
 
 export const quat = Quaternion;
+quat.identity = Quaternion.identity;

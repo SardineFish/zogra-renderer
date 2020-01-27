@@ -3,6 +3,8 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
+const gl_matrix_1 = require("gl-matrix");
+gl_matrix_1.glMatrix.setMatrixArrayType(Array);
 __export(require("./vec2"));
 __export(require("./vec3"));
 __export(require("./vec4"));

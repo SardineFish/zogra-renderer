@@ -9,6 +9,8 @@ export declare class Vector2 extends Array<number> {
     get magnitude(): number;
     get normalized(): Vector2;
     constructor(x: number, y: number);
+    static zero(): Vector2;
+    static one(): Vector2;
     plus(v: Vector2): this;
     minus(v: Vector2): this;
     mul(v: Vector2): this;
@@ -25,3 +27,7 @@ export declare class Vector2 extends Array<number> {
     to(type: Function): Vector3 | Vector4 | Vector2;
 }
 export declare function vec2(x: number, y: number): Vector2;
+export declare namespace vec2 {
+    var zero: typeof Vector2.zero;
+    var one: typeof Vector2.one;
+}

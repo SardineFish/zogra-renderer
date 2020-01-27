@@ -72,3 +72,7 @@ export function cross(a: vec3, b: vec3)
 {
     return a.cross(b);
 }
+
+
+export const Deg2Rad = Math.PI / 180;
+export const Rad2Deg = 180 / Math.PI;

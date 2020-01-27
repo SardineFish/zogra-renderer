@@ -20,6 +20,7 @@
   "dependencies": {
     "@types/gl-matrix": "^2.4.5",
     "gl-matrix": "^3.1.0",
+    "linq": "^3.2.1",
     "reflect-metadata": "^0.1.13"
   }
 }

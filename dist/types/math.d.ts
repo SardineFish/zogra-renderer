@@ -12,4 +12,6 @@ export declare function mul<V extends vec>(mat: mat4, b: V): V;
 export declare function div<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>;
 export declare function dot(a: vec3, b: vec3): number;
 export declare function cross(a: vec3, b: vec3): Vector3;
+export declare const Deg2Rad: number;
+export declare const Rad2Deg: number;
 export {};

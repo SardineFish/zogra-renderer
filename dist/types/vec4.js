@@ -21,6 +21,12 @@ class Vector4 extends Array {
     constructor(x, y, z = 0, w = 0) {
         super(x, y, z || 0, w || 0);
     }
+    static zero() {
+        return new Vector4(0, 0, 0, 0);
+    }
+    static one() {
+        return new Vector4(1, 1, 1, 1);
+    }
     plus(v) {
         this[0] += v[0];
         this[1] += v[1];
@@ -79,4 +85,6 @@ function vec4(x, y, z, w) {
     return new Vector4(x, y, z, w);
 }
 exports.vec4 = vec4;
+vec4.zero = Vector4.zero;
+vec4.one = Vector4.one;
 //# sourceMappingURL=vec4.js.map

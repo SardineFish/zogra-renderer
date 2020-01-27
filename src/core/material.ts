@@ -9,7 +9,7 @@ import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
 import { vec4, mat4 } from "gl-matrix";
 import { Texture } from "./texture";
-import { RenderData, UniformValueType } from "./types";
+import { BindingData, UniformValueType } from "./types";
 import { UniformType } from "./types"
 
 export interface PropertyBlock
@@ -32,10 +32,9 @@ export class Material
         this.shader = shader;
     }
 
-    setup(data: RenderData)
+    setup(data: BindingData)
     {
         const gl = data.gl;
-        gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock)
         {
             const prop = this.propertyBlock[key];

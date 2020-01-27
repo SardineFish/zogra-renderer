@@ -6,7 +6,7 @@ import { Color } from "../types/color";
 import { Texture } from "./texture";
 import { mat4 } from "../types/mat4";
 
-export interface RenderData
+export interface BindingData
 {
     assets: BuiltinAssets;
     gl: WebGL2RenderingContext;

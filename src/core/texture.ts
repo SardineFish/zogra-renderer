@@ -1,7 +1,7 @@
 import { GL, GLContext, GlobalContext } from "./global";
 import { TextureFormat, mapGLFormat } from "./texture-format";
 import { panic } from "../utils/util";
-import { RenderData } from "./types";
+import { BindingData } from "./types";
 
 export enum FilterMode
 {
@@ -27,7 +27,7 @@ export interface Texture
     filterMode: FilterMode;
     wrapMode: WrapMode;
 
-    bind: (location: WebGLUniformLocation, data: RenderData) => void;
+    bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
 
 class TextureBase implements Texture
@@ -62,7 +62,7 @@ class TextureBase implements Texture
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
     }
 
-    bind(location: WebGLUniformLocation, data: RenderData)
+    bind(location: WebGLUniformLocation, data: BindingData)
     {
         const gl = data.gl;
         gl.activeTexture(gl.TEXTURE0 + data.nextTextureUnit);

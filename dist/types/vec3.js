@@ -19,6 +19,12 @@ class Vector3 extends Array {
     constructor(x, y, z) {
         super(x, y, z);
     }
+    static zero() {
+        return new Vector3(0, 0, 0);
+    }
+    static one() {
+        return new Vector3(1, 1, 1);
+    }
     plus(v) {
         this[0] += v[0];
         this[1] += v[1];
@@ -78,4 +84,6 @@ function vec3(x, y, z) {
     return new Vector3(x, y, z);
 }
 exports.vec3 = vec3;
+vec3.zero = Vector3.zero;
+vec3.one = Vector3.one;
 //# sourceMappingURL=vec3.js.map

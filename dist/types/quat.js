@@ -16,8 +16,19 @@ Quaternion.identity = () => {
  * @param rad - Rotation angle in radians
  */
 Quaternion.axis = (axis, rad) => {
-    const quat = gl_matrix_1.quat.create();
-    gl_matrix_1.quat.setAxisAngle(quat, axis, rad);
+    return gl_matrix_1.quat.setAxisAngle(gl_matrix_1.quat.create(), axis, rad);
+};
+Quaternion.mul = (a, b) => {
+    const out = gl_matrix_1.quat.create();
+    return gl_matrix_1.quat.mul(out, a, b);
+};
+Quaternion.invert = (q) => {
+    const out = gl_matrix_1.quat.create();
+    return gl_matrix_1.quat.invert(out, q);
+};
+Quaternion.normalize = (q) => {
+    return gl_matrix_1.quat.normalize(gl_matrix_1.quat.create(), q);
 };
 exports.quat = Quaternion;
+exports.quat.identity = Quaternion.identity;
 //# sourceMappingURL=quat.js.map

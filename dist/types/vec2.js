@@ -17,6 +17,12 @@ class Vector2 extends Array {
     constructor(x, y) {
         super(x, y);
     }
+    static zero() {
+        return new Vector2(0, 0);
+    }
+    static one() {
+        return new Vector2(1, 1);
+    }
     plus(v) {
         this[0] += v[0];
         this[1] += v[1];
@@ -71,4 +77,6 @@ function vec2(x, y) {
     return new Vector2(x, y);
 }
 exports.vec2 = vec2;
+vec2.zero = Vector2.zero;
+vec2.one = Vector2.one;
 //# sourceMappingURL=vec2.js.map

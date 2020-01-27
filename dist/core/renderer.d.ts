@@ -17,6 +17,7 @@ export declare class ZograRenderer {
     assets: BuiltinAssets;
     viewProjectionMatrix: import("gl-matrix").mat4;
     private target;
+    private shader;
     private globalUniforms;
     private globalTextures;
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number);
@@ -27,6 +28,7 @@ export declare class ZograRenderer {
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture): void;
     clear(color?: Color, clearDepth?: boolean): void;
     blit(src: Texture, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material): void;
+    private useShader;
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material): void;
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
     unsetGlobalUniform(name: string): void;

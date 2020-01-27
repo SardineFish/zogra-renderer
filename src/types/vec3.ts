@@ -28,6 +28,14 @@ export class Vector3 extends Array<number>
         super(x, y, z);
     }
 
+    static zero()
+    {
+        return new Vector3(0, 0, 0);
+    }
+    static one()
+    {
+        return new Vector3(1, 1, 1);
+    }
     plus(v: Vector3)
     {
         this[0] += v[0];
@@ -103,3 +111,5 @@ export function vec3(x: number, y: number, z: number): Vector3
 {
     return new Vector3(x, y, z);
 }
+vec3.zero = Vector3.zero;
+vec3.one = Vector3.one;

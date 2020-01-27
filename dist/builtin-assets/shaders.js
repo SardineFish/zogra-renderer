@@ -77,18 +77,11 @@ void main()
     gl_Position = vec4(aPos, 1);
     vUV = vec2(aUV.x, vec2(1) - aUV.y);
 }`;
-const DefaultShaderAttributes = {
-    vert: "aPos",
-    color: "aColor",
-    uv: "aUV",
-    normal: "aNormal",
-};
 exports.BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
     BlitCopyFrag: blitCopy,
     FlipTexVert: flipVert,
-    DefaultShaderAttributes: DefaultShaderAttributes,
 };
 exports.BuiltinUniforms = {
     matM: "uTransformM",
@@ -99,9 +92,9 @@ exports.BuiltinUniforms = {
 };
 function compileBuiltinShaders(gl) {
     return {
-        DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
-        BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
-        FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, exports.BuiltinShaderSources.DefaultShaderAttributes, gl),
+        DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, {}, gl),
+        BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
+        FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
     };
 }
 exports.compileBuiltinShaders = compileBuiltinShaders;

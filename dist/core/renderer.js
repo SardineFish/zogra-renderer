@@ -14,6 +14,7 @@ class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         this.target = render_target_1.RenderTarget.CanvasTarget;
+        this.shader = null;
         this.globalUniforms = new Map();
         this.globalTextures = new Map();
         this.canvas = canvasElement;
@@ -86,6 +87,21 @@ class ZograRenderer {
         this.target = prevTarget;
         this.viewProjectionMatrix = prevVP;
     }
+    useShader(shader) {
+        if (shader === this.shader)
+            return;
+        const gl = this.gl;
+        this.shader = shader;
+        gl.useProgram(shader.program);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthMask(shader.settings.zWrite);
+        gl.depthFunc(shader.settings.depth);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(shader.settings.blendSrc, shader.settings.blendDst);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CCW);
+    }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
         const data = {
@@ -95,10 +111,11 @@ class ZograRenderer {
             size: vec2_1.vec2(this.width, this.height),
         };
         this.target.bind(this.ctx);
+        this.useShader(mateiral.shader);
         mateiral.setup(data);
         const program = mateiral.shader.program;
         // Setup transforms
-        const mvp = mat4_1.mat4.mul(transform, this.viewProjectionMatrix);
+        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
         mateiral.shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matM, false, transform);
         mateiral.shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
         mateiral.shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matMVP, false, mvp);
@@ -141,7 +158,7 @@ class ZograRenderer {
         }
         mesh.setup(gl);
         mesh.bind(mateiral.shader, gl);
-        gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }
     setGlobalUniform(name, type, value) {
         this.globalUniforms.set(name, {

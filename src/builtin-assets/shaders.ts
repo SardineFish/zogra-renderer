@@ -81,21 +81,11 @@ void main()
     vUV = vec2(aUV.x, vec2(1) - aUV.y);
 }`;
 
-
-const DefaultShaderAttributes: ShaderAttributes =
-{
-    vert: "aPos",
-    color: "aColor",
-    uv: "aUV",
-    normal: "aNormal",
-};
-
 export const BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
     BlitCopyFrag: blitCopy,
     FlipTexVert: flipVert,
-    DefaultShaderAttributes: DefaultShaderAttributes,
 };
 
 export const BuiltinUniforms = {
@@ -109,8 +99,8 @@ export const BuiltinUniforms = {
 export function compileBuiltinShaders(gl: WebGL2RenderingContext)
 {
     return {
-        DefaultShader: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, BuiltinShaderSources.DefaultShaderAttributes, gl),
-        BlitCopy: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, BuiltinShaderSources.DefaultShaderAttributes, gl),
-        FlipTexture: new Shader(BuiltinShaderSources.FlipTexVert, BuiltinShaderSources.BlitCopyFrag, BuiltinShaderSources.DefaultShaderAttributes, gl),
+        DefaultShader: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, {}, gl),
+        BlitCopy: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, {}, gl),
+        FlipTexture: new Shader(BuiltinShaderSources.FlipTexVert, BuiltinShaderSources.BlitCopyFrag, {}, gl),
     };
 }

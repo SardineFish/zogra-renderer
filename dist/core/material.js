@@ -12,7 +12,6 @@ class Material {
     setup(data) {
         var _a;
         const gl = data.gl;
-        gl.useProgram(this.shader.program);
         for (const key in this.propertyBlock) {
             const prop = this.propertyBlock[key];
             switch (prop.type) {
