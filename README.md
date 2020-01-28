@@ -15,7 +15,7 @@ A simple WebGL2 renderer.
 
 ## Screen Shots
 
-![Screen shot](./doc/assets/img/screen-shot-0.png)
+![Screen shot](./docs/assets/img/screen-shot-0.png)
 
 ## Features
 - Basic 3D mesh rendering.
@@ -24,3 +24,7 @@ A simple WebGL2 renderer.
 - Image texture & render texture.
 - Basic scene manager.
 - Input system.
+
+## Demo
+- [Basic 3D Rendering](https://sardinefish.github.io/zogra-renderer/examples/engine-test.html)
+- [Game of Life](https://sardinefish.github.io/zogra-renderer/examples/life-game.html?fps=30)
