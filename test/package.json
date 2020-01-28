@@ -8,7 +8,7 @@
     "build": "npx webpack",
     "build:watch": "npx webpack --watch",
     "build:prod": "npx webpack --mode production --devtool none",
-    "start": "browser-sync start -s ./dist -f ./dist/**/*"
+    "start": "browser-sync start --host 0.0.0.0 -s ./dist -f ./dist/**/*"
   },
   "author": "SardineFish",
   "license": "MIT",
