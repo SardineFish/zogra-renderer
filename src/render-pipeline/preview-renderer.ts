@@ -5,7 +5,7 @@ import { ZograRenderer } from "../core/core";
 import { RenderObject } from "../engine/render-object";
 import { Entity } from "../engine/entity";
 import { RenderData, RenderOrder } from "./render-data";
-import { Color } from "../types/color";
+import { Color, rgba } from "../types/color";
 import { RenderTarget } from "../core/render-target";
 import { RenderTexture } from "../core/texture";
 import { Lines, LineBuilder } from "../core/lines";
@@ -19,6 +19,7 @@ export class PreviewRenderer implements ZograRenderPipeline
     {
         this.renderer = renderer;
 
+        const lineColor = rgba(1, 1, 1, 0.1);
         const lb = new LineBuilder(0, renderer.gl);
         const Size = 10;
         const Grid = 1;
@@ -27,11 +28,11 @@ export class PreviewRenderer implements ZograRenderPipeline
             lb.addLine([
                 vec3(i, 0, -Size),
                 vec3(i, 0, Size),
-            ]);
+            ], lineColor);
             lb.addLine([
                 vec3(-Size, 0, i),
                 vec3(Size, 0, i)
-            ]);
+            ], lineColor);
         }
         this.grid = lb.toLines();
     }

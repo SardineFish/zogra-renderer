@@ -1,4 +1,4 @@
-import { ShaderAttributes, Shader } from "../core/shader";
+import { ShaderAttributes, Shader, DepthTest } from "../core/shader";
 
 const defaultVert = `#version 300 es
 precision mediump float;
@@ -134,6 +134,8 @@ export function compileBuiltinShaders(gl: WebGL2RenderingContext)
         DefaultShader: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, {}, gl),
         BlitCopy: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, {}, gl),
         FlipTexture: new Shader(BuiltinShaderSources.FlipTexVert, BuiltinShaderSources.BlitCopyFrag, {}, gl),
-        VertColor: new Shader(colorVert, colorFrag, {}, gl),
+        ColoredLine: new Shader(colorVert, colorFrag, {
+            depth: DepthTest.Always
+        }, gl),
     };
 }

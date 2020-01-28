@@ -44,8 +44,8 @@ class InputManager {
             const offset = vec2_1.vec2((_c = (_b = rect) === null || _b === void 0 ? void 0 : _b.left, (_c !== null && _c !== void 0 ? _c : 0)), (_e = (_d = rect) === null || _d === void 0 ? void 0 : _d.top, (_e !== null && _e !== void 0 ? _e : 0)));
             const pos = math_1.minus(vec2_1.vec2(e.clientX, e.clientY), offset);
             this.mouseDelta.plus(vec2_1.vec2(e.movementX, e.movementY));
-            if (this.mouseDelta.magnitude > 100)
-                console.log(e);
+            // if (this.mouseDelta.magnitude > 100)
+            //     console.log(e);
             this.mousePos = pos;
         });
         for (const key in Keys) {

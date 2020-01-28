@@ -11,7 +11,7 @@ export function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnT
     return {
         default: new types.DefaultMaterial(gl),
         blitCopy: new types.BlitCopy(gl),
-        ColoredLine: new Material(shaders.VertColor, gl),
+        ColoredLine: new Material(shaders.ColoredLine, gl),
     };
 }
 

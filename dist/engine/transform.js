@@ -45,9 +45,9 @@ class Transform {
     }
     set rotation(rotation) {
         if (!this._parent)
-            this.localRotation = rotation;
+            this.localRotation = quat_1.quat.normalize(rotation);
         else
-            this.localRotation = quat_1.quat.mul(quat_1.quat.invert(this._parent.rotation), rotation);
+            this.localRotation = quat_1.quat.normalize(quat_1.quat.mul(quat_1.quat.invert(this._parent.rotation), rotation));
     }
     /*get scaling()
     {

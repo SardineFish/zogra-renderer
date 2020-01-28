@@ -147,7 +147,7 @@ function createBuiltinMaterial(gl, types, shaders) {
     return {
         default: new types.DefaultMaterial(gl),
         blitCopy: new types.BlitCopy(gl),
-        ColoredLine: new material_1.Material(shaders.VertColor, gl),
+        ColoredLine: new material_1.Material(shaders.ColoredLine, gl),
     };
 }
 exports.createBuiltinMaterial = createBuiltinMaterial;
@@ -510,7 +510,9 @@ function compileBuiltinShaders(gl) {
         DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, {}, gl),
         BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
-        VertColor: new shader_1.Shader(colorVert, colorFrag, {}, gl),
+        ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
+            depth: shader_1.DepthTest.Always
+        }, gl),
     };
 }
 exports.compileBuiltinShaders = compileBuiltinShaders;
@@ -1351,7 +1353,7 @@ class Shader {
         };
         this.settings = {
             depth: options.depth || DepthTest.Less,
-            blendSrc: options.blendSrc || Blending.One,
+            blendSrc: options.blendSrc || Blending.SrcAlpha,
             blendDst: options.blendDst || Blending.OneMinusSrcAlpha,
             zWrite: options.zWrite === false ? false : true,
             cull: options.cull || Culling.Back
@@ -1833,8 +1835,8 @@ class InputManager {
             const offset = vec2_1.vec2((_c = (_b = rect) === null || _b === void 0 ? void 0 : _b.left, (_c !== null && _c !== void 0 ? _c : 0)), (_e = (_d = rect) === null || _d === void 0 ? void 0 : _d.top, (_e !== null && _e !== void 0 ? _e : 0)));
             const pos = math_1.minus(vec2_1.vec2(e.clientX, e.clientY), offset);
             this.mouseDelta.plus(vec2_1.vec2(e.movementX, e.movementY));
-            if (this.mouseDelta.magnitude > 100)
-                console.log(e);
+            // if (this.mouseDelta.magnitude > 100)
+            //     console.log(e);
             this.mousePos = pos;
         });
         for (const key in Keys) {
@@ -2151,9 +2153,9 @@ class Transform {
     }
     set rotation(rotation) {
         if (!this._parent)
-            this.localRotation = rotation;
+            this.localRotation = quat_1.quat.normalize(rotation);
         else
-            this.localRotation = quat_1.quat.mul(quat_1.quat.invert(this._parent.rotation), rotation);
+            this.localRotation = quat_1.quat.normalize(quat_1.quat.mul(quat_1.quat.invert(this._parent.rotation), rotation));
     }
     /*get scaling()
     {
@@ -2306,6 +2308,7 @@ const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js")
 class PreviewRenderer {
     constructor(renderer) {
         this.renderer = renderer;
+        const lineColor = color_1.rgba(1, 1, 1, 0.1);
         const lb = new lines_1.LineBuilder(0, renderer.gl);
         const Size = 10;
         const Grid = 1;
@@ -2313,11 +2316,11 @@ class PreviewRenderer {
             lb.addLine([
                 vec3_1.vec3(i, 0, -Size),
                 vec3_1.vec3(i, 0, Size),
-            ]);
+            ], lineColor);
             lb.addLine([
                 vec3_1.vec3(-Size, 0, i),
                 vec3_1.vec3(Size, 0, i)
-            ]);
+            ], lineColor);
         }
         this.grid = lb.toLines();
     }

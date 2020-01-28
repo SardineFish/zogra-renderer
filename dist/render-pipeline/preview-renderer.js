@@ -9,6 +9,7 @@ const vec3_1 = require("../types/vec3");
 class PreviewRenderer {
     constructor(renderer) {
         this.renderer = renderer;
+        const lineColor = color_1.rgba(1, 1, 1, 0.1);
         const lb = new lines_1.LineBuilder(0, renderer.gl);
         const Size = 10;
         const Grid = 1;
@@ -16,11 +17,11 @@ class PreviewRenderer {
             lb.addLine([
                 vec3_1.vec3(i, 0, -Size),
                 vec3_1.vec3(i, 0, Size),
-            ]);
+            ], lineColor);
             lb.addLine([
                 vec3_1.vec3(-Size, 0, i),
                 vec3_1.vec3(Size, 0, i)
-            ]);
+            ], lineColor);
         }
         this.grid = lb.toLines();
     }

@@ -59,7 +59,7 @@ class Shader {
         };
         this.settings = {
             depth: options.depth || DepthTest.Less,
-            blendSrc: options.blendSrc || Blending.One,
+            blendSrc: options.blendSrc || Blending.SrcAlpha,
             blendDst: options.blendDst || Blending.OneMinusSrcAlpha,
             zWrite: options.zWrite === false ? false : true,
             cull: options.cull || Culling.Back

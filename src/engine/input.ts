@@ -81,8 +81,8 @@ export class InputManager
             const offset = vec2(rect?.left ?? 0, rect?.top ?? 0);
             const pos = minus(vec2(e.clientX, e.clientY), offset);
             this.mouseDelta.plus(vec2(e.movementX, e.movementY));
-            if (this.mouseDelta.magnitude > 100)
-                console.log(e);
+            // if (this.mouseDelta.magnitude > 100)
+            //     console.log(e);
             this.mousePos = pos;
         });
         for (const key in Keys)

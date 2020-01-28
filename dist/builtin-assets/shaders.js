@@ -125,7 +125,9 @@ function compileBuiltinShaders(gl) {
         DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, {}, gl),
         BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
-        VertColor: new shader_1.Shader(colorVert, colorFrag, {}, gl),
+        ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
+            depth: shader_1.DepthTest.Always
+        }, gl),
     };
 }
 exports.compileBuiltinShaders = compileBuiltinShaders;

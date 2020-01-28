@@ -52,9 +52,9 @@ export class Transform
     set rotation(rotation: quat)
     {
         if (!this._parent)
-            this.localRotation = rotation;
+            this.localRotation = quat.normalize(rotation);
         else
-            this.localRotation = quat.mul(quat.invert(this._parent.rotation), rotation);
+            this.localRotation = quat.normalize(quat.mul(quat.invert(this._parent.rotation), rotation));
     }
     /*get scaling()
     {

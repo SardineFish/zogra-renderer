@@ -14,7 +14,7 @@ function createBuiltinMaterial(gl, types, shaders) {
     return {
         default: new types.DefaultMaterial(gl),
         blitCopy: new types.BlitCopy(gl),
-        ColoredLine: new material_1.Material(shaders.VertColor, gl),
+        ColoredLine: new material_1.Material(shaders.ColoredLine, gl),
     };
 }
 exports.createBuiltinMaterial = createBuiltinMaterial;

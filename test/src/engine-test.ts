@@ -33,7 +33,7 @@ function initCamera()
         let up = vec3(0, 1, 0);
         
 
-        if (input.getKey(Keys.Shift))
+        if (input.getKey(Keys.Shift) || input.getKey(Keys.Space))
             v.plus(vec3(0, 1 * time.deltaTime, 0));
         if (input.getKey(Keys.Control))
             v.plus(vec3(0, -1 * time.deltaTime, 0));
@@ -60,7 +60,7 @@ function initCamera()
         wrapper.rotation = quat.mul(wrapper.rotation, quat.axis(up, -sensity * look.x));
         camera.localRotation = quat.mul(camera.localRotation, quat.axis(vec3(1, 0, 0), -sensity * look.y));
         wrapper.position = plus(wrapper.position, mul(v, 5));
-        input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
+        //input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
     });
 }
 
