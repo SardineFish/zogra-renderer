@@ -6,9 +6,9 @@ const camera_1 = require("./camera");
 const core_1 = require("../core/core");
 const event_1 = require("./event");
 class ZograEngine {
-    constructor(canvas, renderPipeline = new preview_renderer_1.PreviewRenderer()) {
+    constructor(canvas, RenderPipeline = preview_renderer_1.PreviewRenderer) {
         this.renderer = new core_1.ZograRenderer(canvas, canvas.width, canvas.height);
-        this.renderPipeline = renderPipeline;
+        this.renderPipeline = new RenderPipeline(this.renderer);
         this.scene = new scene_1.Scene();
         this.eventEmitter = new event_1.EventTrigger();
     }

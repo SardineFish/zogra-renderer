@@ -8,9 +8,33 @@ import { RenderData, RenderOrder } from "./render-data";
 import { Color } from "../types/color";
 import { RenderTarget } from "../core/render-target";
 import { RenderTexture } from "../core/texture";
+import { Lines, LineBuilder } from "../core/lines";
+import { vec3 } from "../types/vec3";
 
 export class PreviewRenderer implements ZograRenderPipeline
 {
+    renderer: ZograRenderer;
+    grid: Lines;
+    constructor(renderer: ZograRenderer)
+    {
+        this.renderer = renderer;
+
+        const lb = new LineBuilder(0, renderer.gl);
+        const Size = 10;
+        const Grid = 1;
+        for (let i = -Size; i <= Size; i+=Grid)
+        {
+            lb.addLine([
+                vec3(i, 0, -Size),
+                vec3(i, 0, Size),
+            ]);
+            lb.addLine([
+                vec3(-Size, 0, i),
+                vec3(Size, 0, i)
+            ]);
+        }
+        this.grid = lb.toLines();
+    }
     render(context: RenderContext, cameras: Camera[])
     {
         for (let i = 0; i < cameras.length; i++)
@@ -36,7 +60,8 @@ export class PreviewRenderer implements ZograRenderPipeline
             context.renderer.setRenderTarget(RenderTarget.CanvasTarget);
         else
             context.renderer.setRenderTarget(camera.output as RenderTexture);
-        context.renderer.clear(Color.black, true);
+            
+        context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.viewProjectionMatrix = camera.viewProjectionMatrix;
 
         this.setupLight(context, data);
@@ -50,6 +75,13 @@ export class PreviewRenderer implements ZograRenderPipeline
                 context.renderer.drawMesh(mesh, modelMatrix, obj.material);       
             }
         }
+
+        this.renderGrid(context, data);
+    }
+
+    renderGrid(context: RenderContext, data: RenderData)
+    {
+        this.renderer.drawLines(this.grid, mat4.identity(), this.renderer.assets.materials.ColoredLine);
     }
 
 }

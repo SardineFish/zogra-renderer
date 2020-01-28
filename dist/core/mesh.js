@@ -65,11 +65,11 @@ class Mesh {
             const c = this.verts[this.triangles[i + 2]];
             const u = math_1.minus(b, a);
             const v = math_1.minus(c, a);
-            const normal = math_1.cross(u, v).normalise();
+            const normal = math_1.cross(u, v).normalize();
             this.normals[this.triangles[i]].plus(normal);
         }
         for (let i = 0; i < this.normals.length; i++)
-            this.normals[i] = this.normals[i].normalise();
+            this.normals[i] = this.normals[i].normalize();
     }
     update() {
         if (this.dirty) {

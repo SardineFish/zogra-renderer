@@ -12,8 +12,6 @@ uniform mat4 uTransformM;
 uniform mat4 uTransformVP;
 uniform mat4 uTransformMVP;
 
-uniform vec4 uColor;
-
 out vec4 vColor;
 out vec4 vPos;
 out vec2 vUV;
@@ -22,7 +20,7 @@ out vec3 vNormal;
 void main()
 {
     gl_Position = uTransformMVP * vec4(aPos, 1);
-    vColor = aColor * uColor;
+    vColor = aColor;
     vUV = aUV;
     vNormal = aNormal;
 }
@@ -43,7 +41,7 @@ out vec4 fragColor;
 void main()
 {
     vec4 color = texture(uMainTex, vUV.xy).rgba;
-    color = color * uColor;
+    color = color * vColor * uColor;
     fragColor = color;
 }
 `;
@@ -81,6 +79,40 @@ void main()
     vUV = vec2(aUV.x, vec2(1) - aUV.y);
 }`;
 
+const colorVert = `#version 300 es
+precision mediump float;
+
+in vec3 aPos;
+in vec4 aColor;
+
+uniform mat4 uTransformM;
+uniform mat4 uTransformVP;
+uniform mat4 uTransformMVP;
+
+out vec4 vColor;
+out vec4 vPos;
+
+void main()
+{
+    gl_Position = uTransformMVP * vec4(aPos, 1);
+    vColor = aColor;
+}
+`;
+
+const colorFrag = `#version 300 es
+precision mediump float;
+
+in vec4 vColor;
+in vec4 vPos;
+
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = vColor;
+}
+`;
+
 export const BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
@@ -102,5 +134,6 @@ export function compileBuiltinShaders(gl: WebGL2RenderingContext)
         DefaultShader: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, {}, gl),
         BlitCopy: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, {}, gl),
         FlipTexture: new Shader(BuiltinShaderSources.FlipTexVert, BuiltinShaderSources.BlitCopyFrag, {}, gl),
+        VertColor: new Shader(colorVert, colorFrag, {}, gl),
     };
 }

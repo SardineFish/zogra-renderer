@@ -83,12 +83,12 @@ export class Mesh
             const c = this.verts[this.triangles[i + 2]];
             const u = minus(b, a);
             const v = minus(c, a);
-            const normal = cross(u, v).normalise();
+            const normal = cross(u, v).normalize();
 
             this.normals[this.triangles[i]].plus(normal);
         }
         for (let i = 0; i < this.normals.length; i++)
-            this.normals[i] = this.normals[i].normalise();
+            this.normals[i] = this.normals[i].normalize();
     }
 
     update()

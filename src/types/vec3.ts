@@ -70,10 +70,24 @@ export class Vector3 extends Array<number>
             + this[1] * v[1]
             + this[3] * v[3];
     }
-    normalise()
+    normalize()
     {
         const m = this.magnitude;
         return this.clone().div(vec3(m, m, m));
+    }
+    inverse()
+    {
+        this[0] = 1 / this[0];
+        this[1] = 1 / this[1];
+        this[2] = 1 / this[2];
+        return this;
+    }
+    negate()
+    {
+        this[0] = -this[0];
+        this[1] = -this[1];
+        this[2] = -this[2];
+        return this;
     }
     /**
      * cross product with vec3
@@ -94,7 +108,7 @@ export class Vector3 extends Array<number>
         return vec3(this[0], this[1], this[2]);
     }
 
-    to(type: Function)
+    __to(type: Function)
     {
         switch (type)
         {

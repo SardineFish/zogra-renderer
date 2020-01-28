@@ -3,65 +3,67 @@ import { vec4, Vector4 } from "./vec4";
 import { mat4, vec3 as v3, vec4 as v4, vec2 as v2 } from "gl-matrix";
 import { vec2, Vector2 } from "./vec2";
 
-type vec = vec2 | vec3 | vec4;
+type vec = number | vec2 | vec3 | vec4;
 
 type Larger<U extends vec, V extends vec> =
     U extends vec4 ? vec4 :
     V extends vec4 ? vec4 :
     U extends vec3 ? vec3 :
     V extends vec3 ? vec3 :
-    vec2;
+    U extends vec2 ? vec2 :
+    V extends vec2 ? vec2 :
+    number;
 
 type ArithmeticType<U extends vec, V extends vec> = Larger<U, V>
 
-function arithOrder<U extends vec, V extends vec>(a: U, b: V)  : [any, any]
+(Number as any).prototype.__to = function (type: Function)
 {
-    return (b.length > a.length ? [b, a] : [a, b]);
+    switch (type)
+    {
+        case Vector4:
+            return vec4(this.valueOf(), this.valueOf(), this.valueOf(), this.valueOf());
+        case Vector3:
+            return vec3(this.valueOf(), this.valueOf(), this.valueOf());
+        case Vector2:
+            return vec2(this.valueOf(), this.valueOf());
+    }
+    return this.valueOf();
+}
+
+function arithOrder<U extends vec, V extends vec>(a: U, b: V)  : [any, any, boolean]
+{
+    if (typeof (a) === "number")
+        return [b, a, true];
+    else if (typeof (b) === "number")
+        return [a, b, false];
+    return ((b as number[]).length > (a as number[]).length ? [b, a, true] : [a, b, false]);
 }
 
 
 export function plus<U extends vec, V extends vec>(a: U, b: V) : ArithmeticType<U, V>
 {
     const [lhs, rhs] = arithOrder(a, b);
-    return rhs.to(lhs.constructor).plus(lhs);
+    return rhs.__to(lhs.constructor).plus(lhs);
 }
 export function minus<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>
 {
-    const [lhs, rhs] = arithOrder(a, b);
-    return rhs.to(lhs.constructor).minus(lhs);
+    const [lhs, rhs, invert] = arithOrder(a, b);
+    return invert
+        ? rhs.__to(lhs.constructor).minus(lhs)
+        : rhs.__to(lhs.constructor).minus(lhs).negate();
 }
 
 export function mul<U extends vec, V extends vec>(a: U , b: V): ArithmeticType<U, V>
-export function mul<V extends vec>(mat: mat4, b: V) : V
-export function mul<U extends vec, V extends vec>(a: U | mat4, b: V): ArithmeticType<U, V> | V
 {
-    if (a instanceof Vector3 || a instanceof Vector4 || a instanceof Vector2)
-    {
-        const [lhs, rhs] = arithOrder(a, b);
-        return rhs.to(lhs.constructor).mul(lhs);
-    }
-    else
-    {
-        const out = b.clone() as V;
-        switch (b.constructor)
-        {
-            case Vector2:
-                v2.transformMat4(out as any as v2, b, a as any as mat4);
-                break;
-            case Vector3:
-                v3.transformMat4(out as any as v3, b, a as any as mat4);
-                break;
-            default:
-                v4.transformMat4(out as any as v4, b, a as any as mat4);
-                break;
-        }
-        return out;
-    }
+    const [lhs, rhs] = arithOrder(a, b);
+    return rhs.__to(lhs.constructor).mul(lhs);
 }
 export function div<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>
 {
-    const [lhs, rhs] = arithOrder(a, b);
-    return rhs.to(lhs.constructor).div(lhs);
+    const [lhs, rhs, invert] = arithOrder(a, b);
+    return invert
+        ? rhs.__to(lhs.constructor).div(lhs)
+        : rhs.__to(lhs.constructor).div(lhs).negate();
 }
 
 export function dot(a: vec3, b: vec3)

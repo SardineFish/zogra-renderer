@@ -99,8 +99,49 @@ class ZograRenderer {
         gl.enable(gl.BLEND);
         gl.blendFunc(shader.settings.blendSrc, shader.settings.blendDst);
         gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.BACK);
+        gl.cullFace(shader.settings.cull);
         gl.frontFace(gl.CCW);
+    }
+    setupTransforms(shader, transform) {
+        const gl = this.gl;
+        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
+        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transform);
+        shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
+        shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMVP, false, mvp);
+    }
+    setupGlobalUniforms(shader, data) {
+        const gl = this.gl;
+        for (const val of this.globalUniforms.values()) {
+            const location = gl.getUniformLocation(shader.program, val.name);
+            if (!location)
+                continue;
+            switch (val.type) {
+                case "int":
+                    gl.uniform1i(location, val.value);
+                    break;
+                case "float":
+                    gl.uniform1f(location, val.value);
+                    break;
+                case "vec2":
+                    gl.uniform2fv(location, val.value, 0, 2);
+                    break;
+                case "vec3":
+                    gl.uniform3fv(location, val.value, 0, 3);
+                    break;
+                case "vec4":
+                    gl.uniform4fv(location, val.value, 0, 4);
+                    break;
+                case "color":
+                    gl.uniform4fv(location, val.value, 0, 4);
+                    break;
+            }
+        }
+        for (const tex of this.globalTextures.values()) {
+            const location = gl.getUniformLocation(shader.program, tex.name);
+            if (!location)
+                continue;
+            tex.texture.bind(location, data);
+        }
     }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
@@ -113,52 +154,26 @@ class ZograRenderer {
         this.target.bind(this.ctx);
         this.useShader(mateiral.shader);
         mateiral.setup(data);
-        const program = mateiral.shader.program;
-        // Setup transforms
-        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
-        mateiral.shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matM, false, transform);
-        mateiral.shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
-        mateiral.shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matMVP, false, mvp);
-        // Setup global uniforms
-        {
-            for (const val of this.globalUniforms.values()) {
-                const location = gl.getUniformLocation(program, val.name);
-                if (!location)
-                    continue;
-                switch (val.type) {
-                    case "int":
-                        gl.uniform1i(location, val.value);
-                        break;
-                    case "float":
-                        gl.uniform1f(location, val.value);
-                        break;
-                    case "vec2":
-                        gl.uniform2fv(location, val.value, 0, 2);
-                        break;
-                    case "vec3":
-                        gl.uniform3fv(location, val.value, 0, 3);
-                        break;
-                    case "vec4":
-                        gl.uniform4fv(location, val.value, 0, 4);
-                        break;
-                    case "color":
-                        gl.uniform4fv(location, val.value, 0, 4);
-                        break;
-                }
-            }
-        }
-        // Setup global textures
-        {
-            for (const tex of this.globalTextures.values()) {
-                const location = gl.getUniformLocation(program, tex.name);
-                if (!location)
-                    continue;
-                tex.texture.bind(location, data);
-            }
-        }
-        mesh.setup(gl);
+        this.setupTransforms(mateiral.shader, transform);
+        this.setupGlobalUniforms(mateiral.shader, data);
         mesh.bind(mateiral.shader, gl);
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+    }
+    drawLines(lines, transform, material) {
+        const gl = this.gl;
+        const data = {
+            assets: this.assets,
+            gl: gl,
+            nextTextureUnit: 0,
+            size: vec2_1.vec2(this.width, this.height),
+        };
+        this.target.bind(this.ctx);
+        this.useShader(material.shader);
+        material.setup(data);
+        this.setupTransforms(material.shader, transform);
+        this.setupGlobalUniforms(material.shader, data);
+        lines.bind(material.shader);
+        gl.drawElements(gl.LINES, lines.lines.length, gl.UNSIGNED_INT, 0);
     }
     setGlobalUniform(name, type, value) {
         this.globalUniforms.set(name, {

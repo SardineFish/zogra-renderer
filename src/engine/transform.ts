@@ -1,6 +1,5 @@
 import { mat4 } from "../types/mat4";
 import { vec3, Vector3 } from "../types/vec3";
-import { mul } from "../types/math";
 import { quat } from "../types/quat";
 
 export class Transform

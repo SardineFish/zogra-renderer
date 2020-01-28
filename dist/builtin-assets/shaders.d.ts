@@ -16,4 +16,5 @@ export declare function compileBuiltinShaders(gl: WebGL2RenderingContext): {
     DefaultShader: Shader;
     BlitCopy: Shader;
     FlipTexture: Shader;
+    VertColor: Shader;
 };

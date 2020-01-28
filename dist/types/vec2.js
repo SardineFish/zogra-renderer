@@ -47,9 +47,19 @@ class Vector2 extends Array {
         return this[0] * v[0]
             + this[1] * v[1];
     }
-    normalise() {
+    normalize() {
         const m = this.magnitude;
         return this.clone().div(vec2(m, m));
+    }
+    inverse() {
+        this[0] = 1 / this[0];
+        this[1] = 1 / this[1];
+        return this;
+    }
+    negate() {
+        this[0] = -this[0];
+        this[1] = -this[1];
+        return this;
     }
     /**
      * cross product with vec3
@@ -62,7 +72,7 @@ class Vector2 extends Array {
     clone() {
         return vec2(this[0], this[1]);
     }
-    to(type) {
+    __to(type) {
         switch (type) {
             case vec4_1.Vector4:
                 return vec4_1.vec4(this[0], this[1], 0, 0);

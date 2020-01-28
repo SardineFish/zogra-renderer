@@ -7,6 +7,7 @@ const vec2_1 = require("../types/vec2");
 const entity_1 = require("./entity");
 const mat4_1 = require("../types/mat4");
 const math_1 = require("../types/math");
+const color_1 = require("../types/color");
 var Projection;
 (function (Projection) {
     Projection[Projection["Perspective"] = 0] = "Perspective";
@@ -21,6 +22,8 @@ class Camera extends entity_1.Entity {
         this.far = 1000;
         this.viewHeight = 1;
         this.projection = Projection.Perspective;
+        this.clearColor = color_1.Color.black;
+        this.clearDepth = true;
         this.ctx = ctx;
     }
     get pixelSize() {

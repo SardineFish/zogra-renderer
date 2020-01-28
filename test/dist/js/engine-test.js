@@ -114,8 +114,8 @@ class BuiltinAssets {
         this.shaders = shaders_1.compileBuiltinShaders(gl);
         this.meshes = mesh_1.createBuiltinMesh(gl);
         this.DefaultTexture = textures_1.createDefaultTexture(ctx);
-        this.types = materials_1.createBuiltinMaterialTypes(gl, this.DefaultTexture);
-        this.materials = materials_1.createBuiltinMaterial(gl, this.types);
+        this.types = materials_1.createBuiltinMaterialTypes(gl, this.DefaultTexture, this.shaders);
+        this.materials = materials_1.createBuiltinMaterial(gl, this.types, this.shaders);
     }
 }
 exports.BuiltinAssets = BuiltinAssets;
@@ -139,21 +139,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const shader_1 = __webpack_require__(/*! ../core/shader */ "../dist/core/shader.js");
-const shaders_1 = __webpack_require__(/*! ./shaders */ "../dist/builtin-assets/shaders.js");
 const material_1 = __webpack_require__(/*! ../core/material */ "../dist/core/material.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
 const material_type_1 = __webpack_require__(/*! ../core/material-type */ "../dist/core/material-type.js");
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
-function createBuiltinMaterial(gl, types) {
+function createBuiltinMaterial(gl, types, shaders) {
     return {
         default: new types.DefaultMaterial(gl),
         blitCopy: new types.BlitCopy(gl),
+        ColoredLine: new material_1.Material(shaders.VertColor, gl),
     };
 }
 exports.createBuiltinMaterial = createBuiltinMaterial;
-function createBuiltinMaterialTypes(gl, defaultTex) {
-    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.DefaultFrag, {}, gl)) {
+function createBuiltinMaterialTypes(gl, defaultTex, shaders) {
+    let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(shaders.DefaultShader) {
         constructor() {
             super(...arguments);
             this.color = color_1.Color.white;
@@ -169,7 +168,7 @@ function createBuiltinMaterialTypes(gl, defaultTex) {
     DefaultMaterial = __decorate([
         material_1.materialDefine
     ], DefaultMaterial);
-    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(new shader_1.Shader(shaders_1.BuiltinShaderSources.DefaultVert, shaders_1.BuiltinShaderSources.BlitCopyFrag, {}, gl)) {
+    let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(shaders.BlitCopy) {
         constructor() {
             super(...arguments);
             this.flip = vec2_1.vec2(0, 0);
@@ -399,8 +398,6 @@ uniform mat4 uTransformM;
 uniform mat4 uTransformVP;
 uniform mat4 uTransformMVP;
 
-uniform vec4 uColor;
-
 out vec4 vColor;
 out vec4 vPos;
 out vec2 vUV;
@@ -409,7 +406,7 @@ out vec3 vNormal;
 void main()
 {
     gl_Position = uTransformMVP * vec4(aPos, 1);
-    vColor = aColor * uColor;
+    vColor = aColor;
     vUV = aUV;
     vNormal = aNormal;
 }
@@ -429,7 +426,7 @@ out vec4 fragColor;
 void main()
 {
     vec4 color = texture(uMainTex, vUV.xy).rgba;
-    color = color * uColor;
+    color = color * vColor * uColor;
     fragColor = color;
 }
 `;
@@ -463,6 +460,38 @@ void main()
     gl_Position = vec4(aPos, 1);
     vUV = vec2(aUV.x, vec2(1) - aUV.y);
 }`;
+const colorVert = `#version 300 es
+precision mediump float;
+
+in vec3 aPos;
+in vec4 aColor;
+
+uniform mat4 uTransformM;
+uniform mat4 uTransformVP;
+uniform mat4 uTransformMVP;
+
+out vec4 vColor;
+out vec4 vPos;
+
+void main()
+{
+    gl_Position = uTransformMVP * vec4(aPos, 1);
+    vColor = aColor;
+}
+`;
+const colorFrag = `#version 300 es
+precision mediump float;
+
+in vec4 vColor;
+in vec4 vPos;
+
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = vColor;
+}
+`;
 exports.BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
@@ -481,6 +510,7 @@ function compileBuiltinShaders(gl) {
         DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, {}, gl),
         BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
+        VertColor: new shader_1.Shader(colorVert, colorFrag, {}, gl),
     };
 }
 exports.compileBuiltinShaders = compileBuiltinShaders;
@@ -558,6 +588,123 @@ exports.setGlobalContext = (_ctx) => ctx = _ctx;
 exports.GlobalContext = () => ctx;
 exports.GL = () => exports.GlobalContext().gl;
 //# sourceMappingURL=global.js.map
+
+/***/ }),
+
+/***/ "../dist/core/lines.js":
+/*!*****************************!*\
+  !*** ../dist/core/lines.js ***!
+  \*****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
+const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+class Lines {
+    constructor(gl = global_1.GL()) {
+        var _a, _b;
+        this._verts = [];
+        this._colors = [];
+        this._lines = [];
+        this.dirty = true;
+        this.vertices = new Float32Array(0);
+        this.indices = new Uint32Array(0);
+        this.gl = gl;
+        this.VBO = (_a = gl.createBuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.")));
+        this.EBO = (_b = gl.createBuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.")));
+    }
+    get verts() { return this._verts; }
+    set verts(verts) {
+        this._verts = verts;
+        this.dirty = true;
+    }
+    get colors() { return this._colors; }
+    set colors(colors) {
+        this._colors = colors;
+        this.dirty = true;
+    }
+    get lines() { return this._lines; }
+    set lines(lines) {
+        this._lines = lines;
+        this.dirty = true;
+    }
+    clear() {
+        this.verts = [];
+        this.colors = [];
+        this.lines = [];
+    }
+    update() {
+        if (this.dirty) {
+            const gl = this.gl;
+            // Prepare VBO data.
+            if (this.lines.length % 2 !== 0)
+                throw new Error("Invalid lines.");
+            if (this.colors.length !== this.verts.length)
+                this.colors = [...this.colors, ...util_1.fillArray(color_1.Color.white, this.verts.length - this.colors.length)];
+            this.vertices = new Float32Array(this.verts.flatMap((vert, idx) => [
+                ...vert,
+                ...this.colors[idx],
+            ]));
+            if (this.vertices.length != this.verts.length * 7)
+                throw new Error("Buffer with invalid length.");
+            this.indices = new Uint32Array(this.lines.flat());
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+            gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.DYNAMIC_DRAW);
+            this.dirty = false;
+        }
+    }
+    bind(shader) {
+        const gl = this.gl;
+        this.update();
+        const attributes = shader.attributes;
+        // Setup VAO
+        const stride = 7 * 4;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        // vert: vec3
+        if (attributes.vert >= 0) {
+            gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
+            gl.enableVertexAttribArray(attributes.vert);
+        }
+        // color: vec4
+        if (attributes.color >= 0) {
+            gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
+            gl.enableVertexAttribArray(attributes.color);
+        }
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
+    }
+}
+exports.Lines = Lines;
+class LineBuilder {
+    constructor(capacity = 0, gl = global_1.GL()) {
+        this.verts = [];
+        this.colors = [];
+        this.lines = [];
+        this.gl = gl;
+    }
+    addLine(line, color = color_1.Color.white) {
+        const base = this.verts.length;
+        const [u, v] = line;
+        this.verts.push(u, v);
+        this.colors.push(color, color);
+        this.lines.push(base, base + 1);
+    }
+    toLines() {
+        const line = new Lines(this.gl);
+        line.verts = this.verts;
+        line.colors = this.colors;
+        line.lines = this.lines;
+        line.update();
+        return line;
+    }
+}
+exports.LineBuilder = LineBuilder;
+//# sourceMappingURL=lines.js.map
 
 /***/ }),
 
@@ -765,11 +912,11 @@ class Mesh {
             const c = this.verts[this.triangles[i + 2]];
             const u = math_1.minus(b, a);
             const v = math_1.minus(c, a);
-            const normal = math_1.cross(u, v).normalise();
+            const normal = math_1.cross(u, v).normalize();
             this.normals[this.triangles[i]].plus(normal);
         }
         for (let i = 0; i < this.normals.length; i++)
-            this.normals[i] = this.normals[i].normalise();
+            this.normals[i] = this.normals[i].normalize();
     }
     update() {
         if (this.dirty) {
@@ -1034,8 +1181,49 @@ class ZograRenderer {
         gl.enable(gl.BLEND);
         gl.blendFunc(shader.settings.blendSrc, shader.settings.blendDst);
         gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.BACK);
+        gl.cullFace(shader.settings.cull);
         gl.frontFace(gl.CCW);
+    }
+    setupTransforms(shader, transform) {
+        const gl = this.gl;
+        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
+        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transform);
+        shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
+        shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMVP, false, mvp);
+    }
+    setupGlobalUniforms(shader, data) {
+        const gl = this.gl;
+        for (const val of this.globalUniforms.values()) {
+            const location = gl.getUniformLocation(shader.program, val.name);
+            if (!location)
+                continue;
+            switch (val.type) {
+                case "int":
+                    gl.uniform1i(location, val.value);
+                    break;
+                case "float":
+                    gl.uniform1f(location, val.value);
+                    break;
+                case "vec2":
+                    gl.uniform2fv(location, val.value, 0, 2);
+                    break;
+                case "vec3":
+                    gl.uniform3fv(location, val.value, 0, 3);
+                    break;
+                case "vec4":
+                    gl.uniform4fv(location, val.value, 0, 4);
+                    break;
+                case "color":
+                    gl.uniform4fv(location, val.value, 0, 4);
+                    break;
+            }
+        }
+        for (const tex of this.globalTextures.values()) {
+            const location = gl.getUniformLocation(shader.program, tex.name);
+            if (!location)
+                continue;
+            tex.texture.bind(location, data);
+        }
     }
     drawMesh(mesh, transform, mateiral) {
         const gl = this.gl;
@@ -1048,52 +1236,26 @@ class ZograRenderer {
         this.target.bind(this.ctx);
         this.useShader(mateiral.shader);
         mateiral.setup(data);
-        const program = mateiral.shader.program;
-        // Setup transforms
-        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
-        mateiral.shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matM, false, transform);
-        mateiral.shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
-        mateiral.shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(mateiral.shader.builtinUniformLocations.matMVP, false, mvp);
-        // Setup global uniforms
-        {
-            for (const val of this.globalUniforms.values()) {
-                const location = gl.getUniformLocation(program, val.name);
-                if (!location)
-                    continue;
-                switch (val.type) {
-                    case "int":
-                        gl.uniform1i(location, val.value);
-                        break;
-                    case "float":
-                        gl.uniform1f(location, val.value);
-                        break;
-                    case "vec2":
-                        gl.uniform2fv(location, val.value, 0, 2);
-                        break;
-                    case "vec3":
-                        gl.uniform3fv(location, val.value, 0, 3);
-                        break;
-                    case "vec4":
-                        gl.uniform4fv(location, val.value, 0, 4);
-                        break;
-                    case "color":
-                        gl.uniform4fv(location, val.value, 0, 4);
-                        break;
-                }
-            }
-        }
-        // Setup global textures
-        {
-            for (const tex of this.globalTextures.values()) {
-                const location = gl.getUniformLocation(program, tex.name);
-                if (!location)
-                    continue;
-                tex.texture.bind(location, data);
-            }
-        }
-        mesh.setup(gl);
+        this.setupTransforms(mateiral.shader, transform);
+        this.setupGlobalUniforms(mateiral.shader, data);
         mesh.bind(mateiral.shader, gl);
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+    }
+    drawLines(lines, transform, material) {
+        const gl = this.gl;
+        const data = {
+            assets: this.assets,
+            gl: gl,
+            nextTextureUnit: 0,
+            size: vec2_1.vec2(this.width, this.height),
+        };
+        this.target.bind(this.ctx);
+        this.useShader(material.shader);
+        material.setup(data);
+        this.setupTransforms(material.shader, transform);
+        this.setupGlobalUniforms(material.shader, data);
+        lines.bind(material.shader);
+        gl.drawElements(gl.LINES, lines.lines.length, gl.UNSIGNED_INT, 0);
     }
     setGlobalUniform(name, type, value) {
         this.globalUniforms.set(name, {
@@ -1475,6 +1637,7 @@ const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js")
 const entity_1 = __webpack_require__(/*! ./entity */ "../dist/engine/entity.js");
 const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js");
 const math_1 = __webpack_require__(/*! ../types/math */ "../dist/types/math.js");
+const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
 var Projection;
 (function (Projection) {
     Projection[Projection["Perspective"] = 0] = "Perspective";
@@ -1489,6 +1652,8 @@ class Camera extends entity_1.Entity {
         this.far = 1000;
         this.viewHeight = 1;
         this.projection = Projection.Perspective;
+        this.clearColor = color_1.Color.black;
+        this.clearDepth = true;
         this.ctx = ctx;
     }
     get pixelSize() {
@@ -1531,6 +1696,7 @@ __export(__webpack_require__(/*! ./entity */ "../dist/engine/entity.js"));
 __export(__webpack_require__(/*! ./scene */ "../dist/engine/scene.js"));
 __export(__webpack_require__(/*! ./transform */ "../dist/engine/transform.js"));
 __export(__webpack_require__(/*! ./zogra-engine */ "../dist/engine/zogra-engine.js"));
+__export(__webpack_require__(/*! ./input */ "../dist/engine/input.js"));
 //# sourceMappingURL=engine.js.map
 
 /***/ }),
@@ -1610,6 +1776,204 @@ class EventTrigger {
 }
 exports.EventTrigger = EventTrigger;
 //# sourceMappingURL=event.js.map
+
+/***/ }),
+
+/***/ "../dist/engine/input.js":
+/*!*******************************!*\
+  !*** ../dist/engine/input.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
+const math_1 = __webpack_require__(/*! ../types/math */ "../dist/types/math.js");
+var KeyState;
+(function (KeyState) {
+    KeyState[KeyState["Pressed"] = 1] = "Pressed";
+    KeyState[KeyState["Released"] = 0] = "Released";
+})(KeyState = exports.KeyState || (exports.KeyState = {}));
+;
+class InputManager {
+    constructor(options = {}) {
+        var _a;
+        this.keyStates = new Map();
+        this.keyStatesThisFrame = new Map();
+        this.mousePos = vec2_1.vec2.zero();
+        this.mouseDelta = vec2_1.vec2.zero();
+        this.previousMousePos = vec2_1.vec2.zero();
+        this.eventTarget = options.target || window;
+        if (options.bound)
+            this.bound = options.bound;
+        else if ((_a = options.target) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect)
+            this.bound = options.target;
+        this.eventTarget.addEventListener("keydown", (e) => {
+            this.keyStates.set(e.keyCode, KeyState.Pressed);
+            this.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
+        });
+        this.eventTarget.addEventListener("keyup", e => {
+            this.keyStates.set(e.keyCode, KeyState.Released);
+            this.keyStatesThisFrame.set(e.keyCode, KeyState.Released);
+        });
+        this.eventTarget.addEventListener("mousedown", e => {
+            this.keyStates.set(Keys.Mouse0 + e.button, KeyState.Pressed);
+            this.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Pressed);
+        });
+        this.eventTarget.addEventListener("mouseup", e => {
+            this.keyStates.set(Keys.Mouse0 + e.button, KeyState.Released);
+            this.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Released);
+        });
+        this.eventTarget.addEventListener("mousemove", e => {
+            var _a, _b, _c, _d, _e;
+            const rect = (_a = this.bound) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
+            const offset = vec2_1.vec2((_c = (_b = rect) === null || _b === void 0 ? void 0 : _b.left, (_c !== null && _c !== void 0 ? _c : 0)), (_e = (_d = rect) === null || _d === void 0 ? void 0 : _d.right, (_e !== null && _e !== void 0 ? _e : 0)));
+            const pos = math_1.minus(vec2_1.vec2(e.clientX, e.clientY), offset);
+            this.mouseDelta = math_1.minus(pos, this.previousMousePos);
+            this.mousePos = pos;
+        });
+        for (const key in Keys) {
+            if (!isNaN(key))
+                continue;
+            if (Keys.hasOwnProperty(key)) {
+                this.keyStates.set(Keys[key], KeyState.Released);
+            }
+        }
+    }
+    get pointerPosition() { return this.mousePos; }
+    get pointerDelta() { return this.mouseDelta; }
+    getKey(key) {
+        return this.keyStates.get(key) === KeyState.Pressed ? true : false;
+    }
+    getKeyDown(key) {
+        return this.keyStatesThisFrame.get(key) === KeyState.Pressed ? true : false;
+    }
+    getKeyUp(key) {
+        return this.keyStatesThisFrame.get(key) === KeyState.Released ? true : false;
+    }
+    update() {
+        this.keyStatesThisFrame.clear();
+        this.previousMousePos = this.mousePos;
+        this.mouseDelta = vec2_1.vec2.zero();
+    }
+}
+exports.InputManager = InputManager;
+var Keys;
+(function (Keys) {
+    Keys[Keys["BackSpace"] = 8] = "BackSpace";
+    Keys[Keys["Tab"] = 9] = "Tab";
+    Keys[Keys["Clear"] = 12] = "Clear";
+    Keys[Keys["Enter"] = 13] = "Enter";
+    Keys[Keys["Shift"] = 16] = "Shift";
+    Keys[Keys["Control"] = 17] = "Control";
+    Keys[Keys["Alt"] = 18] = "Alt";
+    Keys[Keys["Pause"] = 19] = "Pause";
+    Keys[Keys["CapsLock"] = 20] = "CapsLock";
+    Keys[Keys["Escape"] = 27] = "Escape";
+    Keys[Keys["Space"] = 32] = "Space";
+    Keys[Keys["Prior"] = 33] = "Prior";
+    Keys[Keys["Next"] = 34] = "Next";
+    Keys[Keys["End"] = 35] = "End";
+    Keys[Keys["Home"] = 36] = "Home";
+    Keys[Keys["Left"] = 37] = "Left";
+    Keys[Keys["Up"] = 38] = "Up";
+    Keys[Keys["Right"] = 39] = "Right";
+    Keys[Keys["Down"] = 40] = "Down";
+    Keys[Keys["Select"] = 41] = "Select";
+    Keys[Keys["Print"] = 42] = "Print";
+    Keys[Keys["Execute"] = 43] = "Execute";
+    Keys[Keys["Insert"] = 45] = "Insert";
+    Keys[Keys["Delete"] = 46] = "Delete";
+    Keys[Keys["Help"] = 47] = "Help";
+    Keys[Keys["Num0"] = 48] = "Num0";
+    Keys[Keys["Num1"] = 49] = "Num1";
+    Keys[Keys["Num2"] = 50] = "Num2";
+    Keys[Keys["Num3"] = 51] = "Num3";
+    Keys[Keys["Num4"] = 52] = "Num4";
+    Keys[Keys["Num5"] = 53] = "Num5";
+    Keys[Keys["Num6"] = 54] = "Num6";
+    Keys[Keys["Num7"] = 55] = "Num7";
+    Keys[Keys["Num8"] = 56] = "Num8";
+    Keys[Keys["Num9"] = 57] = "Num9";
+    Keys[Keys["A"] = 65] = "A";
+    Keys[Keys["B"] = 66] = "B";
+    Keys[Keys["C"] = 67] = "C";
+    Keys[Keys["D"] = 68] = "D";
+    Keys[Keys["E"] = 69] = "E";
+    Keys[Keys["F"] = 70] = "F";
+    Keys[Keys["G"] = 71] = "G";
+    Keys[Keys["H"] = 72] = "H";
+    Keys[Keys["I"] = 73] = "I";
+    Keys[Keys["J"] = 74] = "J";
+    Keys[Keys["K"] = 75] = "K";
+    Keys[Keys["L"] = 76] = "L";
+    Keys[Keys["M"] = 77] = "M";
+    Keys[Keys["N"] = 78] = "N";
+    Keys[Keys["O"] = 79] = "O";
+    Keys[Keys["P"] = 80] = "P";
+    Keys[Keys["Q"] = 81] = "Q";
+    Keys[Keys["R"] = 82] = "R";
+    Keys[Keys["S"] = 83] = "S";
+    Keys[Keys["T"] = 84] = "T";
+    Keys[Keys["U"] = 85] = "U";
+    Keys[Keys["V"] = 86] = "V";
+    Keys[Keys["W"] = 87] = "W";
+    Keys[Keys["X"] = 88] = "X";
+    Keys[Keys["Y"] = 89] = "Y";
+    Keys[Keys["Z"] = 90] = "Z";
+    Keys[Keys["KP0"] = 96] = "KP0";
+    Keys[Keys["KP1"] = 97] = "KP1";
+    Keys[Keys["KP2"] = 98] = "KP2";
+    Keys[Keys["KP3"] = 99] = "KP3";
+    Keys[Keys["KP4"] = 100] = "KP4";
+    Keys[Keys["KP5"] = 101] = "KP5";
+    Keys[Keys["KP6"] = 102] = "KP6";
+    Keys[Keys["KP7"] = 103] = "KP7";
+    Keys[Keys["KP8"] = 104] = "KP8";
+    Keys[Keys["KP9"] = 105] = "KP9";
+    Keys[Keys["KPMultiply"] = 106] = "KPMultiply";
+    Keys[Keys["KPAdd"] = 107] = "KPAdd";
+    Keys[Keys["KPSeparator"] = 108] = "KPSeparator";
+    Keys[Keys["KPSubtract"] = 109] = "KPSubtract";
+    Keys[Keys["KPDecimal"] = 110] = "KPDecimal";
+    Keys[Keys["KPDivide"] = 111] = "KPDivide";
+    Keys[Keys["F1"] = 112] = "F1";
+    Keys[Keys["F2"] = 113] = "F2";
+    Keys[Keys["F3"] = 114] = "F3";
+    Keys[Keys["F4"] = 115] = "F4";
+    Keys[Keys["F5"] = 116] = "F5";
+    Keys[Keys["F6"] = 117] = "F6";
+    Keys[Keys["F7"] = 118] = "F7";
+    Keys[Keys["F8"] = 119] = "F8";
+    Keys[Keys["F9"] = 120] = "F9";
+    Keys[Keys["F10"] = 121] = "F10";
+    Keys[Keys["F11"] = 122] = "F11";
+    Keys[Keys["F12"] = 123] = "F12";
+    Keys[Keys["F13"] = 124] = "F13";
+    Keys[Keys["F14"] = 125] = "F14";
+    Keys[Keys["F15"] = 126] = "F15";
+    Keys[Keys["F16"] = 127] = "F16";
+    Keys[Keys["F17"] = 128] = "F17";
+    Keys[Keys["F18"] = 129] = "F18";
+    Keys[Keys["F19"] = 130] = "F19";
+    Keys[Keys["F20"] = 131] = "F20";
+    Keys[Keys["F21"] = 132] = "F21";
+    Keys[Keys["F22"] = 133] = "F22";
+    Keys[Keys["F23"] = 134] = "F23";
+    Keys[Keys["F24"] = 135] = "F24";
+    Keys[Keys["NumLock"] = 136] = "NumLock";
+    Keys[Keys["ScrollLock"] = 137] = "ScrollLock";
+    Keys[Keys["Mouse0"] = 256] = "Mouse0";
+    Keys[Keys["Mouse1"] = 257] = "Mouse1";
+    Keys[Keys["Mouse2"] = 258] = "Mouse2";
+    Keys[Keys["Mouse3"] = 259] = "Mouse3";
+    Keys[Keys["Mouse4"] = 260] = "Mouse4";
+    Keys[Keys["Mouse5"] = 261] = "Mouse5";
+    Keys[Keys["Mouse6"] = 262] = "Mouse6";
+})(Keys = exports.Keys || (exports.Keys = {}));
+//# sourceMappingURL=input.js.map
 
 /***/ }),
 
@@ -1828,9 +2192,9 @@ const camera_1 = __webpack_require__(/*! ./camera */ "../dist/engine/camera.js")
 const core_1 = __webpack_require__(/*! ../core/core */ "../dist/core/core.js");
 const event_1 = __webpack_require__(/*! ./event */ "../dist/engine/event.js");
 class ZograEngine {
-    constructor(canvas, renderPipeline = new preview_renderer_1.PreviewRenderer()) {
+    constructor(canvas, RenderPipeline = preview_renderer_1.PreviewRenderer) {
         this.renderer = new core_1.ZograRenderer(canvas, canvas.width, canvas.height);
-        this.renderPipeline = renderPipeline;
+        this.renderPipeline = new RenderPipeline(this.renderer);
         this.scene = new scene_1.Scene();
         this.eventEmitter = new event_1.EventTrigger();
     }
@@ -1923,7 +2287,26 @@ const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../dist/types/mat4.js")
 const render_data_1 = __webpack_require__(/*! ./render-data */ "../dist/render-pipeline/render-data.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
 const render_target_1 = __webpack_require__(/*! ../core/render-target */ "../dist/core/render-target.js");
+const lines_1 = __webpack_require__(/*! ../core/lines */ "../dist/core/lines.js");
+const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js");
 class PreviewRenderer {
+    constructor(renderer) {
+        this.renderer = renderer;
+        const lb = new lines_1.LineBuilder(0, renderer.gl);
+        const Size = 10;
+        const Grid = 1;
+        for (let i = -Size; i <= Size; i += Grid) {
+            lb.addLine([
+                vec3_1.vec3(i, 0, -Size),
+                vec3_1.vec3(i, 0, Size),
+            ]);
+            lb.addLine([
+                vec3_1.vec3(-Size, 0, i),
+                vec3_1.vec3(Size, 0, i)
+            ]);
+        }
+        this.grid = lb.toLines();
+    }
     render(context, cameras) {
         for (let i = 0; i < cameras.length; i++) {
             const data = new render_data_1.RenderData(cameras[i], context.scene);
@@ -1941,7 +2324,7 @@ class PreviewRenderer {
             context.renderer.setRenderTarget(render_target_1.RenderTarget.CanvasTarget);
         else
             context.renderer.setRenderTarget(camera.output);
-        context.renderer.clear(color_1.Color.black, true);
+        context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.viewProjectionMatrix = camera.viewProjectionMatrix;
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
@@ -1951,6 +2334,10 @@ class PreviewRenderer {
                 context.renderer.drawMesh(mesh, modelMatrix, obj.material);
             }
         }
+        this.renderGrid(context, data);
+    }
+    renderGrid(context, data) {
+        this.renderer.drawLines(this.grid, mat4_1.mat4.identity(), this.renderer.assets.materials.ColoredLine);
     }
 }
 exports.PreviewRenderer = PreviewRenderer;
@@ -2174,46 +2561,47 @@ exports.mat4 = Matrix4x4;
 Object.defineProperty(exports, "__esModule", { value: true });
 const vec3_1 = __webpack_require__(/*! ./vec3 */ "../dist/types/vec3.js");
 const vec4_1 = __webpack_require__(/*! ./vec4 */ "../dist/types/vec4.js");
-const gl_matrix_1 = __webpack_require__(/*! gl-matrix */ "../node_modules/gl-matrix/esm/index.js");
 const vec2_1 = __webpack_require__(/*! ./vec2 */ "../dist/types/vec2.js");
+Number.prototype.__to = function (type) {
+    switch (type) {
+        case vec4_1.Vector4:
+            return vec4_1.vec4(this.valueOf(), this.valueOf(), this.valueOf(), this.valueOf());
+        case vec3_1.Vector3:
+            return vec3_1.vec3(this.valueOf(), this.valueOf(), this.valueOf());
+        case vec2_1.Vector2:
+            return vec2_1.vec2(this.valueOf(), this.valueOf());
+    }
+    return this.valueOf();
+};
 function arithOrder(a, b) {
-    return (b.length > a.length ? [b, a] : [a, b]);
+    if (typeof (a) === "number")
+        return [b, a, true];
+    else if (typeof (b) === "number")
+        return [a, b, false];
+    return (b.length > a.length ? [b, a, true] : [a, b, false]);
 }
 function plus(a, b) {
     const [lhs, rhs] = arithOrder(a, b);
-    return rhs.to(lhs.constructor).plus(lhs);
+    return rhs.__to(lhs.constructor).plus(lhs);
 }
 exports.plus = plus;
 function minus(a, b) {
-    const [lhs, rhs] = arithOrder(a, b);
-    return rhs.to(lhs.constructor).minus(lhs);
+    const [lhs, rhs, invert] = arithOrder(a, b);
+    return invert
+        ? rhs.__to(lhs.constructor).minus(lhs)
+        : rhs.__to(lhs.constructor).minus(lhs).negate();
 }
 exports.minus = minus;
 function mul(a, b) {
-    if (a instanceof vec3_1.Vector3 || a instanceof vec4_1.Vector4 || a instanceof vec2_1.Vector2) {
-        const [lhs, rhs] = arithOrder(a, b);
-        return rhs.to(lhs.constructor).mul(lhs);
-    }
-    else {
-        const out = b.clone();
-        switch (b.constructor) {
-            case vec2_1.Vector2:
-                gl_matrix_1.vec2.transformMat4(out, b, a);
-                break;
-            case vec3_1.Vector3:
-                gl_matrix_1.vec3.transformMat4(out, b, a);
-                break;
-            default:
-                gl_matrix_1.vec4.transformMat4(out, b, a);
-                break;
-        }
-        return out;
-    }
+    const [lhs, rhs] = arithOrder(a, b);
+    return rhs.__to(lhs.constructor).mul(lhs);
 }
 exports.mul = mul;
 function div(a, b) {
-    const [lhs, rhs] = arithOrder(a, b);
-    return rhs.to(lhs.constructor).div(lhs);
+    const [lhs, rhs, invert] = arithOrder(a, b);
+    return invert
+        ? rhs.__to(lhs.constructor).div(lhs)
+        : rhs.__to(lhs.constructor).div(lhs).negate();
 }
 exports.div = div;
 function dot(a, b) {
@@ -2358,9 +2746,19 @@ class Vector2 extends Array {
         return this[0] * v[0]
             + this[1] * v[1];
     }
-    normalise() {
+    normalize() {
         const m = this.magnitude;
         return this.clone().div(vec2(m, m));
+    }
+    inverse() {
+        this[0] = 1 / this[0];
+        this[1] = 1 / this[1];
+        return this;
+    }
+    negate() {
+        this[0] = -this[0];
+        this[1] = -this[1];
+        return this;
     }
     /**
      * cross product with vec3
@@ -2373,7 +2771,7 @@ class Vector2 extends Array {
     clone() {
         return vec2(this[0], this[1]);
     }
-    to(type) {
+    __to(type) {
         switch (type) {
             case vec4_1.Vector4:
                 return vec4_1.vec4(this[0], this[1], 0, 0);
@@ -2458,9 +2856,21 @@ class Vector3 extends Array {
             + this[1] * v[1]
             + this[3] * v[3];
     }
-    normalise() {
+    normalize() {
         const m = this.magnitude;
         return this.clone().div(vec3(m, m, m));
+    }
+    inverse() {
+        this[0] = 1 / this[0];
+        this[1] = 1 / this[1];
+        this[2] = 1 / this[2];
+        return this;
+    }
+    negate() {
+        this[0] = -this[0];
+        this[1] = -this[1];
+        this[2] = -this[2];
+        return this;
     }
     /**
      * cross product with vec3
@@ -2473,7 +2883,7 @@ class Vector3 extends Array {
     clone() {
         return vec3(this[0], this[1], this[2]);
     }
-    to(type) {
+    __to(type) {
         switch (type) {
             case vec4_1.Vector4:
                 return vec4_1.vec4(this[0], this[1], this[2], 0);
@@ -2565,14 +2975,28 @@ class Vector4 extends Array {
             + this[2] * v[2]
             + this[3] * v[3];
     }
-    normalise() {
+    normalize() {
         const m = this.magnitude;
         return this.clone().div(vec4(m, m, m, m));
+    }
+    inverse() {
+        this[0] = 1 / this[0];
+        this[1] = 1 / this[1];
+        this[2] = 1 / this[2];
+        this[3] = 1 / this[3];
+        return this;
+    }
+    negate() {
+        this[0] = -this[0];
+        this[1] = -this[1];
+        this[2] = -this[2];
+        this[3] = -this[3];
+        return this;
     }
     clone() {
         return vec4(this[0], this[1], this[2], this[3]);
     }
-    to(type) {
+    __to(type) {
         switch (type) {
             case Vector4:
                 return this.clone();
@@ -12151,16 +12575,45 @@ __webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
 const __1 = __webpack_require__(/*! ../.. */ "../dist/index.js");
 const canvas = document.querySelector("#canvas");
 const engine = new __1.ZograEngine(canvas);
-const camera = new __1.Camera();
-engine.scene.add(camera);
-camera.position = __1.vec3(0, 0, 10);
-const cube = new __1.RenderObject();
-engine.scene.add(cube);
-cube.meshes.push(engine.renderer.assets.meshes.cube);
+const input = new __1.InputManager();
+initCamera();
+initObjects();
 engine.start();
-engine.on("update", (time) => {
-    cube.rotation = __1.quat.normalize(__1.quat.mul(cube.rotation, __1.quat.axis(__1.vec3(1, 1, 1), time.deltaTime * 0.5)));
-});
+function initCamera() {
+    const wrapper = new __1.Entity();
+    engine.scene.add(wrapper);
+    wrapper.position = __1.vec3(0, 0, 10);
+    const camera = new __1.Camera();
+    engine.scene.add(camera, wrapper);
+    camera.clearColor = __1.rgb(.3, .3, .3);
+    engine.on("update", (time) => {
+        let v = __1.vec3.zero();
+        let forward = __1.mat4.mulVector(camera.localToWorldMatrix, __1.vec3(0, 0, -1)).normalize();
+        let right = __1.mat4.mulVector(camera.localToWorldMatrix, __1.vec3(1, 0, 0)).normalize();
+        if (input.getKey(__1.Keys.Shift))
+            v.plus(__1.vec3(0, 1 * time.deltaTime, 0));
+        if (input.getKey(__1.Keys.Control))
+            v.plus(__1.vec3(0, -1 * time.deltaTime, 0));
+        if (input.getKey(__1.Keys.W))
+            v.plus(__1.mul(forward, time.deltaTime));
+        if (input.getKey(__1.Keys.S))
+            v.plus(__1.mul(forward, -time.deltaTime));
+        if (input.getKey(__1.Keys.D))
+            v.plus(__1.mul(right, time.deltaTime));
+        if (input.getKey(__1.Keys.A))
+            v.plus(__1.mul(right, -time.deltaTime));
+        wrapper.position = __1.plus(wrapper.position, v);
+        console.log(input.pointerPosition);
+    });
+}
+function initObjects() {
+    const cube = new __1.RenderObject();
+    engine.scene.add(cube);
+    cube.meshes.push(engine.renderer.assets.meshes.cube);
+    engine.on("update", (time) => {
+        cube.rotation = __1.quat.normalize(__1.quat.mul(cube.rotation, __1.quat.axis(__1.vec3(1, 1, 1), time.deltaTime * 0.5)));
+    });
+}
 
 
 /***/ })

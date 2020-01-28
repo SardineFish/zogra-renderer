@@ -6,6 +6,7 @@ import { vec2 } from "../types/vec2";
 import { Entity } from "./entity";
 import { mat4 } from "../types/mat4";
 import { Deg2Rad } from "../types/math";
+import { Color } from "../types/color";
 
 
 export enum Projection
@@ -23,6 +24,8 @@ export class Camera extends Entity
     far: number = 1000;
     viewHeight = 1;
     projection = Projection.Perspective;
+    clearColor: Color = Color.black;
+    clearDepth = true;
 
     get pixelSize()
     {

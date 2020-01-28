@@ -20,9 +20,11 @@ export declare class Vector4 extends Array<number> {
     mul(v: Vector4): this;
     div(v: Vector4): this;
     dot(v: Vector4): number;
-    normalise(): Vector4;
+    normalize(): Vector4;
+    inverse(): this;
+    negate(): this;
     clone(): Vector4;
-    to(type: Function): Vector3 | Vector4 | Vector2;
+    __to(type: Function): Vector3 | Vector4 | Vector2;
 }
 export declare function vec4(x: number, y: number, z: number, w: number): Vector4;
 export declare namespace vec4 {

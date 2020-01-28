@@ -18,7 +18,9 @@ export declare class Vector3 extends Array<number> {
     mul(v: Vector3): this;
     div(v: Vector3): this;
     dot(v: Vector3): number;
-    normalise(): Vector3;
+    normalize(): Vector3;
+    inverse(): this;
+    negate(): this;
     /**
      * cross product with vec3
      * @param a u
@@ -26,7 +28,7 @@ export declare class Vector3 extends Array<number> {
      */
     cross(b: Vector3): Vector3;
     clone(): Vector3;
-    to(type: Function): Vector3 | Vector4 | Vector2;
+    __to(type: Function): Vector3 | Vector4 | Vector2;
 }
 export declare function vec3(x: number, y: number, z: number): Vector3;
 export declare namespace vec3 {

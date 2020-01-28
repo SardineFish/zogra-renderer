@@ -18,8 +18,8 @@ class BuiltinAssets {
         this.shaders = shaders_1.compileBuiltinShaders(gl);
         this.meshes = mesh_1.createBuiltinMesh(gl);
         this.DefaultTexture = textures_1.createDefaultTexture(ctx);
-        this.types = materials_1.createBuiltinMaterialTypes(gl, this.DefaultTexture);
-        this.materials = materials_1.createBuiltinMaterial(gl, this.types);
+        this.types = materials_1.createBuiltinMaterialTypes(gl, this.DefaultTexture, this.shaders);
+        this.materials = materials_1.createBuiltinMaterial(gl, this.types, this.shaders);
     }
 }
 exports.BuiltinAssets = BuiltinAssets;

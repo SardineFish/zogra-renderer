@@ -1,5 +1,5 @@
 import { Scene } from "./scene";
-import { ZograRenderPipeline } from "../render-pipeline/render-pipeline";
+import { ZograRenderPipeline, ZograRenderPipelineConstructor } from "../render-pipeline/render-pipeline";
 import { PreviewRenderer } from "../render-pipeline/preview-renderer";
 import { Camera } from "./camera";
 import { ZograRenderer } from "../core/core";
@@ -23,10 +23,10 @@ export class ZograEngine
     renderer: ZograRenderer;
     renderPipeline: ZograRenderPipeline;
     eventEmitter: EventTrigger;
-    constructor(canvas:HTMLCanvasElement, renderPipeline: ZograRenderPipeline = new PreviewRenderer())
+    constructor(canvas:HTMLCanvasElement, RenderPipeline: ZograRenderPipelineConstructor = PreviewRenderer)
     {
         this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
-        this.renderPipeline = renderPipeline;
+        this.renderPipeline = new RenderPipeline(this.renderer);
         this.scene = new Scene();
         this.eventEmitter = new EventTrigger();
     }

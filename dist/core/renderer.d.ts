@@ -8,6 +8,7 @@ import { RenderTarget } from "./render-target";
 import { RenderTexture, DepthTexture, Texture } from "./texture";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { UniformType, UniformValueType } from "./types";
+import { Lines } from "./lines";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
     readonly width: number;
@@ -29,7 +30,10 @@ export declare class ZograRenderer {
     clear(color?: Color, clearDepth?: boolean): void;
     blit(src: Texture, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material): void;
     private useShader;
+    private setupTransforms;
+    private setupGlobalUniforms;
     drawMesh(mesh: Mesh, transform: mat4, mateiral: Material): void;
+    drawLines(lines: Lines, transform: mat4, material: Material): void;
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
     unsetGlobalUniform(name: string): void;
     setGlobalTexture(name: string, texture: Texture): void;

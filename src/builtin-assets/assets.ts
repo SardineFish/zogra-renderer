@@ -31,7 +31,7 @@ export class BuiltinAssets
         this.shaders = compileBuiltinShaders(gl);
         this.meshes = createBuiltinMesh(gl);
         this.DefaultTexture = createDefaultTexture(ctx);
-        this.types = createBuiltinMaterialTypes(gl, this.DefaultTexture);
-        this.materials = createBuiltinMaterial(gl, this.types);
+        this.types = createBuiltinMaterialTypes(gl, this.DefaultTexture, this.shaders);
+        this.materials = createBuiltinMaterial(gl, this.types, this.shaders);
     }
 }

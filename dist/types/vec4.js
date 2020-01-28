@@ -61,14 +61,28 @@ class Vector4 extends Array {
             + this[2] * v[2]
             + this[3] * v[3];
     }
-    normalise() {
+    normalize() {
         const m = this.magnitude;
         return this.clone().div(vec4(m, m, m, m));
+    }
+    inverse() {
+        this[0] = 1 / this[0];
+        this[1] = 1 / this[1];
+        this[2] = 1 / this[2];
+        this[3] = 1 / this[3];
+        return this;
+    }
+    negate() {
+        this[0] = -this[0];
+        this[1] = -this[1];
+        this[2] = -this[2];
+        this[3] = -this[3];
+        return this;
     }
     clone() {
         return vec4(this[0], this[1], this[2], this[3]);
     }
-    to(type) {
+    __to(type) {
         switch (type) {
             case Vector4:
                 return this.clone();
