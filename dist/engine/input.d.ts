@@ -19,6 +19,7 @@ interface PointerBoundingElement {
 interface InputManagerOptions {
     target?: InputEventTarget;
     bound?: PointerBoundingElement;
+    pointerLockElement?: Element;
 }
 export declare class InputManager {
     private eventTarget;
@@ -28,6 +29,7 @@ export declare class InputManager {
     private mousePos;
     private mouseDelta;
     private previousMousePos;
+    private pointerLockElement;
     constructor(options?: InputManagerOptions);
     get pointerPosition(): import("../types/vec2").Vector2;
     get pointerDelta(): import("../types/vec2").Vector2;
@@ -35,6 +37,8 @@ export declare class InputManager {
     getKeyDown(key: Keys): boolean;
     getKeyUp(key: Keys): boolean;
     update(): void;
+    lockPointer(): void;
+    releasePointer(): void;
 }
 export declare enum Keys {
     BackSpace = 8,

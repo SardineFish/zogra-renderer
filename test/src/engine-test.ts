@@ -9,22 +9,29 @@ initCamera();
 initObjects();
 
 engine.start();
-
+engine.on('update', () => input.update());
 
 function initCamera()
 {
     const wrapper = new Entity();
     engine.scene.add(wrapper);
-    wrapper.position = vec3(0, 0, 10);
+    wrapper.position = vec3(0, 2, 20);
     const camera = new Camera();
     engine.scene.add(camera, wrapper);
     camera.clearColor = rgb(.3, .3, .3);
+    camera.FOV = 60;
 
     engine.on("update", (time) =>
     {
+        const sensity = 0.0001 * 10;
+
         let v = vec3.zero();
-        let forward = mat4.mulVector(camera.localToWorldMatrix, vec3(0, 0, -1)).normalize();
+        let forward = mat4.mulVector(camera.localToWorldMatrix, vec3(0, 0, -1));
+        forward.y = 0;
+        forward = forward.normalize();
         let right = mat4.mulVector(camera.localToWorldMatrix, vec3(1, 0, 0)).normalize();
+        let up = vec3(0, 1, 0);
+        
 
         if (input.getKey(Keys.Shift))
             v.plus(vec3(0, 1 * time.deltaTime, 0));
@@ -38,9 +45,22 @@ function initCamera()
             v.plus(mul(right, time.deltaTime));
         if (input.getKey(Keys.A))
             v.plus(mul(right, -time.deltaTime));
-            
-        wrapper.position = plus(wrapper.position, v);
-        console.log(input.pointerPosition);
+        if (input.getKeyDown(Keys.Mouse2))
+            input.lockPointer();
+        if (input.getKeyUp(Keys.Mouse2))
+            input.releasePointer();
+        
+        let look = input.pointerDelta;
+        let rotate = quat.normalize(quat.mul(quat.axis(right, -sensity * look.y), quat.axis(up, -sensity * look.x)));
+
+        /*if (input.getKey(Keys.Space))
+            rotate = quat.axis(right, -sensity * look.y);
+        else
+            rotate = quat.normalize(quat.axis(up, -sensity * look.x));*/
+        wrapper.rotation = quat.mul(wrapper.rotation, quat.axis(up, -sensity * look.x));
+        camera.localRotation = quat.mul(camera.localRotation, quat.axis(vec3(1, 0, 0), -sensity * look.y));
+        wrapper.position = plus(wrapper.position, mul(v, 5));
+        input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
     });
 }
 

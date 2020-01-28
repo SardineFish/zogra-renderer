@@ -20,7 +20,7 @@ export class Vector3 extends Array<number>
     get normalized()
     {
         const m = this.magnitude;
-        return this.clone().div(vec3(m, m, m));
+        return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
     }
 
     constructor(x: number, y: number, z: number)
@@ -73,7 +73,7 @@ export class Vector3 extends Array<number>
     normalize()
     {
         const m = this.magnitude;
-        return this.clone().div(vec3(m, m, m));
+        return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
     }
     inverse()
     {

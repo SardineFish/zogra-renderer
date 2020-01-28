@@ -10,7 +10,7 @@ var KeyState;
 ;
 class InputManager {
     constructor(options = {}) {
-        var _a;
+        var _a, _b;
         this.keyStates = new Map();
         this.keyStatesThisFrame = new Map();
         this.mousePos = vec2_1.vec2.zero();
@@ -21,6 +21,7 @@ class InputManager {
             this.bound = options.bound;
         else if ((_a = options.target) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect)
             this.bound = options.target;
+        this.pointerLockElement = (_b = options.pointerLockElement, (_b !== null && _b !== void 0 ? _b : document.body));
         this.eventTarget.addEventListener("keydown", (e) => {
             this.keyStates.set(e.keyCode, KeyState.Pressed);
             this.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
@@ -40,9 +41,11 @@ class InputManager {
         this.eventTarget.addEventListener("mousemove", e => {
             var _a, _b, _c, _d, _e;
             const rect = (_a = this.bound) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
-            const offset = vec2_1.vec2((_c = (_b = rect) === null || _b === void 0 ? void 0 : _b.left, (_c !== null && _c !== void 0 ? _c : 0)), (_e = (_d = rect) === null || _d === void 0 ? void 0 : _d.right, (_e !== null && _e !== void 0 ? _e : 0)));
+            const offset = vec2_1.vec2((_c = (_b = rect) === null || _b === void 0 ? void 0 : _b.left, (_c !== null && _c !== void 0 ? _c : 0)), (_e = (_d = rect) === null || _d === void 0 ? void 0 : _d.top, (_e !== null && _e !== void 0 ? _e : 0)));
             const pos = math_1.minus(vec2_1.vec2(e.clientX, e.clientY), offset);
-            this.mouseDelta = math_1.minus(pos, this.previousMousePos);
+            this.mouseDelta.plus(vec2_1.vec2(e.movementX, e.movementY));
+            if (this.mouseDelta.magnitude > 100)
+                console.log(e);
             this.mousePos = pos;
         });
         for (const key in Keys) {
@@ -69,8 +72,19 @@ class InputManager {
         this.previousMousePos = this.mousePos;
         this.mouseDelta = vec2_1.vec2.zero();
     }
+    lockPointer() {
+        this.pointerLockElement.requestPointerLock();
+    }
+    releasePointer() {
+        document.exitPointerLock();
+    }
 }
 exports.InputManager = InputManager;
+function createPointerLockElement() {
+    const element = document.createElement("div");
+    element.classList.add("pointer-lock-element");
+    return element;
+}
 var Keys;
 (function (Keys) {
     Keys[Keys["BackSpace"] = 8] = "BackSpace";

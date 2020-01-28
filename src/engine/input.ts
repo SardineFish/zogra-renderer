@@ -1,5 +1,5 @@
 import { vec2 } from "../types/vec2";
-import { minus } from "../types/math";
+import { minus, plus } from "../types/math";
 
 export enum KeyState
 {
@@ -31,6 +31,7 @@ interface InputManagerOptions
 {
     target?: InputEventTarget;
     bound?: PointerBoundingElement;
+    pointerLockElement?: Element;
 }
 
 export class InputManager
@@ -42,6 +43,7 @@ export class InputManager
     private mousePos: vec2 = vec2.zero();
     private mouseDelta: vec2 = vec2.zero();
     private previousMousePos = vec2.zero();
+    private pointerLockElement: Element;
     
     constructor(options: InputManagerOptions = {})
     {
@@ -50,6 +52,8 @@ export class InputManager
             this.bound = options.bound;
         else if (options.target?.getBoundingClientRect)
             this.bound = options.target as PointerBoundingElement;
+        
+        this.pointerLockElement = options.pointerLockElement ?? document.body;
         
         this.eventTarget.addEventListener("keydown", (e: KeyboardEvent) =>
         {
@@ -74,9 +78,11 @@ export class InputManager
         this.eventTarget.addEventListener("mousemove", e =>
         {
             const rect = this.bound?.getBoundingClientRect();
-            const offset = vec2(rect?.left ?? 0, rect?.right ?? 0);
+            const offset = vec2(rect?.left ?? 0, rect?.top ?? 0);
             const pos = minus(vec2(e.clientX, e.clientY), offset);
-            this.mouseDelta = minus(pos, this.previousMousePos);
+            this.mouseDelta.plus(vec2(e.movementX, e.movementY));
+            if (this.mouseDelta.magnitude > 100)
+                console.log(e);
             this.mousePos = pos;
         });
         for (const key in Keys)
@@ -109,6 +115,21 @@ export class InputManager
         this.previousMousePos = this.mousePos;
         this.mouseDelta = vec2.zero();
     }
+    lockPointer()
+    {
+        this.pointerLockElement.requestPointerLock();
+    }
+    releasePointer()
+    {
+        document.exitPointerLock();
+    }
+}
+
+function createPointerLockElement()
+{
+    const element = document.createElement("div");
+    element.classList.add("pointer-lock-element");
+    return element;
 }
 
 export enum Keys

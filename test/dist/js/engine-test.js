@@ -1799,7 +1799,7 @@ var KeyState;
 ;
 class InputManager {
     constructor(options = {}) {
-        var _a;
+        var _a, _b;
         this.keyStates = new Map();
         this.keyStatesThisFrame = new Map();
         this.mousePos = vec2_1.vec2.zero();
@@ -1810,6 +1810,7 @@ class InputManager {
             this.bound = options.bound;
         else if ((_a = options.target) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect)
             this.bound = options.target;
+        this.pointerLockElement = (_b = options.pointerLockElement, (_b !== null && _b !== void 0 ? _b : document.body));
         this.eventTarget.addEventListener("keydown", (e) => {
             this.keyStates.set(e.keyCode, KeyState.Pressed);
             this.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
@@ -1829,9 +1830,11 @@ class InputManager {
         this.eventTarget.addEventListener("mousemove", e => {
             var _a, _b, _c, _d, _e;
             const rect = (_a = this.bound) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
-            const offset = vec2_1.vec2((_c = (_b = rect) === null || _b === void 0 ? void 0 : _b.left, (_c !== null && _c !== void 0 ? _c : 0)), (_e = (_d = rect) === null || _d === void 0 ? void 0 : _d.right, (_e !== null && _e !== void 0 ? _e : 0)));
+            const offset = vec2_1.vec2((_c = (_b = rect) === null || _b === void 0 ? void 0 : _b.left, (_c !== null && _c !== void 0 ? _c : 0)), (_e = (_d = rect) === null || _d === void 0 ? void 0 : _d.top, (_e !== null && _e !== void 0 ? _e : 0)));
             const pos = math_1.minus(vec2_1.vec2(e.clientX, e.clientY), offset);
-            this.mouseDelta = math_1.minus(pos, this.previousMousePos);
+            this.mouseDelta.plus(vec2_1.vec2(e.movementX, e.movementY));
+            if (this.mouseDelta.magnitude > 100)
+                console.log(e);
             this.mousePos = pos;
         });
         for (const key in Keys) {
@@ -1858,8 +1861,19 @@ class InputManager {
         this.previousMousePos = this.mousePos;
         this.mouseDelta = vec2_1.vec2.zero();
     }
+    lockPointer() {
+        this.pointerLockElement.requestPointerLock();
+    }
+    releasePointer() {
+        document.exitPointerLock();
+    }
 }
 exports.InputManager = InputManager;
+function createPointerLockElement() {
+    const element = document.createElement("div");
+    element.classList.add("pointer-lock-element");
+    return element;
+}
 var Keys;
 (function (Keys) {
     Keys[Keys["BackSpace"] = 8] = "BackSpace";
@@ -2711,7 +2725,7 @@ class Vector2 extends Array {
     }
     get normalized() {
         const m = this.magnitude;
-        return this.clone().div(vec2(m, m));
+        return m == 0 ? vec2.zero() : this.clone().div(vec2(m, m));
     }
     constructor(x, y) {
         super(x, y);
@@ -2748,7 +2762,7 @@ class Vector2 extends Array {
     }
     normalize() {
         const m = this.magnitude;
-        return this.clone().div(vec2(m, m));
+        return m == 0 ? vec2.zero() : this.clone().div(vec2(m, m));
     }
     inverse() {
         this[0] = 1 / this[0];
@@ -2816,7 +2830,7 @@ class Vector3 extends Array {
     }
     get normalized() {
         const m = this.magnitude;
-        return this.clone().div(vec3(m, m, m));
+        return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
     }
     constructor(x, y, z) {
         super(x, y, z);
@@ -2858,7 +2872,7 @@ class Vector3 extends Array {
     }
     normalize() {
         const m = this.magnitude;
-        return this.clone().div(vec3(m, m, m));
+        return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
     }
     inverse() {
         this[0] = 1 / this[0];
@@ -2930,7 +2944,7 @@ class Vector4 extends Array {
     }
     get normalized() {
         const m = this.magnitude;
-        return this.clone().div(vec4(m, m, m, m));
+        return m == 0 ? vec4.zero() : this.clone().div(vec4(m, m, m, m));
     }
     constructor(x, y, z = 0, w = 0) {
         super(x, y, z || 0, w || 0);
@@ -2977,7 +2991,7 @@ class Vector4 extends Array {
     }
     normalize() {
         const m = this.magnitude;
-        return this.clone().div(vec4(m, m, m, m));
+        return m == 0 ? vec4.zero() : this.clone().div(vec4(m, m, m, m));
     }
     inverse() {
         this[0] = 1 / this[0];
@@ -12579,17 +12593,23 @@ const input = new __1.InputManager();
 initCamera();
 initObjects();
 engine.start();
+engine.on('update', () => input.update());
 function initCamera() {
     const wrapper = new __1.Entity();
     engine.scene.add(wrapper);
-    wrapper.position = __1.vec3(0, 0, 10);
+    wrapper.position = __1.vec3(0, 2, 20);
     const camera = new __1.Camera();
     engine.scene.add(camera, wrapper);
     camera.clearColor = __1.rgb(.3, .3, .3);
+    camera.FOV = 60;
     engine.on("update", (time) => {
+        const sensity = 0.0001 * 10;
         let v = __1.vec3.zero();
-        let forward = __1.mat4.mulVector(camera.localToWorldMatrix, __1.vec3(0, 0, -1)).normalize();
+        let forward = __1.mat4.mulVector(camera.localToWorldMatrix, __1.vec3(0, 0, -1));
+        forward.y = 0;
+        forward = forward.normalize();
         let right = __1.mat4.mulVector(camera.localToWorldMatrix, __1.vec3(1, 0, 0)).normalize();
+        let up = __1.vec3(0, 1, 0);
         if (input.getKey(__1.Keys.Shift))
             v.plus(__1.vec3(0, 1 * time.deltaTime, 0));
         if (input.getKey(__1.Keys.Control))
@@ -12602,8 +12622,20 @@ function initCamera() {
             v.plus(__1.mul(right, time.deltaTime));
         if (input.getKey(__1.Keys.A))
             v.plus(__1.mul(right, -time.deltaTime));
-        wrapper.position = __1.plus(wrapper.position, v);
-        console.log(input.pointerPosition);
+        if (input.getKeyDown(__1.Keys.Mouse2))
+            input.lockPointer();
+        if (input.getKeyUp(__1.Keys.Mouse2))
+            input.releasePointer();
+        let look = input.pointerDelta;
+        let rotate = __1.quat.normalize(__1.quat.mul(__1.quat.axis(right, -sensity * look.y), __1.quat.axis(up, -sensity * look.x)));
+        /*if (input.getKey(Keys.Space))
+            rotate = quat.axis(right, -sensity * look.y);
+        else
+            rotate = quat.normalize(quat.axis(up, -sensity * look.x));*/
+        wrapper.rotation = __1.quat.mul(wrapper.rotation, __1.quat.axis(up, -sensity * look.x));
+        camera.localRotation = __1.quat.mul(camera.localRotation, __1.quat.axis(__1.vec3(1, 0, 0), -sensity * look.y));
+        wrapper.position = __1.plus(wrapper.position, __1.mul(v, 5));
+        input.pointerDelta.magnitude > 0 && console.log(input.pointerDelta);
     });
 }
 function initObjects() {

@@ -14,7 +14,7 @@ class Vector3 extends Array {
     }
     get normalized() {
         const m = this.magnitude;
-        return this.clone().div(vec3(m, m, m));
+        return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
     }
     constructor(x, y, z) {
         super(x, y, z);
@@ -56,7 +56,7 @@ class Vector3 extends Array {
     }
     normalize() {
         const m = this.magnitude;
-        return this.clone().div(vec3(m, m, m));
+        return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
     }
     inverse() {
         this[0] = 1 / this[0];
