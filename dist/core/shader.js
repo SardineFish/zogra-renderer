@@ -6,6 +6,7 @@ const shaders_1 = require("../builtin-assets/shaders");
 const util_2 = require("../utils/util");
 var DepthTest;
 (function (DepthTest) {
+    DepthTest[DepthTest["Disable"] = -1] = "Disable";
     DepthTest[DepthTest["Always"] = WebGL2RenderingContext.ALWAYS] = "Always";
     DepthTest[DepthTest["Never"] = WebGL2RenderingContext.NEVER] = "Never";
     DepthTest[DepthTest["Less"] = WebGL2RenderingContext.LESS] = "Less";
@@ -17,6 +18,7 @@ var DepthTest;
 })(DepthTest = exports.DepthTest || (exports.DepthTest = {}));
 var Blending;
 (function (Blending) {
+    Blending[Blending["Disable"] = -1] = "Disable";
     Blending[Blending["Zero"] = WebGL2RenderingContext.ZERO] = "Zero";
     Blending[Blending["One"] = WebGL2RenderingContext.ONE] = "One";
     Blending[Blending["SrcColor"] = WebGL2RenderingContext.SRC_COLOR] = "SrcColor";
@@ -30,6 +32,7 @@ var Blending;
 })(Blending = exports.Blending || (exports.Blending = {}));
 var Culling;
 (function (Culling) {
+    Culling[Culling["Disable"] = -1] = "Disable";
     Culling[Culling["Back"] = WebGL2RenderingContext.BACK] = "Back";
     Culling[Culling["Front"] = WebGL2RenderingContext.FRONT] = "Front";
     Culling[Culling["Both"] = WebGL2RenderingContext.FRONT_AND_BACK] = "Both";
@@ -59,8 +62,7 @@ class Shader {
         };
         this.settings = {
             depth: options.depth || DepthTest.Less,
-            blendSrc: options.blendSrc || Blending.SrcAlpha,
-            blendDst: options.blendDst || Blending.OneMinusSrcAlpha,
+            blend: options.blend || Blending.Disable,
             zWrite: options.zWrite === false ? false : true,
             cull: options.cull || Culling.Back
         };

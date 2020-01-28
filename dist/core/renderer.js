@@ -10,6 +10,7 @@ const texture_1 = require("./texture");
 const vec2_1 = require("../types/vec2");
 const assets_1 = require("../builtin-assets/assets");
 const quat_1 = require("../types/quat");
+const shader_1 = require("./shader");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
@@ -93,14 +94,29 @@ class ZograRenderer {
         const gl = this.gl;
         this.shader = shader;
         gl.useProgram(shader.program);
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthMask(shader.settings.zWrite);
-        gl.depthFunc(shader.settings.depth);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(shader.settings.blendSrc, shader.settings.blendDst);
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(shader.settings.cull);
-        gl.frontFace(gl.CCW);
+        if (shader.settings.depth === shader_1.DepthTest.Disable)
+            gl.disable(gl.DEPTH_TEST);
+        else {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(shader.settings.zWrite);
+            gl.depthFunc(shader.settings.depth);
+        }
+        if (shader.settings.blend === shader_1.Blending.Disable)
+            gl.disable(gl.BLEND);
+        else {
+            const [src, dst] = typeof (shader.settings.blend) === "number"
+                ? [shader.settings.blend, shader_1.Blending.Zero]
+                : shader.settings.blend;
+            gl.enable(gl.BLEND);
+            gl.blendFunc(src, dst);
+        }
+        if (shader.settings.cull === shader_1.Culling.Disable)
+            gl.disable(gl.CULL_FACE);
+        else {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(shader.settings.cull);
+            gl.frontFace(gl.CCW);
+        }
     }
     setupTransforms(shader, transform) {
         const gl = this.gl;

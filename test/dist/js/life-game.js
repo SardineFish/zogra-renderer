@@ -508,10 +508,15 @@ exports.BuiltinUniforms = {
 function compileBuiltinShaders(gl) {
     return {
         DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, {}, gl),
-        BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
+        BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, {
+            depth: shader_1.DepthTest.Always,
+            blend: shader_1.Blending.Disable,
+            zWrite: false
+        }, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
-            depth: shader_1.DepthTest.Always
+            depth: shader_1.DepthTest.Always,
+            blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha]
         }, gl),
     };
 }
@@ -1094,6 +1099,7 @@ const texture_1 = __webpack_require__(/*! ./texture */ "../dist/core/texture.js"
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../dist/types/vec2.js");
 const assets_1 = __webpack_require__(/*! ../builtin-assets/assets */ "../dist/builtin-assets/assets.js");
 const quat_1 = __webpack_require__(/*! ../types/quat */ "../dist/types/quat.js");
+const shader_1 = __webpack_require__(/*! ./shader */ "../dist/core/shader.js");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
@@ -1177,14 +1183,29 @@ class ZograRenderer {
         const gl = this.gl;
         this.shader = shader;
         gl.useProgram(shader.program);
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthMask(shader.settings.zWrite);
-        gl.depthFunc(shader.settings.depth);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(shader.settings.blendSrc, shader.settings.blendDst);
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(shader.settings.cull);
-        gl.frontFace(gl.CCW);
+        if (shader.settings.depth === shader_1.DepthTest.Disable)
+            gl.disable(gl.DEPTH_TEST);
+        else {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(shader.settings.zWrite);
+            gl.depthFunc(shader.settings.depth);
+        }
+        if (shader.settings.blend === shader_1.Blending.Disable)
+            gl.disable(gl.BLEND);
+        else {
+            const [src, dst] = typeof (shader.settings.blend) === "number"
+                ? [shader.settings.blend, shader_1.Blending.Zero]
+                : shader.settings.blend;
+            gl.enable(gl.BLEND);
+            gl.blendFunc(src, dst);
+        }
+        if (shader.settings.cull === shader_1.Culling.Disable)
+            gl.disable(gl.CULL_FACE);
+        else {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(shader.settings.cull);
+            gl.frontFace(gl.CCW);
+        }
     }
     setupTransforms(shader, transform) {
         const gl = this.gl;
@@ -1300,6 +1321,7 @@ const shaders_1 = __webpack_require__(/*! ../builtin-assets/shaders */ "../dist/
 const util_2 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 var DepthTest;
 (function (DepthTest) {
+    DepthTest[DepthTest["Disable"] = -1] = "Disable";
     DepthTest[DepthTest["Always"] = WebGL2RenderingContext.ALWAYS] = "Always";
     DepthTest[DepthTest["Never"] = WebGL2RenderingContext.NEVER] = "Never";
     DepthTest[DepthTest["Less"] = WebGL2RenderingContext.LESS] = "Less";
@@ -1311,6 +1333,7 @@ var DepthTest;
 })(DepthTest = exports.DepthTest || (exports.DepthTest = {}));
 var Blending;
 (function (Blending) {
+    Blending[Blending["Disable"] = -1] = "Disable";
     Blending[Blending["Zero"] = WebGL2RenderingContext.ZERO] = "Zero";
     Blending[Blending["One"] = WebGL2RenderingContext.ONE] = "One";
     Blending[Blending["SrcColor"] = WebGL2RenderingContext.SRC_COLOR] = "SrcColor";
@@ -1324,6 +1347,7 @@ var Blending;
 })(Blending = exports.Blending || (exports.Blending = {}));
 var Culling;
 (function (Culling) {
+    Culling[Culling["Disable"] = -1] = "Disable";
     Culling[Culling["Back"] = WebGL2RenderingContext.BACK] = "Back";
     Culling[Culling["Front"] = WebGL2RenderingContext.FRONT] = "Front";
     Culling[Culling["Both"] = WebGL2RenderingContext.FRONT_AND_BACK] = "Both";
@@ -1353,8 +1377,7 @@ class Shader {
         };
         this.settings = {
             depth: options.depth || DepthTest.Less,
-            blendSrc: options.blendSrc || Blending.SrcAlpha,
-            blendDst: options.blendDst || Blending.OneMinusSrcAlpha,
+            blend: options.blend || Blending.Disable,
             zWrite: options.zWrite === false ? false : true,
             cull: options.cull || Culling.Back
         };
@@ -12670,7 +12693,10 @@ const FPS = parseInt((_a = /fps=(\d+)/.exec(window.location.search), (_a !== nul
 const Offset = zogra_renderer_1.vec2(650, 850);
 const canvas = document.querySelector("#canvas");
 const renderer = new zogra_renderer_1.ZograRenderer(canvas, window.innerWidth, window.innerHeight);
-class LifeGameMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_glsl_1.default)) {
+class LifeGameMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_glsl_1.default, {
+    zWrite: false,
+    depth: zogra_renderer_1.DepthTest.Always
+})) {
 }
 const material = new LifeGameMaterial();
 const blitMat = new zogra_renderer_1.Material(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_render_glsl_1.default));
@@ -12747,7 +12773,7 @@ function lifeGame() {
             renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), material);
         }, 1000 / FPS);
         return (dt, time) => {
-            renderer.blit(rts[frameIdx % 2], render_target_1.RenderTarget.CanvasTarget, blitMat);
+            renderer.blit(rts[0], render_target_1.RenderTarget.CanvasTarget, blitMat);
         };
     });
 }

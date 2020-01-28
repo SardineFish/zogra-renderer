@@ -13,7 +13,7 @@ import { vec2, Vector2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { quat } from "../types/quat";
 import { BindingData, UniformType, UniformValueType } from "./types";
-import { Shader } from "./shader";
+import { Shader, DepthTest, Blending, Culling } from "./shader";
 import { Lines } from "./lines";
 
 export class ZograRenderer
@@ -147,16 +147,34 @@ export class ZograRenderer
         this.shader = shader;
         gl.useProgram(shader.program);
 
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthMask(shader.settings.zWrite);
-        gl.depthFunc(shader.settings.depth);
+        if (shader.settings.depth === DepthTest.Disable)
+            gl.disable(gl.DEPTH_TEST);
+        else
+        {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(shader.settings.zWrite);
+            gl.depthFunc(shader.settings.depth);
+        }
 
-        gl.enable(gl.BLEND);
-        gl.blendFunc(shader.settings.blendSrc, shader.settings.blendDst);
+        if (shader.settings.blend === Blending.Disable)
+            gl.disable(gl.BLEND);
+        else
+        {
+            const [src, dst] = typeof (shader.settings.blend) === "number"
+                ? [shader.settings.blend, Blending.Zero]
+                : shader.settings.blend;
+            gl.enable(gl.BLEND);
+            gl.blendFunc(src, dst);
+        }
 
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(shader.settings.cull);
-        gl.frontFace(gl.CCW);
+        if (shader.settings.cull === Culling.Disable)
+            gl.disable(gl.CULL_FACE);
+        else
+        {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(shader.settings.cull);
+            gl.frontFace(gl.CCW);
+        }
     }
 
     private setupTransforms(shader: Shader, transform: mat4)

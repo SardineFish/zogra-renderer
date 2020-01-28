@@ -1,4 +1,4 @@
-import { ZograRenderer, Mesh, vec3, vec2, vec4, mat4, minus, plus, MaterialFromShader, Shader, Material, Color, rgba } from "zogra-renderer";
+import { ZograRenderer, Mesh, vec3, vec2, vec4, mat4, minus, plus, MaterialFromShader, Shader, Material, Color, rgba, Blending, DepthTest } from "zogra-renderer";
 import vert from "!!raw-loader!./shader/default-vert.glsl";
 import frag from "!!raw-loader!./shader/life-game.glsl";
 import blitFrag from "!!raw-loader!./shader/life-game-render.glsl";
@@ -18,7 +18,10 @@ const Offset = vec2(650, 850);
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const renderer = new ZograRenderer(canvas, window.innerWidth, window.innerHeight);
 
-class LifeGameMaterial extends MaterialFromShader(new Shader(vert, frag))
+class LifeGameMaterial extends MaterialFromShader(new Shader(vert, frag, {
+    zWrite: false,
+    depth: DepthTest.Always
+}))
 {
 }
 const material = new LifeGameMaterial();
@@ -118,8 +121,8 @@ async function lifeGame()
 
     return (dt: number, time: number) =>
     {
+        renderer.blit(rts[0], RenderTarget.CanvasTarget, blitMat);
 
-        renderer.blit(rts[frameIdx % 2], RenderTarget.CanvasTarget, blitMat);
     };
 }
 window.addEventListener("mousemove", (e) =>

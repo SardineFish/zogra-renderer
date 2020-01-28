@@ -13,6 +13,7 @@ export interface ShaderAttributes {
     normal: string;
 }
 export declare enum DepthTest {
+    Disable = -1,
     Always,
     Never,
     Less,
@@ -23,6 +24,7 @@ export declare enum DepthTest {
     GEqual
 }
 export declare enum Blending {
+    Disable = -1,
     Zero,
     One,
     SrcColor,
@@ -35,21 +37,20 @@ export declare enum Blending {
     OneMinusDstAlpha
 }
 export declare enum Culling {
+    Disable = -1,
     Back,
     Front,
     Both
 }
 export interface StateSettings {
     depth: DepthTest;
-    blendSrc: Blending;
-    blendDst: Blending;
+    blend: [Blending, Blending] | Blending;
     zWrite: boolean;
     cull: Culling;
 }
 interface ShaderSettingsOptional {
     depth?: DepthTest;
-    blendSrc?: Blending;
-    blendDst?: Blending;
+    blend?: [Blending, Blending] | Blending;
     cull?: Culling;
     zWrite?: boolean;
     attributes?: ShaderAttributes;

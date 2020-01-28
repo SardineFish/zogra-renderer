@@ -22,6 +22,7 @@ export interface ShaderAttributes
 
 export enum DepthTest
 {
+    Disable = -1,
     Always = WebGL2RenderingContext.ALWAYS,
     Never = WebGL2RenderingContext.NEVER,
     Less = WebGL2RenderingContext.LESS,
@@ -34,6 +35,7 @@ export enum DepthTest
 
 export enum Blending
 {
+    Disable = -1,
     Zero = WebGL2RenderingContext.ZERO,
     One = WebGL2RenderingContext.ONE,
     SrcColor = WebGL2RenderingContext.SRC_COLOR,
@@ -48,6 +50,7 @@ export enum Blending
 
 export enum Culling
 {
+    Disable = -1,
     Back = WebGL2RenderingContext.BACK,
     Front = WebGL2RenderingContext.FRONT,
     Both = WebGL2RenderingContext.FRONT_AND_BACK,
@@ -57,8 +60,7 @@ export enum Culling
 export interface StateSettings
 {
     depth: DepthTest,
-    blendSrc: Blending,
-    blendDst: Blending,
+    blend: [Blending, Blending] | Blending;
     zWrite: boolean,
     cull: Culling
 }
@@ -66,8 +68,7 @@ export interface StateSettings
 interface ShaderSettingsOptional
 {
     depth?: DepthTest,
-    blendSrc?: Blending,
-    blendDst?: Blending,
+    blend?: [Blending, Blending] | Blending;
     cull?: Culling
     zWrite?: boolean;
     attributes?: ShaderAttributes;
@@ -122,8 +123,7 @@ export class Shader
         };
         this.settings = {
             depth: options.depth || DepthTest.Less,
-            blendSrc: options.blendSrc || Blending.SrcAlpha,
-            blendDst: options.blendDst || Blending.OneMinusSrcAlpha,
+            blend: options.blend || Blending.Disable,
             zWrite: options.zWrite === false ? false : true,
             cull: options.cull || Culling.Back
         };
