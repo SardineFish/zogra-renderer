@@ -7,7 +7,8 @@ module.exports = {
     entry: {
         generic: "./src/generic.ts",
         "life-game": "./src/life-game.ts",
-        "engine-test": "./src/engine-test.ts"
+        "engine-test": "./src/engine-test.ts",
+        "fbx-loader": "./src/fbx-loader.ts",
     },
     output: {
         path: path.resolve("./dist"),
@@ -61,7 +62,15 @@ module.exports = {
                     name: '[name].[ext]',
                     outputPath: 'static/img'
                 },
-            }
+            },
+            {
+                test: /\.(fbx|obj)$/i,
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                    outputPath: 'static/model'
+                },
+            },
         ]
     },
     plugins: [
@@ -85,6 +94,13 @@ module.exports = {
             inject: true,
             minify: false,
             chunks: ["engine-test"],
+        }),
+        new HtmlWebpackPlugin({
+            filename: "fbx-loader.html",
+            template: "html/base.html",
+            inject: true,
+            minify: false,
+            chunks: ["fbx-loader"],
         }),
     ]
 };
