@@ -1,1 +1,1 @@
-{"version":3,"file":"fbx-importer.js","sourceRoot":"","sources":["../../../src/plugins/fbx-importer/fbx-importer.ts"],"names":[],"mappings":";;AAEA,SAAS,aAAa,CAAC,QAAmB;AAG1C,CAAC"}
+{"version":3,"file":"fbx-importer.js","sourceRoot":"","sources":["../../../src/plugins/fbx-importer/fbx-importer.ts"],"names":[],"mappings":";;AACA,4EAAwE;AAExE,SAAS,aAAa,CAAC,QAAmB;IAEtC,MAAM,UAAU,GAAG,IAAI,oCAAgB,EAAE,CAAC;AAE9C,CAAC"}

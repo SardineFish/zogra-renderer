@@ -6,9 +6,11 @@ const color_1 = require("../types/color");
 const global_1 = require("./global");
 const util_1 = require("../utils/util");
 const math_1 = require("../types/math");
-class Mesh {
+const asset_1 = require("./asset");
+class Mesh extends asset_1.Asset {
     constructor(gl = global_1.GL()) {
         var _a, _b;
+        super();
         this._verts = [];
         this._triangles = [];
         this._uvs = [];

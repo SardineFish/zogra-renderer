@@ -1,7 +1,8 @@
 import { vec3 } from "../types/vec3";
 import { Color } from "../types/color";
 import { Shader } from "./shader";
-export declare class Lines {
+import { Asset } from "./asset";
+export declare class Lines extends Asset {
     private _verts;
     private _colors;
     private _lines;

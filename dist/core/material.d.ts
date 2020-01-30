@@ -4,13 +4,14 @@ import { MaterialType } from "./material-type";
 import "reflect-metadata";
 import { BindingData, UniformValueType } from "./types";
 import { UniformType } from "./types";
+import { Asset } from "./asset";
 export interface PropertyBlock {
     [key: string]: {
         type: UniformType;
         location: WebGLUniformLocation;
     };
 }
-export declare class Material {
+export declare class Material extends Asset {
     [key: string]: any;
     shader: Shader;
     propertyBlock: PropertyBlock;

@@ -5,7 +5,9 @@ import { GL } from "./global";
 import { panicNull, panic, fillArray } from "../utils/util";
 import { Shader } from "./shader";
 import { minus, cross } from "../types/math";
-export class Mesh
+import { Asset } from "./asset";
+
+export class Mesh extends Asset
 {
     private _verts: vec3[] = [];
     private _triangles: number[] = [];
@@ -24,6 +26,7 @@ export class Mesh
 
     constructor(gl = GL())
     {
+        super();
         this.gl = gl;
         this.VBO = gl.createBuffer() ?? panic("Failed to create vertex buffer.");
         this.EBO = gl.createBuffer() ?? panic("Failed to create element buffer.");

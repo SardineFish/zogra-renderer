@@ -558,6 +558,33 @@ exports.createDefaultTexture = createDefaultTexture;
 
 /***/ }),
 
+/***/ "../dist/core/asset.js":
+/*!*****************************!*\
+  !*** ../dist/core/asset.js ***!
+  \*****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.newAssetID = (() => {
+    let id = 1; //Math.floor(Math.random() * 0x1000000 + 0x1000000);
+    return () => id++;
+})();
+class Asset {
+    constructor() {
+        this.assetID = exports.newAssetID();
+    }
+}
+exports.Asset = Asset;
+exports.AssetManager = {
+    newAssetID: exports.newAssetID
+};
+//# sourceMappingURL=asset.js.map
+
+/***/ }),
+
 /***/ "../dist/core/core.js":
 /*!****************************!*\
   !*** ../dist/core/core.js ***!
@@ -611,9 +638,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.js");
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
-class Lines {
+const asset_1 = __webpack_require__(/*! ./asset */ "../dist/core/asset.js");
+class Lines extends asset_1.Asset {
     constructor(gl = global_1.GL()) {
         var _a, _b;
+        super();
         this._verts = [];
         this._colors = [];
         this._lines = [];
@@ -743,8 +772,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 __webpack_require__(/*! reflect-metadata */ "../node_modules/reflect-metadata/Reflect.js");
-class Material {
+const asset_1 = __webpack_require__(/*! ./asset */ "../dist/core/asset.js");
+class Material extends asset_1.Asset {
     constructor(shader, gl = global_1.GL()) {
+        super();
         this.propertyBlock = {};
         this.gl = gl;
         this.shader = shader;
@@ -860,9 +891,11 @@ const color_1 = __webpack_require__(/*! ../types/color */ "../dist/types/color.j
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 const math_1 = __webpack_require__(/*! ../types/math */ "../dist/types/math.js");
-class Mesh {
+const asset_1 = __webpack_require__(/*! ./asset */ "../dist/core/asset.js");
+class Mesh extends asset_1.Asset {
     constructor(gl = global_1.GL()) {
         var _a, _b;
+        super();
         this._verts = [];
         this._triangles = [];
         this._uvs = [];
@@ -1319,6 +1352,7 @@ const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js")
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 const shaders_1 = __webpack_require__(/*! ../builtin-assets/shaders */ "../dist/builtin-assets/shaders.js");
 const util_2 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+const asset_1 = __webpack_require__(/*! ./asset */ "../dist/core/asset.js");
 var DepthTest;
 (function (DepthTest) {
     DepthTest[DepthTest["Disable"] = -1] = "Disable";
@@ -1358,8 +1392,9 @@ exports.DefaultShaderAttributes = {
     uv: "aUV",
     normal: "aNormal",
 };
-class Shader {
+class Shader extends asset_1.Asset {
     constructor(vertexShader, fragmentShader, options = {}, gl = global_1.GL()) {
+        super();
         this._compiled = false;
         this.gl = gl;
         this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
@@ -1509,6 +1544,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const global_1 = __webpack_require__(/*! ./global */ "../dist/core/global.js");
 const texture_format_1 = __webpack_require__(/*! ./texture-format */ "../dist/core/texture-format.js");
 const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
+const asset_1 = __webpack_require__(/*! ./asset */ "../dist/core/asset.js");
 var FilterMode;
 (function (FilterMode) {
     FilterMode[FilterMode["Linear"] = WebGL2RenderingContext.LINEAR] = "Linear";
@@ -1520,9 +1556,13 @@ var WrapMode;
     WrapMode[WrapMode["Clamp"] = WebGL2RenderingContext.CLAMP_TO_EDGE] = "Clamp";
     WrapMode[WrapMode["Mirror"] = WebGL2RenderingContext.MIRRORED_REPEAT] = "Mirror";
 })(WrapMode = exports.WrapMode || (exports.WrapMode = {}));
-class TextureBase {
+class Texture extends asset_1.Asset {
+}
+exports.Texture = Texture;
+class TextureBase extends asset_1.Asset {
     constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
         var _a;
+        super();
         this.mipmapLevel = 0;
         this.wrapMode = WrapMode.Repeat;
         const gl = ctx.gl;
@@ -1737,15 +1777,12 @@ __export(__webpack_require__(/*! ./input */ "../dist/engine/input.js"));
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const transform_1 = __webpack_require__(/*! ./transform */ "../dist/engine/transform.js");
-const NewID = (() => {
-    let nextId = 10001;
-    return () => nextId++;
-})();
+const asset_1 = __webpack_require__(/*! ../core/asset */ "../dist/core/asset.js");
 class Entity extends transform_1.Transform {
     constructor() {
         super(...arguments);
-        this.id = NewID();
-        this.name = `Entity_${this.id}`;
+        this.assetID = asset_1.AssetManager.newAssetID();
+        this.name = `Entity_${this.assetID}`;
     }
 }
 exports.Entity = Entity;
@@ -1756,11 +1793,11 @@ class EntityManager {
     }
     get entities() { return this._entities; }
     add(entity) {
-        this.entityMap.set(entity.id, entity);
+        this.entityMap.set(entity.assetID, entity);
         this._entities = Array.from(this.entityMap.values());
     }
     remove(entity) {
-        this.entityMap.delete(entity.id);
+        this.entityMap.delete(entity.assetID);
         this._entities = Array.from(this.entityMap.values());
     }
 }

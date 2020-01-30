@@ -1,15 +1,11 @@
 import { Transform } from "./transform";
+import { IAsset, AssetManager } from "../core/asset";
 
-const NewID = (() =>
-{
-    let nextId = 10001;
-    return () => nextId++;
-})();
 
-export class Entity extends Transform
+export class Entity extends Transform implements IAsset
 {
-    id: number = NewID();
-    name: string = `Entity_${this.id}`;
+    assetID: number = AssetManager.newAssetID();
+    name: string = `Entity_${this.assetID}`;
 }
 
 export class EntityManager<T extends Entity = Entity>
@@ -19,12 +15,12 @@ export class EntityManager<T extends Entity = Entity>
     get entities() { return this._entities; }
     add(entity: T)
     {
-        this.entityMap.set(entity.id, entity);
+        this.entityMap.set(entity.assetID, entity);
         this._entities = Array.from(this.entityMap.values());
     }
     remove(entity: T)
     {
-        this.entityMap.delete(entity.id);
+        this.entityMap.delete(entity.assetID);
         this._entities = Array.from(this.entityMap.values());
     }
 }

@@ -1,6 +1,7 @@
 import { GLContext } from "./global";
 import { TextureFormat } from "./texture-format";
 import { BindingData } from "./types";
+import { Asset } from "./asset";
 export declare enum FilterMode {
     Linear,
     Nearest
@@ -10,18 +11,18 @@ export declare enum WrapMode {
     Clamp,
     Mirror
 }
-export interface Texture {
-    ctx: GLContext;
-    format: TextureFormat;
-    width: number;
-    height: number;
-    mipmapLevel: number;
-    glTex: WebGLTexture;
-    filterMode: FilterMode;
-    wrapMode: WrapMode;
-    bind: (location: WebGLUniformLocation, data: BindingData) => void;
+export declare abstract class Texture extends Asset {
+    abstract ctx: GLContext;
+    abstract format: TextureFormat;
+    abstract width: number;
+    abstract height: number;
+    abstract mipmapLevel: number;
+    abstract glTex: WebGLTexture;
+    abstract filterMode: FilterMode;
+    abstract wrapMode: WrapMode;
+    abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
-declare class TextureBase implements Texture {
+declare class TextureBase extends Asset implements Texture {
     ctx: GLContext;
     format: TextureFormat;
     width: number;

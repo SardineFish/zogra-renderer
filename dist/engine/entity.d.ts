@@ -1,6 +1,7 @@
 import { Transform } from "./transform";
-export declare class Entity extends Transform {
-    id: number;
+import { IAsset } from "../core/asset";
+export declare class Entity extends Transform implements IAsset {
+    assetID: number;
     name: string;
 }
 export declare class EntityManager<T extends Entity = Entity> {

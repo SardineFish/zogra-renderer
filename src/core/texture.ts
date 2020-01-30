@@ -2,6 +2,7 @@ import { GL, GLContext, GlobalContext } from "./global";
 import { TextureFormat, mapGLFormat } from "./texture-format";
 import { panic } from "../utils/util";
 import { BindingData } from "./types";
+import { Asset } from "./asset";
 
 export enum FilterMode
 {
@@ -16,21 +17,21 @@ export enum WrapMode
     Mirror = WebGL2RenderingContext.MIRRORED_REPEAT,
 }
 
-export interface Texture
+export abstract class Texture extends Asset
 {
-    ctx: GLContext;
-    format: TextureFormat;
-    width: number;
-    height: number;
-    mipmapLevel: number;
-    glTex: WebGLTexture;
-    filterMode: FilterMode;
-    wrapMode: WrapMode;
+    abstract ctx: GLContext;
+    abstract format: TextureFormat;
+    abstract width: number;
+    abstract height: number;
+    abstract mipmapLevel: number;
+    abstract glTex: WebGLTexture;
+    abstract filterMode: FilterMode;
+    abstract wrapMode: WrapMode;
 
-    bind: (location: WebGLUniformLocation, data: BindingData) => void;
+    abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
 
-class TextureBase implements Texture
+class TextureBase extends Asset implements Texture
 {
     ctx: GLContext;
     format: TextureFormat;
@@ -43,6 +44,7 @@ class TextureBase implements Texture
 
     constructor(width: number, height: number, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
     {
+        super();
         const gl = ctx.gl;
         this.ctx = ctx;
         this.format = format;

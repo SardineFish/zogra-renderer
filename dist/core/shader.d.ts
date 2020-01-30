@@ -1,4 +1,5 @@
 import { BuiltinUniforms } from "../builtin-assets/shaders";
+import { Asset } from "./asset";
 export interface AttributeBlock {
     vert: number;
     color: number;
@@ -56,7 +57,7 @@ interface ShaderSettingsOptional {
     attributes?: ShaderAttributes;
 }
 export declare const DefaultShaderAttributes: ShaderAttributes;
-export declare class Shader {
+export declare class Shader extends Asset {
     gl: WebGL2RenderingContext;
     program: WebGLProgram;
     vertexShaderSource: string;

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const global_1 = require("./global");
 const texture_format_1 = require("./texture-format");
 const util_1 = require("../utils/util");
+const asset_1 = require("./asset");
 var FilterMode;
 (function (FilterMode) {
     FilterMode[FilterMode["Linear"] = WebGL2RenderingContext.LINEAR] = "Linear";
@@ -14,9 +15,13 @@ var WrapMode;
     WrapMode[WrapMode["Clamp"] = WebGL2RenderingContext.CLAMP_TO_EDGE] = "Clamp";
     WrapMode[WrapMode["Mirror"] = WebGL2RenderingContext.MIRRORED_REPEAT] = "Mirror";
 })(WrapMode = exports.WrapMode || (exports.WrapMode = {}));
-class TextureBase {
+class Texture extends asset_1.Asset {
+}
+exports.Texture = Texture;
+class TextureBase extends asset_1.Asset {
     constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
         var _a;
+        super();
         this.mipmapLevel = 0;
         this.wrapMode = WrapMode.Repeat;
         const gl = ctx.gl;

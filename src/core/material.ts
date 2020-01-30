@@ -11,6 +11,7 @@ import { vec4, mat4 } from "gl-matrix";
 import { Texture } from "./texture";
 import { BindingData, UniformValueType } from "./types";
 import { UniformType } from "./types"
+import { Asset } from "./asset";
 
 export interface PropertyBlock
 {
@@ -20,7 +21,7 @@ export interface PropertyBlock
     };
 }
 
-export class Material
+export class Material extends Asset
 {
     [key: string]: any;
     shader: Shader;
@@ -28,6 +29,7 @@ export class Material
     gl: WebGL2RenderingContext;
     constructor(shader: Shader, gl = GL())
     {
+        super();
         this.gl = gl;
         this.shader = shader;
     }

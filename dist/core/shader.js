@@ -4,6 +4,7 @@ const util_1 = require("../utils/util");
 const global_1 = require("./global");
 const shaders_1 = require("../builtin-assets/shaders");
 const util_2 = require("../utils/util");
+const asset_1 = require("./asset");
 var DepthTest;
 (function (DepthTest) {
     DepthTest[DepthTest["Disable"] = -1] = "Disable";
@@ -43,8 +44,9 @@ exports.DefaultShaderAttributes = {
     uv: "aUV",
     normal: "aNormal",
 };
-class Shader {
+class Shader extends asset_1.Asset {
     constructor(vertexShader, fragmentShader, options = {}, gl = global_1.GL()) {
+        super();
         this._compiled = false;
         this.gl = gl;
         this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");

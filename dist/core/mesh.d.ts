@@ -2,7 +2,8 @@ import { vec3 } from "../types/vec3";
 import { vec2 } from "../types/vec2";
 import { Color } from "../types/color";
 import { Shader } from "./shader";
-export declare class Mesh {
+import { Asset } from "./asset";
+export declare class Mesh extends Asset {
     private _verts;
     private _triangles;
     private _uvs;

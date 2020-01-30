@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
-class Material {
+const asset_1 = require("./asset");
+class Material extends asset_1.Asset {
     constructor(shader, gl = global_1.GL()) {
+        super();
         this.propertyBlock = {};
         this.gl = gl;
         this.shader = shader;

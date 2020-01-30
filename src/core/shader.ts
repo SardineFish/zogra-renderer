@@ -2,6 +2,7 @@ import { panicNull } from "../utils/util";
 import { GL } from "./global";
 import { BuiltinShaderSources, BuiltinUniforms } from "../builtin-assets/shaders";
 import { getUniformsLocation } from "../utils/util";
+import { Asset } from "./asset";
 
 export interface AttributeBlock
 {
@@ -82,7 +83,7 @@ export const DefaultShaderAttributes: ShaderAttributes =
     normal: "aNormal",
 };
 
-export class Shader
+export class Shader extends Asset
 {
     gl: WebGL2RenderingContext;
     program: WebGLProgram;
@@ -104,6 +105,7 @@ export class Shader
     
     constructor(vertexShader: string, fragmentShader: string, options: ShaderSettingsOptional = {}, gl = GL())
     {
+        super();
         this.gl = gl;
         this.program = panicNull(gl.createProgram(), "Failed to create shader program");
         this.vertexShaderSource = vertexShader;

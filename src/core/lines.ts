@@ -4,8 +4,9 @@ import { GL } from "./global";
 import { panic, fillArray } from "../utils/util";
 import { Shader } from "./shader";
 import { BindingData } from "./types";
+import { Asset } from "./asset";
 
-export class Lines
+export class Lines extends Asset
 {
     private _verts: vec3[] = [];
     private _colors: Color[] = [];
@@ -21,6 +22,7 @@ export class Lines
 
     constructor(gl = GL())
     {
+        super();
         this.gl = gl;
         this.VBO = gl.createBuffer() ?? panic("Failed to create vertex buffer.");
         this.EBO = gl.createBuffer() ?? panic("Failed to create element buffer.");
