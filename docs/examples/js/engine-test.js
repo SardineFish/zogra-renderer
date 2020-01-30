@@ -3302,6 +3302,7 @@ const lines_1 = __webpack_require__(/*! ../core/lines */ "../dist/core/lines.js"
 const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js");
 class PreviewRenderer {
     constructor(renderer) {
+        this.materialReplaceMap = new Map();
         this.renderer = renderer;
         const lineColor = color_1.rgba(1, 1, 1, 0.1);
         const lb = new lines_1.LineBuilder(0, renderer.gl);
@@ -3344,13 +3345,22 @@ class PreviewRenderer {
             const modelMatrix = obj.localToWorldMatrix;
             for (let i = 0; i < obj.meshes.length; i++) {
                 const mat = obj.materials[i] || context.renderer.assets.materials.default;
-                context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
+                this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
             }
         }
         this.renderGrid(context, data);
     }
     renderGrid(context, data) {
         this.renderer.drawLines(this.grid, mat4_1.mat4.identity(), this.renderer.assets.materials.ColoredLine);
+    }
+    drawWithMaterial(mesh, transform, material) {
+        if (this.materialReplaceMap.has(material.constructor))
+            this.renderer.drawMesh(mesh, transform, this.materialReplaceMap.get(material.constructor));
+        else
+            this.renderer.drawMesh(mesh, transform, material);
+    }
+    replaceMaterial(MaterialType, material) {
+        this.materialReplaceMap.set(MaterialType, material);
     }
 }
 exports.PreviewRenderer = PreviewRenderer;
@@ -20622,20 +20632,4 @@ function initCamera() {
         wrapper.rotation = __1.quat.mul(wrapper.rotation, __1.quat.axis(up, -sensity * look.x));
         camera.localRotation = __1.quat.mul(camera.localRotation, __1.quat.axis(__1.vec3(1, 0, 0), -sensity * look.y));
         wrapper.position = __1.plus(wrapper.position, __1.mul(v, 5));
-        //input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
-    });
-}
-function initObjects() {
-    const cube = new __1.RenderObject();
-    engine.scene.add(cube);
-    cube.meshes.push(engine.renderer.assets.meshes.cube);
-    engine.on("update", (time) => {
-        cube.rotation = __1.quat.normalize(__1.quat.mul(cube.rotation, __1.quat.axis(__1.vec3(1, 1, 1), time.deltaTime * 0.5)));
-    });
-}
-
-
-/***/ })
-
-/******/ });
-//# sourceMappingURL=engine-test.js.map                                                      
+        //input.pointerDelta.

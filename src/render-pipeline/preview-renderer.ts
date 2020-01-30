@@ -1,7 +1,7 @@
-import { ZograRenderPipeline, RenderContext } from "./render-pipeline";
+import { ZograRenderPipeline, RenderContext, MaterialReplacer } from "./render-pipeline";
 import { Camera, Projection } from "../engine/camera";
 import { mat4 } from "../types/mat4";
-import { ZograRenderer } from "../core/core";
+import { ZograRenderer, Material, Mesh } from "../core/core";
 import { RenderObject } from "../engine/render-object";
 import { Entity } from "../engine/entity";
 import { RenderData, RenderOrder } from "./render-data";
@@ -10,11 +10,13 @@ import { RenderTarget } from "../core/render-target";
 import { RenderTexture } from "../core/texture";
 import { Lines, LineBuilder } from "../core/lines";
 import { vec3 } from "../types/vec3";
+import { ConstructorType } from "../utils/util";
 
 export class PreviewRenderer implements ZograRenderPipeline
 {
     renderer: ZograRenderer;
     grid: Lines;
+    materialReplaceMap = new Map<Function, Material>();
     constructor(renderer: ZograRenderer)
     {
         this.renderer = renderer;
@@ -74,7 +76,7 @@ export class PreviewRenderer implements ZograRenderPipeline
             for (let i = 0; i < obj.meshes.length; i++)
             {
                 const mat = obj.materials[i] || context.renderer.assets.materials.default;
-                context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);       
+                this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
             }
         }
 
@@ -84,6 +86,19 @@ export class PreviewRenderer implements ZograRenderPipeline
     renderGrid(context: RenderContext, data: RenderData)
     {
         this.renderer.drawLines(this.grid, mat4.identity(), this.renderer.assets.materials.ColoredLine);
+    }
+
+    drawWithMaterial(mesh: Mesh, transform: mat4, material: Material)
+    {
+        if (this.materialReplaceMap.has(material.constructor))
+            this.renderer.drawMesh(mesh, transform, this.materialReplaceMap.get(material.constructor) as Material);
+        else
+            this.renderer.drawMesh(mesh, transform, material);
+    }
+
+    replaceMaterial<T extends Material>(MaterialType: ConstructorType<T>, material: Material): void
+    {
+        this.materialReplaceMap.set(MaterialType, material);
     }
 
 }

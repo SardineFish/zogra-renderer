@@ -3302,6 +3302,7 @@ const lines_1 = __webpack_require__(/*! ../core/lines */ "../dist/core/lines.js"
 const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../dist/types/vec3.js");
 class PreviewRenderer {
     constructor(renderer) {
+        this.materialReplaceMap = new Map();
         this.renderer = renderer;
         const lineColor = color_1.rgba(1, 1, 1, 0.1);
         const lb = new lines_1.LineBuilder(0, renderer.gl);
@@ -3344,13 +3345,22 @@ class PreviewRenderer {
             const modelMatrix = obj.localToWorldMatrix;
             for (let i = 0; i < obj.meshes.length; i++) {
                 const mat = obj.materials[i] || context.renderer.assets.materials.default;
-                context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
+                this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
             }
         }
         this.renderGrid(context, data);
     }
     renderGrid(context, data) {
         this.renderer.drawLines(this.grid, mat4_1.mat4.identity(), this.renderer.assets.materials.ColoredLine);
+    }
+    drawWithMaterial(mesh, transform, material) {
+        if (this.materialReplaceMap.has(material.constructor))
+            this.renderer.drawMesh(mesh, transform, this.materialReplaceMap.get(material.constructor));
+        else
+            this.renderer.drawMesh(mesh, transform, material);
+    }
+    replaceMaterial(MaterialType, material) {
+        this.materialReplaceMap.set(MaterialType, material);
     }
 }
 exports.PreviewRenderer = PreviewRenderer;
@@ -20748,25 +20758,4 @@ window.addEventListener("mousemove", (e) => {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-async function loadImage(src) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = src;
-        if (img.complete) {
-            resolve(img);
-        }
-        img.onload = () => {
-            resolve(img);
-        };
-        img.onerror = (event, source, lineno, colno, error) => {
-            reject(error);
-        };
-    });
-}
-exports.loadImage = loadImage;
-
-
-/***/ })
-
-/******/ });
-//# sourceMappingURL=life-game.js.map                                                      
+async function loadImag
