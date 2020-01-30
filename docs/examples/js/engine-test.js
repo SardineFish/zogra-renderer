@@ -2422,21 +2422,29 @@ exports.plugins = pluginsExport;
 Object.defineProperty(exports, "__esModule", { value: true });
 const fbx_importer_1 = __webpack_require__(/*! ../fbx-importer/fbx-importer */ "../dist/plugins/fbx-importer/fbx-importer.js");
 const utils_1 = __webpack_require__(/*! ../fbx-importer/utils */ "../dist/plugins/fbx-importer/utils.js");
-class AssetsCollection {
+class AssetsPack {
     constructor() {
-        this.assets = [];
+        this.mainAsset = null;
+        this.assets = new Set();
     }
     add(asset) {
-        this.assets.push(asset);
+        this.assets.add(asset);
+    }
+    setMain(asset) {
+        this.mainAsset = asset;
     }
     get(Type) {
-        return this.assets.find(asset => asset.constructor === Type);
+        for (const asset of this.assets) {
+            if (isInheritFrom(asset, Type))
+                return asset;
+        }
+        return null;
     }
     getAll(Type) {
-        return this.assets.filter(asset => isInheritFrom(asset, Type));
+        return Array.from(this.assets).filter(asset => isInheritFrom(asset, Type));
     }
 }
-exports.AssetsCollection = AssetsCollection;
+exports.AssetsPack = AssetsPack;
 exports.AssetsImporter = {
     blob(blob) {
         return {
@@ -2687,7 +2695,7 @@ const vec2_1 = __webpack_require__(/*! ../../types/vec2 */ "../dist/types/vec2.j
 const fbx_binary_parser_1 = __webpack_require__(/*! ./fbx-binary-parser */ "../dist/plugins/fbx-importer/fbx-binary-parser.js");
 const fbx_model_import_1 = __webpack_require__(/*! ./fbx-model-import */ "../dist/plugins/fbx-importer/fbx-model-import.js");
 function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
-    const collection = new assets_importer_1.AssetsCollection();
+    const pack = new assets_importer_1.AssetsPack();
     const resourceMap = new Map();
     const meshConverter = convertMesh(ctx);
     for (const fbxMat of resource.materials) {
@@ -2709,17 +2717,23 @@ function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
         obj.materials = model.meshes.map(mesh => { var _a; return (_a = resourceMap.get(mesh.id), (_a !== null && _a !== void 0 ? _a : ctx.assets.materials.default)); });
         resourceMap.set(model.id, obj);
     }
+    const wrapper = new engine_1.Entity();
+    wrapper.name = "FBX Model";
+    pack.add(wrapper);
+    pack.setMain(wrapper);
     for (const model of resource.models) {
         if (model.transform.parent) {
             var child = resourceMap.get(model.id);
             var parent = resourceMap.get(model.transform.parent.model.id);
             child.parent = parent;
         }
+        else
+            resourceMap.get(model.id).parent = wrapper;
     }
     for (const asset of resourceMap.values()) {
-        collection.add(asset);
+        pack.add(asset);
     }
-    return collection;
+    return pack;
 }
 function getColor(fbxMat, name, defaultValue = color_1.Color.white) {
     if (fbxMat[name] === undefined || fbxMat[name].length < 3)
@@ -3096,11 +3110,11 @@ function connectResources(node, resourceDict) {
         const src = resourceDict.get(srcID); //?? panic(`Resource with id '${srcID}' missing.`);
         const dst = resourceDict.get(dstID); //?? panic(`Resource with id '${dstID}' missing.`);
         if (!src) {
-            console.warn(`Resource with id '${srcID}' missing.`);
+            console.warn(`Resource with id '${srcID}' is missing.`);
             continue;
         }
         if (!dst) {
-            console.warn(`Resource with id '${dstID}' missing.`);
+            console.warn(`Resource with id '${dstID}' is missing.`);
             continue;
         }
         if (src.type === "model" && dst.type === "model") {
@@ -20606,4 +20620,22 @@ function initCamera() {
         else
             rotate = quat.normalize(quat.axis(up, -sensity * look.x));*/
         wrapper.rotation = __1.quat.mul(wrapper.rotation, __1.quat.axis(up, -sensity * look.x));
-        c
+        camera.localRotation = __1.quat.mul(camera.localRotation, __1.quat.axis(__1.vec3(1, 0, 0), -sensity * look.y));
+        wrapper.position = __1.plus(wrapper.position, __1.mul(v, 5));
+        //input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
+    });
+}
+function initObjects() {
+    const cube = new __1.RenderObject();
+    engine.scene.add(cube);
+    cube.meshes.push(engine.renderer.assets.meshes.cube);
+    engine.on("update", (time) => {
+        cube.rotation = __1.quat.normalize(__1.quat.mul(cube.rotation, __1.quat.axis(__1.vec3(1, 1, 1), time.deltaTime * 0.5)));
+    });
+}
+
+
+/***/ })
+
+/******/ });
+//# sourceMappingURL=engine-test.js.map                                                      

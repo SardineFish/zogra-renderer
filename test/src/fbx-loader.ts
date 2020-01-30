@@ -83,8 +83,12 @@ async function initObjects()
     const assets = await plugins.AssetsImporter.blob(blob).fbx();
     (window as any).assets = assets;
 
-    for (const obj of assets.getAll(RenderObject))
-    {
-        engine.scene.add(obj);
-    }
+    const obj = assets.mainAsset as Entity;
+    engine.scene.add(obj);
+    obj.localScaling = vec3(.1, .1, .1);
+
+    // for (const obj of assets.getAll(RenderObject))
+    // {
+    //     engine.scene.add(obj);
+    // }
 }

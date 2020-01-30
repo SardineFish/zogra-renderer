@@ -2422,21 +2422,29 @@ exports.plugins = pluginsExport;
 Object.defineProperty(exports, "__esModule", { value: true });
 const fbx_importer_1 = __webpack_require__(/*! ../fbx-importer/fbx-importer */ "../dist/plugins/fbx-importer/fbx-importer.js");
 const utils_1 = __webpack_require__(/*! ../fbx-importer/utils */ "../dist/plugins/fbx-importer/utils.js");
-class AssetsCollection {
+class AssetsPack {
     constructor() {
-        this.assets = [];
+        this.mainAsset = null;
+        this.assets = new Set();
     }
     add(asset) {
-        this.assets.push(asset);
+        this.assets.add(asset);
+    }
+    setMain(asset) {
+        this.mainAsset = asset;
     }
     get(Type) {
-        return this.assets.find(asset => asset.constructor === Type);
+        for (const asset of this.assets) {
+            if (isInheritFrom(asset, Type))
+                return asset;
+        }
+        return null;
     }
     getAll(Type) {
-        return this.assets.filter(asset => isInheritFrom(asset, Type));
+        return Array.from(this.assets).filter(asset => isInheritFrom(asset, Type));
     }
 }
-exports.AssetsCollection = AssetsCollection;
+exports.AssetsPack = AssetsPack;
 exports.AssetsImporter = {
     blob(blob) {
         return {
@@ -2687,7 +2695,7 @@ const vec2_1 = __webpack_require__(/*! ../../types/vec2 */ "../dist/types/vec2.j
 const fbx_binary_parser_1 = __webpack_require__(/*! ./fbx-binary-parser */ "../dist/plugins/fbx-importer/fbx-binary-parser.js");
 const fbx_model_import_1 = __webpack_require__(/*! ./fbx-model-import */ "../dist/plugins/fbx-importer/fbx-model-import.js");
 function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
-    const collection = new assets_importer_1.AssetsCollection();
+    const pack = new assets_importer_1.AssetsPack();
     const resourceMap = new Map();
     const meshConverter = convertMesh(ctx);
     for (const fbxMat of resource.materials) {
@@ -2709,17 +2717,23 @@ function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
         obj.materials = model.meshes.map(mesh => { var _a; return (_a = resourceMap.get(mesh.id), (_a !== null && _a !== void 0 ? _a : ctx.assets.materials.default)); });
         resourceMap.set(model.id, obj);
     }
+    const wrapper = new engine_1.Entity();
+    wrapper.name = "FBX Model";
+    pack.add(wrapper);
+    pack.setMain(wrapper);
     for (const model of resource.models) {
         if (model.transform.parent) {
             var child = resourceMap.get(model.id);
             var parent = resourceMap.get(model.transform.parent.model.id);
             child.parent = parent;
         }
+        else
+            resourceMap.get(model.id).parent = wrapper;
     }
     for (const asset of resourceMap.values()) {
-        collection.add(asset);
+        pack.add(asset);
     }
-    return collection;
+    return pack;
 }
 function getColor(fbxMat, name, defaultValue = color_1.Color.white) {
     if (fbxMat[name] === undefined || fbxMat[name].length < 3)
@@ -3096,11 +3110,11 @@ function connectResources(node, resourceDict) {
         const src = resourceDict.get(srcID); //?? panic(`Resource with id '${srcID}' missing.`);
         const dst = resourceDict.get(dstID); //?? panic(`Resource with id '${dstID}' missing.`);
         if (!src) {
-            console.warn(`Resource with id '${srcID}' missing.`);
+            console.warn(`Resource with id '${srcID}' is missing.`);
             continue;
         }
         if (!dst) {
-            console.warn(`Resource with id '${dstID}' missing.`);
+            console.warn(`Resource with id '${dstID}' is missing.`);
             continue;
         }
         if (src.type === "model" && dst.type === "model") {
@@ -20637,4 +20651,18 @@ mesh.triangles = [
     2, 3, 0
 ];
 mesh.calculateNormals(0);
-const rt = new texture_1.RenderT
+const rt = new texture_1.RenderTexture(canvas.width, canvas.height, false);
+renderer.setRenderTarget(rt);
+renderer.setGlobalUniform("uColor", "color", zogra_renderer_1.Color.green);
+renderer.clear();
+renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
+renderer.setRenderTarget(render_target_1.RenderTarget.CanvasTarget);
+material.texture = rt;
+renderer.clear();
+renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
+
+
+/***/ })
+
+/******/ });
+//# sourceMappingURL=generic.js.map                                                      

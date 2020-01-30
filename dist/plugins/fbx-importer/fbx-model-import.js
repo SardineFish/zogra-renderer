@@ -313,11 +313,11 @@ function connectResources(node, resourceDict) {
         const src = resourceDict.get(srcID); //?? panic(`Resource with id '${srcID}' missing.`);
         const dst = resourceDict.get(dstID); //?? panic(`Resource with id '${dstID}' missing.`);
         if (!src) {
-            console.warn(`Resource with id '${srcID}' missing.`);
+            console.warn(`Resource with id '${srcID}' is missing.`);
             continue;
         }
         if (!dst) {
-            console.warn(`Resource with id '${dstID}' missing.`);
+            console.warn(`Resource with id '${dstID}' is missing.`);
             continue;
         }
         if (src.type === "model" && dst.type === "model") {

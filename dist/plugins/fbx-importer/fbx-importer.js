@@ -11,7 +11,7 @@ const vec2_1 = require("../../types/vec2");
 const fbx_binary_parser_1 = require("./fbx-binary-parser");
 const fbx_model_import_1 = require("./fbx-model-import");
 function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
-    const collection = new assets_importer_1.AssetsCollection();
+    const pack = new assets_importer_1.AssetsPack();
     const resourceMap = new Map();
     const meshConverter = convertMesh(ctx);
     for (const fbxMat of resource.materials) {
@@ -33,17 +33,23 @@ function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
         obj.materials = model.meshes.map(mesh => { var _a; return (_a = resourceMap.get(mesh.id), (_a !== null && _a !== void 0 ? _a : ctx.assets.materials.default)); });
         resourceMap.set(model.id, obj);
     }
+    const wrapper = new engine_1.Entity();
+    wrapper.name = "FBX Model";
+    pack.add(wrapper);
+    pack.setMain(wrapper);
     for (const model of resource.models) {
         if (model.transform.parent) {
             var child = resourceMap.get(model.id);
             var parent = resourceMap.get(model.transform.parent.model.id);
             child.parent = parent;
         }
+        else
+            resourceMap.get(model.id).parent = wrapper;
     }
     for (const asset of resourceMap.values()) {
-        collection.add(asset);
+        pack.add(asset);
     }
-    return collection;
+    return pack;
 }
 function getColor(fbxMat, name, defaultValue = color_1.Color.white) {
     if (fbxMat[name] === undefined || fbxMat[name].length < 3)

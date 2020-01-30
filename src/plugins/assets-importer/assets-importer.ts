@@ -5,26 +5,36 @@ import { readBlob } from "../fbx-importer/utils";
 import { ConstructorType } from "../../utils/util";
 
 
-export class AssetsCollection
+export class AssetsPack
 {
-    assets: IAsset[] = [];
+    mainAsset: IAsset | null = null;
+    assets: Set<IAsset> = new Set();
     add(asset: IAsset)
     {
-        this.assets.push(asset);
+        this.assets.add(asset);
+    }
+    setMain(asset: IAsset)
+    {
+        this.mainAsset = asset;
     }
     get<T extends IAsset>(Type: ConstructorType<T>): T | null
     {
-        return this.assets.find(asset => asset.constructor === Type) as T;
+        for (const asset of this.assets)
+        {
+            if (isInheritFrom(asset, Type))
+                return asset as T;
+        }
+        return null;
     }
     getAll<T extends IAsset>(Type: ConstructorType<T>): T[]
     {
-        return this.assets.filter(asset => isInheritFrom(asset, Type)) as T[];
+        return Array.from(this.assets).filter(asset => isInheritFrom(asset, Type)) as T[];
     }
 }
 
 export interface AssetsImporter
 {
-    import(buffer: ArrayBuffer, ctx?: GLContext): Promise<AssetsCollection>;
+    import(buffer: ArrayBuffer, ctx?: GLContext): Promise<AssetsPack>;
 }
 
 export const AssetsImporter = {

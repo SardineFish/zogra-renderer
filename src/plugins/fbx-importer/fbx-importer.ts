@@ -1,20 +1,20 @@
 import { FBXAssets, FBXMaterial, FBXID, FBXMesh } from "./fbx-types";
-import { AssetsCollection, AssetsImporter } from "../assets-importer/assets-importer";
+import { AssetsPack, AssetsImporter } from "../assets-importer/assets-importer";
 import { GlobalContext, GLContext } from "../../core/global";
 import { Material } from "../../core/material";
 import { Color } from "../../types/color";
 import { vec4 } from "../../types/vec4";
 import { Asset } from "../../core/asset";
-import { RenderObject } from "../../engine/engine";
+import { RenderObject, Entity } from "../../engine/engine";
 import { vec3 } from "../../types/vec3";
 import { Mesh } from "../../core/mesh";
 import { vec2 } from "../../types/vec2";
 import { parseFBX } from "./fbx-binary-parser";
 import { extractFBXAssets } from "./fbx-model-import";
 
-function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsCollection
+function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsPack
 {
-    const collection = new AssetsCollection();
+    const pack = new AssetsPack();
     const resourceMap = new Map<FBXID, Asset>();
     const meshConverter = convertMesh(ctx);
 
@@ -39,6 +39,12 @@ function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsColl
         obj.materials = model.meshes.map(mesh => (resourceMap.get(mesh.id) ?? ctx.assets.materials.default) as Material);
         resourceMap.set(model.id, obj);
     }
+
+    const wrapper = new Entity();
+    wrapper.name = "FBX Model";
+    pack.add(wrapper);
+    pack.setMain(wrapper);
+
     for (const model of resource.models)
     {
         if (model.transform.parent)
@@ -47,12 +53,14 @@ function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsColl
             var parent = resourceMap.get(model.transform.parent.model.id) as RenderObject;
             child.parent = parent;
         }
+        else
+            (resourceMap.get(model.id) as RenderObject).parent = wrapper;
     }
     for (const asset of resourceMap.values())
     {
-        collection.add(asset);
+        pack.add(asset);
     }
-    return collection;
+    return pack;
 }
 
 function getColor(fbxMat: FBXMaterial, name: string, defaultValue: Color = Color.white)

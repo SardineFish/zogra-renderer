@@ -2,21 +2,29 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fbx_importer_1 = require("../fbx-importer/fbx-importer");
 const utils_1 = require("../fbx-importer/utils");
-class AssetsCollection {
+class AssetsPack {
     constructor() {
-        this.assets = [];
+        this.mainAsset = null;
+        this.assets = new Set();
     }
     add(asset) {
-        this.assets.push(asset);
+        this.assets.add(asset);
+    }
+    setMain(asset) {
+        this.mainAsset = asset;
     }
     get(Type) {
-        return this.assets.find(asset => asset.constructor === Type);
+        for (const asset of this.assets) {
+            if (isInheritFrom(asset, Type))
+                return asset;
+        }
+        return null;
     }
     getAll(Type) {
-        return this.assets.filter(asset => isInheritFrom(asset, Type));
+        return Array.from(this.assets).filter(asset => isInheritFrom(asset, Type));
     }
 }
-exports.AssetsCollection = AssetsCollection;
+exports.AssetsPack = AssetsPack;
 exports.AssetsImporter = {
     blob(blob) {
         return {
