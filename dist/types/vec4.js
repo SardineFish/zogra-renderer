@@ -95,10 +95,14 @@ class Vector4 extends Array {
     }
 }
 exports.Vector4 = Vector4;
-function vec4(x, y, z, w) {
+function vec4(x, y = x, z = x, w = x) {
     return new Vector4(x, y, z, w);
 }
 exports.vec4 = vec4;
+vec4.from = (src) => {
+    const [x = 0, y = 0, z = 0, w = 0] = src;
+    return vec4(x, y, z, w);
+};
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 //# sourceMappingURL=vec4.js.map

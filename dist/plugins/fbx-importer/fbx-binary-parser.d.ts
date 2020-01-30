@@ -1,4 +1,2 @@
 import { FBXFile } from "./fbx-types";
-export declare const FBXImporter: {
-    fromBlob(blob: Blob): Promise<FBXFile>;
-};
+export declare function parseFBX(buffer: ArrayBuffer): FBXFile;

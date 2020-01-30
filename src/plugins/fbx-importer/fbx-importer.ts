@@ -1,8 +1,116 @@
-import { FBXAssets } from "./fbx-types";
-import { AssetsCollection } from "../resource-loader/resource-importer";
+import { FBXAssets, FBXMaterial, FBXID, FBXMesh } from "./fbx-types";
+import { AssetsCollection, AssetsImporter } from "../assets-importer/assets-importer";
+import { GlobalContext, GLContext } from "../../core/global";
+import { Material } from "../../core/material";
+import { Color } from "../../types/color";
+import { vec4 } from "../../types/vec4";
+import { Asset } from "../../core/asset";
+import { RenderObject } from "../../engine/engine";
+import { vec3 } from "../../types/vec3";
+import { Mesh } from "../../core/mesh";
+import { vec2 } from "../../types/vec2";
+import { parseFBX } from "./fbx-binary-parser";
+import { extractFBXAssets } from "./fbx-model-import";
 
-function importFromFBX(resource: FBXAssets): AssetsCollection
+function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsCollection
 {
     const collection = new AssetsCollection();
-    
+    const resourceMap = new Map<FBXID, Asset>();
+    const meshConverter = convertMesh(ctx);
+
+    for (const fbxMat of resource.materials)
+    {
+        const mat = new ctx.assets.types.DefaultLit(ctx.gl);
+        mat.name = fbxMat.name;
+        mat.color = getColor(fbxMat, "DiffuseColor", mat.color);
+        mat.emission = getColor(fbxMat, "Emissive", mat.emission);
+        mat.specular = getColor(fbxMat, "Specular", mat.specular);
+        mat.emission.mul(vec4(getFloat(fbxMat, "EmissiveFactor", 1)));
+        resourceMap.set(fbxMat.id, mat);
+    }
+    for (const model of resource.models)
+    {
+        const obj = new RenderObject(ctx);
+        obj.name = model.name;
+        obj.localPosition = vec3.from(model.transform.localPosition);
+        obj.localRotation = model.transform.localRotation;
+        obj.localScaling = vec3.from(model.transform.localScaling);
+        obj.meshes = model.meshes.map(meshConverter);
+        obj.materials = model.meshes.map(mesh => (resourceMap.get(mesh.id) ?? ctx.assets.materials.default) as Material);
+        resourceMap.set(model.id, obj);
+    }
+    for (const model of resource.models)
+    {
+        if (model.transform.parent)
+        {
+            var child = resourceMap.get(model.id) as RenderObject;
+            var parent = resourceMap.get(model.transform.parent.model.id) as RenderObject;
+            child.parent = parent;
+        }
+    }
+    for (const asset of resourceMap.values())
+    {
+        collection.add(asset);
+    }
+    return collection;
+}
+
+function getColor(fbxMat: FBXMaterial, name: string, defaultValue: Color = Color.white)
+{
+    if (fbxMat[name] === undefined || (fbxMat[name] as Float32Array).length < 3)
+        return defaultValue;
+    if ((fbxMat[name] as Float32Array).length === 3)
+    {
+        const [r, g, b] = fbxMat[name] as Iterable<number>;
+        return new Color(r, g, b);
+    }
+    const [r, g, b, a] = fbxMat[name] as Iterable<number>;
+    return new Color(r, g, b, a);
+}
+
+function getFloat(fbxMat: FBXMaterial, name: string, defaultValue = 0)
+{
+    if (fbxMat[name] === undefined)
+        return defaultValue;
+    if (isNaN(fbxMat[name] as number))
+        return defaultValue;
+    return fbxMat[name] as number;
+}
+
+function convertMesh(ctx: GLContext)
+{
+    return (fbxMesh: FBXMesh): Mesh =>
+    {
+        const mesh = new Mesh(ctx.gl);
+        mesh.verts = fbxMesh.verts.map(v => vec3.from(v));
+        mesh.normals = fbxMesh.normals.map(v => vec3.from(v));
+        mesh.uvs = fbxMesh.uv0.map(v => vec2.from(v));
+        if (fbxMesh.type === "quad")
+        {
+            mesh.triangles = new Array(fbxMesh.polygons.length / 4 * 6);
+            for (let i = 0; i < fbxMesh.polygons.length; i += 4)
+            {
+                const triangleIdx = i / 4 * 6;
+                mesh.triangles[triangleIdx + 0] = fbxMesh.polygons[i + 0];
+                mesh.triangles[triangleIdx + 1] = fbxMesh.polygons[i + 1];
+                mesh.triangles[triangleIdx + 2] = fbxMesh.polygons[i + 2];
+                mesh.triangles[triangleIdx + 3] = fbxMesh.polygons[i + 0];
+                mesh.triangles[triangleIdx + 4] = fbxMesh.polygons[i + 2];
+                mesh.triangles[triangleIdx + 5] = fbxMesh.polygons[i + 3];
+            }
+        }
+        else
+            mesh.triangles = Array.from(fbxMesh.polygons);
+        mesh.update();
+        return mesh;
+    };
+}
+
+export const FBXImporter:AssetsImporter = {
+    async import(buffer: ArrayBuffer, ctx: GLContext = GlobalContext())
+    {
+        const data = parseFBX(buffer);
+        const assets = extractFBXAssets(data);
+        return toManagedAssets(assets, ctx);
+    }
 }

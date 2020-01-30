@@ -5,32 +5,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const data_reader_1 = require("./data-reader");
 const pako_1 = __importDefault(require("pako"));
-const utils_1 = require("./utils");
 // See https://code.blender.org/2013/08/fbx-binary-file-format-specification/
 // See https://banexdevblog.wordpress.com/2014/06/23/a-quick-tutorial-about-the-fbx-ascii-format/
-exports.FBXImporter = {
-    async fromBlob(blob) {
-        const data = {
-            version: 0,
-            nodes: []
-        };
-        const buffer = await utils_1.readBlob(blob);
-        const reader = new data_reader_1.DataReader(buffer);
-        const header = reader.readString(20);
-        if (header === "Kaydara FBX Binary  ") {
-            // parse as binary format
-            reader.position = 23;
-            const verNum = reader.readUInt32();
-            data.version = verNum;
-            reader.position = 27; // Start of content.
-            data.nodes = readNodeList(reader, 0);
-        }
-        else {
-            // parse as ascii format
-        }
-        return data;
+function parseFBX(buffer) {
+    const data = {
+        version: 0,
+        nodes: []
+    };
+    const reader = new data_reader_1.DataReader(buffer);
+    const header = reader.readString(20);
+    if (header === "Kaydara FBX Binary  ") {
+        // parse as binary format
+        reader.position = 23;
+        const verNum = reader.readUInt32();
+        data.version = verNum;
+        reader.position = 27; // Start of content.
+        data.nodes = readNodeList(reader, 0);
     }
-};
+    else {
+        // parse as ascii format
+    }
+    return data;
+}
+exports.parseFBX = parseFBX;
 function readNodeList(reader, upperEndpoint) {
     const nodes = [];
     while (true) {

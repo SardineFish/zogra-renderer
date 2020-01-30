@@ -117,9 +117,16 @@ export class Vector4 extends Array<number>
     }
 }
 
-export function vec4(x: number, y: number, z: number, w: number): Vector4
+export function vec4(x: number): Vector4
+export function vec4(x:number, y: number, z: number, w: number): Vector4
+export function vec4(x: number, y: number = x, z: number = x, w: number = x): Vector4
 {
     return new Vector4(x, y, z, w);
+}
+vec4.from = (src: Iterable<number>) =>
+{
+    const [x = 0, y = 0, z = 0, w=0] = src;
+    return vec4(x, y, z, w);
 }
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;

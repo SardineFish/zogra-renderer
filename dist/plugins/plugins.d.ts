@@ -1,2 +1,3 @@
-export * from "./fbx-importer/fbx-binary-parser";
-export * from "./fbx-importer/fbx-model-import";
+export * from "./assets-importer/assets-importer";
+import { FBXImporter } from "./fbx-importer/fbx-importer";
+export { FBXImporter };

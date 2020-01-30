@@ -6,7 +6,8 @@ export interface FBXFile
     version: number;
     nodes: FBXNode[];
 }
-export type FBXPropertyType = number | bigint | boolean | string | string | Uint8Array | Int32Array | BigInt64Array | Float32Array | Float64Array | boolean[];
+export type FBXID = bigint;
+export type FBXPropertyType = number | FBXID | boolean | string | string | Uint8Array | Int32Array | BigInt64Array | Float32Array | Float64Array | boolean[];
 export interface FBXNode
 {
     name: string;
@@ -21,7 +22,7 @@ export interface FBXAssets
 }
 export interface FBXModel
 {
-    id: bigint;
+    id: FBXID;
     name: string;
     transform: FBXTransform;
     materials: FBXMaterial[];
@@ -29,7 +30,7 @@ export interface FBXModel
 }
 export interface FBXMesh
 {
-    id: bigint;
+    id: FBXID;
     name: string;
     type: "quad" | "triangle"; 
     verts: vec3[];
@@ -43,7 +44,7 @@ export interface FBXMesh
 }
 export interface FBXMaterial
 {
-    id: bigint
+    id: FBXID
     name: string;
     [key: string]: string | boolean | number | vec3 | vec4 | bigint;
 }

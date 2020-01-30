@@ -5,8 +5,9 @@ exports.newAssetID = (() => {
     return () => id++;
 })();
 class Asset {
-    constructor() {
+    constructor(name) {
         this.assetID = exports.newAssetID();
+        this.name = name || `Asset_${this.assetID}`;
     }
 }
 exports.Asset = Asset;

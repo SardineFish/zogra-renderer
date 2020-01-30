@@ -37,7 +37,7 @@ class Material extends asset_1.Asset {
                     break;
                 case "tex2d":
                     if (!this[key])
-                        data.assets.DefaultTexture.bind(prop.location, data);
+                        data.assets.textures.default.bind(prop.location, data);
                     else
                         (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, data);
                     break;

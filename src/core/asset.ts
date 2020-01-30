@@ -12,9 +12,11 @@ export interface IAsset
 export class Asset implements IAsset
 {
     assetID: number;
-    constructor()
+    name: string;
+    constructor(name?:string)
     {
         this.assetID = newAssetID();
+        this.name = name || `Asset_${this.assetID}`;
     }
 }
 

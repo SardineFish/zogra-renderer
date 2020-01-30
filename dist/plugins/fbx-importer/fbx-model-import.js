@@ -4,7 +4,7 @@ const fbx_types_1 = require("./fbx-types");
 const gl_matrix_1 = require("gl-matrix");
 const util_1 = require("../../utils/util");
 const utils_1 = require("./utils");
-function importModels(fbx) {
+function extractFBXAssets(fbx) {
     const objsNode = fbx.nodes.find(node => node.name === "Objects");
     if (!objsNode)
         return { materials: [], models: [] };
@@ -48,7 +48,7 @@ function importModels(fbx) {
         models: models
     };
 }
-exports.importModels = importModels;
+exports.extractFBXAssets = extractFBXAssets;
 function importModel(node) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
     const model = {

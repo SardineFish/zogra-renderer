@@ -83,10 +83,14 @@ class Vector2 extends Array {
     }
 }
 exports.Vector2 = Vector2;
-function vec2(x, y) {
+function vec2(x, y = x) {
     return new Vector2(x, y);
 }
 exports.vec2 = vec2;
+vec2.from = (src) => {
+    const [x = 0, y = 0] = src;
+    return vec2(x, y);
+};
 vec2.zero = Vector2.zero;
 vec2.one = Vector2.one;
 //# sourceMappingURL=vec2.js.map

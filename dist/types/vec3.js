@@ -92,10 +92,14 @@ class Vector3 extends Array {
     }
 }
 exports.Vector3 = Vector3;
-function vec3(x, y, z) {
+function vec3(x, y = x, z = x) {
     return new Vector3(x, y, z);
 }
 exports.vec3 = vec3;
+vec3.from = (src) => {
+    const [x = 0, y = 0, z = 0] = src;
+    return vec3(x, y, z);
+};
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 //# sourceMappingURL=vec3.js.map

@@ -4,7 +4,8 @@ export interface IAsset {
 }
 export declare class Asset implements IAsset {
     assetID: number;
-    constructor();
+    name: string;
+    constructor(name?: string);
 }
 export declare const AssetManager: {
     newAssetID: () => number;

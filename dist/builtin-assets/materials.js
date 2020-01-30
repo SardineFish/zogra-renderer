@@ -18,12 +18,12 @@ function createBuiltinMaterial(gl, types, shaders) {
     };
 }
 exports.createBuiltinMaterial = createBuiltinMaterial;
-function createBuiltinMaterialTypes(gl, defaultTex, shaders) {
+function createBuiltinMaterialTypes(gl, builtinTexs, shaders) {
     let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(shaders.DefaultShader) {
         constructor() {
             super(...arguments);
             this.color = color_1.Color.white;
-            this.mainTexture = defaultTex;
+            this.mainTexture = builtinTexs.default;
         }
     };
     __decorate([
@@ -47,9 +47,50 @@ function createBuiltinMaterialTypes(gl, defaultTex, shaders) {
     BlitCopy = __decorate([
         material_1.materialDefine
     ], BlitCopy);
+    let DefaultLit = class DefaultLit extends material_1.MaterialFromShader(shaders.DefaultShader) {
+        constructor() {
+            super(...arguments);
+            this.color = color_1.Color.white;
+            this.mainTexture = builtinTexs.default;
+            this.normalTexture = builtinTexs.defaultNormal;
+            this.emission = color_1.Color.black;
+            this.specular = color_1.Color.white;
+            this.metiallic = 0.023;
+            this.smoothness = 0.5;
+            this.fresnel = 5;
+        }
+    };
+    __decorate([
+        material_1.shaderProp("uColor", "color")
+    ], DefaultLit.prototype, "color", void 0);
+    __decorate([
+        material_1.shaderProp("uMainTex", "tex2d")
+    ], DefaultLit.prototype, "mainTexture", void 0);
+    __decorate([
+        material_1.shaderProp("uNormalTex", "tex2d")
+    ], DefaultLit.prototype, "normalTexture", void 0);
+    __decorate([
+        material_1.shaderProp("uEmission", "color")
+    ], DefaultLit.prototype, "emission", void 0);
+    __decorate([
+        material_1.shaderProp("uSpecular", "color")
+    ], DefaultLit.prototype, "specular", void 0);
+    __decorate([
+        material_1.shaderProp("uMetallic", "float")
+    ], DefaultLit.prototype, "metiallic", void 0);
+    __decorate([
+        material_1.shaderProp("uSmoothness", "float")
+    ], DefaultLit.prototype, "smoothness", void 0);
+    __decorate([
+        material_1.shaderProp("uFresnel", "float")
+    ], DefaultLit.prototype, "fresnel", void 0);
+    DefaultLit = __decorate([
+        material_1.materialDefine
+    ], DefaultLit);
     return {
         DefaultMaterial: DefaultMaterial,
         BlitCopy: BlitCopy,
+        DefaultLit: DefaultLit,
     };
 }
 exports.createBuiltinMaterialTypes = createBuiltinMaterialTypes;

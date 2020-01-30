@@ -120,10 +120,16 @@ export class Vector3 extends Array<number>
         return this.clone();
     }
 }
-
+export function vec3(x: number): Vector3
 export function vec3(x: number, y: number, z: number): Vector3
+export function vec3(x: number, y: number=x, z: number=x): Vector3
 {
     return new Vector3(x, y, z);
+}
+vec3.from = (src: Iterable<number>) =>
+{
+    const [x = 0, y = 0, z = 0] = src;
+    return vec3(x, y, z);
 }
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;

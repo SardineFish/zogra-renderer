@@ -3,6 +3,6 @@ import { Material } from "../core/core";
 import { Entity } from "./entity";
 export declare class RenderObject extends Entity {
     meshes: Mesh[];
-    material: Material;
+    materials: Material[];
     constructor(ctx?: import("../core/global").GLContext);
 }

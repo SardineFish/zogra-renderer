@@ -1,4 +1,7 @@
 import { Asset } from "../../core/asset";
+import { GLContext } from "../../core/global";
+import { FBXImporter } from "../fbx-importer/fbx-importer";
+import { readBlob } from "../fbx-importer/utils";
 
 
 export class AssetsCollection
@@ -18,9 +21,24 @@ export class AssetsCollection
     }
 }
 
-export interface ResourceImporter
+export interface AssetsImporter
 {
-    
+    import(buffer: ArrayBuffer, ctx?: GLContext): Promise<AssetsCollection>;
+}
+
+export const AssetsImporter = {
+    blob(blob: Blob)
+    {
+        return {
+            fbx: async () => await FBXImporter.import(await readBlob(blob)),
+        };
+    }, 
+    buffer(buffer: ArrayBuffer)
+    {
+        return {
+            fbx: () => FBXImporter.import(buffer),
+        };
+    }
 }
 
 function isInheritFrom(obj: Object, Type: Function)

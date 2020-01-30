@@ -107,10 +107,16 @@ export class Vector2 extends Array<number>
         return this.clone();
     }
 }
-
+export function vec2(x: number): Vector2
 export function vec2(x: number, y: number): Vector2
+export function vec2(x: number, y = x): Vector2
 {
     return new Vector2(x, y);
+}
+vec2.from = (src: Iterable<number>) =>
+{
+    const [x = 0, y = 0] = src;
+    return vec2(x, y);
 }
 vec2.zero = Vector2.zero;
 vec2.one = Vector2.one;

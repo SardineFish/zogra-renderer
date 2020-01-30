@@ -7,35 +7,30 @@ import { readBlob } from "./utils";
 // See https://banexdevblog.wordpress.com/2014/06/23/a-quick-tutorial-about-the-fbx-ascii-format/
 
 
-
-
-export const FBXImporter = {
-    async fromBlob(blob: Blob) : Promise<FBXFile>
+export function parseFBX(buffer: ArrayBuffer)
+{
+    const data: FBXFile = {
+        version: 0,
+        nodes: []
+    };
+    const reader = new DataReader(buffer);
+    const header = reader.readString(20);
+    if (header === "Kaydara FBX Binary  ")
     {
-        const data: FBXFile = {
-            version: 0,
-            nodes: []
-        };
-        const buffer = await readBlob(blob);
-        const reader = new DataReader(buffer);
-        const header = reader.readString(20);
-        if (header === "Kaydara FBX Binary  ")
-        {
-            // parse as binary format
-            reader.position = 23;
-            const verNum = reader.readUInt32();
-            data.version = verNum;
-            reader.position = 27; // Start of content.
-            data.nodes = readNodeList(reader, 0);
+        // parse as binary format
+        reader.position = 23;
+        const verNum = reader.readUInt32();
+        data.version = verNum;
+        reader.position = 27; // Start of content.
+        data.nodes = readNodeList(reader, 0);
 
-        }
-        else
-        {
-            // parse as ascii format
-        }
-
-        return data;
     }
+    else
+    {
+        // parse as ascii format
+    }
+
+    return data;
 }
 
 function readNodeList(reader: DataReader, upperEndpoint: number):FBXNode[]

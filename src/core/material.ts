@@ -62,7 +62,7 @@ export class Material extends Asset
                     break;
                 case "tex2d":
                     if (!this[key])
-                        data.assets.DefaultTexture.bind(prop.location, data);
+                        data.assets.textures.default.bind(prop.location, data);
                     else
                         (this[key] as Texture || null)?.bind(prop.location, data);
                     break;

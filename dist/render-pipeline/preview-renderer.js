@@ -48,8 +48,9 @@ class PreviewRenderer {
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {
             const modelMatrix = obj.localToWorldMatrix;
-            for (const mesh of obj.meshes) {
-                context.renderer.drawMesh(mesh, modelMatrix, obj.material);
+            for (let i = 0; i < obj.meshes.length; i++) {
+                const mat = obj.materials[i] || context.renderer.assets.materials.default;
+                context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
             }
         }
         this.renderGrid(context, data);

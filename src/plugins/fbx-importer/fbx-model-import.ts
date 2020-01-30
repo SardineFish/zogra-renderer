@@ -8,7 +8,7 @@ type Resource = {
     data?: FBXModel | FBXMaterial | FBXMesh[],
 };
 
-export function importModels(fbx: FBXFile): FBXAssets
+export function extractFBXAssets(fbx: FBXFile): FBXAssets
 {
     const objsNode = fbx.nodes.find(node => node.name === "Objects");
     if (!objsNode)

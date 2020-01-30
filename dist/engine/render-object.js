@@ -6,7 +6,8 @@ class RenderObject extends entity_1.Entity {
     constructor(ctx = global_1.GlobalContext()) {
         super();
         this.meshes = [];
-        this.material = ctx.assets.materials.default;
+        this.materials = [];
+        this.materials = [ctx.assets.materials.default];
     }
 }
 exports.RenderObject = RenderObject;

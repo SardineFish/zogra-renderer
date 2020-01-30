@@ -26,8 +26,15 @@ export declare class Vector4 extends Array<number> {
     clone(): Vector4;
     __to(type: Function): Vector3 | Vector4 | Vector2;
 }
+export declare function vec4(x: number): Vector4;
+export declare namespace vec4 {
+    var from: (src: Iterable<number>) => Vector4;
+    var zero: typeof Vector4.zero;
+    var one: typeof Vector4.one;
+}
 export declare function vec4(x: number, y: number, z: number, w: number): Vector4;
 export declare namespace vec4 {
+    var from: (src: Iterable<number>) => Vector4;
     var zero: typeof Vector4.zero;
     var one: typeof Vector4.one;
 }

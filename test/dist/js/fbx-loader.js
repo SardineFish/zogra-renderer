@@ -113,8 +113,8 @@ class BuiltinAssets {
         this.shaderSources = shaders_1.BuiltinShaderSources;
         this.shaders = shaders_1.compileBuiltinShaders(gl);
         this.meshes = mesh_1.createBuiltinMesh(gl);
-        this.DefaultTexture = textures_1.createDefaultTexture(ctx);
-        this.types = materials_1.createBuiltinMaterialTypes(gl, this.DefaultTexture, this.shaders);
+        this.textures = textures_1.createDefaultTextures(ctx);
+        this.types = materials_1.createBuiltinMaterialTypes(gl, this.textures, this.shaders);
         this.materials = materials_1.createBuiltinMaterial(gl, this.types, this.shaders);
     }
 }
@@ -151,12 +151,12 @@ function createBuiltinMaterial(gl, types, shaders) {
     };
 }
 exports.createBuiltinMaterial = createBuiltinMaterial;
-function createBuiltinMaterialTypes(gl, defaultTex, shaders) {
+function createBuiltinMaterialTypes(gl, builtinTexs, shaders) {
     let DefaultMaterial = class DefaultMaterial extends material_1.MaterialFromShader(shaders.DefaultShader) {
         constructor() {
             super(...arguments);
             this.color = color_1.Color.white;
-            this.mainTexture = defaultTex;
+            this.mainTexture = builtinTexs.default;
         }
     };
     __decorate([
@@ -180,9 +180,50 @@ function createBuiltinMaterialTypes(gl, defaultTex, shaders) {
     BlitCopy = __decorate([
         material_1.materialDefine
     ], BlitCopy);
+    let DefaultLit = class DefaultLit extends material_1.MaterialFromShader(shaders.DefaultShader) {
+        constructor() {
+            super(...arguments);
+            this.color = color_1.Color.white;
+            this.mainTexture = builtinTexs.default;
+            this.normalTexture = builtinTexs.defaultNormal;
+            this.emission = color_1.Color.black;
+            this.specular = color_1.Color.white;
+            this.metiallic = 0.023;
+            this.smoothness = 0.5;
+            this.fresnel = 5;
+        }
+    };
+    __decorate([
+        material_1.shaderProp("uColor", "color")
+    ], DefaultLit.prototype, "color", void 0);
+    __decorate([
+        material_1.shaderProp("uMainTex", "tex2d")
+    ], DefaultLit.prototype, "mainTexture", void 0);
+    __decorate([
+        material_1.shaderProp("uNormalTex", "tex2d")
+    ], DefaultLit.prototype, "normalTexture", void 0);
+    __decorate([
+        material_1.shaderProp("uEmission", "color")
+    ], DefaultLit.prototype, "emission", void 0);
+    __decorate([
+        material_1.shaderProp("uSpecular", "color")
+    ], DefaultLit.prototype, "specular", void 0);
+    __decorate([
+        material_1.shaderProp("uMetallic", "float")
+    ], DefaultLit.prototype, "metiallic", void 0);
+    __decorate([
+        material_1.shaderProp("uSmoothness", "float")
+    ], DefaultLit.prototype, "smoothness", void 0);
+    __decorate([
+        material_1.shaderProp("uFresnel", "float")
+    ], DefaultLit.prototype, "fresnel", void 0);
+    DefaultLit = __decorate([
+        material_1.materialDefine
+    ], DefaultLit);
     return {
         DefaultMaterial: DefaultMaterial,
         BlitCopy: BlitCopy,
+        DefaultLit: DefaultLit,
     };
 }
 exports.createBuiltinMaterialTypes = createBuiltinMaterialTypes;
@@ -538,7 +579,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = __webpack_require__(/*! ../utils/util */ "../dist/utils/util.js");
 const texture_1 = __webpack_require__(/*! ../core/texture */ "../dist/core/texture.js");
 const texture_format_1 = __webpack_require__(/*! ../core/texture-format */ "../dist/core/texture-format.js");
-function createDefaultTexture(context) {
+function createDefaultTextures(context) {
     var _a;
     const size = 64;
     const canvas = document.createElement("canvas");
@@ -549,11 +590,18 @@ function createDefaultTexture(context) {
     ctx.fillStyle = "cyan";
     ctx.fillRect(0, 0, size / 2, size / 2);
     ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
-    const texture = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
-    texture.setData(canvas);
-    return texture;
+    const defaultTex = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
+    defaultTex.setData(canvas);
+    ctx.fillStyle = "blue";
+    ctx.fillRect(0, 0, size, size);
+    const defaultNormalTex = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
+    defaultNormalTex.setData(canvas);
+    return {
+        default: defaultTex,
+        defaultNormal: defaultNormalTex,
+    };
 }
-exports.createDefaultTexture = createDefaultTexture;
+exports.createDefaultTextures = createDefaultTextures;
 //# sourceMappingURL=textures.js.map
 
 /***/ }),
@@ -573,8 +621,9 @@ exports.newAssetID = (() => {
     return () => id++;
 })();
 class Asset {
-    constructor() {
+    constructor(name) {
         this.assetID = exports.newAssetID();
+        this.name = name || `Asset_${this.assetID}`;
     }
 }
 exports.Asset = Asset;
@@ -806,7 +855,7 @@ class Material extends asset_1.Asset {
                     break;
                 case "tex2d":
                     if (!this[key])
-                        data.assets.DefaultTexture.bind(prop.location, data);
+                        data.assets.textures.default.bind(prop.location, data);
                     else
                         (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, data);
                     break;
@@ -2099,7 +2148,8 @@ class RenderObject extends entity_1.Entity {
     constructor(ctx = global_1.GlobalContext()) {
         super();
         this.meshes = [];
-        this.material = ctx.assets.materials.default;
+        this.materials = [];
+        this.materials = [ctx.assets.materials.default];
     }
 }
 exports.RenderObject = RenderObject;
@@ -2358,6 +2408,56 @@ exports.plugins = pluginsExport;
 
 /***/ }),
 
+/***/ "../dist/plugins/assets-importer/assets-importer.js":
+/*!**********************************************************!*\
+  !*** ../dist/plugins/assets-importer/assets-importer.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const fbx_importer_1 = __webpack_require__(/*! ../fbx-importer/fbx-importer */ "../dist/plugins/fbx-importer/fbx-importer.js");
+const utils_1 = __webpack_require__(/*! ../fbx-importer/utils */ "../dist/plugins/fbx-importer/utils.js");
+class AssetsCollection {
+    constructor() {
+        this.assets = [];
+    }
+    add(asset) {
+        this.assets.push(asset);
+    }
+    get(Type) {
+        return this.assets.find(asset => asset.constructor === Type);
+    }
+    getAll(Type) {
+        return this.assets.filter(asset => isInheritFrom(asset, Type));
+    }
+}
+exports.AssetsCollection = AssetsCollection;
+exports.AssetsImporter = {
+    blob(blob) {
+        return {
+            fbx: async () => await fbx_importer_1.FBXImporter.import(await utils_1.readBlob(blob)),
+        };
+    },
+    buffer(buffer) {
+        return {
+            fbx: () => fbx_importer_1.FBXImporter.import(buffer),
+        };
+    }
+};
+function isInheritFrom(obj, Type) {
+    for (var constructor = obj.constructor; constructor != null; constructor = constructor.prototype) {
+        if (constructor === Type)
+            return true;
+    }
+    return false;
+}
+//# sourceMappingURL=assets-importer.js.map
+
+/***/ }),
+
 /***/ "../dist/plugins/fbx-importer/data-reader.js":
 /*!***************************************************!*\
   !*** ../dist/plugins/fbx-importer/data-reader.js ***!
@@ -2469,32 +2569,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const data_reader_1 = __webpack_require__(/*! ./data-reader */ "../dist/plugins/fbx-importer/data-reader.js");
 const pako_1 = __importDefault(__webpack_require__(/*! pako */ "../node_modules/pako/index.js"));
-const utils_1 = __webpack_require__(/*! ./utils */ "../dist/plugins/fbx-importer/utils.js");
 // See https://code.blender.org/2013/08/fbx-binary-file-format-specification/
 // See https://banexdevblog.wordpress.com/2014/06/23/a-quick-tutorial-about-the-fbx-ascii-format/
-exports.FBXImporter = {
-    async fromBlob(blob) {
-        const data = {
-            version: 0,
-            nodes: []
-        };
-        const buffer = await utils_1.readBlob(blob);
-        const reader = new data_reader_1.DataReader(buffer);
-        const header = reader.readString(20);
-        if (header === "Kaydara FBX Binary  ") {
-            // parse as binary format
-            reader.position = 23;
-            const verNum = reader.readUInt32();
-            data.version = verNum;
-            reader.position = 27; // Start of content.
-            data.nodes = readNodeList(reader, 0);
-        }
-        else {
-            // parse as ascii format
-        }
-        return data;
+function parseFBX(buffer) {
+    const data = {
+        version: 0,
+        nodes: []
+    };
+    const reader = new data_reader_1.DataReader(buffer);
+    const header = reader.readString(20);
+    if (header === "Kaydara FBX Binary  ") {
+        // parse as binary format
+        reader.position = 23;
+        const verNum = reader.readUInt32();
+        data.version = verNum;
+        reader.position = 27; // Start of content.
+        data.nodes = readNodeList(reader, 0);
     }
-};
+    else {
+        // parse as ascii format
+    }
+    return data;
+}
+exports.parseFBX = parseFBX;
 function readNodeList(reader, upperEndpoint) {
     const nodes = [];
     while (true) {
@@ -2567,6 +2664,113 @@ function readArrayData(reader, elementSize) {
 
 /***/ }),
 
+/***/ "../dist/plugins/fbx-importer/fbx-importer.js":
+/*!****************************************************!*\
+  !*** ../dist/plugins/fbx-importer/fbx-importer.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const assets_importer_1 = __webpack_require__(/*! ../assets-importer/assets-importer */ "../dist/plugins/assets-importer/assets-importer.js");
+const global_1 = __webpack_require__(/*! ../../core/global */ "../dist/core/global.js");
+const color_1 = __webpack_require__(/*! ../../types/color */ "../dist/types/color.js");
+const vec4_1 = __webpack_require__(/*! ../../types/vec4 */ "../dist/types/vec4.js");
+const engine_1 = __webpack_require__(/*! ../../engine/engine */ "../dist/engine/engine.js");
+const vec3_1 = __webpack_require__(/*! ../../types/vec3 */ "../dist/types/vec3.js");
+const mesh_1 = __webpack_require__(/*! ../../core/mesh */ "../dist/core/mesh.js");
+const vec2_1 = __webpack_require__(/*! ../../types/vec2 */ "../dist/types/vec2.js");
+const fbx_binary_parser_1 = __webpack_require__(/*! ./fbx-binary-parser */ "../dist/plugins/fbx-importer/fbx-binary-parser.js");
+const fbx_model_import_1 = __webpack_require__(/*! ./fbx-model-import */ "../dist/plugins/fbx-importer/fbx-model-import.js");
+function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
+    const collection = new assets_importer_1.AssetsCollection();
+    const resourceMap = new Map();
+    const meshConverter = convertMesh(ctx);
+    for (const fbxMat of resource.materials) {
+        const mat = new ctx.assets.types.DefaultLit(ctx.gl);
+        mat.name = fbxMat.name;
+        mat.color = getColor(fbxMat, "DiffuseColor", mat.color);
+        mat.emission = getColor(fbxMat, "Emissive", mat.emission);
+        mat.specular = getColor(fbxMat, "Specular", mat.specular);
+        mat.emission.mul(vec4_1.vec4(getFloat(fbxMat, "EmissiveFactor", 1)));
+        resourceMap.set(fbxMat.id, mat);
+    }
+    for (const model of resource.models) {
+        const obj = new engine_1.RenderObject(ctx);
+        obj.name = model.name;
+        obj.localPosition = vec3_1.vec3.from(model.transform.localPosition);
+        obj.localRotation = model.transform.localRotation;
+        obj.localScaling = vec3_1.vec3.from(model.transform.localScaling);
+        obj.meshes = model.meshes.map(meshConverter);
+        obj.materials = model.meshes.map(mesh => { var _a; return (_a = resourceMap.get(mesh.id), (_a !== null && _a !== void 0 ? _a : ctx.assets.materials.default)); });
+        resourceMap.set(model.id, obj);
+    }
+    for (const model of resource.models) {
+        if (model.transform.parent) {
+            var child = resourceMap.get(model.id);
+            var parent = resourceMap.get(model.transform.parent.model.id);
+            child.parent = parent;
+        }
+    }
+    for (const asset of resourceMap.values()) {
+        collection.add(asset);
+    }
+    return collection;
+}
+function getColor(fbxMat, name, defaultValue = color_1.Color.white) {
+    if (fbxMat[name] === undefined || fbxMat[name].length < 3)
+        return defaultValue;
+    if (fbxMat[name].length === 3) {
+        const [r, g, b] = fbxMat[name];
+        return new color_1.Color(r, g, b);
+    }
+    const [r, g, b, a] = fbxMat[name];
+    return new color_1.Color(r, g, b, a);
+}
+function getFloat(fbxMat, name, defaultValue = 0) {
+    if (fbxMat[name] === undefined)
+        return defaultValue;
+    if (isNaN(fbxMat[name]))
+        return defaultValue;
+    return fbxMat[name];
+}
+function convertMesh(ctx) {
+    return (fbxMesh) => {
+        const mesh = new mesh_1.Mesh(ctx.gl);
+        mesh.verts = fbxMesh.verts.map(v => vec3_1.vec3.from(v));
+        mesh.normals = fbxMesh.normals.map(v => vec3_1.vec3.from(v));
+        mesh.uvs = fbxMesh.uv0.map(v => vec2_1.vec2.from(v));
+        if (fbxMesh.type === "quad") {
+            mesh.triangles = new Array(fbxMesh.polygons.length / 4 * 6);
+            for (let i = 0; i < fbxMesh.polygons.length; i += 4) {
+                const triangleIdx = i / 4 * 6;
+                mesh.triangles[triangleIdx + 0] = fbxMesh.polygons[i + 0];
+                mesh.triangles[triangleIdx + 1] = fbxMesh.polygons[i + 1];
+                mesh.triangles[triangleIdx + 2] = fbxMesh.polygons[i + 2];
+                mesh.triangles[triangleIdx + 3] = fbxMesh.polygons[i + 0];
+                mesh.triangles[triangleIdx + 4] = fbxMesh.polygons[i + 2];
+                mesh.triangles[triangleIdx + 5] = fbxMesh.polygons[i + 3];
+            }
+        }
+        else
+            mesh.triangles = Array.from(fbxMesh.polygons);
+        mesh.update();
+        return mesh;
+    };
+}
+exports.FBXImporter = {
+    async import(buffer, ctx = global_1.GlobalContext()) {
+        const data = fbx_binary_parser_1.parseFBX(buffer);
+        const assets = fbx_model_import_1.extractFBXAssets(data);
+        return toManagedAssets(assets, ctx);
+    }
+};
+//# sourceMappingURL=fbx-importer.js.map
+
+/***/ }),
+
 /***/ "../dist/plugins/fbx-importer/fbx-model-import.js":
 /*!********************************************************!*\
   !*** ../dist/plugins/fbx-importer/fbx-model-import.js ***!
@@ -2581,7 +2785,7 @@ const fbx_types_1 = __webpack_require__(/*! ./fbx-types */ "../dist/plugins/fbx-
 const gl_matrix_1 = __webpack_require__(/*! gl-matrix */ "../node_modules/gl-matrix/esm/index.js");
 const util_1 = __webpack_require__(/*! ../../utils/util */ "../dist/utils/util.js");
 const utils_1 = __webpack_require__(/*! ./utils */ "../dist/plugins/fbx-importer/utils.js");
-function importModels(fbx) {
+function extractFBXAssets(fbx) {
     const objsNode = fbx.nodes.find(node => node.name === "Objects");
     if (!objsNode)
         return { materials: [], models: [] };
@@ -2625,7 +2829,7 @@ function importModels(fbx) {
         models: models
     };
 }
-exports.importModels = importModels;
+exports.extractFBXAssets = extractFBXAssets;
 function importModel(node) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
     const model = {
@@ -3048,8 +3252,9 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(/*! ./fbx-importer/fbx-binary-parser */ "../dist/plugins/fbx-importer/fbx-binary-parser.js"));
-__export(__webpack_require__(/*! ./fbx-importer/fbx-model-import */ "../dist/plugins/fbx-importer/fbx-model-import.js"));
+__export(__webpack_require__(/*! ./assets-importer/assets-importer */ "../dist/plugins/assets-importer/assets-importer.js"));
+const fbx_importer_1 = __webpack_require__(/*! ./fbx-importer/fbx-importer */ "../dist/plugins/fbx-importer/fbx-importer.js");
+exports.FBXImporter = fbx_importer_1.FBXImporter;
 //# sourceMappingURL=plugins.js.map
 
 /***/ }),
@@ -3112,8 +3317,9 @@ class PreviewRenderer {
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {
             const modelMatrix = obj.localToWorldMatrix;
-            for (const mesh of obj.meshes) {
-                context.renderer.drawMesh(mesh, modelMatrix, obj.material);
+            for (let i = 0; i < obj.meshes.length; i++) {
+                const mat = obj.materials[i] || context.renderer.assets.materials.default;
+                context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
             }
         }
         this.renderGrid(context, data);
@@ -3564,10 +3770,14 @@ class Vector2 extends Array {
     }
 }
 exports.Vector2 = Vector2;
-function vec2(x, y) {
+function vec2(x, y = x) {
     return new Vector2(x, y);
 }
 exports.vec2 = vec2;
+vec2.from = (src) => {
+    const [x = 0, y = 0] = src;
+    return vec2(x, y);
+};
 vec2.zero = Vector2.zero;
 vec2.one = Vector2.one;
 //# sourceMappingURL=vec2.js.map
@@ -3676,10 +3886,14 @@ class Vector3 extends Array {
     }
 }
 exports.Vector3 = Vector3;
-function vec3(x, y, z) {
+function vec3(x, y = x, z = x) {
     return new Vector3(x, y, z);
 }
 exports.vec3 = vec3;
+vec3.from = (src) => {
+    const [x = 0, y = 0, z = 0] = src;
+    return vec3(x, y, z);
+};
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 //# sourceMappingURL=vec3.js.map
@@ -3791,10 +4005,14 @@ class Vector4 extends Array {
     }
 }
 exports.Vector4 = Vector4;
-function vec4(x, y, z, w) {
+function vec4(x, y = x, z = x, w = x) {
     return new Vector4(x, y, z, w);
 }
 exports.vec4 = vec4;
+vec4.from = (src) => {
+    const [x = 0, y = 0, z = 0, w = 0] = src;
+    return vec4(x, y, z, w);
+};
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 //# sourceMappingURL=vec4.js.map
@@ -19962,14 +20180,69 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const test_bin_fbx_1 = __importDefault(__webpack_require__(/*! ./asset/model/test.bin.fbx */ "./src/asset/model/test.bin.fbx"));
 const __1 = __webpack_require__(/*! ../.. */ "../dist/index.js");
-const plugins_1 = __webpack_require__(/*! ../../dist/plugins/plugins */ "../dist/plugins/plugins.js");
-window.fbxUrl = test_bin_fbx_1.default;
-(async () => {
+const __2 = __webpack_require__(/*! ../.. */ "../dist/index.js");
+const canvas = document.querySelector("#canvas");
+const engine = new __2.ZograEngine(canvas);
+const input = new __2.InputManager();
+initCamera();
+initObjects();
+engine.start();
+engine.on('update', () => input.update());
+function initCamera() {
+    const wrapper = new __2.Entity();
+    engine.scene.add(wrapper);
+    wrapper.position = __2.vec3(0, 2, 20);
+    const camera = new __2.Camera();
+    engine.scene.add(camera, wrapper);
+    camera.clearColor = __2.rgb(.3, .3, .3);
+    camera.FOV = 60;
+    engine.on("update", (time) => {
+        const sensity = 0.0001 * 10;
+        let v = __2.vec3.zero();
+        let forward = __2.mat4.mulVector(camera.localToWorldMatrix, __2.vec3(0, 0, -1));
+        forward.y = 0;
+        forward = forward.normalize();
+        let right = __2.mat4.mulVector(camera.localToWorldMatrix, __2.vec3(1, 0, 0)).normalize();
+        let up = __2.vec3(0, 1, 0);
+        if (input.getKey(__2.Keys.Shift) || input.getKey(__2.Keys.Space))
+            v.plus(__2.vec3(0, 1 * time.deltaTime, 0));
+        if (input.getKey(__2.Keys.Control))
+            v.plus(__2.vec3(0, -1 * time.deltaTime, 0));
+        if (input.getKey(__2.Keys.W))
+            v.plus(__2.mul(forward, time.deltaTime));
+        if (input.getKey(__2.Keys.S))
+            v.plus(__2.mul(forward, -time.deltaTime));
+        if (input.getKey(__2.Keys.D))
+            v.plus(__2.mul(right, time.deltaTime));
+        if (input.getKey(__2.Keys.A))
+            v.plus(__2.mul(right, -time.deltaTime));
+        if (input.getKeyDown(__2.Keys.Mouse2))
+            input.lockPointer();
+        if (input.getKeyUp(__2.Keys.Mouse2))
+            input.releasePointer();
+        let look = input.pointerDelta;
+        let rotate = __2.quat.normalize(__2.quat.mul(__2.quat.axis(right, -sensity * look.y), __2.quat.axis(up, -sensity * look.x)));
+        /*if (input.getKey(Keys.Space))
+            rotate = quat.axis(right, -sensity * look.y);
+        else
+            rotate = quat.normalize(quat.axis(up, -sensity * look.x));*/
+        wrapper.rotation = __2.quat.mul(wrapper.rotation, __2.quat.axis(up, -sensity * look.x));
+        camera.localRotation = __2.quat.mul(camera.localRotation, __2.quat.axis(__2.vec3(1, 0, 0), -sensity * look.y));
+        wrapper.position = __2.plus(wrapper.position, __2.mul(v, 5));
+        //input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
+    });
+}
+async function initObjects() {
+    const cube = new __2.RenderObject();
+    engine.scene.add(cube);
+    cube.meshes.push(engine.renderer.assets.meshes.cube);
+    engine.on("update", (time) => {
+        cube.rotation = __2.quat.normalize(__2.quat.mul(cube.rotation, __2.quat.axis(__2.vec3(1, 1, 1), time.deltaTime * 0.5)));
+    });
     const blob = await (await fetch(test_bin_fbx_1.default)).blob();
-    const data = await __1.plugins.FBXImporter.fromBlob(blob);
-    window.fbx = data;
-    plugins_1.importModels(data);
-})();
+    const assets = await __1.plugins.AssetsImporter.blob(blob).fbx();
+    window.assets = assets;
+}
 
 
 /***/ })
