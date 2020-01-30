@@ -2182,6 +2182,8 @@ class Scene extends entity_1.EntityManager {
         (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.add(entity);
         if (parent)
             entity.parent = parent;
+        for (const child of entity.children)
+            this.add(child, entity);
     }
     remove(entity) {
         var _a;
@@ -2189,7 +2191,7 @@ class Scene extends entity_1.EntityManager {
         const type = entity.constructor;
         (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.remove(entity);
         if (entity.parent) {
-            entity.parent.children = entity.parent.children.filter(c => c !== entity);
+            entity.parent.children.delete(entity);
         }
     }
     rootEntities() {
@@ -2240,7 +2242,7 @@ class Transform {
         // {
         // }
         this._parent = null;
-        this.children = [];
+        this.children = new Set();
         this.localPosition = vec3_1.vec3.zero();
         this.localRotation = quat_1.quat.identity();
         this.localScaling = vec3_1.vec3.one();
@@ -2293,7 +2295,7 @@ class Transform {
     set parent(p) {
         this._parent = p;
         if (p) {
-            p.children.push(this);
+            p.children.add(this);
         }
     }
 }
@@ -2831,7 +2833,7 @@ function extractFBXAssets(fbx) {
 }
 exports.extractFBXAssets = extractFBXAssets;
 function importModel(node) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     const model = {
         id: node.properties[0],
         name: node.properties[1].split("\0")[0],
@@ -2840,15 +2842,17 @@ function importModel(node) {
         transform: null,
     };
     model.transform = new fbx_types_1.FBXTransform(model);
-    const translationNode = (_a = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _a === void 0 ? void 0 : _a.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
-    const rotationNode = (_b = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _b === void 0 ? void 0 : _b.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
-    const scalingNode = (_c = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _c === void 0 ? void 0 : _c.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
-    model.transform.localPosition = gl_matrix_1.vec3.fromValues((_e = (_d = translationNode) === null || _d === void 0 ? void 0 : _d.properties[4], (_e !== null && _e !== void 0 ? _e : 0)), (_g = (_f = translationNode) === null || _f === void 0 ? void 0 : _f.properties[4], (_g !== null && _g !== void 0 ? _g : 0)), (_j = (_h = translationNode) === null || _h === void 0 ? void 0 : _h.properties[4], (_j !== null && _j !== void 0 ? _j : 0)));
-    model.transform.localRotation = gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_l = (_k = rotationNode) === null || _k === void 0 ? void 0 : _k.properties[4], (_l !== null && _l !== void 0 ? _l : 0)), (_o = (_m = rotationNode) === null || _m === void 0 ? void 0 : _m.properties[4], (_o !== null && _o !== void 0 ? _o : 0)), (_q = (_p = rotationNode) === null || _p === void 0 ? void 0 : _p.properties[4], (_q !== null && _q !== void 0 ? _q : 0)));
-    model.transform.localScaling = gl_matrix_1.vec3.fromValues((_s = (_r = scalingNode) === null || _r === void 0 ? void 0 : _r.properties[4], (_s !== null && _s !== void 0 ? _s : 1)), (_u = (_t = scalingNode) === null || _t === void 0 ? void 0 : _t.properties[4], (_u !== null && _u !== void 0 ? _u : 1)), (_w = (_v = scalingNode) === null || _v === void 0 ? void 0 : _v.properties[4], (_w !== null && _w !== void 0 ? _w : 1)));
+    const props = node.nestedNodes.find(n => n.name === "Properties70");
+    const translationNode = (_a = props) === null || _a === void 0 ? void 0 : _a.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
+    const rotationNode = (_b = props) === null || _b === void 0 ? void 0 : _b.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
+    const scalingNode = (_c = props) === null || _c === void 0 ? void 0 : _c.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
+    const preRotation = (_d = props) === null || _d === void 0 ? void 0 : _d.nestedNodes.find(n => n.properties[0] === "PreRotation");
+    model.transform.localPosition = gl_matrix_1.vec3.fromValues((_f = (_e = translationNode) === null || _e === void 0 ? void 0 : _e.properties[4], (_f !== null && _f !== void 0 ? _f : 0)), (_h = (_g = translationNode) === null || _g === void 0 ? void 0 : _g.properties[5], (_h !== null && _h !== void 0 ? _h : 0)), (_k = (_j = translationNode) === null || _j === void 0 ? void 0 : _j.properties[6], (_k !== null && _k !== void 0 ? _k : 0)));
+    model.transform.localRotation = gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_m = (_l = rotationNode) === null || _l === void 0 ? void 0 : _l.properties[4], (_m !== null && _m !== void 0 ? _m : 0)), (_p = (_o = rotationNode) === null || _o === void 0 ? void 0 : _o.properties[5], (_p !== null && _p !== void 0 ? _p : 0)), (_r = (_q = rotationNode) === null || _q === void 0 ? void 0 : _q.properties[6], (_r !== null && _r !== void 0 ? _r : 0)));
+    model.transform.localScaling = gl_matrix_1.vec3.fromValues((_t = (_s = scalingNode) === null || _s === void 0 ? void 0 : _s.properties[4], (_t !== null && _t !== void 0 ? _t : 1)), (_v = (_u = scalingNode) === null || _u === void 0 ? void 0 : _u.properties[5], (_v !== null && _v !== void 0 ? _v : 1)), (_x = (_w = scalingNode) === null || _w === void 0 ? void 0 : _w.properties[6], (_x !== null && _x !== void 0 ? _x : 1)));
+    if (preRotation) {
+        model.transform.localRotation = gl_matrix_1.quat.mul(model.transform.localRotation, gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_y = preRotation.properties[4], (_y !== null && _y !== void 0 ? _y : 0)), (_z = preRotation.properties[5], (_z !== null && _z !== void 0 ? _z : 0)), (_0 = preRotation.properties[6], (_0 !== null && _0 !== void 0 ? _0 : 0))), model.transform.localRotation);
+    }
     return model;
 }
 function importGeometry(node) {
@@ -3087,11 +3091,18 @@ function importMaterial(materialNode) {
     return material;
 }
 function connectResources(node, resourceDict) {
-    var _a, _b;
     for (const connect of node.nestedNodes) {
         const [, srcID, dstID] = connect.properties;
-        const src = (_a = resourceDict.get(srcID), (_a !== null && _a !== void 0 ? _a : util_1.panic(`Resource with id '${srcID}' missing.`)));
-        const dst = (_b = resourceDict.get(dstID), (_b !== null && _b !== void 0 ? _b : util_1.panic(`Resource with id '${dstID}' missing.`)));
+        const src = resourceDict.get(srcID); //?? panic(`Resource with id '${srcID}' missing.`);
+        const dst = resourceDict.get(dstID); //?? panic(`Resource with id '${dstID}' missing.`);
+        if (!src) {
+            console.warn(`Resource with id '${srcID}' missing.`);
+            continue;
+        }
+        if (!dst) {
+            console.warn(`Resource with id '${dstID}' missing.`);
+            continue;
+        }
         if (src.type === "model" && dst.type === "model") {
             src.data.transform.parent = dst.data.transform;
             dst.data.transform.children.push(src.data.transform);
@@ -20296,4 +20307,303 @@ function modulesToDom(moduleId, list, options) {
 
 function insertStyleElement(options) {
   var style = document.createElement('style');
-  var attr
+  var attributes = options.attributes || {};
+
+  if (typeof attributes.nonce === 'undefined') {
+    var nonce =  true ? __webpack_require__.nc : undefined;
+
+    if (nonce) {
+      attributes.nonce = nonce;
+    }
+  }
+
+  Object.keys(attributes).forEach(function (key) {
+    style.setAttribute(key, attributes[key]);
+  });
+
+  if (typeof options.insert === 'function') {
+    options.insert(style);
+  } else {
+    var target = getTarget(options.insert || 'head');
+
+    if (!target) {
+      throw new Error("Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid.");
+    }
+
+    target.appendChild(style);
+  }
+
+  return style;
+}
+
+function removeStyleElement(style) {
+  // istanbul ignore if
+  if (style.parentNode === null) {
+    return false;
+  }
+
+  style.parentNode.removeChild(style);
+}
+/* istanbul ignore next  */
+
+
+var replaceText = function replaceText() {
+  var textStore = [];
+  return function replace(index, replacement) {
+    textStore[index] = replacement;
+    return textStore.filter(Boolean).join('\n');
+  };
+}();
+
+function applyToSingletonTag(style, index, remove, obj) {
+  var css = remove ? '' : obj.css; // For old IE
+
+  /* istanbul ignore if  */
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = replaceText(index, css);
+  } else {
+    var cssNode = document.createTextNode(css);
+    var childNodes = style.childNodes;
+
+    if (childNodes[index]) {
+      style.removeChild(childNodes[index]);
+    }
+
+    if (childNodes.length) {
+      style.insertBefore(cssNode, childNodes[index]);
+    } else {
+      style.appendChild(cssNode);
+    }
+  }
+}
+
+function applyToTag(style, options, obj) {
+  var css = obj.css;
+  var media = obj.media;
+  var sourceMap = obj.sourceMap;
+
+  if (media) {
+    style.setAttribute('media', media);
+  } else {
+    style.removeAttribute('media');
+  }
+
+  if (sourceMap && btoa) {
+    css += "\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))), " */");
+  } // For old IE
+
+  /* istanbul ignore if  */
+
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    while (style.firstChild) {
+      style.removeChild(style.firstChild);
+    }
+
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var singleton = null;
+var singletonCounter = 0;
+
+function addStyle(obj, options) {
+  var style;
+  var update;
+  var remove;
+
+  if (options.singleton) {
+    var styleIndex = singletonCounter++;
+    style = singleton || (singleton = insertStyleElement(options));
+    update = applyToSingletonTag.bind(null, style, styleIndex, false);
+    remove = applyToSingletonTag.bind(null, style, styleIndex, true);
+  } else {
+    style = insertStyleElement(options);
+    update = applyToTag.bind(null, style, options);
+
+    remove = function remove() {
+      removeStyleElement(style);
+    };
+  }
+
+  update(obj);
+  return function updateStyle(newObj) {
+    if (newObj) {
+      if (newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap) {
+        return;
+      }
+
+      update(obj = newObj);
+    } else {
+      remove();
+    }
+  };
+}
+
+module.exports = function (moduleId, list, options) {
+  options = options || {}; // Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+  // tags it will allow on a page
+
+  if (!options.singleton && typeof options.singleton !== 'boolean') {
+    options.singleton = isOldIE();
+  }
+
+  moduleId = options.base ? moduleId + options.base : moduleId;
+  list = list || [];
+
+  if (!stylesInDom[moduleId]) {
+    stylesInDom[moduleId] = [];
+  }
+
+  modulesToDom(moduleId, list, options);
+  return function update(newList) {
+    newList = newList || [];
+
+    if (Object.prototype.toString.call(newList) !== '[object Array]') {
+      return;
+    }
+
+    if (!stylesInDom[moduleId]) {
+      stylesInDom[moduleId] = [];
+    }
+
+    modulesToDom(moduleId, newList, options);
+
+    for (var j = newList.length; j < stylesInDom[moduleId].length; j++) {
+      stylesInDom[moduleId][j]();
+    }
+
+    stylesInDom[moduleId].length = newList.length;
+
+    if (stylesInDom[moduleId].length === 0) {
+      delete stylesInDom[moduleId];
+    }
+  };
+};
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ "./src/css/base.css":
+/*!**************************!*\
+  !*** ./src/css/base.css ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../node_modules/css-loader/dist/cjs.js!./base.css */ "./node_modules/css-loader/dist/cjs.js!./src/css/base.css");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(module.i, content, options);
+
+var exported = content.locals ? content.locals : {};
+
+
+
+module.exports = exported;
+
+/***/ }),
+
+/***/ "./src/engine-test.ts":
+/*!****************************!*\
+  !*** ./src/engine-test.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
+const __1 = __webpack_require__(/*! ../.. */ "../dist/index.js");
+const canvas = document.querySelector("#canvas");
+const engine = new __1.ZograEngine(canvas);
+const input = new __1.InputManager();
+initCamera();
+initObjects();
+engine.start();
+engine.on('update', () => input.update());
+function initCamera() {
+    const wrapper = new __1.Entity();
+    engine.scene.add(wrapper);
+    wrapper.position = __1.vec3(0, 2, 20);
+    const camera = new __1.Camera();
+    engine.scene.add(camera, wrapper);
+    camera.clearColor = __1.rgb(.3, .3, .3);
+    camera.FOV = 60;
+    engine.on("update", (time) => {
+        const sensity = 0.0001 * 10;
+        let v = __1.vec3.zero();
+        let forward = __1.mat4.mulVector(camera.localToWorldMatrix, __1.vec3(0, 0, -1));
+        forward.y = 0;
+        forward = forward.normalize();
+        let right = __1.mat4.mulVector(camera.localToWorldMatrix, __1.vec3(1, 0, 0)).normalize();
+        let up = __1.vec3(0, 1, 0);
+        if (input.getKey(__1.Keys.Shift) || input.getKey(__1.Keys.Space))
+            v.plus(__1.vec3(0, 1 * time.deltaTime, 0));
+        if (input.getKey(__1.Keys.Control))
+            v.plus(__1.vec3(0, -1 * time.deltaTime, 0));
+        if (input.getKey(__1.Keys.W))
+            v.plus(__1.mul(forward, time.deltaTime));
+        if (input.getKey(__1.Keys.S))
+            v.plus(__1.mul(forward, -time.deltaTime));
+        if (input.getKey(__1.Keys.D))
+            v.plus(__1.mul(right, time.deltaTime));
+        if (input.getKey(__1.Keys.A))
+            v.plus(__1.mul(right, -time.deltaTime));
+        if (input.getKeyDown(__1.Keys.Mouse2))
+            input.lockPointer();
+        if (input.getKeyUp(__1.Keys.Mouse2))
+            input.releasePointer();
+        let look = input.pointerDelta;
+        let rotate = __1.quat.normalize(__1.quat.mul(__1.quat.axis(right, -sensity * look.y), __1.quat.axis(up, -sensity * look.x)));
+        /*if (input.getKey(Keys.Space))
+            rotate = quat.axis(right, -sensity * look.y);
+        else
+            rotate = quat.normalize(quat.axis(up, -sensity * look.x));*/
+        wrapper.rotation = __1.quat.mul(wrapper.rotation, __1.quat.axis(up, -sensity * look.x));
+        c

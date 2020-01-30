@@ -1,23 +1,24 @@
-import { Asset } from "../../core/asset";
+import { Asset, IAsset } from "../../core/asset";
 import { GLContext } from "../../core/global";
 import { FBXImporter } from "../fbx-importer/fbx-importer";
 import { readBlob } from "../fbx-importer/utils";
+import { ConstructorType } from "../../utils/util";
 
 
 export class AssetsCollection
 {
-    assets: Asset[] = [];
-    add(asset: Asset)
+    assets: IAsset[] = [];
+    add(asset: IAsset)
     {
         this.assets.push(asset);
     }
-    get<T extends typeof Asset>(Type: T): InstanceType<T> | null
+    get<T extends IAsset>(Type: ConstructorType<T>): T | null
     {
-        return this.assets.find(asset => asset.constructor === Type) as InstanceType<T>;
+        return this.assets.find(asset => asset.constructor === Type) as T;
     }
-    getAll<T extends typeof Asset>(Type: T): InstanceType<T>[]
+    getAll<T extends IAsset>(Type: ConstructorType<T>): T[]
     {
-        return this.assets.filter(asset => isInheritFrom(asset, Type)) as InstanceType<T>[];
+        return this.assets.filter(asset => isInheritFrom(asset, Type)) as T[];
     }
 }
 

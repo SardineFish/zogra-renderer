@@ -1,4 +1,4 @@
-import fbx from "./asset/model/test.bin.fbx";
+import fbx from "./asset/model/klein_bottole.fbx";
 import { plugins } from "../..";
 import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul } from "../..";
 
@@ -82,4 +82,9 @@ async function initObjects()
     const blob = await (await fetch(fbx)).blob();
     const assets = await plugins.AssetsImporter.blob(blob).fbx();
     (window as any).assets = assets;
+
+    for (const obj of assets.getAll(RenderObject))
+    {
+        engine.scene.add(obj);
+    }
 }

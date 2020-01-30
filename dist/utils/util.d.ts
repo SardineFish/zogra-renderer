@@ -15,4 +15,7 @@ export declare function getUniformsLocation<U extends {
 };
 export declare function fillArray<T>(element: (idx: number) => T, count: number): T[];
 export declare function fillArray<T>(element: T, count: number): T[];
+export declare type ConstructorType<T> = {
+    prototype: T;
+} & Function;
 export {};

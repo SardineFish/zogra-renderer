@@ -61,3 +61,5 @@ export function fillArray<T>(element: ((idx:number) => T) | T, count: number): T
         arr[i] = typeof (element) === "function" ? (element as ((idx: number) => T))(i) : element;
     return arr;
 }
+
+export type ConstructorType<T> = { prototype: T } & Function;

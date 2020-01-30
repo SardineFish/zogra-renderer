@@ -2182,6 +2182,8 @@ class Scene extends entity_1.EntityManager {
         (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.add(entity);
         if (parent)
             entity.parent = parent;
+        for (const child of entity.children)
+            this.add(child, entity);
     }
     remove(entity) {
         var _a;
@@ -2189,7 +2191,7 @@ class Scene extends entity_1.EntityManager {
         const type = entity.constructor;
         (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.remove(entity);
         if (entity.parent) {
-            entity.parent.children = entity.parent.children.filter(c => c !== entity);
+            entity.parent.children.delete(entity);
         }
     }
     rootEntities() {
@@ -2240,7 +2242,7 @@ class Transform {
         // {
         // }
         this._parent = null;
-        this.children = [];
+        this.children = new Set();
         this.localPosition = vec3_1.vec3.zero();
         this.localRotation = quat_1.quat.identity();
         this.localScaling = vec3_1.vec3.one();
@@ -2293,7 +2295,7 @@ class Transform {
     set parent(p) {
         this._parent = p;
         if (p) {
-            p.children.push(this);
+            p.children.add(this);
         }
     }
 }
@@ -2831,7 +2833,7 @@ function extractFBXAssets(fbx) {
 }
 exports.extractFBXAssets = extractFBXAssets;
 function importModel(node) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     const model = {
         id: node.properties[0],
         name: node.properties[1].split("\0")[0],
@@ -2840,15 +2842,17 @@ function importModel(node) {
         transform: null,
     };
     model.transform = new fbx_types_1.FBXTransform(model);
-    const translationNode = (_a = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _a === void 0 ? void 0 : _a.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
-    const rotationNode = (_b = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _b === void 0 ? void 0 : _b.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
-    const scalingNode = (_c = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _c === void 0 ? void 0 : _c.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
-    model.transform.localPosition = gl_matrix_1.vec3.fromValues((_e = (_d = translationNode) === null || _d === void 0 ? void 0 : _d.properties[4], (_e !== null && _e !== void 0 ? _e : 0)), (_g = (_f = translationNode) === null || _f === void 0 ? void 0 : _f.properties[4], (_g !== null && _g !== void 0 ? _g : 0)), (_j = (_h = translationNode) === null || _h === void 0 ? void 0 : _h.properties[4], (_j !== null && _j !== void 0 ? _j : 0)));
-    model.transform.localRotation = gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_l = (_k = rotationNode) === null || _k === void 0 ? void 0 : _k.properties[4], (_l !== null && _l !== void 0 ? _l : 0)), (_o = (_m = rotationNode) === null || _m === void 0 ? void 0 : _m.properties[4], (_o !== null && _o !== void 0 ? _o : 0)), (_q = (_p = rotationNode) === null || _p === void 0 ? void 0 : _p.properties[4], (_q !== null && _q !== void 0 ? _q : 0)));
-    model.transform.localScaling = gl_matrix_1.vec3.fromValues((_s = (_r = scalingNode) === null || _r === void 0 ? void 0 : _r.properties[4], (_s !== null && _s !== void 0 ? _s : 1)), (_u = (_t = scalingNode) === null || _t === void 0 ? void 0 : _t.properties[4], (_u !== null && _u !== void 0 ? _u : 1)), (_w = (_v = scalingNode) === null || _v === void 0 ? void 0 : _v.properties[4], (_w !== null && _w !== void 0 ? _w : 1)));
+    const props = node.nestedNodes.find(n => n.name === "Properties70");
+    const translationNode = (_a = props) === null || _a === void 0 ? void 0 : _a.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
+    const rotationNode = (_b = props) === null || _b === void 0 ? void 0 : _b.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
+    const scalingNode = (_c = props) === null || _c === void 0 ? void 0 : _c.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
+    const preRotation = (_d = props) === null || _d === void 0 ? void 0 : _d.nestedNodes.find(n => n.properties[0] === "PreRotation");
+    model.transform.localPosition = gl_matrix_1.vec3.fromValues((_f = (_e = translationNode) === null || _e === void 0 ? void 0 : _e.properties[4], (_f !== null && _f !== void 0 ? _f : 0)), (_h = (_g = translationNode) === null || _g === void 0 ? void 0 : _g.properties[5], (_h !== null && _h !== void 0 ? _h : 0)), (_k = (_j = translationNode) === null || _j === void 0 ? void 0 : _j.properties[6], (_k !== null && _k !== void 0 ? _k : 0)));
+    model.transform.localRotation = gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_m = (_l = rotationNode) === null || _l === void 0 ? void 0 : _l.properties[4], (_m !== null && _m !== void 0 ? _m : 0)), (_p = (_o = rotationNode) === null || _o === void 0 ? void 0 : _o.properties[5], (_p !== null && _p !== void 0 ? _p : 0)), (_r = (_q = rotationNode) === null || _q === void 0 ? void 0 : _q.properties[6], (_r !== null && _r !== void 0 ? _r : 0)));
+    model.transform.localScaling = gl_matrix_1.vec3.fromValues((_t = (_s = scalingNode) === null || _s === void 0 ? void 0 : _s.properties[4], (_t !== null && _t !== void 0 ? _t : 1)), (_v = (_u = scalingNode) === null || _u === void 0 ? void 0 : _u.properties[5], (_v !== null && _v !== void 0 ? _v : 1)), (_x = (_w = scalingNode) === null || _w === void 0 ? void 0 : _w.properties[6], (_x !== null && _x !== void 0 ? _x : 1)));
+    if (preRotation) {
+        model.transform.localRotation = gl_matrix_1.quat.mul(model.transform.localRotation, gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_y = preRotation.properties[4], (_y !== null && _y !== void 0 ? _y : 0)), (_z = preRotation.properties[5], (_z !== null && _z !== void 0 ? _z : 0)), (_0 = preRotation.properties[6], (_0 !== null && _0 !== void 0 ? _0 : 0))), model.transform.localRotation);
+    }
     return model;
 }
 function importGeometry(node) {
@@ -3087,11 +3091,18 @@ function importMaterial(materialNode) {
     return material;
 }
 function connectResources(node, resourceDict) {
-    var _a, _b;
     for (const connect of node.nestedNodes) {
         const [, srcID, dstID] = connect.properties;
-        const src = (_a = resourceDict.get(srcID), (_a !== null && _a !== void 0 ? _a : util_1.panic(`Resource with id '${srcID}' missing.`)));
-        const dst = (_b = resourceDict.get(dstID), (_b !== null && _b !== void 0 ? _b : util_1.panic(`Resource with id '${dstID}' missing.`)));
+        const src = resourceDict.get(srcID); //?? panic(`Resource with id '${srcID}' missing.`);
+        const dst = resourceDict.get(dstID); //?? panic(`Resource with id '${dstID}' missing.`);
+        if (!src) {
+            console.warn(`Resource with id '${srcID}' missing.`);
+            continue;
+        }
+        if (!dst) {
+            console.warn(`Resource with id '${dstID}' missing.`);
+            continue;
+        }
         if (src.type === "model" && dst.type === "model") {
             src.data.transform.parent = dst.data.transform;
             dst.data.transform.children.push(src.data.transform);
@@ -20490,4 +20501,230 @@ module.exports = function (moduleId, list, options) {
   return function update(newList) {
     newList = newList || [];
 
-    if (Object.pro
+    if (Object.prototype.toString.call(newList) !== '[object Array]') {
+      return;
+    }
+
+    if (!stylesInDom[moduleId]) {
+      stylesInDom[moduleId] = [];
+    }
+
+    modulesToDom(moduleId, newList, options);
+
+    for (var j = newList.length; j < stylesInDom[moduleId].length; j++) {
+      stylesInDom[moduleId][j]();
+    }
+
+    stylesInDom[moduleId].length = newList.length;
+
+    if (stylesInDom[moduleId].length === 0) {
+      delete stylesInDom[moduleId];
+    }
+  };
+};
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ "./src/asset/img/dual-gun.png":
+/*!************************************!*\
+  !*** ./src/asset/img/dual-gun.png ***!
+  \************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/img/dual-gun.png");
+
+/***/ }),
+
+/***/ "./src/css/base.css":
+/*!**************************!*\
+  !*** ./src/css/base.css ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../node_modules/css-loader/dist/cjs.js!./base.css */ "./node_modules/css-loader/dist/cjs.js!./src/css/base.css");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(module.i, content, options);
+
+var exported = content.locals ? content.locals : {};
+
+
+
+module.exports = exported;
+
+/***/ }),
+
+/***/ "./src/life-game.ts":
+/*!**************************!*\
+  !*** ./src/life-game.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var _a;
+Object.defineProperty(exports, "__esModule", { value: true });
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../dist/index.js");
+const default_vert_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-vert.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl"));
+const life_game_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/life-game.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game.glsl"));
+const life_game_render_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/life-game-render.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/life-game-render.glsl"));
+__webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
+const dual_gun_png_1 = __importDefault(__webpack_require__(/*! ./asset/img/dual-gun.png */ "./src/asset/img/dual-gun.png"));
+const texture_1 = __webpack_require__(/*! ../../dist/core/texture */ "../dist/core/texture.js");
+const texture_format_1 = __webpack_require__(/*! ../../dist/core/texture-format */ "../dist/core/texture-format.js");
+const render_target_1 = __webpack_require__(/*! ../../dist/core/render-target */ "../dist/core/render-target.js");
+const util_1 = __webpack_require__(/*! ./misc/util */ "./src/misc/util.ts");
+const Width = 2446;
+const Height = 1840;
+const BlockSize = 2;
+const FPS = parseInt((_a = /fps=(\d+)/.exec(window.location.search), (_a !== null && _a !== void 0 ? _a : ["", "60"]))[1]);
+const Offset = zogra_renderer_1.vec2(650, 850);
+const canvas = document.querySelector("#canvas");
+const renderer = new zogra_renderer_1.ZograRenderer(canvas, window.innerWidth, window.innerHeight);
+class LifeGameMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_glsl_1.default, {
+    zWrite: false,
+    depth: zogra_renderer_1.DepthTest.Always
+})) {
+}
+const material = new LifeGameMaterial();
+const blitMat = new zogra_renderer_1.Material(new zogra_renderer_1.Shader(default_vert_glsl_1.default, life_game_render_glsl_1.default));
+blitMat.setProp("uBlockSize", "float", BlockSize);
+blitMat.setProp("uTexelSize", "vec4", zogra_renderer_1.vec4(Width, Height, 1 / Width, 1 / Height));
+blitMat.setProp("uOffset", "vec2", Offset);
+blitMat.setProp("uSize", "vec3", zogra_renderer_1.vec3(window.innerWidth, window.innerHeight, window.innerWidth / window.innerHeight));
+blitMat.setProp("uBG", "color", zogra_renderer_1.Color.white);
+blitMat.setProp("uFG", "color", zogra_renderer_1.rgba(0, 0, 0, 0.5));
+renderer.clear();
+const rts = [
+    new texture_1.RenderTexture(Width, Height, false, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest),
+    new texture_1.RenderTexture(Width, Height, false, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Nearest),
+];
+rts[0].wrapMode = texture_1.WrapMode.Clamp;
+rts[1].wrapMode = texture_1.WrapMode.Clamp;
+rts[0].update();
+rts[1].update();
+const backBuffer = new texture_1.RenderTexture(Width, Height, false);
+const mesh = new zogra_renderer_1.Mesh();
+mesh.verts = [
+    zogra_renderer_1.vec3(-1, -1, 0),
+    zogra_renderer_1.vec3(1, -1, 0),
+    zogra_renderer_1.vec3(1, 1, 0),
+    zogra_renderer_1.vec3(-1, 1, 0),
+];
+mesh.triangles = [
+    0, 1, 3,
+    1, 2, 3,
+];
+mesh.uvs = [
+    zogra_renderer_1.vec2(0, 0),
+    zogra_renderer_1.vec2(1, 0),
+    zogra_renderer_1.vec2(1, 1),
+    zogra_renderer_1.vec2(0, 1)
+];
+mesh.calculateNormals();
+(async () => {
+    let previousTime = 0;
+    let startDelay = 0;
+    const update = await lifeGame();
+    const updateFrame = (delay) => {
+        if (previousTime === 0) {
+            previousTime = delay;
+            startDelay = delay;
+        }
+        const dt = (delay - previousTime) / 1000;
+        previousTime = delay;
+        update(dt, (delay - startDelay) / 1000);
+        requestAnimationFrame(updateFrame);
+    };
+    requestAnimationFrame(updateFrame);
+})();
+async function lifeGame() {
+    let nextUpdate = 1 / FPS;
+    let frameIdx = 0;
+    const initial = new ImageData(Width, Height);
+    const M = Width * Height;
+    const N = 0.8 * M;
+    for (let i = 0; i < N; i++) {
+        const idx = Math.floor(Math.random() * M) * 4;
+        initial.data[idx] = 255;
+    }
+    const seed = await util_1.loadImage(dual_gun_png_1.default);
+    rts[0].setData(seed);
+    setInterval(() => {
+        const src = rts[frameIdx % 2];
+        const dst = rts[(frameIdx + 1) % 2];
+        frameIdx++;
+        renderer.setGlobalTexture("uLastFrame", src);
+        renderer.setGlobalUniform("uSize", "vec4", zogra_renderer_1.vec4(Width, Height, 1 / Width, 1 / Height));
+        renderer.setRenderTarget(dst);
+        renderer.drawMesh(mesh, zogra_renderer_1.mat4.identity(), material);
+    }, 1000 / FPS);
+    return (dt, time) => {
+        renderer.blit(rts[0], render_target_1.RenderTarget.CanvasTarget, blitMat);
+    };
+}
+window.addEventListener("mousemove", (e) => {
+    const pos = zogra_renderer_1.vec2(e.clientX, e.clientY);
+    const center = zogra_renderer_1.vec2(window.innerWidth / 2, window.innerHeight / 2);
+    const d = zogra_renderer_1.minus(pos, center);
+    d.mul(zogra_renderer_1.vec2(-.2, .2));
+    blitMat.setProp("uOffset", "vec2", zogra_renderer_1.plus(Offset, d));
+});
+
+
+/***/ }),
+
+/***/ "./src/misc/util.ts":
+/*!**************************!*\
+  !*** ./src/misc/util.ts ***!
+  \*******

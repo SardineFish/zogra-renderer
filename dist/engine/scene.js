@@ -15,6 +15,8 @@ class Scene extends entity_1.EntityManager {
         (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.add(entity);
         if (parent)
             entity.parent = parent;
+        for (const child of entity.children)
+            this.add(child, entity);
     }
     remove(entity) {
         var _a;
@@ -22,7 +24,7 @@ class Scene extends entity_1.EntityManager {
         const type = entity.constructor;
         (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.remove(entity);
         if (entity.parent) {
-            entity.parent.children = entity.parent.children.filter(c => c !== entity);
+            entity.parent.children.delete(entity);
         }
     }
     rootEntities() {

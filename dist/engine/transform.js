@@ -22,7 +22,7 @@ class Transform {
         // {
         // }
         this._parent = null;
-        this.children = [];
+        this.children = new Set();
         this.localPosition = vec3_1.vec3.zero();
         this.localRotation = quat_1.quat.identity();
         this.localScaling = vec3_1.vec3.one();
@@ -75,7 +75,7 @@ class Transform {
     set parent(p) {
         this._parent = p;
         if (p) {
-            p.children.push(this);
+            p.children.add(this);
         }
     }
 }

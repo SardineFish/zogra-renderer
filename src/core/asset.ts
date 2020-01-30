@@ -8,6 +8,7 @@ export const newAssetID = (() =>
 export interface IAsset
 {
     assetID: number;
+    name: string;
 }
 export class Asset implements IAsset
 {

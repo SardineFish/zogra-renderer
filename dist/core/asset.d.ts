@@ -1,6 +1,7 @@
 export declare const newAssetID: () => number;
 export interface IAsset {
     assetID: number;
+    name: string;
 }
 export declare class Asset implements IAsset {
     assetID: number;

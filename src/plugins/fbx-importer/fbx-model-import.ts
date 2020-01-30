@@ -74,34 +74,39 @@ function importModel(node: FBXNode)
         transform: null as any,
     };
     model.transform = new FBXTransform(model);
-    const translationNode = node.nestedNodes
-        .find(n => n.name === "Properties70")
-        ?.nestedNodes
-        .find(n => n.properties[0] === "Lcl Translation");
-    const rotationNode = node.nestedNodes
-        .find(n => n.name === "Properties70")
-        ?.nestedNodes
-        .find(n => n.properties[0] === "Lcl Rotation");
-    const scalingNode = node.nestedNodes
-        .find(n => n.name === "Properties70")
-        ?.nestedNodes
-        .find(n => n.properties[0] === "Lcl Scaling");
+    const props = node.nestedNodes.find(n => n.name === "Properties70");
+    const translationNode = props?.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
+    const rotationNode = props?.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
+    const scalingNode = props?.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
+    const preRotation = props?.nestedNodes.find(n => n.properties[0] === "PreRotation");
     model.transform.localPosition = vec3.fromValues(
         (translationNode?.properties[4] ?? 0) as number,
-        (translationNode?.properties[4] ?? 0) as number,
-        (translationNode?.properties[4] ?? 0) as number
+        (translationNode?.properties[5] ?? 0) as number,
+        (translationNode?.properties[6] ?? 0) as number
     );
     model.transform.localRotation = quat.fromEuler(
         quat.create(),
         (rotationNode?.properties[4] ?? 0) as number,
-        (rotationNode?.properties[4] ?? 0) as number,
-        (rotationNode?.properties[4] ?? 0) as number
+        (rotationNode?.properties[5] ?? 0) as number,
+        (rotationNode?.properties[6] ?? 0) as number
     );
     model.transform.localScaling = vec3.fromValues(
         (scalingNode?.properties[4] ?? 1) as number,
-        (scalingNode?.properties[4] ?? 1) as number,
-        (scalingNode?.properties[4] ?? 1) as number
+        (scalingNode?.properties[5] ?? 1) as number,
+        (scalingNode?.properties[6] ?? 1) as number
     );
+    if (preRotation)
+    {
+        model.transform.localRotation = quat.mul(
+            model.transform.localRotation,
+            quat.fromEuler(
+                quat.create(),
+                preRotation.properties[4] as number ?? 0,
+                preRotation.properties[5] as number ?? 0,
+                preRotation.properties[6] as number ?? 0),
+            model.transform.localRotation
+        );
+    }
     return model;
 }
 
@@ -400,8 +405,18 @@ function connectResources(node: FBXNode, resourceDict: Map<bigint, Resource>)
     for (const connect of node.nestedNodes)
     {
         const [, srcID, dstID] = connect.properties as bigint[];
-        const src = resourceDict.get(srcID) ?? panic(`Resource with id '${srcID}' missing.`);
-        const dst = resourceDict.get(dstID) ?? panic(`Resource with id '${dstID}' missing.`);
+        const src = resourceDict.get(srcID); //?? panic(`Resource with id '${srcID}' missing.`);
+        const dst = resourceDict.get(dstID); //?? panic(`Resource with id '${dstID}' missing.`);
+        if (!src)
+        {
+            console.warn(`Resource with id '${srcID}' missing.`);
+            continue;
+        }
+        if (!dst)
+        {
+            console.warn(`Resource with id '${dstID}' missing.`);
+            continue;
+        }
         if (src.type === "model" && dst.type === "model")
         {
             (src.data as FBXModel).transform.parent = (dst.data as FBXModel).transform;

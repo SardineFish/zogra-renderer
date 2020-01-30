@@ -24,7 +24,7 @@ export class Transform
     // }
 
     private _parent: Transform | null = null;
-    children: Transform[] = [];
+    children: Set<Transform> = new Set();
 
     localPosition: vec3 = vec3.zero();
     localRotation: quat = quat.identity();
@@ -87,7 +87,7 @@ export class Transform
         this._parent = p;
         if (p)
         {
-            p.children.push(this);
+            p.children.add(this);
         }
     }
 }

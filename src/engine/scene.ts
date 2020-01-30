@@ -19,6 +19,8 @@ export class Scene extends EntityManager<Entity>
         
         if (parent)
             entity.parent = parent;
+        for (const child of entity.children)
+            this.add(child as Entity, entity);
     }
     remove(entity: Entity)
     {
@@ -29,7 +31,7 @@ export class Scene extends EntityManager<Entity>
         
         if (entity.parent)
         {
-            entity.parent.children = entity.parent.children.filter(c => c !== entity);
+            entity.parent.children.delete(entity);
         }
     }
     rootEntities()

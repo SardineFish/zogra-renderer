@@ -3,7 +3,7 @@ import { vec3 } from "../types/vec3";
 import { quat } from "../types/quat";
 export declare class Transform {
     private _parent;
-    children: Transform[];
+    children: Set<Transform>;
     localPosition: vec3;
     localRotation: quat;
     localScaling: vec3;

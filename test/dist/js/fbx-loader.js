@@ -2182,6 +2182,8 @@ class Scene extends entity_1.EntityManager {
         (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.add(entity);
         if (parent)
             entity.parent = parent;
+        for (const child of entity.children)
+            this.add(child, entity);
     }
     remove(entity) {
         var _a;
@@ -2189,7 +2191,7 @@ class Scene extends entity_1.EntityManager {
         const type = entity.constructor;
         (_a = this.managers.get(type)) === null || _a === void 0 ? void 0 : _a.remove(entity);
         if (entity.parent) {
-            entity.parent.children = entity.parent.children.filter(c => c !== entity);
+            entity.parent.children.delete(entity);
         }
     }
     rootEntities() {
@@ -2240,7 +2242,7 @@ class Transform {
         // {
         // }
         this._parent = null;
-        this.children = [];
+        this.children = new Set();
         this.localPosition = vec3_1.vec3.zero();
         this.localRotation = quat_1.quat.identity();
         this.localScaling = vec3_1.vec3.one();
@@ -2293,7 +2295,7 @@ class Transform {
     set parent(p) {
         this._parent = p;
         if (p) {
-            p.children.push(this);
+            p.children.add(this);
         }
     }
 }
@@ -2831,7 +2833,7 @@ function extractFBXAssets(fbx) {
 }
 exports.extractFBXAssets = extractFBXAssets;
 function importModel(node) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     const model = {
         id: node.properties[0],
         name: node.properties[1].split("\0")[0],
@@ -2840,15 +2842,17 @@ function importModel(node) {
         transform: null,
     };
     model.transform = new fbx_types_1.FBXTransform(model);
-    const translationNode = (_a = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _a === void 0 ? void 0 : _a.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
-    const rotationNode = (_b = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _b === void 0 ? void 0 : _b.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
-    const scalingNode = (_c = node.nestedNodes
-        .find(n => n.name === "Properties70")) === null || _c === void 0 ? void 0 : _c.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
-    model.transform.localPosition = gl_matrix_1.vec3.fromValues((_e = (_d = translationNode) === null || _d === void 0 ? void 0 : _d.properties[4], (_e !== null && _e !== void 0 ? _e : 0)), (_g = (_f = translationNode) === null || _f === void 0 ? void 0 : _f.properties[4], (_g !== null && _g !== void 0 ? _g : 0)), (_j = (_h = translationNode) === null || _h === void 0 ? void 0 : _h.properties[4], (_j !== null && _j !== void 0 ? _j : 0)));
-    model.transform.localRotation = gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_l = (_k = rotationNode) === null || _k === void 0 ? void 0 : _k.properties[4], (_l !== null && _l !== void 0 ? _l : 0)), (_o = (_m = rotationNode) === null || _m === void 0 ? void 0 : _m.properties[4], (_o !== null && _o !== void 0 ? _o : 0)), (_q = (_p = rotationNode) === null || _p === void 0 ? void 0 : _p.properties[4], (_q !== null && _q !== void 0 ? _q : 0)));
-    model.transform.localScaling = gl_matrix_1.vec3.fromValues((_s = (_r = scalingNode) === null || _r === void 0 ? void 0 : _r.properties[4], (_s !== null && _s !== void 0 ? _s : 1)), (_u = (_t = scalingNode) === null || _t === void 0 ? void 0 : _t.properties[4], (_u !== null && _u !== void 0 ? _u : 1)), (_w = (_v = scalingNode) === null || _v === void 0 ? void 0 : _v.properties[4], (_w !== null && _w !== void 0 ? _w : 1)));
+    const props = node.nestedNodes.find(n => n.name === "Properties70");
+    const translationNode = (_a = props) === null || _a === void 0 ? void 0 : _a.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
+    const rotationNode = (_b = props) === null || _b === void 0 ? void 0 : _b.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
+    const scalingNode = (_c = props) === null || _c === void 0 ? void 0 : _c.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
+    const preRotation = (_d = props) === null || _d === void 0 ? void 0 : _d.nestedNodes.find(n => n.properties[0] === "PreRotation");
+    model.transform.localPosition = gl_matrix_1.vec3.fromValues((_f = (_e = translationNode) === null || _e === void 0 ? void 0 : _e.properties[4], (_f !== null && _f !== void 0 ? _f : 0)), (_h = (_g = translationNode) === null || _g === void 0 ? void 0 : _g.properties[5], (_h !== null && _h !== void 0 ? _h : 0)), (_k = (_j = translationNode) === null || _j === void 0 ? void 0 : _j.properties[6], (_k !== null && _k !== void 0 ? _k : 0)));
+    model.transform.localRotation = gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_m = (_l = rotationNode) === null || _l === void 0 ? void 0 : _l.properties[4], (_m !== null && _m !== void 0 ? _m : 0)), (_p = (_o = rotationNode) === null || _o === void 0 ? void 0 : _o.properties[5], (_p !== null && _p !== void 0 ? _p : 0)), (_r = (_q = rotationNode) === null || _q === void 0 ? void 0 : _q.properties[6], (_r !== null && _r !== void 0 ? _r : 0)));
+    model.transform.localScaling = gl_matrix_1.vec3.fromValues((_t = (_s = scalingNode) === null || _s === void 0 ? void 0 : _s.properties[4], (_t !== null && _t !== void 0 ? _t : 1)), (_v = (_u = scalingNode) === null || _u === void 0 ? void 0 : _u.properties[5], (_v !== null && _v !== void 0 ? _v : 1)), (_x = (_w = scalingNode) === null || _w === void 0 ? void 0 : _w.properties[6], (_x !== null && _x !== void 0 ? _x : 1)));
+    if (preRotation) {
+        model.transform.localRotation = gl_matrix_1.quat.mul(model.transform.localRotation, gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_y = preRotation.properties[4], (_y !== null && _y !== void 0 ? _y : 0)), (_z = preRotation.properties[5], (_z !== null && _z !== void 0 ? _z : 0)), (_0 = preRotation.properties[6], (_0 !== null && _0 !== void 0 ? _0 : 0))), model.transform.localRotation);
+    }
     return model;
 }
 function importGeometry(node) {
@@ -3087,11 +3091,18 @@ function importMaterial(materialNode) {
     return material;
 }
 function connectResources(node, resourceDict) {
-    var _a, _b;
     for (const connect of node.nestedNodes) {
         const [, srcID, dstID] = connect.properties;
-        const src = (_a = resourceDict.get(srcID), (_a !== null && _a !== void 0 ? _a : util_1.panic(`Resource with id '${srcID}' missing.`)));
-        const dst = (_b = resourceDict.get(dstID), (_b !== null && _b !== void 0 ? _b : util_1.panic(`Resource with id '${dstID}' missing.`)));
+        const src = resourceDict.get(srcID); //?? panic(`Resource with id '${srcID}' missing.`);
+        const dst = resourceDict.get(dstID); //?? panic(`Resource with id '${dstID}' missing.`);
+        if (!src) {
+            console.warn(`Resource with id '${srcID}' missing.`);
+            continue;
+        }
+        if (!dst) {
+            console.warn(`Resource with id '${dstID}' missing.`);
+            continue;
+        }
         if (src.type === "model" && dst.type === "model") {
             src.data.transform.parent = dst.data.transform;
             dst.data.transform.children.push(src.data.transform);
@@ -20152,16 +20163,16 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./src/asset/model/test.bin.fbx":
-/*!**************************************!*\
-  !*** ./src/asset/model/test.bin.fbx ***!
-  \**************************************/
+/***/ "./src/asset/model/klein_bottole.fbx":
+/*!*******************************************!*\
+  !*** ./src/asset/model/klein_bottole.fbx ***!
+  \*******************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/model/test.bin.fbx");
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/model/klein_bottole.fbx");
 
 /***/ }),
 
@@ -20178,7 +20189,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const test_bin_fbx_1 = __importDefault(__webpack_require__(/*! ./asset/model/test.bin.fbx */ "./src/asset/model/test.bin.fbx"));
+const klein_bottole_fbx_1 = __importDefault(__webpack_require__(/*! ./asset/model/klein_bottole.fbx */ "./src/asset/model/klein_bottole.fbx"));
 const __1 = __webpack_require__(/*! ../.. */ "../dist/index.js");
 const __2 = __webpack_require__(/*! ../.. */ "../dist/index.js");
 const canvas = document.querySelector("#canvas");
@@ -20239,9 +20250,12 @@ async function initObjects() {
     engine.on("update", (time) => {
         cube.rotation = __2.quat.normalize(__2.quat.mul(cube.rotation, __2.quat.axis(__2.vec3(1, 1, 1), time.deltaTime * 0.5)));
     });
-    const blob = await (await fetch(test_bin_fbx_1.default)).blob();
+    const blob = await (await fetch(klein_bottole_fbx_1.default)).blob();
     const assets = await __1.plugins.AssetsImporter.blob(blob).fbx();
     window.assets = assets;
+    for (const obj of assets.getAll(__2.RenderObject)) {
+        engine.scene.add(obj);
+    }
 }
 
 
