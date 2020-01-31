@@ -10,9 +10,6 @@ uniform mat4 uTransformM;
 uniform mat4 uTransformVP;
 uniform mat4 uTransformMVP;
 
-uniform vec4 uColor;
-uniform vec2 uFlipUV;
-
 out vec4 vColor;
 out vec4 vPos;
 out vec2 vUV;
@@ -21,7 +18,8 @@ out vec3 vNormal;
 void main()
 {
     gl_Position = uTransformMVP * vec4(aPos, 1);
-    vColor = aColor * uColor;
-    vUV = (uFlipUV * (vec2(1) - aUV)) + ((vec2(1) - uFlipUV) * aUV);
+    vPos = gl_Position;
+    vColor = aColor;
+    vUV = aUV;
     vNormal = aNormal;
 }

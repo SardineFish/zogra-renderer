@@ -652,6 +652,7 @@ __export(__webpack_require__(/*! ./material-type */ "../dist/core/material-type.
 __export(__webpack_require__(/*! ./mesh */ "../dist/core/mesh.js"));
 __export(__webpack_require__(/*! ./renderer */ "../dist/core/renderer.js"));
 __export(__webpack_require__(/*! ./shader */ "../dist/core/shader.js"));
+__export(__webpack_require__(/*! ./texture */ "../dist/core/texture.js"));
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -1002,7 +1003,9 @@ class Mesh extends asset_1.Asset {
             const u = math_1.minus(b, a);
             const v = math_1.minus(c, a);
             const normal = math_1.cross(u, v).normalize();
-            this.normals[this.triangles[i]].plus(normal);
+            this.normals[this.triangles[i + 0]].plus(normal);
+            this.normals[this.triangles[i + 1]].plus(normal);
+            this.normals[this.triangles[i + 2]].plus(normal);
         }
         for (let i = 0; i < this.normals.length; i++)
             this.normals[i] = this.normals[i].normalize();
@@ -1065,7 +1068,7 @@ class Mesh extends asset_1.Asset {
         // normal: vec3
         if (attributes.normal >= 0) {
             gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
+            gl.enableVertexAttribArray(attributes.normal);
         }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
     }
@@ -20632,4 +20635,11 @@ function initCamera() {
         wrapper.rotation = __1.quat.mul(wrapper.rotation, __1.quat.axis(up, -sensity * look.x));
         camera.localRotation = __1.quat.mul(camera.localRotation, __1.quat.axis(__1.vec3(1, 0, 0), -sensity * look.y));
         wrapper.position = __1.plus(wrapper.position, __1.mul(v, 5));
-        //input.pointerDelta.
+        //input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
+    });
+}
+function initObjects() {
+    const cube = new __1.RenderObject();
+    engine.scene.add(cube);
+    cube.meshes.push(engine.renderer.assets.meshes.cube);
+    engine.on("update", (time) =>

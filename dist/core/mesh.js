@@ -68,7 +68,9 @@ class Mesh extends asset_1.Asset {
             const u = math_1.minus(b, a);
             const v = math_1.minus(c, a);
             const normal = math_1.cross(u, v).normalize();
-            this.normals[this.triangles[i]].plus(normal);
+            this.normals[this.triangles[i + 0]].plus(normal);
+            this.normals[this.triangles[i + 1]].plus(normal);
+            this.normals[this.triangles[i + 2]].plus(normal);
         }
         for (let i = 0; i < this.normals.length; i++)
             this.normals[i] = this.normals[i].normalize();
@@ -131,7 +133,7 @@ class Mesh extends asset_1.Asset {
         // normal: vec3
         if (attributes.normal >= 0) {
             gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
+            gl.enableVertexAttribArray(attributes.normal);
         }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
     }

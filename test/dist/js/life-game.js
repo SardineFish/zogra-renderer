@@ -652,6 +652,7 @@ __export(__webpack_require__(/*! ./material-type */ "../dist/core/material-type.
 __export(__webpack_require__(/*! ./mesh */ "../dist/core/mesh.js"));
 __export(__webpack_require__(/*! ./renderer */ "../dist/core/renderer.js"));
 __export(__webpack_require__(/*! ./shader */ "../dist/core/shader.js"));
+__export(__webpack_require__(/*! ./texture */ "../dist/core/texture.js"));
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -1002,7 +1003,9 @@ class Mesh extends asset_1.Asset {
             const u = math_1.minus(b, a);
             const v = math_1.minus(c, a);
             const normal = math_1.cross(u, v).normalize();
-            this.normals[this.triangles[i]].plus(normal);
+            this.normals[this.triangles[i + 0]].plus(normal);
+            this.normals[this.triangles[i + 1]].plus(normal);
+            this.normals[this.triangles[i + 2]].plus(normal);
         }
         for (let i = 0; i < this.normals.length; i++)
             this.normals[i] = this.normals[i].normalize();
@@ -1065,7 +1068,7 @@ class Mesh extends asset_1.Asset {
         // normal: vec3
         if (attributes.normal >= 0) {
             gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
+            gl.enableVertexAttribArray(attributes.normal);
         }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
     }
@@ -20270,7 +20273,7 @@ process.umask = function() { return 0; };
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nuniform vec4 uColor;\r\nuniform vec2 uFlipUV;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vColor = aColor * uColor;\r\n    vUV = (uFlipUV * (vec2(1) - aUV)) + ((vec2(1) - uFlipUV) * aUV);\r\n    vNormal = aNormal;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = aNormal;\r\n}");
 
 /***/ }),
 

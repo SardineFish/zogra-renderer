@@ -1,6 +1,10 @@
 import fbx from "./asset/model/klein_bottole.fbx";
-import { plugins } from "../..";
+import { plugins, materialDefine, shaderProp, MaterialFromShader, Shader, Color, Texture } from "../..";
 import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul } from "../..";
+import "./css/base.css";
+import vert from "./shader/default-vert.glsl";
+import frag from "./shader/pbr-frag.glsl";
+
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas);
@@ -8,6 +12,7 @@ const input = new InputManager();
 
 initCamera();
 initObjects();
+initMaterials();
 
 engine.start();
 engine.on('update', () => input.update());
@@ -78,7 +83,6 @@ async function initObjects()
     });
 
 
-
     const blob = await (await fetch(fbx)).blob();
     const assets = await plugins.AssetsImporter.blob(blob).fbx();
     (window as any).assets = assets;
@@ -91,4 +95,32 @@ async function initObjects()
     // {
     //     engine.scene.add(obj);
     // }
+}
+
+function initMaterials()
+{
+    @materialDefine
+    class PBRLit extends MaterialFromShader(new Shader(vert, frag))
+    {
+        @shaderProp("uColor", "color")
+        color: Color = Color.white;
+        @shaderProp("uMainTex", "tex2d")
+        mainTexture: Texture = engine.renderer.assets.textures.default;
+        @shaderProp("uNormalTex", "tex2d")
+        normalTexture: Texture = engine.renderer.assets.textures.defaultNormal;
+        @shaderProp("uEmission", "color")
+        emission: Color = Color.black;
+        @shaderProp("uSpecular", "color")
+        specular: Color = Color.white;
+        @shaderProp("uMetallic", "float")
+        metiallic: number = 0.023;
+        @shaderProp("uSmoothness", "float")
+        smoothness: number = 0.5;
+        @shaderProp("uFresnel", "float")
+        fresnel: number = 5;
+    }
+
+    const mat = new PBRLit();
+
+    engine.renderPipeline.replaceMaterial(engine.renderer.assets.types.DefaultMaterial, mat);
 }

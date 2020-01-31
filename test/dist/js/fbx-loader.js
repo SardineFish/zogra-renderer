@@ -652,6 +652,7 @@ __export(__webpack_require__(/*! ./material-type */ "../dist/core/material-type.
 __export(__webpack_require__(/*! ./mesh */ "../dist/core/mesh.js"));
 __export(__webpack_require__(/*! ./renderer */ "../dist/core/renderer.js"));
 __export(__webpack_require__(/*! ./shader */ "../dist/core/shader.js"));
+__export(__webpack_require__(/*! ./texture */ "../dist/core/texture.js"));
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -1002,7 +1003,9 @@ class Mesh extends asset_1.Asset {
             const u = math_1.minus(b, a);
             const v = math_1.minus(c, a);
             const normal = math_1.cross(u, v).normalize();
-            this.normals[this.triangles[i]].plus(normal);
+            this.normals[this.triangles[i + 0]].plus(normal);
+            this.normals[this.triangles[i + 1]].plus(normal);
+            this.normals[this.triangles[i + 2]].plus(normal);
         }
         for (let i = 0; i < this.normals.length; i++)
             this.normals[i] = this.normals[i].normalize();
@@ -1065,7 +1068,7 @@ class Mesh extends asset_1.Asset {
         // normal: vec3
         if (attributes.normal >= 0) {
             gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
+            gl.enableVertexAttribArray(attributes.normal);
         }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
     }
@@ -19961,6 +19964,111 @@ var Reflect;
 
 /***/ }),
 
+/***/ "./node_modules/css-loader/dist/cjs.js!./src/css/base.css":
+/*!****************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js!./src/css/base.css ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Imports
+var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+exports = ___CSS_LOADER_API_IMPORT___(false);
+// Module
+exports.push([module.i, "\r\nbody {\r\n    margin: 0;\r\n    padding: 0;\r\n    width: 100vw;\r\n    height: 100vh;\r\n    display: flex;\r\n    flex-flow: column nowrap;\r\n    align-items: center;\r\n    justify-content: center;\r\n    background-color: #EEE;\r\n    font-family: 'Open Sans', Roboto, Segoe UI, Microsoft Yahei UI, Tahoma, Geneva, Verdana, sans-serif;\r\n\r\n    background-position: 0px 0px,\r\n    16px 16px;\r\n    background-size: 32px 32px;\r\n    background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),\r\n    linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);\r\n\r\n}\r\n\r\n#root {\r\n    max-width: 100%;\r\n    max-height: 100%;\r\n}\r\n\r\n#canvas {\r\n    max-width: 100%;\r\n    max-height: 100%;\r\n}", ""]);
+// Exports
+module.exports = exports;
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/runtime/api.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/css-loader/dist/runtime/api.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/*
+  MIT License http://www.opensource.org/licenses/mit-license.php
+  Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+// eslint-disable-next-line func-names
+module.exports = function (useSourceMap) {
+  var list = []; // return the list of modules as css string
+
+  list.toString = function toString() {
+    return this.map(function (item) {
+      var content = cssWithMappingToString(item, useSourceMap);
+
+      if (item[2]) {
+        return "@media ".concat(item[2], " {").concat(content, "}");
+      }
+
+      return content;
+    }).join('');
+  }; // import a list of modules into the list
+  // eslint-disable-next-line func-names
+
+
+  list.i = function (modules, mediaQuery) {
+    if (typeof modules === 'string') {
+      // eslint-disable-next-line no-param-reassign
+      modules = [[null, modules, '']];
+    }
+
+    for (var i = 0; i < modules.length; i++) {
+      var item = [].concat(modules[i]);
+
+      if (mediaQuery) {
+        if (!item[2]) {
+          item[2] = mediaQuery;
+        } else {
+          item[2] = "".concat(mediaQuery, " and ").concat(item[2]);
+        }
+      }
+
+      list.push(item);
+    }
+  };
+
+  return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+  var content = item[1] || ''; // eslint-disable-next-line prefer-destructuring
+
+  var cssMapping = item[3];
+
+  if (!cssMapping) {
+    return content;
+  }
+
+  if (useSourceMap && typeof btoa === 'function') {
+    var sourceMapping = toComment(cssMapping);
+    var sourceURLs = cssMapping.sources.map(function (source) {
+      return "/*# sourceURL=".concat(cssMapping.sourceRoot || '').concat(source, " */");
+    });
+    return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+  }
+
+  return [content].join('\n');
+} // Adapted from convert-source-map (MIT)
+
+
+function toComment(sourceMap) {
+  // eslint-disable-next-line no-undef
+  var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+  var data = "sourceMappingURL=data:application/json;charset=utf-8;base64,".concat(base64);
+  return "/*# ".concat(data, " */");
+}
+
+/***/ }),
+
 /***/ "./node_modules/process/browser.js":
 /*!*****************************************!*\
   !*** ./node_modules/process/browser.js ***!
@@ -20156,6 +20264,255 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var isOldIE = function isOldIE() {
+  var memo;
+  return function memorize() {
+    if (typeof memo === 'undefined') {
+      // Test for IE <= 9 as proposed by Browserhacks
+      // @see http://browserhacks.com/#hack-e71d8692f65334173fee715c222cb805
+      // Tests for existence of standard globals is to allow style-loader
+      // to operate correctly into non-standard environments
+      // @see https://github.com/webpack-contrib/style-loader/issues/177
+      memo = Boolean(window && document && document.all && !window.atob);
+    }
+
+    return memo;
+  };
+}();
+
+var getTarget = function getTarget() {
+  var memo = {};
+  return function memorize(target) {
+    if (typeof memo[target] === 'undefined') {
+      var styleTarget = document.querySelector(target); // Special case to return head of iframe instead of iframe itself
+
+      if (window.HTMLIFrameElement && styleTarget instanceof window.HTMLIFrameElement) {
+        try {
+          // This will throw an exception if access to iframe is blocked
+          // due to cross-origin restrictions
+          styleTarget = styleTarget.contentDocument.head;
+        } catch (e) {
+          // istanbul ignore next
+          styleTarget = null;
+        }
+      }
+
+      memo[target] = styleTarget;
+    }
+
+    return memo[target];
+  };
+}();
+
+var stylesInDom = {};
+
+function modulesToDom(moduleId, list, options) {
+  for (var i = 0; i < list.length; i++) {
+    var part = {
+      css: list[i][1],
+      media: list[i][2],
+      sourceMap: list[i][3]
+    };
+
+    if (stylesInDom[moduleId][i]) {
+      stylesInDom[moduleId][i](part);
+    } else {
+      stylesInDom[moduleId].push(addStyle(part, options));
+    }
+  }
+}
+
+function insertStyleElement(options) {
+  var style = document.createElement('style');
+  var attributes = options.attributes || {};
+
+  if (typeof attributes.nonce === 'undefined') {
+    var nonce =  true ? __webpack_require__.nc : undefined;
+
+    if (nonce) {
+      attributes.nonce = nonce;
+    }
+  }
+
+  Object.keys(attributes).forEach(function (key) {
+    style.setAttribute(key, attributes[key]);
+  });
+
+  if (typeof options.insert === 'function') {
+    options.insert(style);
+  } else {
+    var target = getTarget(options.insert || 'head');
+
+    if (!target) {
+      throw new Error("Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid.");
+    }
+
+    target.appendChild(style);
+  }
+
+  return style;
+}
+
+function removeStyleElement(style) {
+  // istanbul ignore if
+  if (style.parentNode === null) {
+    return false;
+  }
+
+  style.parentNode.removeChild(style);
+}
+/* istanbul ignore next  */
+
+
+var replaceText = function replaceText() {
+  var textStore = [];
+  return function replace(index, replacement) {
+    textStore[index] = replacement;
+    return textStore.filter(Boolean).join('\n');
+  };
+}();
+
+function applyToSingletonTag(style, index, remove, obj) {
+  var css = remove ? '' : obj.css; // For old IE
+
+  /* istanbul ignore if  */
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = replaceText(index, css);
+  } else {
+    var cssNode = document.createTextNode(css);
+    var childNodes = style.childNodes;
+
+    if (childNodes[index]) {
+      style.removeChild(childNodes[index]);
+    }
+
+    if (childNodes.length) {
+      style.insertBefore(cssNode, childNodes[index]);
+    } else {
+      style.appendChild(cssNode);
+    }
+  }
+}
+
+function applyToTag(style, options, obj) {
+  var css = obj.css;
+  var media = obj.media;
+  var sourceMap = obj.sourceMap;
+
+  if (media) {
+    style.setAttribute('media', media);
+  } else {
+    style.removeAttribute('media');
+  }
+
+  if (sourceMap && btoa) {
+    css += "\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))), " */");
+  } // For old IE
+
+  /* istanbul ignore if  */
+
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    while (style.firstChild) {
+      style.removeChild(style.firstChild);
+    }
+
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var singleton = null;
+var singletonCounter = 0;
+
+function addStyle(obj, options) {
+  var style;
+  var update;
+  var remove;
+
+  if (options.singleton) {
+    var styleIndex = singletonCounter++;
+    style = singleton || (singleton = insertStyleElement(options));
+    update = applyToSingletonTag.bind(null, style, styleIndex, false);
+    remove = applyToSingletonTag.bind(null, style, styleIndex, true);
+  } else {
+    style = insertStyleElement(options);
+    update = applyToTag.bind(null, style, options);
+
+    remove = function remove() {
+      removeStyleElement(style);
+    };
+  }
+
+  update(obj);
+  return function updateStyle(newObj) {
+    if (newObj) {
+      if (newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap) {
+        return;
+      }
+
+      update(obj = newObj);
+    } else {
+      remove();
+    }
+  };
+}
+
+module.exports = function (moduleId, list, options) {
+  options = options || {}; // Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+  // tags it will allow on a page
+
+  if (!options.singleton && typeof options.singleton !== 'boolean') {
+    options.singleton = isOldIE();
+  }
+
+  moduleId = options.base ? moduleId + options.base : moduleId;
+  list = list || [];
+
+  if (!stylesInDom[moduleId]) {
+    stylesInDom[moduleId] = [];
+  }
+
+  modulesToDom(moduleId, list, options);
+  return function update(newList) {
+    newList = newList || [];
+
+    if (Object.prototype.toString.call(newList) !== '[object Array]') {
+      return;
+    }
+
+    if (!stylesInDom[moduleId]) {
+      stylesInDom[moduleId] = [];
+    }
+
+    modulesToDom(moduleId, newList, options);
+
+    for (var j = newList.length; j < stylesInDom[moduleId].length; j++) {
+      stylesInDom[moduleId][j]();
+    }
+
+    stylesInDom[moduleId].length = newList.length;
+
+    if (stylesInDom[moduleId].length === 0) {
+      delete stylesInDom[moduleId];
+    }
+  };
+};
+
+/***/ }),
+
 /***/ "./node_modules/webpack/buildin/global.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/global.js ***!
@@ -20200,6 +20557,37 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./src/css/base.css":
+/*!**************************!*\
+  !*** ./src/css/base.css ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var api = __webpack_require__(/*! ../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+            var content = __webpack_require__(/*! !../../node_modules/css-loader/dist/cjs.js!./base.css */ "./node_modules/css-loader/dist/cjs.js!./src/css/base.css");
+
+            content = content.__esModule ? content.default : content;
+
+            if (typeof content === 'string') {
+              content = [[module.i, content, '']];
+            }
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = api(module.i, content, options);
+
+var exported = content.locals ? content.locals : {};
+
+
+
+module.exports = exported;
+
+/***/ }),
+
 /***/ "./src/fbx-loader.ts":
 /*!***************************!*\
   !*** ./src/fbx-loader.ts ***!
@@ -20209,6 +20597,12 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -20216,11 +20610,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const klein_bottole_fbx_1 = __importDefault(__webpack_require__(/*! ./asset/model/klein_bottole.fbx */ "./src/asset/model/klein_bottole.fbx"));
 const __1 = __webpack_require__(/*! ../.. */ "../dist/index.js");
 const __2 = __webpack_require__(/*! ../.. */ "../dist/index.js");
+__webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
+const default_vert_glsl_1 = __importDefault(__webpack_require__(/*! ./shader/default-vert.glsl */ "./src/shader/default-vert.glsl"));
+const pbr_frag_glsl_1 = __importDefault(__webpack_require__(/*! ./shader/pbr-frag.glsl */ "./src/shader/pbr-frag.glsl"));
 const canvas = document.querySelector("#canvas");
 const engine = new __2.ZograEngine(canvas);
 const input = new __2.InputManager();
 initCamera();
 initObjects();
+initMaterials();
 engine.start();
 engine.on('update', () => input.update());
 function initCamera() {
@@ -20285,7 +20683,73 @@ async function initObjects() {
     //     engine.scene.add(obj);
     // }
 }
+function initMaterials() {
+    let PBRLit = class PBRLit extends __1.MaterialFromShader(new __1.Shader(default_vert_glsl_1.default, pbr_frag_glsl_1.default)) {
+        constructor() {
+            super(...arguments);
+            this.color = __1.Color.white;
+            this.mainTexture = engine.renderer.assets.textures.default;
+            this.normalTexture = engine.renderer.assets.textures.defaultNormal;
+            this.emission = __1.Color.black;
+            this.specular = __1.Color.white;
+            this.metiallic = 0.023;
+            this.smoothness = 0.5;
+            this.fresnel = 5;
+        }
+    };
+    __decorate([
+        __1.shaderProp("uColor", "color")
+    ], PBRLit.prototype, "color", void 0);
+    __decorate([
+        __1.shaderProp("uMainTex", "tex2d")
+    ], PBRLit.prototype, "mainTexture", void 0);
+    __decorate([
+        __1.shaderProp("uNormalTex", "tex2d")
+    ], PBRLit.prototype, "normalTexture", void 0);
+    __decorate([
+        __1.shaderProp("uEmission", "color")
+    ], PBRLit.prototype, "emission", void 0);
+    __decorate([
+        __1.shaderProp("uSpecular", "color")
+    ], PBRLit.prototype, "specular", void 0);
+    __decorate([
+        __1.shaderProp("uMetallic", "float")
+    ], PBRLit.prototype, "metiallic", void 0);
+    __decorate([
+        __1.shaderProp("uSmoothness", "float")
+    ], PBRLit.prototype, "smoothness", void 0);
+    __decorate([
+        __1.shaderProp("uFresnel", "float")
+    ], PBRLit.prototype, "fresnel", void 0);
+    PBRLit = __decorate([
+        __1.materialDefine
+    ], PBRLit);
+    const mat = new PBRLit();
+    engine.renderPipeline.replaceMaterial(engine.renderer.assets.types.DefaultMaterial, mat);
+}
 
+
+/***/ }),
+
+/***/ "./src/shader/default-vert.glsl":
+/*!**************************************!*\
+  !*** ./src/shader/default-vert.glsl ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = aNormal;\r\n}";
+
+/***/ }),
+
+/***/ "./src/shader/pbr-frag.glsl":
+/*!**********************************!*\
+  !*** ./src/shader/pbr-frag.glsl ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform sampler2D uNormalTex;\r\n\r\nuniform vec4 uColor;\r\nuniform vec4 uEmission;\r\nuniform vec4 uSpecular;\r\nuniform float uMetallic;\r\nuniform float uSmoothness;\r\nuniform float uFresnel;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    color = color * uColor.rgb;\r\n    fragColor = vec4(vNormal.xyz, 1.0f);\r\n}";
 
 /***/ })
 

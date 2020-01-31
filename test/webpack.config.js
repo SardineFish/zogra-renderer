@@ -45,7 +45,7 @@ module.exports = {
                 loaders: ['style-loader', 'css-loader']
             },
             {
-                test: /\.glsl$i/,
+                test: /\.glsl$/i,
                 use: [
                     {
                         loader: 'raw-loader',

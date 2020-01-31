@@ -8,4 +8,5 @@ __export(require("./material-type"));
 __export(require("./mesh"));
 __export(require("./renderer"));
 __export(require("./shader"));
+__export(require("./texture"));
 //# sourceMappingURL=core.js.map
