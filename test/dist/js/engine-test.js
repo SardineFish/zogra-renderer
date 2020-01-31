@@ -559,7 +559,6 @@ function compileBuiltinShaders(gl) {
         }, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
-            depth: shader_1.DepthTest.Always,
             blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha]
         }, gl),
     };
@@ -3347,8 +3346,10 @@ class PreviewRenderer {
         }
     }
     setupLight(context, data) {
+        context.renderer.setGlobalUniform("uLightDir", "vec3", vec3_1.vec3(-1, 1, 0).normalize());
+        context.renderer.setGlobalUniform("uAmbientSky", "color", color_1.rgb(.2, .2, .2));
         context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
-        context.renderer.setGlobalUniform("uLightColor", "color", color_1.Color.white);
+        context.renderer.setGlobalUniform("uLightColor", "color", color_1.rgb(.8, .8, .8));
     }
     renderCamera(context, data) {
         const camera = data.camera;
@@ -3359,6 +3360,7 @@ class PreviewRenderer {
             context.renderer.setRenderTarget(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
+        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {

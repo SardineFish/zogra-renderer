@@ -559,7 +559,6 @@ function compileBuiltinShaders(gl) {
         }, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
-            depth: shader_1.DepthTest.Always,
             blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha]
         }, gl),
     };
@@ -3347,8 +3346,10 @@ class PreviewRenderer {
         }
     }
     setupLight(context, data) {
+        context.renderer.setGlobalUniform("uLightDir", "vec3", vec3_1.vec3(-1, 1, 0).normalize());
+        context.renderer.setGlobalUniform("uAmbientSky", "color", color_1.rgb(.2, .2, .2));
         context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
-        context.renderer.setGlobalUniform("uLightColor", "color", color_1.Color.white);
+        context.renderer.setGlobalUniform("uLightColor", "color", color_1.rgb(.8, .8, .8));
     }
     renderCamera(context, data) {
         const camera = data.camera;
@@ -3359,6 +3360,7 @@ class PreviewRenderer {
             context.renderer.setRenderTarget(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
+        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {
@@ -20290,7 +20292,7 @@ process.umask = function() { return 0; };
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = aNormal;\r\n}");
+/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\nout vec3 vWorldPos;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vWorldPos = (uTransformM * vec4(aPos, 1)).xyz;\r\n    \r\n}");
 
 /***/ }),
 
@@ -20780,11 +20782,4 @@ window.addEventListener("mousemove", (e) => {
 Object.defineProperty(exports, "__esModule", { value: true });
 async function loadImage(src) {
     return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = src;
-        if (img.complete) {
-            resolve(img);
-        }
-        img.onload = () => {
-            resolve(img);
-      
+        const img = new

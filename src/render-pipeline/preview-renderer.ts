@@ -5,12 +5,14 @@ import { ZograRenderer, Material, Mesh } from "../core/core";
 import { RenderObject } from "../engine/render-object";
 import { Entity } from "../engine/entity";
 import { RenderData, RenderOrder } from "./render-data";
-import { Color, rgba } from "../types/color";
+import { Color, rgba, rgb } from "../types/color";
 import { RenderTarget } from "../core/render-target";
 import { RenderTexture } from "../core/texture";
 import { Lines, LineBuilder } from "../core/lines";
 import { vec3 } from "../types/vec3";
 import { ConstructorType } from "../utils/util";
+import { mul } from "../types/math";
+import { vec4 } from "../types/vec4";
 
 export class PreviewRenderer implements ZograRenderPipeline
 {
@@ -49,8 +51,10 @@ export class PreviewRenderer implements ZograRenderPipeline
 
     setupLight(context: RenderContext, data: RenderData)
     {
+        context.renderer.setGlobalUniform("uLightDir", "vec3", vec3(-1, 1, 0).normalize());
+        context.renderer.setGlobalUniform("uAmbientSky", "color", rgb(.2, .2, .2));
         context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
-        context.renderer.setGlobalUniform("uLightColor", "color", Color.white);
+        context.renderer.setGlobalUniform("uLightColor", "color", rgb(.8, .8, .8));
     }
 
     renderCamera(context: RenderContext, data: RenderData)
@@ -66,6 +70,7 @@ export class PreviewRenderer implements ZograRenderPipeline
             
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
+        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
 
         this.setupLight(context, data);
         

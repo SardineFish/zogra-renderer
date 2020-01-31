@@ -559,7 +559,6 @@ function compileBuiltinShaders(gl) {
         }, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
-            depth: shader_1.DepthTest.Always,
             blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha]
         }, gl),
     };
@@ -3347,8 +3346,10 @@ class PreviewRenderer {
         }
     }
     setupLight(context, data) {
+        context.renderer.setGlobalUniform("uLightDir", "vec3", vec3_1.vec3(-1, 1, 0).normalize());
+        context.renderer.setGlobalUniform("uAmbientSky", "color", color_1.rgb(.2, .2, .2));
         context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
-        context.renderer.setGlobalUniform("uLightColor", "color", color_1.Color.white);
+        context.renderer.setGlobalUniform("uLightColor", "color", color_1.rgb(.8, .8, .8));
     }
     renderCamera(context, data) {
         const camera = data.camera;
@@ -3359,6 +3360,7 @@ class PreviewRenderer {
             context.renderer.setRenderTarget(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
+        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {
@@ -20757,7 +20759,7 @@ function initMaterials() {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = aNormal;\r\n}";
+module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\nout vec3 vWorldPos;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vWorldPos = (uTransformM * vec4(aPos, 1)).xyz;\r\n    \r\n}";
 
 /***/ }),
 
@@ -20768,7 +20770,7 @@ module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPo
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform sampler2D uNormalTex;\r\n\r\nuniform vec4 uColor;\r\nuniform vec4 uEmission;\r\nuniform vec4 uSpecular;\r\nuniform float uMetallic;\r\nuniform float uSmoothness;\r\nuniform float uFresnel;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    color = color * uColor.rgb;\r\n    fragColor = vec4(vUV.xy, 0, 1.0f);\r\n}";
+module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\n#define PI (3.14159265358979323846264338327950288419716939937510)\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\nin vec3 vWorldPos;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform sampler2D uNormalTex;\r\n\r\nuniform vec4 uColor;\r\nuniform vec4 uEmission;\r\nuniform vec4 uSpecular;\r\nuniform float uMetallic;\r\nuniform float uSmoothness;\r\nuniform float uFresnel;\r\n\r\nuniform vec4 uAmbientSky;\r\nuniform vec4 uLightColor;\r\nuniform vec3 uLightPos;\r\nuniform vec3 uLightDir;\r\nuniform vec3 uCameraPos;\r\n\r\nout vec4 fragColor;\r\n\r\n// --------- Diffuse ----------\r\n\r\nvec3 lambert(vec3 baseColor)\r\n{\r\n    return baseColor / vec3(PI);\r\n}\r\n\r\nvec3 disney(vec3 baseColor, float roughness, float hl, float nl, float nv)\r\n{\r\n    float fd90 = 0.5 + 2.0 * pow(hl, 2.0) * roughness;\r\n    return baseColor / vec3(PI * (1.0 + (fd90 - 1.0) * pow(1.0 - nl, 5.0)) * (1.0 + (fd90 - 1.0) * pow(1.0 - nv, 5.0)));\r\n}\r\n\r\nvec3 orenNayar(vec3 albedo, float sigma, float nl, float nv, float lv)\r\n{\r\n    float sigma_2 = pow(sigma, 2.0);\r\n\tvec3 A = vec3(1.0 - 0.5 * sigma_2 / (sigma_2 + 0.33)) + albedo * vec3(0.17 * sigma_2 / (sigma_2 + 0.13));\r\n\tvec3 B = vec3(0.45 * sigma_2 / (sigma_2 + 0.09));\r\n\tfloat s = lv - nl * nv;\r\n\tvec3 t = s <= 0.0\r\n\t\t? vec3(1.0)\r\n\t\t: vec3(max(nl, nv));\r\n    return albedo / vec3(PI * (A + B * vec3(s) / t));\r\n}\r\n\r\n// --------- Specular ---------\r\n\r\nfloat schlick(float f0, float hl)\r\n{\r\n    return f0 + (1.0 - f0) * pow(1.0 - hl, 5.0);\r\n}\r\nfloat normalDistrGGX(float roughness, float nh)\r\n{\r\n    float alpha_2 = pow(roughness, 4.0);\r\n    return alpha_2 / (PI * pow(pow(nh, 2.0) * (alpha_2 - 1.0) + 1.0, 2.0));\r\n}\r\nfloat smithGGX(float roughness, float nv)\r\n{\r\n    float alpha_2 = pow(roughness, 4.0);\r\n    return 2.0 / (nv + sqrt(alpha_2 + (1.0 - alpha_2) * pow(nv, 2.0)));\r\n}\r\nfloat specularGGX(float roughness, float f0, float nh, float nl, float nv, float hl)\r\n{\r\n    float F = schlick(f0, hl);\r\n    float D = normalDistrGGX(roughness, nh);\r\n    float G = smithGGX(roughness, nl) * smithGGX(roughness, nv);\r\n    return max(0.0, F * G * D / 4.0);\r\n}\r\n\r\nfloat fresnelFunc(float f0, float nv, float p)\r\n{\r\n    return f0 + (1.0 - f0) * pow(1.0 - nv, p);\r\n}\r\n\r\nfloat saturate(float v)\r\n{\r\n    return clamp(v, 0.0, 1.0);\r\n}\r\n\r\nvoid main()\r\n{\r\n    float roughness = 1.0 - uSmoothness;\r\n    float f0 = uMetallic;\r\n    vec3 albedo = vColor.rgb;\r\n    vec3 ambient = uAmbientSky.rgb;\r\n    vec3 normal = normalize(vNormal);\r\n    vec3 lightDir = normalize(uLightDir);\r\n    vec3 viewDir = normalize(uCameraPos - vWorldPos);\r\n\r\n    vec3 halfDir = normalize(lightDir + viewDir);\r\n    float nv = saturate(dot(normal, viewDir));\r\n    float nl = saturate(dot(normal, lightDir));\r\n\tfloat nh = saturate(dot(normal, halfDir));\r\n\tfloat lv = saturate(dot(lightDir, viewDir));\r\n\tfloat hl = saturate(dot(halfDir, lightDir));\r\n\r\n    vec3 light = uLightColor.rgb;\r\n\r\n    vec3 diffuse = disney(albedo.rgb, roughness, hl, nl, nv) * vec3(PI * nl) * light + ambient;\r\n    vec3 specular = specularGGX(roughness, f0, nh, nl, nv, hl) * vec3(PI * nl) * light * uSpecular.rgb;\r\n    vec3 fresnel = vec3(1.0 - f0);\r\n    vec3 color = diffuse * fresnel + specular;\r\n    \r\n    fragColor = vec4(color.rgb, 1.0);\r\n}";
 
 /***/ })
 

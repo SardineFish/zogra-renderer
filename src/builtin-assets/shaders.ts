@@ -142,7 +142,6 @@ export function compileBuiltinShaders(gl: WebGL2RenderingContext)
         }, gl),
         FlipTexture: new Shader(BuiltinShaderSources.FlipTexVert, BuiltinShaderSources.BlitCopyFrag, {}, gl),
         ColoredLine: new Shader(colorVert, colorFrag, {
-            depth: DepthTest.Always,
             blend: [Blending.SrcAlpha, Blending.OneMinusSrcAlpha]
         }, gl),
     };

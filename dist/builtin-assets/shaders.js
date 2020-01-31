@@ -133,7 +133,6 @@ function compileBuiltinShaders(gl) {
         }, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
-            depth: shader_1.DepthTest.Always,
             blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha]
         }, gl),
     };
