@@ -93,7 +93,8 @@ function convertMesh(ctx: GLContext)
         mesh.verts = fbxMesh.verts.map(v => vec3.from(v));
         mesh.normals = fbxMesh.normals.map(v => vec3.from(v));
         mesh.uvs = fbxMesh.uv0.map(v => vec2.from(v));
-        if (fbxMesh.type === "quad")
+        mesh.triangles = fbxMesh.triangles;
+        /*if (fbxMesh.type === "quad")
         {
             mesh.triangles = new Array(fbxMesh.polygons.length / 4 * 6);
             for (let i = 0; i < fbxMesh.polygons.length; i += 4)
@@ -108,7 +109,7 @@ function convertMesh(ctx: GLContext)
             }
         }
         else
-            mesh.triangles = Array.from(fbxMesh.polygons);
+            mesh.triangles = Array.from(fbxMesh.polygons);*/
         mesh.update();
         return mesh;
     };

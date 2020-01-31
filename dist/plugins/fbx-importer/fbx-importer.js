@@ -74,9 +74,12 @@ function convertMesh(ctx) {
         mesh.verts = fbxMesh.verts.map(v => vec3_1.vec3.from(v));
         mesh.normals = fbxMesh.normals.map(v => vec3_1.vec3.from(v));
         mesh.uvs = fbxMesh.uv0.map(v => vec2_1.vec2.from(v));
-        if (fbxMesh.type === "quad") {
+        mesh.triangles = fbxMesh.triangles;
+        /*if (fbxMesh.type === "quad")
+        {
             mesh.triangles = new Array(fbxMesh.polygons.length / 4 * 6);
-            for (let i = 0; i < fbxMesh.polygons.length; i += 4) {
+            for (let i = 0; i < fbxMesh.polygons.length; i += 4)
+            {
                 const triangleIdx = i / 4 * 6;
                 mesh.triangles[triangleIdx + 0] = fbxMesh.polygons[i + 0];
                 mesh.triangles[triangleIdx + 1] = fbxMesh.polygons[i + 1];
@@ -87,7 +90,7 @@ function convertMesh(ctx) {
             }
         }
         else
-            mesh.triangles = Array.from(fbxMesh.polygons);
+            mesh.triangles = Array.from(fbxMesh.polygons);*/
         mesh.update();
         return mesh;
     };

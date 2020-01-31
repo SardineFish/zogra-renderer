@@ -2773,9 +2773,12 @@ function convertMesh(ctx) {
         mesh.verts = fbxMesh.verts.map(v => vec3_1.vec3.from(v));
         mesh.normals = fbxMesh.normals.map(v => vec3_1.vec3.from(v));
         mesh.uvs = fbxMesh.uv0.map(v => vec2_1.vec2.from(v));
-        if (fbxMesh.type === "quad") {
+        mesh.triangles = fbxMesh.triangles;
+        /*if (fbxMesh.type === "quad")
+        {
             mesh.triangles = new Array(fbxMesh.polygons.length / 4 * 6);
-            for (let i = 0; i < fbxMesh.polygons.length; i += 4) {
+            for (let i = 0; i < fbxMesh.polygons.length; i += 4)
+            {
                 const triangleIdx = i / 4 * 6;
                 mesh.triangles[triangleIdx + 0] = fbxMesh.polygons[i + 0];
                 mesh.triangles[triangleIdx + 1] = fbxMesh.polygons[i + 1];
@@ -2786,7 +2789,7 @@ function convertMesh(ctx) {
             }
         }
         else
-            mesh.triangles = Array.from(fbxMesh.polygons);
+            mesh.triangles = Array.from(fbxMesh.polygons);*/
         mesh.update();
         return mesh;
     };
@@ -2888,7 +2891,6 @@ function importGeometry(node) {
     var _a, _b, _c, _d, _e;
     const geometryID = node.properties[0];
     const geometryName = node.properties[1].split("\0")[0];
-    let geometryType;
     const vertsArr = (_b = (_a = node.nestedNodes.find(n => n.name === "Vertices")) === null || _a === void 0 ? void 0 : _a.properties[0], (_b !== null && _b !== void 0 ? _b : new Float64Array()));
     const polygonArr = (_d = (_c = node.nestedNodes.find(n => n.name === "PolygonVertexIndex")) === null || _c === void 0 ? void 0 : _c.properties[0], (_d !== null && _d !== void 0 ? _d : new Int32Array()));
     const normalNode = node.nestedNodes.find(n => n.name === "LayerElementNormal");
@@ -2905,30 +2907,21 @@ function importGeometry(node) {
         throw new Error("Invalid vertices size.");
     const verts = vec3Wrapper(vertsArr);
     // Construct polygons.
-    if (polygonArr.length < 3)
-        throw new Error("Invalid polygon vertex index list.");
-    else if (polygonArr[2] < 0) {
-        if (polygonArr.length % 3 !== 0)
-            throw new Error("Invalid length of polygon vertex index list.");
-        geometryType = "triangle";
-        polygons = new Array(polygonArr.length / 3);
-    }
-    else {
-        if (polygonArr.length % 4 !== 0)
-            throw new Error("Invalid length of polygon vertex index list.");
-        geometryType = "quad";
-        polygons = new Array(polygonArr.length / 4);
-    }
     polygonVertices = Array.from(polygonArr).map(idx => verts[idx >= 0 ? idx : -1 ^ idx]);
+    let polyginIdx = 0;
     for (let i = 0; i < polygonArr.length;) {
-        if (geometryType === "triangle") {
-            polygons[i / 3] = [i, i + 1, i + 2];
-            i += 3;
-        }
-        else {
-            polygons[i / 4] = [i, i + 1, i + 2, i + 3];
+        // Construct a quad
+        if (i + 3 < polygonArr.length && polygonArr[i + 3] < 0) {
+            polygons[polyginIdx++] = [i, i + 1, i + 2, i + 3];
             i += 4;
         }
+        // construct triangle.
+        else if (i + 2 < polygonArr.length && polygonArr[i + 2] < 0) {
+            polygons[polyginIdx++] = [i, i + 1, i + 2];
+            i += 3;
+        }
+        else
+            throw new Error("Invalid length of polygon index list.");
     }
     // Extract normals
     if (normalNode) {
@@ -2950,18 +2943,17 @@ function importGeometry(node) {
             return [{
                     id: geometryID,
                     name: geometryName,
-                    type: geometryType,
                     colors: [],
                     verts: polygonVertices,
                     normals: polygonNormals,
-                    polygons: polygons.flat(),
+                    triangles: flatTriangles(polygons),
                     uv0: polygonUV0,
                     uv1: polygonUV1,
                     material: null,
                     mateiralId: 0
                 }];
         }
-        else if (mappingInfoType === "ByPolygon" && refInfoType === "IndexToDirect") {
+        if (mappingInfoType === "ByPolygon" && refInfoType === "IndexToDirect") {
             utils_1.assert(materials.length === polygons.length, "length of Material list missmatch.");
             for (let i = 0; i < materials.length; i++) {
                 if (!materialPolygons.has(materials[i]))
@@ -2972,26 +2964,27 @@ function importGeometry(node) {
         else
             throw new Error(`Unsupported material info type '${mappingInfoType}', '${refInfoType}'.`);
         const meshes = [];
-        for (const [matId, polygonsIdx] of materialPolygons) {
+        for (const [matId, subPolygonIdx] of materialPolygons) {
             const mesh = {
                 id: geometryID,
                 name: geometryName,
-                type: geometryType,
                 colors: [],
                 verts: [],
                 normals: [],
-                polygons: [],
+                triangles: [],
                 uv0: [],
                 uv1: [],
                 material: null,
                 mateiralId: matId
             };
             let vertIdx = 0;
-            for (const polyIdx of polygonsIdx) {
+            const subPolygons = [];
+            for (const polyIdx of subPolygonIdx) {
+                subPolygons.push(polygons[polyIdx]);
                 for (let i = 0; i < polygons[polyIdx].length; i++) {
                     const originalVertIdx = polygons[polyIdx][i];
                     mesh.verts[vertIdx] = polygonVertices[originalVertIdx];
-                    mesh.polygons[vertIdx] = vertIdx;
+                    //mesh.polygons[vertIdx] = vertIdx;
                     if (polygonNormals.length > 0)
                         mesh.normals[vertIdx] = polygonNormals[originalVertIdx];
                     if (polygonUV0.length > 0)
@@ -3001,6 +2994,7 @@ function importGeometry(node) {
                     vertIdx++;
                 }
             }
+            mesh.triangles = flatTriangles(subPolygons);
             meshes.push(mesh);
         }
         return meshes;
@@ -3008,11 +3002,10 @@ function importGeometry(node) {
     return [{
             id: geometryID,
             name: geometryName,
-            type: geometryType,
             colors: [],
             verts: polygonVertices,
             normals: polygonNormals,
-            polygons: polygons.flat(),
+            triangles: flatTriangles(polygons),
             uv0: polygonUV0,
             uv1: polygonUV1,
             material: null,
@@ -3082,6 +3075,18 @@ function vec2Wrapper(data) {
     for (let i = 0; i < data.length; i += 2)
         list[i / 2] = gl_matrix_1.vec2.fromValues(data[i], data[i + 1]);
     return list;
+}
+function flatTriangles(polygons) {
+    const triangles = [];
+    for (const polygon of polygons) {
+        if (polygon.length === 3)
+            triangles.push(...polygon);
+        else if (polygon.length === 4)
+            triangles.push(polygon[0], polygon[1], polygon[2], polygon[0], polygon[2], polygon[3]);
+        else
+            throw new Error("Invalid polygon size.");
+    }
+    return triangles;
 }
 function importMaterial(materialNode) {
     const material = {
@@ -20643,4 +20648,15 @@ function initCamera() {
         /*if (input.getKey(Keys.Space))
             rotate = quat.axis(right, -sensity * look.y);
         else
-            rotate = quat.normalize(quat.axis(up, -
+            rotate = quat.normalize(quat.axis(up, -sensity * look.x));*/
+        wrapper.rotation = __1.quat.mul(wrapper.rotation, __1.quat.axis(up, -sensity * look.x));
+        camera.localRotation = __1.quat.mul(camera.localRotation, __1.quat.axis(__1.vec3(1, 0, 0), -sensity * look.y));
+        wrapper.position = __1.plus(wrapper.position, __1.mul(v, 5));
+        //input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
+    });
+}
+function initObjects() {
+    const cube = new __1.RenderObject();
+    engine.scene.add(cube);
+    cube.meshes.push(engine.renderer.assets.meshes.cube);
+    engine.on("update", (

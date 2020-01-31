@@ -24,9 +24,8 @@ export interface FBXModel {
 export interface FBXMesh {
     id: FBXID;
     name: string;
-    type: "quad" | "triangle";
     verts: vec3[];
-    polygons: number[];
+    triangles: number[];
     uv0: vec2[];
     uv1: vec2[];
     normals: vec3[];

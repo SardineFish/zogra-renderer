@@ -114,7 +114,6 @@ function importGeometry(node: FBXNode): FBXMesh[]
 {
     const geometryID = node.properties[0] as bigint;
     const geometryName = (node.properties[1] as string).split("\0")[0];
-    let geometryType: "triangle" | "quad";
 
     const vertsArr = (node.nestedNodes.find(n => n.name === "Vertices")?.properties[0] ?? new Float64Array()) as Float64Array;
     const polygonArr = (node.nestedNodes.find(n => n.name === "PolygonVertexIndex")?.properties[0] ?? new Int32Array()) as Int32Array;
@@ -136,36 +135,24 @@ function importGeometry(node: FBXNode): FBXMesh[]
     const verts = vec3Wrapper(vertsArr);
 
     // Construct polygons.
-    if (polygonArr.length < 3)
-        throw new Error("Invalid polygon vertex index list.");
-    else if (polygonArr[2] < 0)
-    {
-        if (polygonArr.length % 3 !== 0)
-            throw new Error("Invalid length of polygon vertex index list.");
-        geometryType = "triangle";
-        polygons = new Array(polygonArr.length / 3);
-    }
-    else
-    {
-        if (polygonArr.length % 4 !== 0)
-            throw new Error("Invalid length of polygon vertex index list.");
-        geometryType = "quad";
-        polygons = new Array(polygonArr.length / 4);
-    }
     polygonVertices = Array.from(polygonArr).map(idx => verts[idx >= 0 ? idx : -1 ^ idx]);
-
+    let polyginIdx = 0;
     for (let i = 0; i < polygonArr.length;)
     {
-        if (geometryType === "triangle")
+        // Construct a quad
+        if (i + 3 < polygonArr.length && polygonArr[i + 3] < 0)
         {
-            polygons[i / 3] = [i, i + 1, i + 2];
+            polygons[polyginIdx++] = [i, i + 1, i + 2, i + 3];
+            i += 4;
+        }
+        // construct triangle.
+        else if (i + 2 < polygonArr.length && polygonArr[i + 2] < 0)
+        {
+            polygons[polyginIdx++] = [i, i + 1, i + 2];
             i += 3;
         }
         else
-        {
-            polygons[i / 4] = [i, i + 1, i + 2, i + 3];
-            i += 4;
-        }
+            throw new Error("Invalid length of polygon index list.");
     }
 
     // Extract normals
@@ -196,18 +183,17 @@ function importGeometry(node: FBXNode): FBXMesh[]
             return [{
                 id: geometryID,
                 name: geometryName,
-                type: geometryType,
                 colors: [],
                 verts: polygonVertices,
                 normals: polygonNormals,
-                polygons: polygons.flat(),
+                triangles: flatTriangles(polygons),
                 uv0: polygonUV0,
                 uv1: polygonUV1,
                 material: null as any,
                 mateiralId: 0
             }];
         }
-        else if (mappingInfoType === "ByPolygon" && refInfoType === "IndexToDirect")
+        if (mappingInfoType === "ByPolygon" && refInfoType === "IndexToDirect")
         {
             assert(materials.length === polygons.length, "length of Material list missmatch.");
             for (let i = 0; i < materials.length; i++)
@@ -223,16 +209,15 @@ function importGeometry(node: FBXNode): FBXMesh[]
         
         const meshes: FBXMesh[] = [];
         
-        for (const [matId, polygonsIdx] of materialPolygons)
+        for (const [matId, subPolygonIdx] of materialPolygons)
         {
             const mesh: FBXMesh = {
                 id: geometryID,
                 name: geometryName,
-                type: geometryType,
                 colors: [],
                 verts: [],
                 normals: [],
-                polygons: [],
+                triangles: [],
                 uv0: [],
                 uv1: [],
                 material: null as any,
@@ -240,14 +225,18 @@ function importGeometry(node: FBXNode): FBXMesh[]
             };
             let vertIdx = 0;
 
-            for (const polyIdx of polygonsIdx)
+            const subPolygons: number[][] = [];
+
+            for (const polyIdx of subPolygonIdx)
             {
+                subPolygons.push(polygons[polyIdx]);
+
                 for (let i = 0; i < polygons[polyIdx].length; i++)
                 {
                     const originalVertIdx = polygons[polyIdx][i];
 
                     mesh.verts[vertIdx] = polygonVertices[originalVertIdx];
-                    mesh.polygons[vertIdx] = vertIdx;
+                    //mesh.polygons[vertIdx] = vertIdx;
                     if (polygonNormals.length > 0)
                         mesh.normals[vertIdx] = polygonNormals[originalVertIdx];
                     if (polygonUV0.length > 0)
@@ -257,6 +246,7 @@ function importGeometry(node: FBXNode): FBXMesh[]
                     vertIdx++;
                 }
             }
+            mesh.triangles = flatTriangles(subPolygons);
             meshes.push(mesh);
         }
         return meshes;
@@ -265,11 +255,10 @@ function importGeometry(node: FBXNode): FBXMesh[]
     return [{
         id: geometryID,
         name: geometryName,
-        type: geometryType,
         colors: [],
         verts: polygonVertices,
         normals: polygonNormals,
-        polygons: polygons.flat(),
+        triangles: flatTriangles(polygons),
         uv0: polygonUV0,
         uv1: polygonUV1,
         material: null as any,
@@ -357,6 +346,21 @@ function vec2Wrapper(data: Float64Array)
     for (let i = 0; i < data.length; i += 2)
         list[i / 2] = vec2.fromValues(data[i], data[i + 1]);
     return list;
+}
+
+function flatTriangles(polygons: number[][])
+{
+    const triangles: number[] = [];
+    for (const polygon of polygons)
+    {
+        if (polygon.length === 3)
+            triangles.push(...polygon);
+        else if (polygon.length === 4)
+            triangles.push(polygon[0], polygon[1], polygon[2], polygon[0], polygon[2], polygon[3]);
+        else
+            throw new Error("Invalid polygon size.");
+    }
+    return triangles;
 }
 
 function importMaterial(materialNode: FBXNode)
