@@ -115,8 +115,11 @@ exports.BuiltinShaderSources = {
 };
 exports.BuiltinUniforms = {
     matM: "uTransformM",
+    matM_IT: "uTransformM_IT",
+    matMInv: "uTransformMInv",
     matVP: "uTransformVP",
     matMVP: "uTransformMVP",
+    matMV_IT: "uTransformMV_IT",
     flipUV: "uFlipUV",
     mainTex: "uMainTex",
 };

@@ -35,10 +35,13 @@ class Camera extends entity_1.Entity {
     get aspectRatio() { return this.pixelSize.x / this.pixelSize.y; }
     get viewProjectionMatrix() {
         const matView = this.worldToLocalMatrix;
-        const matProjection = this.projection === Projection.Perspective
+        const matProjection = this.projectionMatrix;
+        return mat4_1.mat4.mul(matProjection, matView);
+    }
+    get projectionMatrix() {
+        return this.projection === Projection.Perspective
             ? mat4_1.mat4.perspective(this.FOV * math_1.Deg2Rad, this.aspectRatio, this.near, this.far)
             : mat4_1.mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
-        return mat4_1.mat4.mul(matProjection, matView);
     }
 }
 exports.Camera = Camera;

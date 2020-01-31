@@ -26,6 +26,8 @@ export class ZograRenderer
     assets: BuiltinAssets;
 
     viewProjectionMatrix = mat4.identity();
+    viewMatrix = mat4.identity();
+    projectionMatrix = mat4.identity();
 
     private target: RenderTarget = RenderTarget.CanvasTarget;
     private shader: Shader | null = null;
@@ -60,9 +62,9 @@ export class ZograRenderer
         setGlobalContext(this.ctx);
     }
 
-    setViewProjection(mat: mat4)
+    setViewProjection(view: mat4, projection: mat4)
     {
-        this.viewProjectionMatrix = mat;
+        this.viewProjectionMatrix = mat4.mul(projection, view);
     }
 
     setRenderTarget(rt: RenderTarget) : void
@@ -177,14 +179,18 @@ export class ZograRenderer
         }
     }
 
-    private setupTransforms(shader: Shader, transform: mat4)
+    private setupTransforms(shader: Shader, transformModel: mat4)
     {
         const gl = this.gl;
         
-        const mvp = mat4.mul(this.viewProjectionMatrix, transform);
-        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transform);
+        const mvp = mat4.mul(this.viewProjectionMatrix, transformModel);
+        const mit = mat4.transpose(mat4.invert(transformModel));
+        const mvit = mat4.transpose(mat4.invert(mat4.mul(this.viewMatrix, transformModel)));
+        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transformModel);
         shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
         shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMVP, false, mvp);
+        shader.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM_IT, false, mit);
+        shader.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMV_IT, false, mvit);
     }
 
     private setupGlobalUniforms(shader: Shader, data: BindingData)

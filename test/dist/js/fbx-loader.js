@@ -541,8 +541,11 @@ exports.BuiltinShaderSources = {
 };
 exports.BuiltinUniforms = {
     matM: "uTransformM",
+    matM_IT: "uTransformM_IT",
+    matMInv: "uTransformMInv",
     matVP: "uTransformVP",
     matMVP: "uTransformMVP",
+    matMV_IT: "uTransformMV_IT",
     flipUV: "uFlipUV",
     mainTex: "uMainTex",
 };
@@ -1188,6 +1191,8 @@ const shader_1 = __webpack_require__(/*! ./shader */ "../dist/core/shader.js");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
+        this.viewMatrix = mat4_1.mat4.identity();
+        this.projectionMatrix = mat4_1.mat4.identity();
         this.target = render_target_1.RenderTarget.CanvasTarget;
         this.shader = null;
         this.globalUniforms = new Map();
@@ -1211,8 +1216,8 @@ class ZograRenderer {
     use() {
         global_1.setGlobalContext(this.ctx);
     }
-    setViewProjection(mat) {
-        this.viewProjectionMatrix = mat;
+    setViewProjection(view, projection) {
+        this.viewProjectionMatrix = mat4_1.mat4.mul(projection, view);
     }
     setRenderTarget(colorAttachments, depthAttachment) {
         if (colorAttachments instanceof render_target_1.RenderTarget) {
@@ -1292,12 +1297,16 @@ class ZograRenderer {
             gl.frontFace(gl.CCW);
         }
     }
-    setupTransforms(shader, transform) {
+    setupTransforms(shader, transformModel) {
         const gl = this.gl;
-        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
-        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transform);
+        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transformModel);
+        const mit = mat4_1.mat4.transpose(mat4_1.mat4.invert(transformModel));
+        const mvit = mat4_1.mat4.transpose(mat4_1.mat4.invert(mat4_1.mat4.mul(this.viewMatrix, transformModel)));
+        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transformModel);
         shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
         shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMVP, false, mvp);
+        shader.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM_IT, false, mit);
+        shader.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMV_IT, false, mvit);
     }
     setupGlobalUniforms(shader, data) {
         const gl = this.gl;
@@ -1782,10 +1791,13 @@ class Camera extends entity_1.Entity {
     get aspectRatio() { return this.pixelSize.x / this.pixelSize.y; }
     get viewProjectionMatrix() {
         const matView = this.worldToLocalMatrix;
-        const matProjection = this.projection === Projection.Perspective
+        const matProjection = this.projectionMatrix;
+        return mat4_1.mat4.mul(matProjection, matView);
+    }
+    get projectionMatrix() {
+        return this.projection === Projection.Perspective
             ? mat4_1.mat4.perspective(this.FOV * math_1.Deg2Rad, this.aspectRatio, this.near, this.far)
             : mat4_1.mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
-        return mat4_1.mat4.mul(matProjection, matView);
     }
 }
 exports.Camera = Camera;
@@ -3341,7 +3353,7 @@ class PreviewRenderer {
         else
             context.renderer.setRenderTarget(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
-        context.renderer.viewProjectionMatrix = camera.viewProjectionMatrix;
+        context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {
@@ -20544,16 +20556,16 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./src/asset/model/klein_bottole.fbx":
-/*!*******************************************!*\
-  !*** ./src/asset/model/klein_bottole.fbx ***!
-  \*******************************************/
+/***/ "./src/asset/model/sphere.bin.fbx":
+/*!****************************************!*\
+  !*** ./src/asset/model/sphere.bin.fbx ***!
+  \****************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/model/klein_bottole.fbx");
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/model/sphere.bin.fbx");
 
 /***/ }),
 
@@ -20607,7 +20619,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const klein_bottole_fbx_1 = __importDefault(__webpack_require__(/*! ./asset/model/klein_bottole.fbx */ "./src/asset/model/klein_bottole.fbx"));
+const sphere_bin_fbx_1 = __importDefault(__webpack_require__(/*! ./asset/model/sphere.bin.fbx */ "./src/asset/model/sphere.bin.fbx"));
 const __1 = __webpack_require__(/*! ../.. */ "../dist/index.js");
 const __2 = __webpack_require__(/*! ../.. */ "../dist/index.js");
 __webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
@@ -20672,7 +20684,7 @@ async function initObjects() {
     engine.on("update", (time) => {
         cube.rotation = __2.quat.normalize(__2.quat.mul(cube.rotation, __2.quat.axis(__2.vec3(1, 1, 1), time.deltaTime * 0.5)));
     });
-    const blob = await (await fetch(klein_bottole_fbx_1.default)).blob();
+    const blob = await (await fetch(sphere_bin_fbx_1.default)).blob();
     const assets = await __1.plugins.AssetsImporter.blob(blob).fbx();
     window.assets = assets;
     const obj = assets.mainAsset;
@@ -20684,7 +20696,9 @@ async function initObjects() {
     // }
 }
 function initMaterials() {
-    let PBRLit = class PBRLit extends __1.MaterialFromShader(new __1.Shader(default_vert_glsl_1.default, pbr_frag_glsl_1.default)) {
+    let PBRLit = class PBRLit extends __1.MaterialFromShader(new __1.Shader(default_vert_glsl_1.default, pbr_frag_glsl_1.default, {
+        cull: __1.Culling.Disable
+    })) {
         constructor() {
             super(...arguments);
             this.color = __1.Color.white;
@@ -20749,7 +20763,7 @@ module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPo
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform sampler2D uNormalTex;\r\n\r\nuniform vec4 uColor;\r\nuniform vec4 uEmission;\r\nuniform vec4 uSpecular;\r\nuniform float uMetallic;\r\nuniform float uSmoothness;\r\nuniform float uFresnel;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    color = color * uColor.rgb;\r\n    fragColor = vec4(vNormal.xyz, 1.0f);\r\n}";
+module.exports = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform sampler2D uNormalTex;\r\n\r\nuniform vec4 uColor;\r\nuniform vec4 uEmission;\r\nuniform vec4 uSpecular;\r\nuniform float uMetallic;\r\nuniform float uSmoothness;\r\nuniform float uFresnel;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    color = color * uColor.rgb;\r\n    fragColor = vec4(vUV.xy, 0, 1.0f);\r\n}";
 
 /***/ })
 

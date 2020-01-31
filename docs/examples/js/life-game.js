@@ -541,8 +541,11 @@ exports.BuiltinShaderSources = {
 };
 exports.BuiltinUniforms = {
     matM: "uTransformM",
+    matM_IT: "uTransformM_IT",
+    matMInv: "uTransformMInv",
     matVP: "uTransformVP",
     matMVP: "uTransformMVP",
+    matMV_IT: "uTransformMV_IT",
     flipUV: "uFlipUV",
     mainTex: "uMainTex",
 };
@@ -1188,6 +1191,8 @@ const shader_1 = __webpack_require__(/*! ./shader */ "../dist/core/shader.js");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
+        this.viewMatrix = mat4_1.mat4.identity();
+        this.projectionMatrix = mat4_1.mat4.identity();
         this.target = render_target_1.RenderTarget.CanvasTarget;
         this.shader = null;
         this.globalUniforms = new Map();
@@ -1211,8 +1216,8 @@ class ZograRenderer {
     use() {
         global_1.setGlobalContext(this.ctx);
     }
-    setViewProjection(mat) {
-        this.viewProjectionMatrix = mat;
+    setViewProjection(view, projection) {
+        this.viewProjectionMatrix = mat4_1.mat4.mul(projection, view);
     }
     setRenderTarget(colorAttachments, depthAttachment) {
         if (colorAttachments instanceof render_target_1.RenderTarget) {
@@ -1292,12 +1297,16 @@ class ZograRenderer {
             gl.frontFace(gl.CCW);
         }
     }
-    setupTransforms(shader, transform) {
+    setupTransforms(shader, transformModel) {
         const gl = this.gl;
-        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
-        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transform);
+        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transformModel);
+        const mit = mat4_1.mat4.transpose(mat4_1.mat4.invert(transformModel));
+        const mvit = mat4_1.mat4.transpose(mat4_1.mat4.invert(mat4_1.mat4.mul(this.viewMatrix, transformModel)));
+        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transformModel);
         shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
         shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMVP, false, mvp);
+        shader.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM_IT, false, mit);
+        shader.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMV_IT, false, mvit);
     }
     setupGlobalUniforms(shader, data) {
         const gl = this.gl;
@@ -1782,10 +1791,13 @@ class Camera extends entity_1.Entity {
     get aspectRatio() { return this.pixelSize.x / this.pixelSize.y; }
     get viewProjectionMatrix() {
         const matView = this.worldToLocalMatrix;
-        const matProjection = this.projection === Projection.Perspective
+        const matProjection = this.projectionMatrix;
+        return mat4_1.mat4.mul(matProjection, matView);
+    }
+    get projectionMatrix() {
+        return this.projection === Projection.Perspective
             ? mat4_1.mat4.perspective(this.FOV * math_1.Deg2Rad, this.aspectRatio, this.near, this.far)
             : mat4_1.mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
-        return mat4_1.mat4.mul(matProjection, matView);
     }
 }
 exports.Camera = Camera;
@@ -3341,7 +3353,7 @@ class PreviewRenderer {
         else
             context.renderer.setRenderTarget(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
-        context.renderer.viewProjectionMatrix = camera.viewProjectionMatrix;
+        context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {
@@ -20745,31 +20757,4 @@ window.addEventListener("mousemove", (e) => {
     const center = zogra_renderer_1.vec2(window.innerWidth / 2, window.innerHeight / 2);
     const d = zogra_renderer_1.minus(pos, center);
     d.mul(zogra_renderer_1.vec2(-.2, .2));
-    blitMat.setProp("uOffset", "vec2", zogra_renderer_1.plus(Offset, d));
-});
-
-
-/***/ }),
-
-/***/ "./src/misc/util.ts":
-/*!**************************!*\
-  !*** ./src/misc/util.ts ***!
-  \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-async function loadImage(src) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = src;
-        if (img.complete) {
-            resolve(img);
-        }
-        img.onload = () => {
-            resolve(img);
-        };
-        img.onerror = (event, source, lineno, colno, error) => {
-            reject(error)
+    blitMat.setProp("uOffset", "vec2", zogra_renderer_1.plus(Offs

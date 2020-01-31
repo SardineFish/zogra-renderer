@@ -7,8 +7,11 @@ export declare const BuiltinShaderSources: {
 };
 export declare const BuiltinUniforms: {
     matM: string;
+    matM_IT: string;
+    matMInv: string;
     matVP: string;
     matMVP: string;
+    matMV_IT: string;
     flipUV: string;
     mainTex: string;
 };

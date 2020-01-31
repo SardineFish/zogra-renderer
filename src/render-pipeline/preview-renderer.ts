@@ -65,7 +65,7 @@ export class PreviewRenderer implements ZograRenderPipeline
             context.renderer.setRenderTarget(camera.output as RenderTexture);
             
         context.renderer.clear(camera.clearColor, camera.clearDepth);
-        context.renderer.viewProjectionMatrix = camera.viewProjectionMatrix;
+        context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
 
         this.setupLight(context, data);
         

@@ -44,7 +44,7 @@ class PreviewRenderer {
         else
             context.renderer.setRenderTarget(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
-        context.renderer.viewProjectionMatrix = camera.viewProjectionMatrix;
+        context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {

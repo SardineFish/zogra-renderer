@@ -14,6 +14,8 @@ const shader_1 = require("./shader");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
+        this.viewMatrix = mat4_1.mat4.identity();
+        this.projectionMatrix = mat4_1.mat4.identity();
         this.target = render_target_1.RenderTarget.CanvasTarget;
         this.shader = null;
         this.globalUniforms = new Map();
@@ -37,8 +39,8 @@ class ZograRenderer {
     use() {
         global_1.setGlobalContext(this.ctx);
     }
-    setViewProjection(mat) {
-        this.viewProjectionMatrix = mat;
+    setViewProjection(view, projection) {
+        this.viewProjectionMatrix = mat4_1.mat4.mul(projection, view);
     }
     setRenderTarget(colorAttachments, depthAttachment) {
         if (colorAttachments instanceof render_target_1.RenderTarget) {
@@ -118,12 +120,16 @@ class ZograRenderer {
             gl.frontFace(gl.CCW);
         }
     }
-    setupTransforms(shader, transform) {
+    setupTransforms(shader, transformModel) {
         const gl = this.gl;
-        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transform);
-        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transform);
+        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transformModel);
+        const mit = mat4_1.mat4.transpose(mat4_1.mat4.invert(transformModel));
+        const mvit = mat4_1.mat4.transpose(mat4_1.mat4.invert(mat4_1.mat4.mul(this.viewMatrix, transformModel)));
+        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transformModel);
         shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
         shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMVP, false, mvp);
+        shader.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM_IT, false, mit);
+        shader.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMV_IT, false, mvit);
     }
     setupGlobalUniforms(shader, data) {
         const gl = this.gl;

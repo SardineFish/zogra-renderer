@@ -38,10 +38,14 @@ export class Camera extends Entity
     get viewProjectionMatrix()
     {
         const matView = this.worldToLocalMatrix;
-        const matProjection = this.projection === Projection.Perspective
+        const matProjection = this.projectionMatrix
+        return mat4.mul(matProjection, matView);
+    }
+    get projectionMatrix()
+    {
+        return this.projection === Projection.Perspective
             ? mat4.perspective(this.FOV * Deg2Rad, this.aspectRatio, this.near, this.far)
             : mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
-        return mat4.mul(matProjection, matView);
     }
     constructor(ctx = GlobalContext())
     {

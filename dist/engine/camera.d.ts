@@ -21,5 +21,6 @@ export declare class Camera extends Entity {
     get pixelSize(): import("../types/vec2").Vector2;
     get aspectRatio(): number;
     get viewProjectionMatrix(): import("gl-matrix").mat4;
+    get projectionMatrix(): import("gl-matrix").mat4;
     constructor(ctx?: GLContext);
 }

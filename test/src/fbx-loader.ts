@@ -1,5 +1,5 @@
-import fbx from "./asset/model/klein_bottole.fbx";
-import { plugins, materialDefine, shaderProp, MaterialFromShader, Shader, Color, Texture } from "../..";
+import fbx from "./asset/model/sphere.bin.fbx";
+import { plugins, materialDefine, shaderProp, MaterialFromShader, Shader, Color, Texture, Culling } from "../..";
 import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul } from "../..";
 import "./css/base.css";
 import vert from "./shader/default-vert.glsl";
@@ -100,7 +100,9 @@ async function initObjects()
 function initMaterials()
 {
     @materialDefine
-    class PBRLit extends MaterialFromShader(new Shader(vert, frag))
+    class PBRLit extends MaterialFromShader(new Shader(vert, frag, {
+        cull: Culling.Disable
+    }))
     {
         @shaderProp("uColor", "color")
         color: Color = Color.white;

@@ -17,13 +17,15 @@ export declare class ZograRenderer {
     ctx: GLContext;
     assets: BuiltinAssets;
     viewProjectionMatrix: import("gl-matrix").mat4;
+    viewMatrix: import("gl-matrix").mat4;
+    projectionMatrix: import("gl-matrix").mat4;
     private target;
     private shader;
     private globalUniforms;
     private globalTextures;
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number);
     use(): void;
-    setViewProjection(mat: mat4): void;
+    setViewProjection(view: mat4, projection: mat4): void;
     setRenderTarget(rt: RenderTarget): void;
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture): void;
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture): void;
