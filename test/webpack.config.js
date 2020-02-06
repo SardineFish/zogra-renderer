@@ -19,6 +19,10 @@ module.exports = {
     },
     devtool: "source-map",
     mode: "development",
+    devServer: {
+        contentBase: "./dist",
+        writeToDisk: true,
+    },
     module: {
         rules: [
             {
