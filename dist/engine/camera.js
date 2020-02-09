@@ -43,6 +43,18 @@ class Camera extends entity_1.Entity {
             ? mat4_1.mat4.perspective(this.FOV * math_1.Deg2Rad, this.aspectRatio, this.near, this.far)
             : mat4_1.mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
     }
+    on(event, listener) {
+        this.eventEmitter.on(event, listener);
+    }
+    off(event, listener) {
+        this.eventEmitter.on(event, listener);
+    }
+    __preRender(context) {
+        this.eventEmitter.emit("prerender", this, context);
+    }
+    __postRender(contect) {
+        this.eventEmitter.emit("postrender", this, contect);
+    }
 }
 exports.Camera = Camera;
 //# sourceMappingURL=camera.js.map

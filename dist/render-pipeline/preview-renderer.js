@@ -40,7 +40,7 @@ class PreviewRenderer {
     }
     renderCamera(context, data) {
         const camera = data.camera;
-        var mat = mat4_1.mat4;
+        camera.__preRender(context);
         if (camera.output === render_target_1.RenderTarget.CanvasTarget)
             context.renderer.setRenderTarget(render_target_1.RenderTarget.CanvasTarget);
         else
@@ -58,6 +58,7 @@ class PreviewRenderer {
             }
         }
         this.renderGrid(context, data);
+        camera.__postRender(context);
     }
     renderGrid(context, data) {
         this.renderer.drawLines(this.grid, mat4_1.mat4.identity(), this.renderer.assets.materials.ColoredLine);

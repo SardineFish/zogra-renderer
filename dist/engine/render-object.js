@@ -9,6 +9,12 @@ class RenderObject extends entity_1.Entity {
         this.materials = [];
         this.materials = [ctx.assets.materials.default];
     }
+    on(event, listener) {
+        this.eventEmitter.on(event, listener);
+    }
+    off(event, listener) {
+        this.eventEmitter.off(event, listener);
+    }
 }
 exports.RenderObject = RenderObject;
 //# sourceMappingURL=render-object.js.map

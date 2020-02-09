@@ -19,11 +19,12 @@ import { Lines } from "./lines";
 export class ZograRenderer
 {
     canvas: HTMLCanvasElement;
-    readonly width: number;
-    readonly height: number;
     gl: WebGL2RenderingContext;
     ctx: GLContext;
     assets: BuiltinAssets;
+
+    private width: number;
+    private height: number;
 
     viewProjectionMatrix = mat4.identity();
     viewMatrix = mat4.identity();
@@ -60,6 +61,16 @@ export class ZograRenderer
     use()
     {
         setGlobalContext(this.ctx);
+    }
+
+    setSize(width: number, height: number)
+    {
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.width = width;
+        this.height = height;
+        this.ctx.width = width;
+        this.ctx.height = height;
     }
 
     setViewProjection(view: mat4, projection: mat4)

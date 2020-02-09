@@ -11,11 +11,11 @@ import { UniformType, UniformValueType } from "./types";
 import { Lines } from "./lines";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
-    readonly width: number;
-    readonly height: number;
     gl: WebGL2RenderingContext;
     ctx: GLContext;
     assets: BuiltinAssets;
+    private width;
+    private height;
     viewProjectionMatrix: import("gl-matrix").mat4;
     viewMatrix: import("gl-matrix").mat4;
     projectionMatrix: import("gl-matrix").mat4;
@@ -25,6 +25,7 @@ export declare class ZograRenderer {
     private globalTextures;
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number);
     use(): void;
+    setSize(width: number, height: number): void;
     setViewProjection(view: mat4, projection: mat4): void;
     setRenderTarget(rt: RenderTarget): void;
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture): void;

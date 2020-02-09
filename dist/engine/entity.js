@@ -2,11 +2,24 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const transform_1 = require("./transform");
 const asset_1 = require("../core/asset");
+const event_1 = require("./event");
 class Entity extends transform_1.Transform {
     constructor() {
         super(...arguments);
         this.assetID = asset_1.AssetManager.newAssetID();
         this.name = `Entity_${this.assetID}`;
+        this.eventEmitter = new event_1.EventTrigger();
+    }
+    on(event, listener) {
+        return this.eventEmitter.on(event, listener);
+    }
+    off(event, listener) {
+        this.eventEmitter.off(event, listener);
+    }
+    __updateRecursive(time) {
+        this.eventEmitter.emit("update", this, time);
+        for (const entity of this.children)
+            entity.__updateRecursive(time);
     }
 }
 exports.Entity = Entity;

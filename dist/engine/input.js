@@ -8,6 +8,13 @@ var KeyState;
     KeyState[KeyState["Released"] = 0] = "Released";
 })(KeyState = exports.KeyState || (exports.KeyState = {}));
 ;
+// interface InputManagerEvents extends EventDefinitions
+// {
+//     keydown: (key: Keys) => void;
+//     keyup: (key: Keys) => void;
+//     keypressed: (key: Keys) => void;
+//     mousemove: ()
+// }
 class InputManager {
     constructor(options = {}) {
         var _a, _b;

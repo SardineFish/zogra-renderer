@@ -1,11 +1,21 @@
-import { Entity, EntityManager } from "./entity";
+import { Entity, EntityManager, IEntity } from "./entity";
 import { Camera } from "./camera";
 import { RenderObject } from "./render-object";
 import { Light } from "./light";
+import { EventDefinitions, EventTrigger, IEventSource, EventKeys } from "./event";
+import { ConstructorType } from "../utils/util";
 
-export class Scene extends EntityManager<Entity>
+interface SceneEvents extends EventDefinitions
+{
+    "entity-add": (entity: Entity, parent: Entity | null) => void;
+    "entity-remove": (entity: Entity, parent: Entity | null) => void;
+}
+
+export class Scene extends EntityManager<Entity> implements IEventSource<SceneEvents>
 {
     private managers = new Map<Function, EntityManager>();
+
+    private eventEmitter = new EventTrigger<SceneEvents>();
 
     add(entity: Entity, parent?: Entity)
     {
@@ -21,6 +31,8 @@ export class Scene extends EntityManager<Entity>
             entity.parent = parent;
         for (const child of entity.children)
             this.add(child as Entity, entity);
+        
+        this.eventEmitter.emit("entity-add", entity, parent ? parent : null);
     }
     remove(entity: Entity)
     {
@@ -33,6 +45,8 @@ export class Scene extends EntityManager<Entity>
         {
             entity.parent.children.delete(entity);
         }
+
+        this.eventEmitter.emit("entity-remove", entity, entity.parent as Entity);
     }
     rootEntities()
     {
@@ -42,8 +56,17 @@ export class Scene extends EntityManager<Entity>
     {
         return this._entities;
     }
-    getEntitiesOfType<T extends typeof Entity>(type: T): InstanceType<T>[]
+    getEntitiesOfType<T>(type: ConstructorType<T>): T[]
     {
-        return (this.managers.get(type)?.entities ?? []) as any as InstanceType<T>[];
+        return (this.managers.get(type)?.entities ?? []) as any as T[];
+    }
+
+    on<T extends EventKeys<SceneEvents>>(event: T, listener: SceneEvents[T])
+    {
+        this.eventEmitter.on(event, listener);
+    }
+    off<T extends EventKeys<SceneEvents>>(event: T, listener: SceneEvents[T])
+    {
+        this.eventEmitter.off(event, listener);
     }
 }

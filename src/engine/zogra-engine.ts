@@ -5,16 +5,18 @@ import { Camera } from "./camera";
 import { ZograRenderer } from "../core/core";
 import { EventTrigger } from "./event";
 
-interface Time
+export interface Time
 {
-    time: number,
-    deltaTime: number,
+    time: Readonly<number>,
+    deltaTime: Readonly<number>,
 }
 
 interface ZograEngineEvents
 {
     update: (t: Time) => void;
-    render: (t: Time, cameras: Camera[]) => void;
+    render: (cameras: Camera[]) => void;
+    start: () => void;
+    stop: () => void;
 }
 
 export class ZograEngine
@@ -23,6 +25,8 @@ export class ZograEngine
     renderer: ZograRenderer;
     renderPipeline: ZograRenderPipeline;
     eventEmitter: EventTrigger;
+    private _time: Time = { deltaTime: 0, time: 0 };
+    get time(): Readonly<Time> { return this._time; }
     constructor(canvas:HTMLCanvasElement, RenderPipeline: ZograRenderPipelineConstructor = PreviewRenderer)
     {
         this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
@@ -37,6 +41,12 @@ export class ZograEngine
             renderer: this.renderer,
             scene: this.scene
         }, cameras);
+    }
+    private updateEntities(time: Time)
+    {
+        const entities = this.scene.rootEntities();
+        for (const entity of entities)
+            entity.__updateRecursive(time);
     }
     start()
     {
@@ -58,7 +68,10 @@ export class ZograEngine
                 time: time,
                 deltaTime: dt
             };
+            this._time = t;
             this.emit("update", t);
+            this.updateEntities(t);
+            this.emit("render", this.scene.getEntitiesOfType(Camera));
 
             this.renderScene();
 

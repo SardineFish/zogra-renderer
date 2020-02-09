@@ -61,7 +61,7 @@ export class PreviewRenderer implements ZograRenderPipeline
     {
 
         const camera = data.camera;
-        var mat = mat4;
+        camera.__preRender(context);
 
         if (camera.output === RenderTarget.CanvasTarget)
             context.renderer.setRenderTarget(RenderTarget.CanvasTarget);
@@ -86,6 +86,7 @@ export class PreviewRenderer implements ZograRenderPipeline
         }
 
         this.renderGrid(context, data);
+        camera.__postRender(context);
     }
 
     renderGrid(context: RenderContext, data: RenderData)

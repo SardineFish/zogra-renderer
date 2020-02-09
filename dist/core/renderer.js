@@ -39,6 +39,14 @@ class ZograRenderer {
     use() {
         global_1.setGlobalContext(this.ctx);
     }
+    setSize(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.width = width;
+        this.height = height;
+        this.ctx.width = width;
+        this.ctx.height = height;
+    }
     setViewProjection(view, projection) {
         this.viewProjectionMatrix = mat4_1.mat4.mul(projection, view);
     }

@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { ZograEditor } from "./editor";
+import { EditorComponent } from "./editor";
 
 window.addEventListener("load", () =>
 {
     const container = document.querySelector("#root"); 
-    ReactDOM.render((<ZograEditor />), container);
+    ReactDOM.render((<EditorComponent />), container);
 });

@@ -3,10 +3,12 @@ import { RenderTexture } from "../core/texture";
 import { RenderTarget } from "../core/render-target";
 import { GLContext, GlobalContext } from "../core/global";
 import { vec2 } from "../types/vec2";
-import { Entity } from "./entity";
+import { Entity, EntityEvents } from "./entity";
 import { mat4 } from "../types/mat4";
 import { Deg2Rad } from "../types/math";
 import { Color } from "../types/color";
+import { RenderContext } from "../render-pipeline/rp";
+import { EventTrigger, IEventSource, EventKeys } from "./event";
 
 
 export enum Projection
@@ -15,7 +17,13 @@ export enum Projection
     Orthographic,
 }
 
-export class Camera extends Entity
+interface CameraEvents extends EntityEvents
+{
+    "prerender": (camera: Camera, context: RenderContext) => void;
+    "postrender": (camera: Camera, contect: RenderContext) => void;
+}
+
+export class Camera extends Entity implements IEventSource<CameraEvents>
 {
     private ctx: GLContext;
     output: RenderTexture | RenderTarget = RenderTarget.CanvasTarget;
@@ -51,5 +59,22 @@ export class Camera extends Entity
     {
         super();
         this.ctx = ctx;
+    }
+
+    on<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T])
+    {
+        this.eventEmitter.on(event, listener);
+    }
+    off<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T])
+    {
+        this.eventEmitter.on(event, listener);
+    }
+    __preRender(context: RenderContext)
+    {
+        this.eventEmitter.emit("prerender", this, context);
+    }
+    __postRender(contect: RenderContext)
+    {
+        this.eventEmitter.emit("postrender", this, contect);
     }
 }

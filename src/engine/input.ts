@@ -1,5 +1,6 @@
 import { vec2 } from "../types/vec2";
 import { minus, plus } from "../types/math";
+import { EventDefinitions } from "./event";
 
 export enum KeyState
 {
@@ -33,6 +34,14 @@ interface InputManagerOptions
     bound?: PointerBoundingElement;
     pointerLockElement?: Element;
 }
+
+// interface InputManagerEvents extends EventDefinitions
+// {
+//     keydown: (key: Keys) => void;
+//     keyup: (key: Keys) => void;
+//     keypressed: (key: Keys) => void;
+//     mousemove: ()
+// }
 
 export class InputManager
 {
