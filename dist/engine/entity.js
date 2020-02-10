@@ -8,7 +8,7 @@ class Entity extends transform_1.Transform {
         super(...arguments);
         this.assetID = asset_1.AssetManager.newAssetID();
         this.name = `Entity_${this.assetID}`;
-        this.eventEmitter = new event_1.EventTrigger();
+        this.eventEmitter = new event_1.EventEmitter();
     }
     on(event, listener) {
         return this.eventEmitter.on(event, listener);

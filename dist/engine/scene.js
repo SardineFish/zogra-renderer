@@ -6,7 +6,7 @@ class Scene extends entity_1.EntityManager {
     constructor() {
         super(...arguments);
         this.managers = new Map();
-        this.eventEmitter = new event_1.EventTrigger();
+        this.eventEmitter = new event_1.EventEmitter();
     }
     add(entity, parent) {
         var _a;

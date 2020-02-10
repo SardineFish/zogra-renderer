@@ -2,7 +2,7 @@ import { Entity, EntityManager, IEntity } from "./entity";
 import { Camera } from "./camera";
 import { RenderObject } from "./render-object";
 import { Light } from "./light";
-import { EventDefinitions, EventTrigger, IEventSource, EventKeys } from "./event";
+import { EventDefinitions, EventEmitter, IEventSource, EventKeys } from "./event";
 import { ConstructorType } from "../utils/util";
 
 interface SceneEvents extends EventDefinitions
@@ -15,7 +15,7 @@ export class Scene extends EntityManager<Entity> implements IEventSource<SceneEv
 {
     private managers = new Map<Function, EntityManager>();
 
-    private eventEmitter = new EventTrigger<SceneEvents>();
+    private eventEmitter = new EventEmitter<SceneEvents>();
 
     add(entity: Entity, parent?: Entity)
     {

@@ -1,0 +1,109 @@
+#root {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+}
+
+.zogra-editor {
+    height: 100%;
+    width: 100%;
+}
+
+.zogra-editor > .ant-layout {
+    height: 100%;
+}
+
+.scene-view {
+    width: 100%;
+    height: 100%;
+    
+    background-position: 0px 0px,
+    16px 16px;
+    background-size: 32px 32px;
+    background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),
+    linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);
+}
+.scene-view .canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.horizon-layout {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.value-editor {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    .label {
+        line-height: 1em;
+        margin-right: .5em;
+        min-width: 5em;
+    }
+
+    &.wrap {
+        flex-flow: column nowrap;
+        align-items: flex-start;
+        & > .label {
+            min-width: unset;
+            margin-bottom: .5em;
+        }
+    }
+    &.inline {
+        margin-left: .5em;
+
+        & > .label {
+            min-width: unset;
+        }
+    }
+
+    .ant-input-number {
+        width: auto;
+    }
+}
+
+.range-editor {
+    .horizon-layout {
+        width: 100%;
+    }
+    .range-slider {
+        flex: 1 0;
+    }
+    .range-value {
+        width: 4em;
+    }
+}
+
+.editor-panel {
+    user-select: none;
+}
+
+.props-editor {
+    & > .ant-menu-submenu-title {
+        background-color: #EEE;
+    }
+    .props-list {
+        padding: 0 1em;
+        li {
+            margin: .5em 0;
+        }
+    }
+    input {
+        user-select: initial;
+    }
+}
+
+.hierarchy {
+    .ant-tree li {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .ant-tree>li:last-child {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}

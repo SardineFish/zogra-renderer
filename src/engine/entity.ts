@@ -1,6 +1,6 @@
 import { Transform } from "./transform";
 import { IAsset, AssetManager } from "../core/asset";
-import { EventDefinitions, IEventSource, EventTrigger, EventKeys } from "./event";
+import { EventDefinitions, IEventSource, EventEmitter, EventKeys } from "./event";
 import { Time } from "./zogra-engine";
 
 export interface EntityEvents extends EventDefinitions
@@ -18,7 +18,7 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
 {
     assetID: number = AssetManager.newAssetID();
     name: string = `Entity_${this.assetID}`;
-    protected eventEmitter = new EventTrigger<EntityEvents>();
+    protected eventEmitter = new EventEmitter<EntityEvents>();
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void
     {
         return this.eventEmitter.on(event, listener);

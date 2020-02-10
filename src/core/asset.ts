@@ -22,5 +22,5 @@ export class Asset implements IAsset
 }
 
 export const AssetManager = {
-    newAssetID: newAssetID
+    newAssetID: newAssetID,
 };

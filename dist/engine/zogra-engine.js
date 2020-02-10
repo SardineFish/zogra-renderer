@@ -11,7 +11,7 @@ class ZograEngine {
         this.renderer = new core_1.ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);
         this.scene = new scene_1.Scene();
-        this.eventEmitter = new event_1.EventTrigger();
+        this.eventEmitter = new event_1.EventEmitter();
     }
     get time() { return this._time; }
     renderScene() {

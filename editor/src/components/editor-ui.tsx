@@ -5,6 +5,7 @@ import { Layout, Menu } from "antd";
 import { TopMenu } from "./menu-bar";
 import { Hierarchy } from "./hierarchy";
 import { SceneView } from "./scene-view";
+import { PropertyEditor } from "./props-editor";
 
 export function EditorUI(props: { setupCallback: (engine: ZograEngine) => void })
 {
@@ -18,8 +19,8 @@ export function EditorUI(props: { setupCallback: (engine: ZograEngine) => void }
                 <Layout.Content>
                     <SceneView setupCallback={props.setupCallback}/>
                 </Layout.Content>
-                <Layout.Sider theme="light">
-
+                <Layout.Sider theme="light" width="300">
+                    <PropertyEditor/>
                 </Layout.Sider>
             </Layout>
         </Layout>

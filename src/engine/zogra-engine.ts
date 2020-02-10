@@ -3,7 +3,7 @@ import { ZograRenderPipeline, ZograRenderPipelineConstructor } from "../render-p
 import { PreviewRenderer } from "../render-pipeline/preview-renderer";
 import { Camera } from "./camera";
 import { ZograRenderer } from "../core/core";
-import { EventTrigger } from "./event";
+import { EventEmitter } from "./event";
 
 export interface Time
 {
@@ -24,7 +24,7 @@ export class ZograEngine
     scene: Scene;
     renderer: ZograRenderer;
     renderPipeline: ZograRenderPipeline;
-    eventEmitter: EventTrigger;
+    eventEmitter: EventEmitter;
     private _time: Time = { deltaTime: 0, time: 0 };
     get time(): Readonly<Time> { return this._time; }
     constructor(canvas:HTMLCanvasElement, RenderPipeline: ZograRenderPipelineConstructor = PreviewRenderer)
@@ -32,7 +32,7 @@ export class ZograEngine
         this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);
         this.scene = new Scene();
-        this.eventEmitter = new EventTrigger();
+        this.eventEmitter = new EventEmitter();
     }
     renderScene()
     {

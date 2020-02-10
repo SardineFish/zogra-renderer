@@ -9,4 +9,5 @@ __export(require("./mesh"));
 __export(require("./renderer"));
 __export(require("./shader"));
 __export(require("./texture"));
+__export(require("./asset"));
 //# sourceMappingURL=core.js.map

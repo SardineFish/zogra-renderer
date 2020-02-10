@@ -2,7 +2,7 @@ import { Scene } from "./scene";
 import { ZograRenderPipeline, ZograRenderPipelineConstructor } from "../render-pipeline/render-pipeline";
 import { Camera } from "./camera";
 import { ZograRenderer } from "../core/core";
-import { EventTrigger } from "./event";
+import { EventEmitter } from "./event";
 export interface Time {
     time: Readonly<number>;
     deltaTime: Readonly<number>;
@@ -17,7 +17,7 @@ export declare class ZograEngine {
     scene: Scene;
     renderer: ZograRenderer;
     renderPipeline: ZograRenderPipeline;
-    eventEmitter: EventTrigger;
+    eventEmitter: EventEmitter;
     private _time;
     get time(): Readonly<Time>;
     constructor(canvas: HTMLCanvasElement, RenderPipeline?: ZograRenderPipelineConstructor);

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class EventTrigger {
+class EventEmitter {
     constructor() {
         this.listeners = new Map();
     }
@@ -20,5 +20,5 @@ class EventTrigger {
         (_a = this.listeners.get(event)) === null || _a === void 0 ? void 0 : _a.forEach(f => f(...args));
     }
 }
-exports.EventTrigger = EventTrigger;
+exports.EventEmitter = EventEmitter;
 //# sourceMappingURL=event.js.map

@@ -12,6 +12,6 @@ class Asset {
 }
 exports.Asset = Asset;
 exports.AssetManager = {
-    newAssetID: exports.newAssetID
+    newAssetID: exports.newAssetID,
 };
 //# sourceMappingURL=asset.js.map

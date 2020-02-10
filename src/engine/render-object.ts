@@ -4,7 +4,7 @@ import { Material } from "../core/core";
 import { GlobalContext } from "../core/global";
 import { Entity, EntityEvents } from "./entity";
 import { RenderContext } from "../render-pipeline/rp";
-import { EventTrigger, IEventSource, EventKeys } from "./event";
+import { EventEmitter, IEventSource, EventKeys } from "./event";
 
 interface RenderObjectEvents extends EntityEvents
 {

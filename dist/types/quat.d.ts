@@ -7,5 +7,7 @@ export declare namespace Quaternion {
     var mul: (a: glQuat, b: glQuat) => glQuat;
     var invert: (q: glQuat) => glQuat;
     var normalize: (q: glQuat) => glQuat;
+    var euler: (q: glQuat) => import("./vec3").Vector3;
+    var fromEuler: (e: import("./vec3").Vector3) => glQuat;
 }
 export declare const quat: typeof Quaternion;

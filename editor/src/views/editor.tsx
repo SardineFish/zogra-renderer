@@ -4,7 +4,7 @@ import { EditorUI } from "../components/editor-ui";
 import { SceneView } from "../components/scene-view";
 import { ZograEngine } from "zogra-renderer";
 import "antd/dist/antd.css";
-import "../css/editor.css";
+import "../css/editor.scss";
 import { ZograEditor } from "../common/zogra-editor";
 
 

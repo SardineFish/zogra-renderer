@@ -8,7 +8,7 @@ import { mat4 } from "../types/mat4";
 import { Deg2Rad } from "../types/math";
 import { Color } from "../types/color";
 import { RenderContext } from "../render-pipeline/rp";
-import { EventTrigger, IEventSource, EventKeys } from "./event";
+import { EventEmitter, IEventSource, EventKeys } from "./event";
 
 
 export enum Projection
