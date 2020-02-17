@@ -12,4 +12,5 @@ __export(require("./color"));
 __export(require("./math"));
 __export(require("./mat4"));
 __export(require("./quat"));
+__export(require("./ray"));
 //# sourceMappingURL=types.js.map

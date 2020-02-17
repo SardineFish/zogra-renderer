@@ -12,6 +12,8 @@ export declare class Vector4 extends Array<number> {
     set w(w: number);
     get magnitude(): number;
     get normalized(): Vector4;
+    get negative(): Vector4;
+    get inversed(): Vector4;
     constructor(x: number, y: number, z?: number, w?: number);
     static zero(): Vector4;
     static one(): Vector4;

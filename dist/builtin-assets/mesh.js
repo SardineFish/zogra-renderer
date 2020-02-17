@@ -3,8 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mesh_1 = require("../core/mesh");
 const vec3_1 = require("../types/vec3");
 const vec2_1 = require("../types/vec2");
-const color_1 = require("../types/color");
-const global_1 = require("../core/global");
+const mesh_builder_1 = require("../utils/mesh-builder");
 function createBuiltinMesh(gl) {
     return {
         quad: quad(gl),
@@ -72,7 +71,7 @@ function cube(gl) {
         vec2_1.vec2(1, 1),
         vec2_1.vec2(0, 1)
     ];
-    const mb = new MeshBuilder(24, gl);
+    const mb = new mesh_builder_1.MeshBuilder(24, gl);
     mb.addPolygon([
         verts[1],
         verts[0],
@@ -141,34 +140,4 @@ function cube(gl) {
     ]);
     return mb.toMesh();
 }
-class MeshBuilder {
-    constructor(capacity, gl = global_1.GlobalContext().gl) {
-        this.verts = [];
-        this.triangles = [];
-        this.uvs = [];
-        this.colors = [];
-        this.gl = gl;
-    }
-    addPolygon(verts, uvs) {
-        const base = this.verts.length;
-        for (let i = 0; i < verts.length; i++) {
-            this.verts.push(verts[i]);
-            this.uvs.push(uvs[i]);
-            this.colors.push(color_1.Color.white);
-        }
-        for (let i = 2; i < verts.length; i++) {
-            this.triangles.push(base + 0, base + i - 1, base + i);
-        }
-    }
-    toMesh() {
-        const mesh = new mesh_1.Mesh(this.gl);
-        mesh.verts = this.verts;
-        mesh.triangles = this.triangles;
-        mesh.colors = this.colors;
-        mesh.uvs = this.uvs;
-        mesh.calculateNormals();
-        return mesh;
-    }
-}
-exports.MeshBuilder = MeshBuilder;
 //# sourceMappingURL=mesh.js.map

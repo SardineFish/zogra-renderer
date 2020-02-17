@@ -1,6 +1,7 @@
 import { vec2 } from "../types/vec2";
 import { minus, plus } from "../types/math";
 import { EventDefinitions } from "./event";
+import { DoubleBuffer } from "../utils/util";
 
 export enum KeyState
 {
@@ -43,15 +44,19 @@ interface InputManagerOptions
 //     mousemove: ()
 // }
 
+class InputStates
+{
+    keyStates = new Map<number, KeyState>();
+    keyStatesThisFrame = new Map<number, KeyState>();
+    mousePos: vec2 = vec2.zero();
+    mouseDelta: vec2 = vec2.zero();
+}
+
 export class InputManager
 {
     private eventTarget: InputEventTarget;
     private bound?: PointerBoundingElement;
-    private keyStates = new Map<number, KeyState>();
-    private keyStatesThisFrame = new Map<number, KeyState>();
-    private mousePos: vec2 = vec2.zero();
-    private mouseDelta: vec2 = vec2.zero();
-    private previousMousePos = vec2.zero();
+    private states = new DoubleBuffer(() => new InputStates);
     private pointerLockElement: Element;
     
     constructor(options: InputManagerOptions = {})
@@ -66,33 +71,49 @@ export class InputManager
         
         this.eventTarget.addEventListener("keydown", (e: KeyboardEvent) =>
         {
-            this.keyStates.set(e.keyCode, KeyState.Pressed);
-            this.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
+            this.states.back.keyStates.set(e.keyCode, KeyState.Pressed);
+            this.states.back.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
         });
         this.eventTarget.addEventListener("keyup", e =>
         {
-            this.keyStates.set(e.keyCode, KeyState.Released);
-            this.keyStatesThisFrame.set(e.keyCode, KeyState.Released);
+            this.states.back.keyStates.set(e.keyCode, KeyState.Released);
+            this.states.back.keyStatesThisFrame.set(e.keyCode, KeyState.Released);
         });
         this.eventTarget.addEventListener("mousedown", e =>
         {
-            this.keyStates.set(Keys.Mouse0 + e.button, KeyState.Pressed);
-            this.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Pressed);
+            const rect = this.bound?.getBoundingClientRect();
+            if (rect)
+            {
+                const offset = vec2(rect.left, rect?.top);
+                const pos = minus(vec2(e.clientX, e.clientY), offset);
+                if (pos.x < 0 || pos.y < 0 || pos.x > rect.width || pos.y > rect.height)
+                    return;
+            }
+            this.states.back.keyStates.set(Keys.Mouse0 + e.button, KeyState.Pressed);
+            this.states.back.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Pressed);
         });
         this.eventTarget.addEventListener("mouseup", e =>
         {
-            this.keyStates.set(Keys.Mouse0 + e.button, KeyState.Released);
-            this.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Released);
+            const rect = this.bound?.getBoundingClientRect();
+            if (rect)
+            {
+                const offset = vec2(rect.left, rect?.top);
+                const pos = minus(vec2(e.clientX, e.clientY), offset);
+                if (pos.x < 0 || pos.y < 0 || pos.x > rect.width || pos.y > rect.height)
+                    return;
+            }
+            this.states.back.keyStates.set(Keys.Mouse0 + e.button, KeyState.Released);
+            this.states.back.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Released);
         });
         this.eventTarget.addEventListener("mousemove", e =>
         {
             const rect = this.bound?.getBoundingClientRect();
             const offset = vec2(rect?.left ?? 0, rect?.top ?? 0);
             const pos = minus(vec2(e.clientX, e.clientY), offset);
-            this.mouseDelta.plus(vec2(e.movementX, e.movementY));
+            this.states.back.mouseDelta.plus(vec2(e.movementX, e.movementY));
             // if (this.mouseDelta.magnitude > 100)
             //     console.log(e);
-            this.mousePos = pos;
+            this.states.back.mousePos = pos;
         });
         for (const key in Keys)
         {
@@ -100,29 +121,34 @@ export class InputManager
                 continue;
             if (Keys.hasOwnProperty(key))
             {
-                this.keyStates.set((Keys as any)[key], KeyState.Released);
+                this.states.back.keyStates.set((Keys as any)[key], KeyState.Released);
             }
         }
     }
-    get pointerPosition() { return this.mousePos; }
-    get pointerDelta() { return this.mouseDelta; }
+    get pointerPosition() { return this.states.current.mousePos; }
+    get pointerDelta() { return this.states.current.mouseDelta; }
     getKey(key: Keys)
     {
-        return this.keyStates.get(key) === KeyState.Pressed ? true : false;
+        return this.states.current.keyStates.get(key) === KeyState.Pressed ? true : false;
     }
     getKeyDown(key: Keys)
     {
-        return this.keyStatesThisFrame.get(key) === KeyState.Pressed ? true : false;
+        return this.states.current.keyStatesThisFrame.get(key) === KeyState.Pressed ? true : false;
     }
     getKeyUp(key: Keys)
     {
-        return this.keyStatesThisFrame.get(key) === KeyState.Released ? true : false;
+        return this.states.current.keyStatesThisFrame.get(key) === KeyState.Released ? true : false;
     }
     update()
     {
-        this.keyStatesThisFrame.clear();
-        this.previousMousePos = this.mousePos;
-        this.mouseDelta = vec2.zero();
+        this.states.update();
+        this.states.back.keyStatesThisFrame.clear();
+        this.states.back.mouseDelta = vec2.zero();
+        for (const [key, value] of this.states.current.keyStates)
+        {
+            this.states.back.keyStates.set(key, value);
+        }
+        this.states.back.mousePos = this.states.current.mousePos;
     }
     lockPointer()
     {

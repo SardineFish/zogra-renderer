@@ -137,6 +137,13 @@ class Mesh extends asset_1.Asset {
         }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
     }
+    destroy() {
+        if (this.destroyed)
+            return;
+        this.gl.deleteBuffer(this.VBO);
+        this.gl.deleteBuffer(this.EBO);
+        super.destroy();
+    }
 }
 exports.Mesh = Mesh;
 //# sourceMappingURL=mesh.js.map

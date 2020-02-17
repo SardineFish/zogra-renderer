@@ -22,6 +22,7 @@ export declare class Lines extends Asset {
     clear(): void;
     update(): void;
     bind(shader: Shader): void;
+    destroy(): void;
 }
 export declare class LineBuilder {
     private verts;

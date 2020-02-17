@@ -6,8 +6,12 @@ exports.newAssetID = (() => {
 })();
 class Asset {
     constructor(name) {
+        this.destroyed = false;
         this.assetID = exports.newAssetID();
         this.name = name || `Asset_${this.assetID}`;
+    }
+    destroy() {
+        this.destroyed = true;
     }
 }
 exports.Asset = Asset;

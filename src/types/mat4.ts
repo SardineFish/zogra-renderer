@@ -24,6 +24,11 @@ Matrix4x4.rts = (rotation: quat, translation: vec3, scale: vec3) =>
     glMat4.fromRotationTranslationScale(m, rotation, translation, scale);
     return m;
 }
+Matrix4x4.translate = (translate: vec3) =>
+{
+    const m = mat4.identity();
+    return glMat4.translate(m, glMat4.identity(m), translate);
+}
 Matrix4x4.invert = (m: mat4) =>
 {
     const out = glMat4.create();

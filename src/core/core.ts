@@ -5,3 +5,4 @@ export * from "./renderer";
 export * from "./shader";
 export * from "./texture";
 export * from "./asset";
+export * from "./lines";

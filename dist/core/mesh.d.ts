@@ -32,4 +32,5 @@ export declare class Mesh extends Asset {
     update(): void;
     setup(gl: WebGL2RenderingContext): WebGLBuffer[];
     bind(shader: Shader, gl: WebGL2RenderingContext): void;
+    destroy(): void;
 }

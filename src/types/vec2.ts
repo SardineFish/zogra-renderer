@@ -20,6 +20,14 @@ export class Vector2 extends Array<number>
         const m = this.magnitude;
         return m == 0 ? vec2.zero() : this.clone().div(vec2(m, m));
     }
+    get negative()
+    {
+        return this.clone().negate();
+    }
+    get inversed()
+    {
+        return this.clone().inverse();
+    }
 
     constructor(x: number, y: number)
     {

@@ -5,10 +5,13 @@ import { GLContext, GlobalContext } from "../core/global";
 import { vec2 } from "../types/vec2";
 import { Entity, EntityEvents } from "./entity";
 import { mat4 } from "../types/mat4";
-import { Deg2Rad } from "../types/math";
+import { Deg2Rad, div, mul, minus } from "../types/math";
 import { Color } from "../types/color";
 import { RenderContext } from "../render-pipeline/rp";
 import { EventEmitter, IEventSource, EventKeys } from "./event";
+import { vec3 } from "../types/vec3";
+import { ray } from "../types/ray";
+import { vec4 } from "../types/vec4";
 
 
 export enum Projection
@@ -76,5 +79,29 @@ export class Camera extends Entity implements IEventSource<CameraEvents>
     __postRender(contect: RenderContext)
     {
         this.eventEmitter.emit("postrender", this, contect);
+    }
+    screenToRay(pos: vec2): ray
+    {
+        const p = this.screenToWorld(pos);
+        return ray(this.position, minus(vec3(p.x, p.y, p.z), this.position));
+    }
+    screenToWorld(pos: vec2): vec3
+    {
+        const ndcXY = this.screenToViewport(pos).mul(vec2(2, -2)).minus(vec2(1, -1));
+        const clip = mul(vec4(ndcXY.x, ndcXY.y, -1, 1), this.near);
+        const matVPInv = mat4.invert(this.viewProjectionMatrix);
+        const p = mat4.mulVec4(matVPInv, clip);
+        return vec3(p[0], p[1], p[2]);
+    }
+    screenToViewport(pos: vec2): vec2
+    {
+        if (this.output === RenderTarget.CanvasTarget)
+            return div(pos, vec2(this.ctx.width, this.ctx.height));
+        else if (this.output instanceof RenderTexture)
+        {
+            return div(pos, vec2(this.output.width, this.output.height));
+        }
+        else
+            return vec2.zero();
     }
 }

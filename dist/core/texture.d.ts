@@ -34,6 +34,7 @@ declare class TextureBase extends Asset implements Texture {
     constructor(width: number, height: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
     protected setup(): void;
     bind(location: WebGLUniformLocation, data: BindingData): void;
+    destroy(): void;
 }
 export declare class Texture2D extends TextureBase {
     constructor(width?: number, height?: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
@@ -48,5 +49,6 @@ export declare class RenderTexture extends TextureBase {
     constructor(width: number, height: number, depth: boolean, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
     update(): void;
     setData(pixels: ArrayBufferView | TexImageSource): void;
+    destroy(): void;
 }
 export {};

@@ -13,9 +13,11 @@ export declare class Entity extends Transform implements IAsset, IEventSource<En
     assetID: number;
     name: string;
     protected eventEmitter: EventEmitter<EntityEvents>;
+    protected destroyed: boolean;
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void;
     off<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void;
     __updateRecursive(time: Time): void;
+    destroy(): void;
 }
 export declare class EntityManager<T extends Entity = Entity> {
     protected entityMap: Map<number, T>;

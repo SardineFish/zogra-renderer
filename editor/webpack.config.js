@@ -18,7 +18,7 @@ module.exports = {
     mode: "development",
     devServer: {
         contentBase: "./dist",
-        writeToDisk: true,
+        writeToDisk: false,
     },
     module: {
         rules: [

@@ -17,3 +17,4 @@ export * from "./render-pipeline/rp";
 
 import * as pluginsExport from "./plugins/plugins";
 export const plugins = pluginsExport;
+export * from "./utils/public-utils";

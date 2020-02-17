@@ -3,6 +3,7 @@ import { vec3 } from "../types/vec3";
 import { vec2 } from "../types/vec2";
 import { Color } from "../types/color";
 import { GlobalContext } from "../core/global";
+import { MeshBuilder } from "../utils/mesh-builder";
 
 export function createBuiltinMesh(gl: WebGL2RenderingContext)
 {
@@ -153,44 +154,3 @@ function cube(gl: WebGL2RenderingContext)
     return mb.toMesh();
 }
 
-export class MeshBuilder 
-{
-    private verts: vec3[] = [];
-    private triangles: number[] = [];
-    private uvs: vec2[] = [];
-    private colors: Color[] = [];
-    private gl: WebGL2RenderingContext;
-
-    constructor(capacity: number, gl = GlobalContext().gl)
-    {
-        this.gl = gl;
-    }
-    addPolygon(verts: vec3[], uvs: vec2[])
-    {
-        const base = this.verts.length;
-        for (let i = 0; i < verts.length; i++)
-        {
-            this.verts.push(verts[i]);
-            this.uvs.push(uvs[i]);
-            this.colors.push(Color.white);
-        }
-        for (let i = 2; i < verts.length; i++)
-        {
-            this.triangles.push(
-                base + 0,
-                base + i - 1,
-                base + i
-            );
-        }
-    }
-    toMesh()
-    {
-        const mesh = new Mesh(this.gl);
-        mesh.verts = this.verts;
-        mesh.triangles = this.triangles;
-        mesh.colors = this.colors;
-        mesh.uvs = this.uvs;
-        mesh.calculateNormals();
-        return mesh;
-    }
-}

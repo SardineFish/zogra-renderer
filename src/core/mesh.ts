@@ -176,4 +176,13 @@ export class Mesh extends Asset
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
 
     }
+
+    destroy()
+    {
+        if (this.destroyed)
+            return;
+        this.gl.deleteBuffer(this.VBO);
+        this.gl.deleteBuffer(this.EBO);
+        super.destroy();
+    }
 }

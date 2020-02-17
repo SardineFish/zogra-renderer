@@ -22,6 +22,7 @@ module.exports = {
     devServer: {
         contentBase: "./dist",
         writeToDisk: true,
+        open: false,
     },
     module: {
         rules: [

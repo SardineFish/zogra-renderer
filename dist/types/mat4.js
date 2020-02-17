@@ -17,6 +17,10 @@ Matrix4x4.rts = (rotation, translation, scale) => {
     gl_matrix_1.mat4.fromRotationTranslationScale(m, rotation, translation, scale);
     return m;
 };
+Matrix4x4.translate = (translate) => {
+    const m = exports.mat4.identity();
+    return gl_matrix_1.mat4.translate(m, gl_matrix_1.mat4.identity(m), translate);
+};
 Matrix4x4.invert = (m) => {
     const out = gl_matrix_1.mat4.create();
     gl_matrix_1.mat4.invert(out, m);

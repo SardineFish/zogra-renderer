@@ -9,6 +9,7 @@ class Entity extends transform_1.Transform {
         this.assetID = asset_1.AssetManager.newAssetID();
         this.name = `Entity_${this.assetID}`;
         this.eventEmitter = new event_1.EventEmitter();
+        this.destroyed = false;
     }
     on(event, listener) {
         return this.eventEmitter.on(event, listener);
@@ -20,6 +21,9 @@ class Entity extends transform_1.Transform {
         this.eventEmitter.emit("update", this, time);
         for (const entity of this.children)
             entity.__updateRecursive(time);
+    }
+    destroy() {
+        this.destroyed = true;
     }
 }
 exports.Entity = Entity;

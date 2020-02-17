@@ -8,6 +8,8 @@ export declare class Vector2 extends Array<number> {
     set y(y: number);
     get magnitude(): number;
     get normalized(): Vector2;
+    get negative(): Vector2;
+    get inversed(): Vector2;
     constructor(x: number, y: number);
     static zero(): Vector2;
     static one(): Vector2;

@@ -1,4 +1,4 @@
-import { quat as glQuat } from "gl-matrix";
+import { quat as glQuat, vec3 as glVec3 } from "gl-matrix";
 import { vec3 } from "./vec3";
 import { Rad2Deg } from "./math";
 
@@ -48,6 +48,10 @@ Quaternion.euler = (q: quat) =>
 Quaternion.fromEuler = (e: vec3) =>
 {
     return glQuat.fromEuler(glQuat.create(), e.x, e.y, e.z);
+}
+Quaternion.rotate = (q: quat, v: vec3) =>
+{
+    return glVec3.transformQuat(vec3(0, 0, 0) as any as glVec3, v, q) as any as vec3;
 }
 
 export const quat = Quaternion;

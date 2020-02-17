@@ -9,15 +9,21 @@ export interface IAsset
 {
     assetID: number;
     name: string;
+    destroy(): void;
 }
 export class Asset implements IAsset
 {
     assetID: number;
     name: string;
+    protected destroyed: boolean = false;
     constructor(name?:string)
     {
         this.assetID = newAssetID();
         this.name = name || `Asset_${this.assetID}`;
+    }
+    destroy()
+    {
+        this.destroyed = true;
     }
 }
 

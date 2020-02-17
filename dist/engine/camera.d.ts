@@ -2,10 +2,13 @@
 import { RenderTexture } from "../core/texture";
 import { RenderTarget } from "../core/render-target";
 import { GLContext } from "../core/global";
+import { vec2 } from "../types/vec2";
 import { Entity, EntityEvents } from "./entity";
 import { Color } from "../types/color";
 import { RenderContext } from "../render-pipeline/rp";
 import { IEventSource, EventKeys } from "./event";
+import { vec3 } from "../types/vec3";
+import { ray } from "../types/ray";
 export declare enum Projection {
     Perspective = 0,
     Orthographic = 1
@@ -33,5 +36,8 @@ export declare class Camera extends Entity implements IEventSource<CameraEvents>
     off<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T]): void;
     __preRender(context: RenderContext): void;
     __postRender(contect: RenderContext): void;
+    screenToRay(pos: vec2): ray;
+    screenToWorld(pos: vec2): vec3;
+    screenToViewport(pos: vec2): vec2;
 }
 export {};

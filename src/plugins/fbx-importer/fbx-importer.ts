@@ -4,7 +4,7 @@ import { GlobalContext, GLContext } from "../../core/global";
 import { Material } from "../../core/material";
 import { Color } from "../../types/color";
 import { vec4 } from "../../types/vec4";
-import { Asset } from "../../core/asset";
+import { Asset, IAsset } from "../../core/asset";
 import { RenderObject, Entity } from "../../engine/engine";
 import { vec3 } from "../../types/vec3";
 import { Mesh } from "../../core/mesh";
@@ -15,7 +15,7 @@ import { extractFBXAssets } from "./fbx-model-import";
 function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsPack
 {
     const pack = new AssetsPack();
-    const resourceMap = new Map<FBXID, Asset>();
+    const resourceMap = new Map<FBXID, IAsset>();
     const meshConverter = convertMesh(ctx);
 
     for (const fbxMat of resource.materials)

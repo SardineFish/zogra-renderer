@@ -19,6 +19,10 @@ class Color extends vec4_1.Vector4 {
     static get red() { return new Color(1, 0, 0); }
     static get green() { return new Color(0, 1, 0); }
     static get blue() { return new Color(0, 0, 1); }
+    static get cyan() { return new Color(0, 1, 1); }
+    static get yellow() { return new Color(1, 1, 0); }
+    static get magenta() { return new Color(1, 0, 1); }
+    static get gray() { return new Color(.5, .5, .5); }
 }
 exports.Color = Color;
 exports.rgba = (r, g, b, a = 1) => new Color(r, g, b, a);

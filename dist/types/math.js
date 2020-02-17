@@ -42,7 +42,7 @@ function div(a, b) {
     const [lhs, rhs, invert] = arithOrder(a, b);
     return invert
         ? rhs.__to(lhs.constructor).div(lhs)
-        : rhs.__to(lhs.constructor).div(lhs).negate();
+        : rhs.__to(lhs.constructor).div(lhs).inversed;
 }
 exports.div = div;
 function dot(a, b) {

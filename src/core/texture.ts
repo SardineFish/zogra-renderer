@@ -72,6 +72,14 @@ class TextureBase extends Asset implements Texture
         gl.uniform1i(location, data.nextTextureUnit);
         data.nextTextureUnit++;
     }
+    destroy()
+    {
+        if (this.destroyed)
+            return;
+        const gl = this.ctx.gl;
+        gl.deleteTexture(this.glTex);
+        super.destroy();
+    }
 }
 
 export class Texture2D extends TextureBase
@@ -146,6 +154,13 @@ export class RenderTexture extends TextureBase
         const [internalFormat, format, type] = mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
         flipTexture(this.ctx, this.glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
+    }
+    destroy()
+    {
+        if (this.destroyed)
+            return;
+        this.depthTexture?.destroy();
+        super.destroy();
     }
 }
 

@@ -47,6 +47,13 @@ class TextureBase extends asset_1.Asset {
         gl.uniform1i(location, data.nextTextureUnit);
         data.nextTextureUnit++;
     }
+    destroy() {
+        if (this.destroyed)
+            return;
+        const gl = this.ctx.gl;
+        gl.deleteTexture(this.glTex);
+        super.destroy();
+    }
 }
 class Texture2D extends TextureBase {
     constructor(width = 0, height = 0, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
@@ -102,6 +109,13 @@ class RenderTexture extends TextureBase {
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
         flipTexture(this.ctx, this.glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
+    }
+    destroy() {
+        var _a;
+        if (this.destroyed)
+            return;
+        (_a = this.depthTexture) === null || _a === void 0 ? void 0 : _a.destroy();
+        super.destroy();
     }
 }
 exports.RenderTexture = RenderTexture;

@@ -10,6 +10,8 @@ export declare class Vector3 extends Array<number> {
     set z(z: number);
     get magnitude(): number;
     get normalized(): Vector3;
+    get negative(): Vector3;
+    get inversed(): Vector3;
     constructor(x: number, y: number, z: number);
     static zero(): Vector3;
     static one(): Vector3;

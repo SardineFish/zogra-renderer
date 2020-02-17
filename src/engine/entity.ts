@@ -19,6 +19,7 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     assetID: number = AssetManager.newAssetID();
     name: string = `Entity_${this.assetID}`;
     protected eventEmitter = new EventEmitter<EntityEvents>();
+    protected destroyed: boolean = false;
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void
     {
         return this.eventEmitter.on(event, listener);
@@ -33,6 +34,10 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
         this.eventEmitter.emit("update", this, time);
         for (const entity of this.children)
             (entity as Entity).__updateRecursive(time);
+    }
+    destroy()
+    {
+        this.destroyed = true;
     }
 }
 

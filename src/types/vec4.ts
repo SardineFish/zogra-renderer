@@ -24,6 +24,14 @@ export class Vector4 extends Array<number>
         const m = this.magnitude;
         return m == 0 ? vec4.zero() : this.clone().div(vec4(m, m, m, m));
     }
+    get negative()
+    {
+        return this.clone().negate();
+    }
+    get inversed()
+    {
+        return this.clone().inverse();
+    }
 
     constructor(x: number, y: number, z: number = 0, w: number = 0)
     {

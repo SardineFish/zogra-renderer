@@ -63,7 +63,7 @@ export function div<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U,
     const [lhs, rhs, invert] = arithOrder(a, b);
     return invert
         ? rhs.__to(lhs.constructor).div(lhs)
-        : rhs.__to(lhs.constructor).div(lhs).negate();
+        : rhs.__to(lhs.constructor).div(lhs).inversed;
 }
 
 export function dot(a: vec3, b: vec3)

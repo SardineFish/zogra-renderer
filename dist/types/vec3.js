@@ -16,6 +16,12 @@ class Vector3 extends Array {
         const m = this.magnitude;
         return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
     }
+    get negative() {
+        return this.clone().negate();
+    }
+    get inversed() {
+        return this.clone().inverse();
+    }
     constructor(x, y, z) {
         super(x, y, z);
     }
@@ -52,7 +58,7 @@ class Vector3 extends Array {
     dot(v) {
         return this[0] * v[0]
             + this[1] * v[1]
-            + this[3] * v[3];
+            + this[2] * v[2];
     }
     normalize() {
         const m = this.magnitude;
@@ -76,7 +82,7 @@ class Vector3 extends Array {
      * @param b v
      */
     cross(b) {
-        return vec3(this.y * b.z - this.z * b.y, this.x * b.z - this.z * b.x, this.x * b.y - this.y * b.x);
+        return vec3(this.y * b.z - this.z * b.y, this.z * b.x - this.x * b.z, this.x * b.y - this.y * b.x);
     }
     clone() {
         return vec3(this[0], this[1], this[2]);

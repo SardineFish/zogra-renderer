@@ -23,6 +23,15 @@ export class Vector3 extends Array<number>
         return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
     }
 
+    get negative()
+    {
+        return this.clone().negate();
+    }
+    get inversed()
+    {
+        return this.clone().inverse();
+    }
+
     constructor(x: number, y: number, z: number)
     {
         super(x, y, z);
@@ -68,7 +77,7 @@ export class Vector3 extends Array<number>
     {
         return this[0] * v[0]
             + this[1] * v[1]
-            + this[3] * v[3];
+            + this[2] * v[2];
     }
     normalize()
     {
@@ -98,7 +107,7 @@ export class Vector3 extends Array<number>
     {
         return vec3(
             this.y * b.z - this.z * b.y,
-            this.x * b.z - this.z * b.x,
+            this.z * b.x - this.x * b.z,
             this.x * b.y - this.y * b.x
         );
     }

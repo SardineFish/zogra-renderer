@@ -24,11 +24,7 @@ interface InputManagerOptions {
 export declare class InputManager {
     private eventTarget;
     private bound?;
-    private keyStates;
-    private keyStatesThisFrame;
-    private mousePos;
-    private mouseDelta;
-    private previousMousePos;
+    private states;
     private pointerLockElement;
     constructor(options?: InputManagerOptions);
     get pointerPosition(): import("../types/vec2").Vector2;
