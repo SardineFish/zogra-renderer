@@ -5,7 +5,7 @@ import { AssetsPack, plugins } from "zogra-renderer";
 
 export function initUserAssets(editor: ZograEditor)
 {
-    const root = new AssetsFolder();
+    const root = new AssetsFolder("assets");
 
     const shaders = new AssetsFolder("shaders", root);
     const models = new AssetsFolder("models", root);

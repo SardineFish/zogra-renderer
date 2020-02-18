@@ -6,7 +6,7 @@ const event_1 = require("./event");
 class Entity extends transform_1.Transform {
     constructor() {
         super(...arguments);
-        this.assetID = asset_1.AssetManager.newAssetID();
+        this.assetID = asset_1.AssetManager.newAssetID(this);
         this.name = `Entity_${this.assetID}`;
         this.eventEmitter = new event_1.EventEmitter();
         this.destroyed = false;
@@ -24,6 +24,7 @@ class Entity extends transform_1.Transform {
     }
     destroy() {
         this.destroyed = true;
+        asset_1.AssetManager.destroy(this.assetID);
     }
 }
 exports.Entity = Entity;

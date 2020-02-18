@@ -1,4 +1,3 @@
-export declare const newAssetID: () => number;
 export interface IAsset {
     assetID: number;
     name: string;
@@ -12,5 +11,7 @@ export declare class Asset implements IAsset {
     destroy(): void;
 }
 export declare const AssetManager: {
-    newAssetID: () => number;
+    newAssetID: (assset: IAsset) => number;
+    find: (id: number) => IAsset | undefined;
+    destroy: (id: number) => void;
 };

@@ -16,7 +16,7 @@ export interface IEntity
 
 export class Entity extends Transform implements IAsset, IEventSource<EntityEvents>, IEntity
 {
-    assetID: number = AssetManager.newAssetID();
+    assetID: number = AssetManager.newAssetID(this);
     name: string = `Entity_${this.assetID}`;
     protected eventEmitter = new EventEmitter<EntityEvents>();
     protected destroyed: boolean = false;
@@ -38,6 +38,7 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     destroy()
     {
         this.destroyed = true;
+        AssetManager.destroy(this.assetID);
     }
 }
 
