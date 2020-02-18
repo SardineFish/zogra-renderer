@@ -7,12 +7,15 @@ export function initTools(editor: ZograEditor)
 {
     editor.engine.on("update", (time) =>
     {
+        if (editor.input.getKey(Keys.Mouse0) || editor.input.getKey(Keys.Mouse2))
+            return;
         if (editor.input.getKeyDown(Keys.W))
             editor.tools.current.tool = "position";
         else if (editor.input.getKeyDown(Keys.E))
             editor.tools.current.tool = "rotation";
         else if (editor.input.getKeyDown(Keys.R))
             editor.tools.current.tool = "scaling";
+        editor.eventEmitter.emit("toolchange", editor);
     }); 
     return {
         position: positionTool(editor),
@@ -27,7 +30,7 @@ export function initTools(editor: ZograEditor)
     };
 }
 
-interface EditorToolsState
+export interface EditorToolsState
 {
     tool: "none" | "position" | "rotation" | "scaling";
     pivot: "center" | "pivot";

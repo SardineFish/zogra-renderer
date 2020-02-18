@@ -98,6 +98,7 @@
 }
 
 .hierarchy {
+    user-select: none;
     .ant-tree li {
         padding-top: 0;
         padding-bottom: 0;
@@ -105,5 +106,45 @@
     .ant-tree>li:last-child {
         padding-top: 0;
         padding-bottom: 0;
+    }
+}
+
+.layout-header {
+    background-color: #EEE;
+    color: rgba(0, 0, 0, 0.65);
+    height: 3em;
+    line-height: 3em;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    user-select: none;
+
+    .logo {
+        font-weight: bolder;
+        color: #CCC;
+    }
+}
+.tool-bar-menu {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+
+    & > li {
+        padding: 0;
+        margin: 0em .5em;
+    }
+    .icon {
+        height: 1em;
+        svg {
+            height: 100%;
+        }
+    }
+    .ant-radio-button-wrapper {
+        fill: rgba(0, 0, 0, 0.65);
+    }
+    .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+        fill: #1890ff;
     }
 }

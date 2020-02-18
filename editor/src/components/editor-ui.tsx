@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { ZograEngine } from "zogra-renderer";
 import { EditorContext } from "../context/editor-context";
 import { Layout, Menu } from "antd";
-import { TopMenu } from "./menu-bar";
+import { LayoutHeader } from "./layout-header";
 import { Hierarchy } from "./hierarchy";
 import { SceneView } from "./scene-view";
 import { PropertyEditor } from "./props-editor";
@@ -11,7 +11,7 @@ export function EditorUI(props: { setupCallback: (engine: ZograEngine) => void }
 {
     return (
         <Layout>
-            <TopMenu />
+            <LayoutHeader />
             <Layout>
                 <Layout.Sider theme="light">
                     <Hierarchy />
