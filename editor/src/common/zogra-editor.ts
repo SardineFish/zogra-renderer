@@ -11,6 +11,7 @@ import { initDebug } from "./debug";
 interface ZograEditorEvents extends EventDefinitions
 {
     "selectchange": (selections: Entity[]) => void;
+    "toolchange": (editor: ZograEditor) => void;
 }
 
 export class ZograEditor implements IEventSource<ZograEditorEvents>

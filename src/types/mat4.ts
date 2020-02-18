@@ -103,6 +103,22 @@ Matrix4x4.ortho = (height: number, aspect: number, near: number, far: number) =>
     out[15] = 1;
     return out;
 }
+Matrix4x4.rotate = (m: mat4, axis: vec3, rad: number) =>
+{
+    return glMat4.rotate(glMat4.create(), m, rad, axis);
+}
+Matrix4x4.scale = (m: mat4, scaling: vec3) =>
+{
+    return glMat4.scale(glMat4.create(), m, scaling);
+};
+Matrix4x4.fromRotation = (axis: vec3, rad: number) =>
+{
+    return glMat4.fromRotation(glMat4.create(), rad, axis);
+}
+Matrix4x4.fromScaling = (scaling: vec3) =>
+{
+    return glMat4.fromScaling(glMat4.create(), scaling);
+}
 
 type ArithmetricFunction<T> = {
     (out: T, a: T, b: T): T;

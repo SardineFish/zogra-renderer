@@ -43,9 +43,9 @@ export function initCamera(editor: ZograEditor)
 
             wrapper.rotation = quat.mul(wrapper.rotation, quat.axis(up, -sensity * look.x));
             camera.localRotation = quat.mul(camera.localRotation, quat.axis(vec3(1, 0, 0), -sensity * look.y));
+            wrapper.position = plus(wrapper.position, mul(v, 5)); 
         }
         
-        wrapper.position = plus(wrapper.position, mul(v, 5)); 
     });
     return camera;
 }

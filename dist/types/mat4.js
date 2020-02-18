@@ -85,6 +85,18 @@ Matrix4x4.ortho = (height, aspect, near, far) => {
     out[15] = 1;
     return out;
 };
+Matrix4x4.rotate = (m, axis, rad) => {
+    return gl_matrix_1.mat4.rotate(gl_matrix_1.mat4.create(), m, rad, axis);
+};
+Matrix4x4.scale = (m, scaling) => {
+    return gl_matrix_1.mat4.scale(gl_matrix_1.mat4.create(), m, scaling);
+};
+Matrix4x4.fromRotation = (axis, rad) => {
+    return gl_matrix_1.mat4.fromRotation(gl_matrix_1.mat4.create(), rad, axis);
+};
+Matrix4x4.fromScaling = (scaling) => {
+    return gl_matrix_1.mat4.fromScaling(gl_matrix_1.mat4.create(), scaling);
+};
 Matrix4x4.mul = ((out, a, b) => {
     if (!b) {
         b = a;
