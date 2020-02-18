@@ -21,15 +21,13 @@ export function drawEditorOverlay(editor: ZograEditor)
             }
         case "rotation":
             {
-                const pos = mat4.mulPoint(m, selected.localPosition);
                 const rot = mat4.getRotation(m);
-                selected.localRotation = editor.tools.rotation(pos, rot, selected.localRotation, editor.tools.toolSize(pos));
+                selected.localRotation = editor.tools.rotation(selected.position, rot, selected.localRotation, editor.tools.toolSize(selected.position));
                 break;
             }
         case "scaling":
             {
-                const pos = mat4.mulPoint(m, selected.localPosition);
-                selected.localScaling = editor.tools.scaling(pos, selected.rotation, selected.localScaling, editor.tools.toolSize(pos));
+                selected.localScaling = editor.tools.scaling(selected.position, selected.rotation, selected.localScaling, editor.tools.toolSize(selected.position));
                 break;
             }
     }

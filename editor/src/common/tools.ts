@@ -242,9 +242,6 @@ function rotationTool(editor: ZograEditor)
         const m = mat4.rts(rotation, center, vec3(size));
         const mInv = mat4.invert(mat4.rts(rotation, center, vec3(1)));
         const viewObj = ray(mat4.mulPoint(mInv, view.origin), mat4.mulVector(mInv, view.direction));
-        for (let i = 0; i < 3; i++)
-        {
-        }
 
         for (let i = 0; i < 3; i++)
         {
@@ -278,6 +275,7 @@ function rotationTool(editor: ZograEditor)
                 debug.drawRay(tangentLine.origin, tangentLine.direction, size, Color.yellow);
                 debug.drawRay(tangentLine.origin, tangentLine.direction, -size, Color.yellow);
             }
+            //const transform = mat4.mul(m, mat4.fromRotation(rotAxis[i] Math.PI/2))
             const transform = mat4.rotate(m, rotAxis[i], Math.PI / 2);
             mat.setProp("uColor", "color", color);
             mat.setProp("uCenter", "vec3", center);
@@ -293,7 +291,6 @@ function rotationTool(editor: ZograEditor)
             const { p1: prevPoint } = linesIntersect(tangentLine, prevView);
             debug.drawLine(point, p2, Color.magenta);
             const delta = dot(minus(point, prevPoint), tangentLine.direction);
-            console.log(delta);
             return quat.mul(quat.axis(currentAxis, delta * 0.5), value);
         }
         else
