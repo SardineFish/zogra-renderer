@@ -4,7 +4,7 @@
   "description": "Editor for zogra-renderer.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run build:prod",
     "start": "npx webpack-dev-server --open",
     "build": "npx webpack",
     "build:watch": "npx webpack --mode development -w",
