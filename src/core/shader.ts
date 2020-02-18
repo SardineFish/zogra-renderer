@@ -68,6 +68,7 @@ export interface StateSettings
 
 interface ShaderSettingsOptional
 {
+    name?: string;
     depth?: DepthTest,
     blend?: [Blending, Blending] | Blending;
     cull?: Culling
@@ -105,7 +106,7 @@ export class Shader extends Asset
     
     constructor(vertexShader: string, fragmentShader: string, options: ShaderSettingsOptional = {}, gl = GL())
     {
-        super();
+        super(options.name);
         this.gl = gl;
         this.program = panicNull(gl.createProgram(), "Failed to create shader program");
         this.vertexShaderSource = vertexShader;

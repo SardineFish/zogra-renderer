@@ -34,6 +34,7 @@ function quad(gl: WebGL2RenderingContext)
         vec2(0, 1)
     ];
     quad.calculateNormals();
+    quad.name = "mesh_quad";
     return quad;
 }
 
@@ -57,6 +58,7 @@ function screenQuad(gl: WebGL2RenderingContext)
         vec2(0, 1)
     ];
     screenQuad.calculateNormals();
+    screenQuad.name = "mesh_screen_quad";
     return screenQuad;
 }
 
@@ -151,6 +153,8 @@ function cube(gl: WebGL2RenderingContext)
             uvs[2],
             uvs[3]
         ]);
-    return mb.toMesh();
+    const mesh = mb.toMesh();
+    mesh.name = "mesh_cube";
+    return mesh;
 }
 

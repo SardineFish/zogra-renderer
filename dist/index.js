@@ -26,5 +26,6 @@ __export(require("./engine/engine"));
 __export(require("./render-pipeline/rp"));
 const pluginsExport = __importStar(require("./plugins/plugins"));
 exports.plugins = pluginsExport;
+__export(require("./plugins/plugins"));
 __export(require("./utils/public-utils"));
 //# sourceMappingURL=index.js.map

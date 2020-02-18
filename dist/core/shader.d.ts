@@ -50,6 +50,7 @@ export interface StateSettings {
     cull: Culling;
 }
 interface ShaderSettingsOptional {
+    name?: string;
     depth?: DepthTest;
     blend?: [Blending, Blending] | Blending;
     cull?: Culling;

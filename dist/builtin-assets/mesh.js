@@ -31,6 +31,7 @@ function quad(gl) {
         vec2_1.vec2(0, 1)
     ];
     quad.calculateNormals();
+    quad.name = "mesh_quad";
     return quad;
 }
 function screenQuad(gl) {
@@ -52,6 +53,7 @@ function screenQuad(gl) {
         vec2_1.vec2(0, 1)
     ];
     screenQuad.calculateNormals();
+    screenQuad.name = "mesh_screen_quad";
     return screenQuad;
 }
 function cube(gl) {
@@ -138,6 +140,8 @@ function cube(gl) {
         uvs[2],
         uvs[3]
     ]);
-    return mb.toMesh();
+    const mesh = mb.toMesh();
+    mesh.name = "mesh_cube";
+    return mesh;
 }
 //# sourceMappingURL=mesh.js.map

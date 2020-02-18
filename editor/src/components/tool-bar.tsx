@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { EditorContext } from "../context/editor-context";
 import { Radio, Icon, Select } from "antd";
-import { IconMove, IconRotation, IconScale, IconEarth, IconAixs, IconCursor, IconCube, IconCenter } from "./icons";
+import { IconMove, IconRotation, IconScale, IconEarth, IconAixs, IconCursor, IconCube, IconCenter, IconRotateOrbit } from "./icons";
 import { RadioChangeEvent } from "antd/lib/radio";
 import { EditorToolsState } from "../common/tools";
 
@@ -45,7 +45,7 @@ export function EditorToolBar(props: {})
     const toolIcons = {
         "none": IconCursor,
         "position": IconMove,
-        "rotation": IconRotation,
+        "rotation": IconRotateOrbit,
         "scaling": IconScale,
     };
 

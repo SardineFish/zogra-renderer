@@ -13,6 +13,17 @@
     height: 100%;
 }
 
+.icon {
+    height: 1em;
+    width: 1em;
+}
+
+.left-side {
+    background: #EEE;
+    .ant-menu-submenu-title {
+        background: white;
+    }
+}
 .scene-view {
     width: 100%;
     height: 100%;
@@ -106,6 +117,39 @@
     .ant-tree>li:last-child {
         padding-top: 0;
         padding-bottom: 0;
+    }
+}
+
+.assets {
+    user-select: none;
+    fill: rgba(0, 0, 0, 0.65);
+}
+
+.ant-tree {
+    li {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    &>li:last-child {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .ant-tree-switcher.ant-tree-switcher-noop {
+    }
+    .ant-tree-child-tree>li:first-child {
+        padding-top: 0;
+    }
+    &.ant-tree-directory>li span.ant-tree-node-content-wrapper.ant-tree-node-selected,
+    &.ant-tree-directory .ant-tree-child-tree>li span.ant-tree-node-content-wrapper.ant-tree-node-selected,
+    & li .ant-tree-node-content-wrapper {
+        padding: 0;
+    }
+}
+.ant-menu {
+    background: transparent;
+
+    .ant-menu-submenu>.ant-menu {
+        background: transparent;
     }
 }
 

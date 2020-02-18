@@ -6,6 +6,7 @@ import { LayoutHeader } from "./layout-header";
 import { Hierarchy } from "./hierarchy";
 import { SceneView } from "./scene-view";
 import { PropertyEditor } from "./props-editor";
+import { AssetsPanel } from "./assets-panel";
 
 export function EditorUI(props: { setupCallback: (engine: ZograEngine) => void })
 {
@@ -13,7 +14,8 @@ export function EditorUI(props: { setupCallback: (engine: ZograEngine) => void }
         <Layout>
             <LayoutHeader />
             <Layout>
-                <Layout.Sider theme="light">
+                <Layout.Sider theme="light" className="left-side">
+                    <AssetsPanel/>
                     <Hierarchy />
                 </Layout.Sider>
                 <Layout.Content>

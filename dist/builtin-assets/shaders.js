@@ -125,8 +125,9 @@ exports.BuiltinUniforms = {
 };
 function compileBuiltinShaders(gl) {
     return {
-        DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, {}, gl),
+        DefaultShader: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.DefaultFrag, { name: "DefaultShader" }, gl),
         BlitCopy: new shader_1.Shader(exports.BuiltinShaderSources.DefaultVert, exports.BuiltinShaderSources.BlitCopyFrag, {
+            name: "BlitCopy",
             depth: shader_1.DepthTest.Always,
             blend: shader_1.Blending.Disable,
             zWrite: false

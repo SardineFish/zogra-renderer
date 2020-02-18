@@ -134,8 +134,9 @@ export const BuiltinUniforms = {
 export function compileBuiltinShaders(gl: WebGL2RenderingContext)
 {
     return {
-        DefaultShader: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, {}, gl),
+        DefaultShader: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.DefaultFrag, {name:"DefaultShader"}, gl),
         BlitCopy: new Shader(BuiltinShaderSources.DefaultVert, BuiltinShaderSources.BlitCopyFrag, {
+            name: "BlitCopy",
             depth: DepthTest.Always,
             blend: Blending.Disable,
             zWrite: false

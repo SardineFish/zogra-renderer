@@ -3,10 +3,12 @@ import { initCamera } from "./camera-controller";
 import { initScene } from "./sample-scene";
 import { initTools } from "./tools";
 import { drawEditorOverlay } from "./editor-overlay";
-import { initEditorAssets } from "./assets";
+import { initEditorAssets } from "./assets/assets";
 import { initEditorInput } from "./control";
 import { EditorGLUtils, initGLUtils } from "./gl";
 import { initDebug } from "./debug";
+import { AssetsFolder } from "./assets/user-assets";
+import { initUserAssets } from "./assets/load-assets";
 
 interface ZograEditorEvents extends EventDefinitions
 {
@@ -21,6 +23,7 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
     tools: ReturnType<typeof initTools>;
     selectedEntities: Entity[] = [];
     assets: ReturnType<typeof initEditorAssets>;
+    userAssets: AssetsFolder;
     input: InputManager;
     camera: Camera;
     gl: EditorGLUtils;
@@ -32,6 +35,7 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
         this.camera = initCamera(this);
         this.gl = initGLUtils(this);
         this.tools = initTools(this);
+        this.userAssets = initUserAssets(this);
         initDebug(this);
     }
     init()
