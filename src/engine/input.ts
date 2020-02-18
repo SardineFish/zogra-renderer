@@ -16,6 +16,7 @@ interface InputEvents
     keydown: (e: KeyboardEvent) => void;
     keyup: (e: KeyboardEvent) => void;
     mousemove: (e: MouseEvent) => void;
+    wheel: (e: WheelEvent) => void;
 }
 
 interface InputEventTarget
@@ -50,10 +51,12 @@ class InputStates
     keyStatesThisFrame = new Map<number, KeyState>();
     mousePos: vec2 = vec2.zero();
     mouseDelta: vec2 = vec2.zero();
+    wheelDelta: number = 0;
 }
 
 export class InputManager
 {
+    public preventBrowserShortcut = true;
     private eventTarget: InputEventTarget;
     private bound?: PointerBoundingElement;
     private states = new DoubleBuffer(() => new InputStates);
@@ -73,6 +76,11 @@ export class InputManager
         {
             this.states.back.keyStates.set(e.keyCode, KeyState.Pressed);
             this.states.back.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
+            if (this.preventBrowserShortcut && e.ctrlKey && (e.keyCode == Keys.S || e.keyCode == Keys.W))
+            {
+                e.preventDefault();
+                e.stopPropagation();
+            }
         });
         this.eventTarget.addEventListener("keyup", e =>
         {
@@ -115,6 +123,10 @@ export class InputManager
             //     console.log(e);
             this.states.back.mousePos = pos;
         });
+        this.eventTarget.addEventListener("wheel", e =>
+        {
+            this.states.back.wheelDelta = e.deltaY;
+        });
         for (const key in Keys)
         {
             if (!isNaN(key as any))
@@ -124,9 +136,18 @@ export class InputManager
                 this.states.back.keyStates.set((Keys as any)[key], KeyState.Released);
             }
         }
+        window.addEventListener("beforeunload", (e) =>
+        {
+            if (this.preventBrowserShortcut && (this.states.back.keyStates.get(Keys.W) === KeyState.Pressed || this.states.back.keyStates.get(Keys.Control)=== KeyState.Pressed))
+            {
+                e.preventDefault();
+                e.returnValue = "Really want to quit?";
+            }
+        });
     }
     get pointerPosition() { return this.states.current.mousePos; }
     get pointerDelta() { return this.states.current.mouseDelta; }
+    get wheelDelta() { return this.states.current.wheelDelta; }
     getKey(key: Keys)
     {
         return this.states.current.keyStates.get(key) === KeyState.Pressed ? true : false;
@@ -144,6 +165,7 @@ export class InputManager
         this.states.update();
         this.states.back.keyStatesThisFrame.clear();
         this.states.back.mouseDelta = vec2.zero();
+        this.states.back.wheelDelta = 0;
         for (const [key, value] of this.states.current.keyStates)
         {
             this.states.back.keyStates.set(key, value);

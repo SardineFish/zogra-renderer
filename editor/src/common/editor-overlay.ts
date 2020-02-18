@@ -15,8 +15,8 @@ export function drawEditorOverlay(editor: ZograEditor)
         case "position":
             {
                 let pos = mat4.mulPoint(m, selected.localPosition);
-                pos = editor.tools.position(pos, mat4.getRotation(m), editor.tools.toolSize(pos));
-                selected.localPosition = mat4.mulPoint(mInv, pos);
+                pos = editor.tools.position(selected.position, mat4.getRotation(m), editor.tools.toolSize(selected.position));
+                selected.position = pos;// mat4.mulPoint(mInv, pos);
                 break;
             }
         case "rotation":

@@ -8,6 +8,7 @@ interface InputEvents {
     keydown: (e: KeyboardEvent) => void;
     keyup: (e: KeyboardEvent) => void;
     mousemove: (e: MouseEvent) => void;
+    wheel: (e: WheelEvent) => void;
 }
 interface InputEventTarget {
     addEventListener: <EventT extends keyof InputEvents>(event: EventT, listener: InputEvents[EventT]) => void;
@@ -22,6 +23,7 @@ interface InputManagerOptions {
     pointerLockElement?: Element;
 }
 export declare class InputManager {
+    preventBrowserShortcut: boolean;
     private eventTarget;
     private bound?;
     private states;
@@ -29,6 +31,7 @@ export declare class InputManager {
     constructor(options?: InputManagerOptions);
     get pointerPosition(): import("../types/vec2").Vector2;
     get pointerDelta(): import("../types/vec2").Vector2;
+    get wheelDelta(): number;
     getKey(key: Keys): boolean;
     getKeyDown(key: Keys): boolean;
     getKeyUp(key: Keys): boolean;
