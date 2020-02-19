@@ -1,5 +1,6 @@
+import { ConstructorType } from "../utils/util";
 
-const {newAssetID, findAsset, destroyAsset} = (() =>
+const {newAssetID, findAsset, destroyAsset, findAssetsOfType} = (() =>
 {
     let id = 1;//Math.floor(Math.random() * 0x1000000 + 0x1000000);
     const assetsMap = new Map<number, IAsset>();
@@ -17,7 +18,11 @@ const {newAssetID, findAsset, destroyAsset} = (() =>
         destroyAsset(id: number)
         {
             assetsMap.delete(id);
-        }
+        },
+        findAssetsOfType<T extends IAsset>(type: ConstructorType<T>): T[]
+        {
+            return Array.from(assetsMap.values()).filter(asset => asset instanceof type) as T[];
+        },
     }
 })();
 
@@ -47,5 +52,6 @@ export class Asset implements IAsset
 export const AssetManager = {
     newAssetID: newAssetID,
     find: findAsset,
-    destroy: destroyAsset
+    destroy: destroyAsset,
+    findAssetsOfType: findAssetsOfType
 };

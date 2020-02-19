@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const { newAssetID, findAsset, destroyAsset } = (() => {
+const { newAssetID, findAsset, destroyAsset, findAssetsOfType } = (() => {
     let id = 1; //Math.floor(Math.random() * 0x1000000 + 0x1000000);
     const assetsMap = new Map();
     return {
@@ -14,7 +14,10 @@ const { newAssetID, findAsset, destroyAsset } = (() => {
         },
         destroyAsset(id) {
             assetsMap.delete(id);
-        }
+        },
+        findAssetsOfType(type) {
+            return Array.from(assetsMap.values()).filter(asset => asset instanceof type);
+        },
     };
 })();
 class Asset {
@@ -32,6 +35,7 @@ exports.Asset = Asset;
 exports.AssetManager = {
     newAssetID: newAssetID,
     find: findAsset,
-    destroy: destroyAsset
+    destroy: destroyAsset,
+    findAssetsOfType: findAssetsOfType
 };
 //# sourceMappingURL=asset.js.map

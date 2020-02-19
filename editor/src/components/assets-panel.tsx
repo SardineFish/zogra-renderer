@@ -31,6 +31,8 @@ export function AssetsPanel()
         const { event, node } = e;
         const asset = node.props.dataRef as IAssetNode;
         (event as any as DragEvent).dataTransfer?.setData("application/user-asset", asset.path);
+        if (asset instanceof AssetNode)
+            (event as any as DragEvent).dataTransfer?.setData("application/zogra-asset", asset.asset.assetID.toString());
         ((event as any as DragEvent).dataTransfer as DataTransfer).dropEffect = "move";
     };
     const drop = (e: AntTreeNodeDropEvent) =>
@@ -106,11 +108,9 @@ function renderAssetsTreeNode(node: IAssetNode)
         return (<Tree.TreeNode title={node.name} key={node.name} icon={assetIcon(node.asset)} selectable isLeaf dataRef={node} />);
 }
 
-function assetIcon(asset: IAsset)
+export function assetIcon(asset: IAsset)
 {
-    if (asset instanceof AssetsFolder)
-        return undefined;
-    else if (asset instanceof Mesh)
+    if (asset instanceof Mesh)
         return (<Icon component={IconCubeFill} />);
     else if (asset instanceof Material)
         return (<Icon component={IconTextureBox} />);

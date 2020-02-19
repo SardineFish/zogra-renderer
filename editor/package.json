@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run build:prod",
-    "start": "npx webpack-dev-server --open",
+    "start": "npx webpack-dev-server",
     "build": "npx webpack",
     "build:watch": "npx webpack --mode development -w",
     "build:prod": "npx webpack --mode production"

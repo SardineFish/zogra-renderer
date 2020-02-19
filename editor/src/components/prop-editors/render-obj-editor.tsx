@@ -1,10 +1,11 @@
 import React from "react";
-import { RenderObject } from "zogra-renderer";
+import { RenderObject, Mesh, Material } from "zogra-renderer";
 import { Menu } from "antd";
 import { editTransform } from "./transform-editor";
 import SubMenu from "antd/lib/menu/SubMenu";
-import { editValue } from "./value-editors";
+import { editValue, ObjectEditor, ListEditor } from "./value-editors";
 import { PropsEditorPanel, PropsList } from "./props-editor-panel";
+import { editMaterial } from "./material-editor";
 
 export function RenderObjectPropsEditor(props:{obj: RenderObject})
 {
@@ -12,15 +13,22 @@ export function RenderObjectPropsEditor(props:{obj: RenderObject})
         <PropsEditorPanel>
             {editTransform(props.obj)}
             {editRenderObject(props.obj)}
+            {props.obj.materials.map(material => editMaterial(material))}
         </PropsEditorPanel>
     )
 }
 
 function editRenderObject(obj: RenderObject)
 {
-    return (<SubMenu className="render-obj-editor props-editor" key="render-obj" title="RenderObject">
-        <PropsList className="">
-
+    const createMesh = () => null as any;
+    return (<SubMenu className="props-editor" key="render-obj" title="RenderObject">
+        <PropsList className="render-obj-editor">
+            <ListEditor label="Meshes" list={obj.meshes} onElementCreate={createMesh} renderer={(mesh, idx) => (
+                <ObjectEditor label="" target={obj.meshes} name={idx} type={Mesh}/>
+            )} />
+            <ListEditor label="Materials" list={obj.materials} onElementCreate={() => null as any} renderer={(material, idx) => (
+                <ObjectEditor target={obj.materials} name={idx} type={Material}/>
+            )} />
         </PropsList>
     </SubMenu>)
 }
