@@ -1,11 +1,12 @@
-import React, { ChangeEvent, useState, FunctionComponent, useEffect, DragEvent, HTMLProps } from "react";
+import React, { ChangeEvent, useState, FunctionComponent, useEffect, DragEvent, HTMLProps, useContext } from "react";
 import { InputNumber, Input, Dropdown, Menu, Icon, Slider, Checkbox, Switch, Select } from "antd";
 import { SelectParam } from "antd/lib/menu";
 import { clamp } from "../../util/math-util";
-import { quat, IAsset, AssetManager } from "zogra-renderer";
+import { quat, IAsset, AssetManager, vec3 } from "zogra-renderer";
 import { assetIcon } from "../assets-panel"
 import classNames from "classnames";
 import { OptionProps, LabeledValue } from "antd/lib/select";
+import { EditorContext } from "../../context/editor-context";
 
 interface ValueEditorProps
 {
@@ -48,21 +49,43 @@ export function editValue<Type extends FunctionComponent<any>, T>(Type: Type, ta
     });
 }
 
+function usePropsValue<TProp, TState=TProp>(target: any, name: string | number, wrapper: (value: TProp) => TState = t => t as any as TState): [TState, (value: TProp)=>void]
+{
+    const [value, setValue] = useState(wrapper(target[name] as TProp));
+
+    const editor = useContext(EditorContext);
+    useEffect(() =>
+    {
+        if (!editor)
+            return;
+        const reloadValue = (obj: any, key: string | number) =>
+        {
+            if (obj === target && key === name)
+                setValue(wrapper(target[name] as TProp));
+        }
+        editor.on("props-reload", reloadValue);
+        return () => editor.off("props-reload", reloadValue);
+    }, [target, name]);
+    const setPropValue = (value: TProp) =>
+    {
+        setValue(wrapper(value));
+        target[name] = value;
+    };
+    return [value, setPropValue];
+}
+
 export function NumberEditor(props: ValueEditorProps)
 {
-    const [value, setValue] = useState(props.target[props.name] as number);
+    const [value, setValue] = usePropsValue<number>(props.target, props.name);
+
     const valueChange = (value?: number) =>
     {
         if (!isNaN(value as number))
         {
-            props.target[props.name] = value;
             setValue(value as number);
         }
     };
-    useEffect(() =>
-    {
-        setValue(props.target[props.name] as number);
-    }, [props.target, props.name]);
+
     return (
         <LabeledEditor className="number-editor" label={props.label}>
             <InputNumber size="small" value={value} onChange={valueChange} />
@@ -72,16 +95,14 @@ export function NumberEditor(props: ValueEditorProps)
 
 export function StringEditor(props: ValueEditorProps)
 {
-    const [value, setValue] = useState(props.target[props.name] as string);
+    const [value, setValue] = usePropsValue<string>(props.target, props.name)
+
     const valueChange = (e: ChangeEvent<HTMLInputElement>) =>
     {
-        props.target[props.name] = e.target.value || props.target[props.name];
-        setValue(props.target[props.name]);
+        
+        setValue(e.target.value);
     }
-    useEffect(() =>
-    {
-        setValue(props.target[props.name] as string);
-    }, [props.target, props.name]);
+
     return (
         <LabeledEditor className="string-editor" label={props.label}>
             <Input size="small" value={value} onChange={valueChange} />
@@ -92,21 +113,18 @@ export function StringEditor(props: ValueEditorProps)
 
 export function VectorEditor(props: ValueEditorProps)
 {
-    const [vec, setVec] = useState(props.target[props.name] as number[]);
+    const [vec, setVec] = usePropsValue<number[]>(props.target, props.name, (value) => [...value]);
+
     const valueChange = (i: number) => (value?: number) =>
     {
         if (!isNaN(value as number))
         {
             const vec = props.target[props.name] as number[];
             vec[i] = value as number;
-            setVec([...vec]);
-            props.target[props.name] = vec;
+            setVec(vec);
         }
     };
-    useEffect(() =>
-    {
-        setVec(props.target[props.name] as number[]);
-    }, [props.target, props.name]);
+    
     const axis = ["x", "y", "z", "w"];
     return (
         <LabeledEditor className="vector-editor wrap" label={props.label}>
@@ -123,21 +141,18 @@ export function VectorEditor(props: ValueEditorProps)
 
 export function QuaternionEditor(props: ValueEditorProps)
 {
-    const [euler, setEular] = useState(quat.euler(props.target[props.name] as quat));
+    const [euler, setQuat] = usePropsValue<quat, vec3>(props.target, props.name, q => quat.euler(q));
+    
     const valueChange = (i: number) => (value?: number) =>
     {
         if (!isNaN(value as number))
         {
             euler[i] = value as number;
-            setEular(euler);
-            props.target[props.name] = quat.fromEuler(euler);
+            setQuat(quat.fromEuler(euler as vec3));
 
         }
     };
-    useEffect(() =>
-    {
-        setEular(quat.euler(props.target[props.name] as quat));
-    }, [props.target, props.name]);
+
     const axis = ["x", "y", "z", "w"];
     return (
         <LabeledEditor className="vector-editor rotation-editor wrap" label={props.label}>
@@ -173,16 +188,11 @@ export function EnumEditor(props: EnumEditorProps)
         }
         return "";
     };
-    const [selected, setSelected] = useState(toLabel(props.target[props.name]));
+    const [selected, setValue] = usePropsValue<any, string>(props.target, props.name, toLabel);
     const select = (param: SelectParam) =>
     {
-        props.target[props.name] = props.options[param.key];
-        setSelected(param.key);
+        setValue(props.options[param.key]);
     }
-    useEffect(() =>
-    {
-        setSelected(toLabel(props.target[props.name]));
-    }, [props.target, props.name]);
     const menu = (
         <Menu onSelect={select} selectable selectedKeys={[selected]}>
             {
@@ -203,18 +213,13 @@ export function EnumEditor(props: EnumEditorProps)
 
 export function RangeEditor(props: ValueEditorProps & { min: number, max: number })
 {
-    const [value, setValue] = useState(props.target[props.name] as number);
+    const [value, setValue] = usePropsValue<number>(props.target, props.name);
     const valueChange = (value?: number) =>
     {
         if (value === undefined)
             return;
         setValue(clamp(value, props.min, props.max));
-        props.target[props.name] = clamp(value, props.min, props.max);
     };
-    useEffect(() =>
-    {
-        setValue(props.target[props.name] as number);
-    }, [props.target, props.name]);
     return (<LabeledEditor className="range-editor" label={props.label}>
         <div className="horizon-layout">
             <Slider className="range-slider" min={props.min} max={props.max} value={value} onChange={v => valueChange(v as number)} />
@@ -225,16 +230,11 @@ export function RangeEditor(props: ValueEditorProps & { min: number, max: number
 
 export function BooleanEditor(props: ValueEditorProps)
 {
-    const [value, setValue] = useState(props.target[props.name] as boolean);
+    const [value, setValue] = usePropsValue<boolean>(props.target, props.name);
     const valueChange = () =>
     {
         setValue(!value);
-        props.target[props.name] = value;
     };
-    useEffect(() =>
-    {
-        setValue(props.target[props.name] as boolean);
-    }, [props.target, props.name]);
     return (<LabeledEditor className="bool-editor" label={props.label}>
         <Switch checked={value} onChange={valueChange} size="small" />
     </LabeledEditor>)
@@ -257,6 +257,21 @@ export function ObjectEditor(props: ValueEditorProps & { type: Function })
         label: itemRenderer(props.target[props.name] as IAsset)
     } as LabeledValue);
     const [data, setData] = useState(AssetManager.findAssetsOfType(props.type));
+
+    const [, rerender] = useState({});
+    const editor = useContext(EditorContext);
+    useEffect(() =>
+    {
+        if (!editor)
+            return;
+        const reload = () =>
+        {
+            rerender({});
+        }
+        editor.on("props-reload", reload);
+        return () => editor.off("props-reload", reload);
+    }, [props.target, props.name]);
+
     const valueChange = (labeledValue: LabeledValue) =>
     {
         const value = labeledValue.key;

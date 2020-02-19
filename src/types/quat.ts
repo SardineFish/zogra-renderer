@@ -47,7 +47,7 @@ Quaternion.euler = (q: quat) =>
 }
 Quaternion.fromEuler = (e: vec3) =>
 {
-    return glQuat.fromEuler(glQuat.create(), e.x, e.y, e.z);
+    return glQuat.fromEuler(glQuat.create(), e[0], e[1], e[2]);
 }
 Quaternion.rotate = (q: quat, v: vec3) =>
 {
