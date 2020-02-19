@@ -8,6 +8,7 @@ class Material extends asset_1.Asset {
     constructor(shader, gl = global_1.GL()) {
         super();
         this.propertyBlock = {};
+        this.name = `Material_${this.assetID}`;
         this.gl = gl;
         this.shader = shader;
     }

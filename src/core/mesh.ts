@@ -27,6 +27,7 @@ export class Mesh extends Asset
     constructor(gl = GL())
     {
         super();
+        this.name = `Mesh_${this.assetID}`;
         this.gl = gl;
         this.VBO = gl.createBuffer() ?? panic("Failed to create vertex buffer.");
         this.EBO = gl.createBuffer() ?? panic("Failed to create element buffer.");

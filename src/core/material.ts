@@ -30,6 +30,7 @@ export class Material extends Asset
     constructor(shader: Shader, gl = GL())
     {
         super();
+        this.name = `Material_${this.assetID}`;
         this.gl = gl;
         this.shader = shader;
     }

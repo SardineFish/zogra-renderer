@@ -48,6 +48,8 @@ class Shader extends asset_1.Asset {
     constructor(vertexShader, fragmentShader, options = {}, gl = global_1.GL()) {
         super(options.name);
         this._compiled = false;
+        if (!options.name)
+            this.name = `Shader_${this.assetID}`;
         this.gl = gl;
         this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
         this.vertexShaderSource = vertexShader;

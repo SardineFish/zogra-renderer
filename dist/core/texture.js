@@ -24,6 +24,7 @@ class TextureBase extends asset_1.Asset {
         super();
         this.mipmapLevel = 0;
         this.wrapMode = WrapMode.Repeat;
+        this.name = `Texture_${this.assetID}`;
         const gl = ctx.gl;
         this.ctx = ctx;
         this.format = format;

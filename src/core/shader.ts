@@ -107,6 +107,8 @@ export class Shader extends Asset
     constructor(vertexShader: string, fragmentShader: string, options: ShaderSettingsOptional = {}, gl = GL())
     {
         super(options.name);
+        if (!options.name)
+            this.name = `Shader_${this.assetID}`;
         this.gl = gl;
         this.program = panicNull(gl.createProgram(), "Failed to create shader program");
         this.vertexShaderSource = vertexShader;

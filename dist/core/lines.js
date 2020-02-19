@@ -14,6 +14,7 @@ class Lines extends asset_1.Asset {
         this.dirty = true;
         this.vertices = new Float32Array(0);
         this.indices = new Uint32Array(0);
+        this.name = `Lines_${this.assetID}`;
         this.gl = gl;
         this.VBO = (_a = gl.createBuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.")));
         this.EBO = (_b = gl.createBuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.")));

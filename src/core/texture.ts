@@ -45,6 +45,7 @@ class TextureBase extends Asset implements Texture
     constructor(width: number, height: number, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
     {
         super();
+        this.name = `Texture_${this.assetID}`;
         const gl = ctx.gl;
         this.ctx = ctx;
         this.format = format;

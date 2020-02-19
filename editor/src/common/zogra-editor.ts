@@ -15,7 +15,7 @@ interface ZograEditorEvents extends EventDefinitions
 {
     "selectchange": (selections: Entity[]) => void;
     "toolchange": (editor: ZograEditor) => void;
-    "props-reload": (target: any, name: string | number, editor: ZograEditor) => void;
+    "props-reload": (target: any, name: string | number | null, editor: ZograEditor) => void;
 }
 
 export class ZograEditor implements IEventSource<ZograEditorEvents>
@@ -58,9 +58,9 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
         this.selectedEntities = entities;
         this.eventEmitter.emit("selectchange", entities);
     }
-    reloadPropertiesEditor<T, K extends keyof T>(target: T, name: K)
+    reloadPropertiesEditor<T, K extends keyof T>(target: T, name?: K)
     {
-        this.lazyEventEmitter.emit("props-reload", target, name as number | string, this);
+        this.lazyEventEmitter.emit("props-reload", target, name as number | string | null, this);
     }
     on<T extends EventKeys<ZograEditorEvents>>(event: T, listener: ZograEditorEvents[T])
     {

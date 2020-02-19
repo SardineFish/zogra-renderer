@@ -58,7 +58,7 @@ function usePropsValue<TProp, TState=TProp>(target: any, name: string | number, 
     {
         if (!editor)
             return;
-        const reloadValue = (obj: any, key: string | number) =>
+        const reloadValue = (obj: any, key: string | number | null) =>
         {
             if (obj === target && key === name)
                 setValue(wrapper(target[name] as TProp));
@@ -240,9 +240,9 @@ export function BooleanEditor(props: ValueEditorProps)
     </LabeledEditor>)
 }
 
-export function ObjectEditor(props: ValueEditorProps & { type: Function })
+export function ObjectEditor(props: ValueEditorProps & { type: Function, onChange?: (value: IAsset | null) => void })
 {
-    const itemRenderer = (asset: IAsset) => (
+    const itemRenderer = (asset: IAsset | null) => (
         asset == null ? null :
             <span className="object-item">
                 {assetIcon(asset)}
@@ -252,25 +252,12 @@ export function ObjectEditor(props: ValueEditorProps & { type: Function })
             </span>
     );
 
-    const [value, setValue] = useState({
-        key: (props.target[props.name] as IAsset)?.assetID.toString() ?? "",
-        label: itemRenderer(props.target[props.name] as IAsset)
-    } as LabeledValue);
-    const [data, setData] = useState(AssetManager.findAssetsOfType(props.type));
+    const [value, setAsset] = usePropsValue<IAsset | null, LabeledValue>(props.target, props.name, (asset) => ({
+        key: asset?.assetID.toString() ?? "",
+        label: itemRenderer(asset)
+    }));
 
-    const [, rerender] = useState({});
-    const editor = useContext(EditorContext);
-    useEffect(() =>
-    {
-        if (!editor)
-            return;
-        const reload = () =>
-        {
-            rerender({});
-        }
-        editor.on("props-reload", reload);
-        return () => editor.off("props-reload", reload);
-    }, [props.target, props.name]);
+    const [data, setData] = useState(AssetManager.findAssetsOfType(props.type));
 
     const valueChange = (labeledValue: LabeledValue) =>
     {
@@ -278,8 +265,8 @@ export function ObjectEditor(props: ValueEditorProps & { type: Function })
         const asset = AssetManager.find(parseInt(value));
         if (asset instanceof props.type)
         {
-            setValue(labeledValue);
-            props.target[props.name] = asset;
+            setAsset(asset);
+            props.onChange?.(asset);
         }
     };
     const onDrop = (e: DragEvent<HTMLDivElement>) =>
@@ -295,17 +282,6 @@ export function ObjectEditor(props: ValueEditorProps & { type: Function })
         const id = e.dataTransfer.getData("application/zogra-asset");
         e.preventDefault();
         e.dataTransfer.dropEffect = "copy";
-        return;
-        if (id)
-        {
-            const asset = AssetManager.find(parseInt(id));
-            if (asset instanceof props.type)
-            {
-                e.dataTransfer.dropEffect = "move";
-                return;
-            }
-        }
-        e.dataTransfer.dropEffect = "none";
     };
     useEffect(() =>
     {
