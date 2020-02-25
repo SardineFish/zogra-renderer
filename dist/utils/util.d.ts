@@ -28,4 +28,5 @@ export declare class DoubleBuffer<T> {
     constructor(init: () => T);
     update(): void;
 }
+export declare function setImmediate(invoker: () => void): void;
 export {};

@@ -4,7 +4,7 @@ const scene_1 = require("./scene");
 const preview_renderer_1 = require("../render-pipeline/preview-renderer");
 const camera_1 = require("./camera");
 const core_1 = require("../core/core");
-const event_1 = require("./event");
+const event_1 = require("../core/event");
 class ZograEngine {
     constructor(canvas, RenderPipeline = preview_renderer_1.PreviewRenderer) {
         this._time = { deltaTime: 0, time: 0 };

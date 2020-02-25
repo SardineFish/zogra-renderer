@@ -1,22 +1,19 @@
-import { IAsset } from "../../core/asset";
 import { GLContext } from "../../core/global";
-import { ConstructorType } from "../../utils/util";
-export declare class AssetsPack {
-    mainAsset: IAsset | null;
-    assets: Set<IAsset>;
-    add(asset: IAsset): void;
-    setMain(asset: IAsset): void;
-    get<T extends IAsset>(Type: ConstructorType<T>): T | null;
-    getAll<T extends IAsset>(Type: ConstructorType<T>): T[];
-}
-export interface AssetsImporter {
-    import(buffer: ArrayBuffer, ctx?: GLContext): Promise<AssetsPack>;
-}
+import { AssetsPack, AssetImportOptions } from "./types";
+export * from "./types";
+declare const importers: {
+    img: import("./types").AssetsImporterPlugin;
+    fbx: import("./types").AssetsImporterPlugin;
+};
+declare type BufferImporter = {
+    [key in keyof typeof importers]: (options: AssetImportOptions) => Promise<AssetsPack>;
+};
 export declare const AssetsImporter: {
-    blob(blob: Blob): {
-        fbx: () => Promise<AssetsPack>;
+    importers: {
+        img: import("./types").AssetsImporterPlugin;
+        fbx: import("./types").AssetsImporterPlugin;
     };
-    buffer(buffer: ArrayBuffer): {
-        fbx: () => Promise<AssetsPack>;
-    };
+    url(url: string, ctx?: GLContext): Promise<BufferImporter>;
+    blob(blob: Blob, ctx?: GLContext): Promise<BufferImporter>;
+    buffer(buffer: ArrayBuffer, ctx?: GLContext): Promise<BufferImporter>;
 };

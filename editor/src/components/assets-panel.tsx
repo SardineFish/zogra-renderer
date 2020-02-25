@@ -17,7 +17,7 @@ export function AssetsPanel()
     {
         if (!editor)
             return;
-        editor.userAssets.on("change", (type, asset, folder) =>
+        editor.assets.root.on("change", (type, asset, folder) =>
         {
             rerender({});
         });
@@ -50,7 +50,7 @@ export function AssetsPanel()
         if ((event as any as DragEvent).dataTransfer)
         {
             const path = ((event as any as DragEvent).dataTransfer as DataTransfer).getData("application/user-asset");
-            const asset = editor.userAssets.find(path);
+            const asset = editor.assets.root.find(path);
             if (asset === dropNode)
             {
                 ((event as any as DragEvent).dataTransfer as DataTransfer).dropEffect = "none";
@@ -91,7 +91,7 @@ export function AssetsPanel()
         <Menu.SubMenu title="Assets" key="assets" className="assets">
             <div>
                 <DirectoryTree selectable multiple defaultExpandAll draggable expandAction="doubleClick" onDragStart={dragStart} onDragOver={dragOver} onDrop={drop} onDragEnd={dragEnd} >
-                    {editor.userAssets.children.map(child => renderAssetsTreeNode(child))}
+                    {editor.assets.root.children.map(child => renderAssetsTreeNode(child))}
                 </DirectoryTree>
             </div>
         </Menu.SubMenu>

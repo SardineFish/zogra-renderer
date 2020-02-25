@@ -1,6 +1,6 @@
 import { Transform } from "./transform";
 import { IAsset, AssetManager } from "../core/asset";
-import { EventDefinitions, IEventSource, EventEmitter, EventKeys } from "./event";
+import { EventDefinitions, IEventSource, EventEmitter, EventKeys } from "../core/event";
 import { Time } from "./zogra-engine";
 
 export interface EntityEvents extends EventDefinitions

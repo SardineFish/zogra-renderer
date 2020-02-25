@@ -1,15 +1,14 @@
 import { ZograEngine, Camera, vec3, Entity, rgb, EventEmitter, EventDefinitions, IEventSource, EventKeys, InputManager, IAsset, Time } from "zogra-renderer";
 import { initCamera } from "./camera-controller";
-import { initScene } from "./sample-scene";
 import { initTools } from "./tools";
 import { drawEditorOverlay } from "./editor-overlay";
 import { initEditorAssets } from "./assets/assets";
 import { initEditorInput } from "./control";
 import { EditorGLUtils, initGLUtils } from "./gl";
 import { initDebug } from "./debug";
-import { AssetsFolder } from "./assets/user-assets";
-import { initUserAssets } from "./assets/load-assets";
+import { AssetsFolder, UserAssetsManager } from "./assets/user-assets";
 import { LazyEventEmitter } from "../util/utils";
+import { loadSampleProject } from "./sample-scene";
 
 interface ZograEditorEvents extends EventDefinitions
 {
@@ -25,8 +24,9 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
     lazyEventEmitter: LazyEventEmitter<ZograEditorEvents>;
     tools: ReturnType<typeof initTools>;
     selectedEntities: Entity[] = [];
-    assets: ReturnType<typeof initEditorAssets>;
-    userAssets: AssetsFolder;
+    //assets: ReturnType<typeof initEditorAssets>;
+    //userAssets: AssetsFolder;
+    assets: UserAssetsManager;
     input: InputManager;
     camera: Camera;
     gl: EditorGLUtils;
@@ -34,18 +34,17 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
     {
         this.engine = engine;
         this.lazyEventEmitter = new LazyEventEmitter(this.eventEmitter, 10);
-        this.assets = initEditorAssets();
+        this.assets = new UserAssetsManager();
         this.input = initEditorInput(this);
         this.camera = initCamera(this);
         this.gl = initGLUtils(this);
         this.tools = initTools(this);
-        this.userAssets = initUserAssets(this);
         initDebug(this);
     }
     init()
     {
         this.engine.start();
-        initScene(this.engine);
+        loadSampleProject(this);
         this.camera.on("postrender", () => drawEditorOverlay(this));
         this.engine.on("update", t => this.update(t));
     }

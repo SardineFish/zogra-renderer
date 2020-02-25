@@ -1,10 +1,11 @@
-import { AssetsImporter, AssetsPack } from "../assets-importer/assets-importer";
+import { AssetsImporterPlugin } from "../assets-importer/assets-importer";
+import { AssetsPack, AssetImportOptions } from "../assets-importer/types";
 import { Texture2D, FilterMode } from "../../core/core";
 import { TextureFormat } from "../../core/texture-format";
 import { GlobalContext } from "../../core/global";
 
-export const TextureImporter: AssetsImporter = {
-    import(buffer, ctx = GlobalContext())
+export const TextureImporter: AssetsImporterPlugin = {
+    import(buffer, options?: AssetImportOptions, ctx = GlobalContext())
     {
         return new Promise<AssetsPack>((resolve, reject) =>
         {

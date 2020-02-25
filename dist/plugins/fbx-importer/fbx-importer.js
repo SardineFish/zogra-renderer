@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const assets_importer_1 = require("../assets-importer/assets-importer");
+const types_1 = require("../assets-importer/types");
 const global_1 = require("../../core/global");
 const color_1 = require("../../types/color");
 const vec4_1 = require("../../types/vec4");
@@ -11,7 +11,7 @@ const vec2_1 = require("../../types/vec2");
 const fbx_binary_parser_1 = require("./fbx-binary-parser");
 const fbx_model_import_1 = require("./fbx-model-import");
 function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
-    const pack = new assets_importer_1.AssetsPack();
+    const pack = new types_1.AssetsPack();
     const resourceMap = new Map();
     const meshConverter = convertMesh(ctx);
     for (const fbxMat of resource.materials) {
@@ -96,7 +96,7 @@ function convertMesh(ctx) {
     };
 }
 exports.FBXImporter = {
-    async import(buffer, ctx = global_1.GlobalContext()) {
+    async import(buffer, options, ctx = global_1.GlobalContext()) {
         const data = fbx_binary_parser_1.parseFBX(buffer);
         const assets = fbx_model_import_1.extractFBXAssets(data);
         return toManagedAssets(assets, ctx);

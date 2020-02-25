@@ -2,7 +2,7 @@ import { Scene } from "./scene";
 import { ZograRenderPipeline, ZograRenderPipelineConstructor } from "../render-pipeline/render-pipeline";
 import { Camera } from "./camera";
 import { ZograRenderer } from "../core/core";
-import { EventEmitter } from "./event";
+import { EventEmitter } from "../core/event";
 export interface Time {
     time: Readonly<number>;
     deltaTime: Readonly<number>;

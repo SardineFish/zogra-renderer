@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const transform_1 = require("./transform");
 const asset_1 = require("../core/asset");
-const event_1 = require("./event");
+const event_1 = require("../core/event");
 class Entity extends transform_1.Transform {
     constructor() {
         super(...arguments);

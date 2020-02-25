@@ -1,47 +1,35 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const fbx_importer_1 = require("../fbx-importer/fbx-importer");
-const utils_1 = require("../fbx-importer/utils");
-class AssetsPack {
-    constructor() {
-        this.mainAsset = null;
-        this.assets = new Set();
-    }
-    add(asset) {
-        this.assets.add(asset);
-    }
-    setMain(asset) {
-        this.mainAsset = asset;
-    }
-    get(Type) {
-        for (const asset of this.assets) {
-            if (isInheritFrom(asset, Type))
-                return asset;
-        }
-        return null;
-    }
-    getAll(Type) {
-        return Array.from(this.assets).filter(asset => isInheritFrom(asset, Type));
-    }
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
-exports.AssetsPack = AssetsPack;
+Object.defineProperty(exports, "__esModule", { value: true });
+const global_1 = require("../../core/global");
+const fbx_importer_1 = require("../fbx-importer/fbx-importer");
+const texture_importer_1 = require("../texture-importer/texture-importer");
+const utils_1 = require("../fbx-importer/utils");
+__export(require("./types"));
+const importers = {
+    img: texture_importer_1.TextureImporter,
+    fbx: fbx_importer_1.FBXImporter
+};
+function createBufferImporter(buffer, ctx = global_1.GlobalContext()) {
+    const wrapper = {};
+    for (const importer in importers) {
+        wrapper[importer] = (options) => importers[importer].import(buffer, options, ctx);
+    }
+    return wrapper;
+}
 exports.AssetsImporter = {
-    blob(blob) {
-        return {
-            fbx: async () => await fbx_importer_1.FBXImporter.import(await utils_1.readBlob(blob)),
-        };
+    importers: importers,
+    async url(url, ctx = global_1.GlobalContext()) {
+        const buffer = await fetch(url).then(r => r.arrayBuffer());
+        return createBufferImporter(buffer, ctx);
     },
-    buffer(buffer) {
-        return {
-            fbx: () => fbx_importer_1.FBXImporter.import(buffer),
-        };
+    async blob(blob, ctx = global_1.GlobalContext()) {
+        return createBufferImporter(await utils_1.readBlob(blob), ctx);
+    },
+    async buffer(buffer, ctx = global_1.GlobalContext()) {
+        return createBufferImporter(buffer, ctx);
     }
 };
-function isInheritFrom(obj, Type) {
-    for (var constructor = obj.constructor; constructor != null; constructor = constructor.prototype) {
-        if (constructor === Type)
-            return true;
-    }
-    return false;
-}
 //# sourceMappingURL=assets-importer.js.map

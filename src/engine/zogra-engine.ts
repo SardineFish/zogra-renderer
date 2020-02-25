@@ -3,7 +3,7 @@ import { ZograRenderPipeline, ZograRenderPipelineConstructor } from "../render-p
 import { PreviewRenderer } from "../render-pipeline/preview-renderer";
 import { Camera } from "./camera";
 import { ZograRenderer } from "../core/core";
-import { EventEmitter } from "./event";
+import { EventEmitter } from "../core/event";
 
 export interface Time
 {

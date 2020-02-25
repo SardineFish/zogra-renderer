@@ -2,7 +2,7 @@ import { Mesh } from "../core/mesh";
 import { Material } from "../core/core";
 import { Entity, EntityEvents } from "./entity";
 import { RenderContext } from "../render-pipeline/rp";
-import { IEventSource, EventKeys } from "./event";
+import { IEventSource, EventKeys } from "../core/event";
 interface RenderObjectEvents extends EntityEvents {
     "render": (obj: RenderObject, context: RenderContext) => void;
 }

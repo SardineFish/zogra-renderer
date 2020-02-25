@@ -11,4 +11,5 @@ __export(require("./shader"));
 __export(require("./texture"));
 __export(require("./asset"));
 __export(require("./lines"));
+__export(require("./event"));
 //# sourceMappingURL=core.js.map

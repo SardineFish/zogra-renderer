@@ -62,4 +62,8 @@ class DoubleBuffer {
     }
 }
 exports.DoubleBuffer = DoubleBuffer;
+function setImmediate(invoker) {
+    setTimeout(invoker, 0);
+}
+exports.setImmediate = setImmediate;
 //# sourceMappingURL=util.js.map

@@ -11,5 +11,4 @@ __export(require("./scene"));
 __export(require("./transform"));
 __export(require("./zogra-engine"));
 __export(require("./input"));
-__export(require("./event"));
 //# sourceMappingURL=engine.js.map

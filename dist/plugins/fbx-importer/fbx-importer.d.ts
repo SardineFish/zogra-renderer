@@ -1,2 +1,2 @@
-import { AssetsImporter } from "../assets-importer/assets-importer";
-export declare const FBXImporter: AssetsImporter;
+import { AssetsImporterPlugin } from "../assets-importer/assets-importer";
+export declare const FBXImporter: AssetsImporterPlugin;

@@ -1,11 +1,15 @@
 
-import { Asset, IAsset, IEventSource, EventDefinitions, EventKeys, EventEmitter } from "zogra-renderer";
+import { Asset, IAsset, IEventSource, EventDefinitions, EventKeys, EventEmitter, AssetManager, AssetImportOptions, AssetsPack, AssetsImporter } from "zogra-renderer";
 import { ZograEditor } from "../zogra-editor";
+import { BiMap } from "../../util/utils";
+import { initEditorAssets } from "./assets";
+import Path from "path-browserify";
 
 
 interface AssetsFolderEvents extends EventDefinitions
 {
     change: (type: "remove" | "add", asset: IAsset, folder: AssetsFolder) => void;
+    destroy: (folder: AssetsFolder) => void;
 }
 
 export class IAssetNode
@@ -26,6 +30,10 @@ export class IAssetNode
     {
         this.name = name || "new_folder";
         parent?.add(this);
+    }
+    destroy()
+    {
+        this.parent?.remove(this);
     }
 }
 
@@ -98,6 +106,13 @@ export class AssetsFolder extends IAssetNode implements IEventSource<AssetsFolde
     {
         return this.eventEmitter.off(event, listener);
     }
+    destroy()
+    {
+        for (const child of this.children)
+            child.destroy();
+        super.destroy();
+        this.eventEmitter.emit("destroy", this);
+    }
 }
 
 export class AssetNode extends IAssetNode
@@ -109,4 +124,118 @@ export class AssetNode extends IAssetNode
         this.asset = asset;
         this.parent = parent;
     }
+    destroy()
+    {
+        this.asset.destroy();
+        super.destroy();
+    }
 }
+
+interface ManagedUserAsset
+{
+    import: "import" | "create";
+    path: string;
+}
+
+export interface ImportedAssetsPack
+{
+    pack: AssetsPack;
+    importer: keyof typeof AssetsImporter.importers;
+    src: string;
+    path: string;
+    options: AssetImportOptions;
+}
+
+export class UserAssetsManager
+{
+    builtinAssets = new BiMap<string, IAsset>();
+    userAssets = new Map<number, ManagedUserAsset>();
+    importedPacks: ImportedAssetsPack[] = [];
+
+    root: AssetsFolder;
+    internal: ReturnType<typeof initEditorAssets>;
+
+    constructor()
+    {
+        AssetManager.on("asset-destroyed", (asset) => this.onAssetDestroy(asset));
+        this.root = new AssetsFolder("assets", null);
+        this.internal = initEditorAssets();
+    }
+    private onAssetDestroy(asset: IAsset)
+    {
+        this.userAssets.delete(asset.assetID);
+    }
+    registerBuiltinAsset(asset: IAsset, name: string)
+    {
+        this.builtinAssets.set(name, asset);
+    }
+    registerUserAsset(asset: IAsset, data: ManagedUserAsset)
+    {
+        this.userAssets.set(asset.assetID, data);
+    }
+    async import(importer: keyof typeof AssetsImporter.importers, url: string, options: AssetImportOptions, folder = "/assets")
+    {
+
+        const pack = await AssetsImporter.url(url).then(buf => buf[importer](options));
+        this.importedPacks.push({
+            importer: importer,
+            pack: pack,
+            src: url,
+            options: options,
+            path: folder
+        });
+
+        let container = this.root.find(folder) as AssetsFolder;
+        if (!container)
+            container = this.root;
+        
+        if (pack.assets.size === 1)
+        {
+            const asset = [...pack.assets][0];
+            container.add(asset);
+            this.userAssets.set(asset.assetID, {
+                path: Path.join(folder, asset.name),
+                import: "import"
+            });
+        }
+        else if (pack.assets.size > 1)
+        {
+            let subFolderName = Path.parse(url).base;
+            if (container.find(subFolderName))
+            {
+                let numberedName = subFolderName;
+                for (let i = 1; container.find(numberedName); i++)
+                {
+                    numberedName = subFolderName + '_' + i;
+                }
+                subFolderName = numberedName;
+            }
+            const subFolder = new AssetsFolder(subFolderName, container);
+            for (const asset of pack.assets)
+            {
+                subFolder.add(asset);
+                this.userAssets.set(asset.assetID, {
+                    path: Path.join(folder, subFolderName, asset.name),
+                    import: "import"
+                });
+            }
+        }
+        
+        
+        return pack;
+    }
+    add(asset: IAsset, folder = "/assets")
+    {
+        let container = this.root.find(folder) as AssetsFolder;
+        if (!(container instanceof AssetsFolder))
+            container = this.root;
+        this.userAssets.set(asset.assetID, {
+            import: "create",
+            path: Path.join(container.path, asset.name)
+        });
+        
+        container.add(asset);
+    }
+}
+
+//export const UserAssetsManager = new UserAssetsManagerType();

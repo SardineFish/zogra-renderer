@@ -12,7 +12,7 @@ export function initGLUtils(editor: ZograEditor)
 function drawLine(editor: ZograEditor)
 {
     const m = mat4.identity();
-    const mat = new Material(editor.assets.shaders.color);
+    const mat = new Material(editor.assets.internal.shaders.color);
     mat.setProp("uColor", "color", Color.white);
     return (p1: vec3, p2: vec3, color = Color.white) =>
     {

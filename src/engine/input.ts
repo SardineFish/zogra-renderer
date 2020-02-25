@@ -1,6 +1,6 @@
 import { vec2 } from "../types/vec2";
 import { minus, plus } from "../types/math";
-import { EventDefinitions } from "./event";
+import { EventDefinitions } from "../core/event";
 import { DoubleBuffer } from "../utils/util";
 
 export enum KeyState

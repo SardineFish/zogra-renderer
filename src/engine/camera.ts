@@ -8,7 +8,7 @@ import { mat4 } from "../types/mat4";
 import { Deg2Rad, div, mul, minus } from "../types/math";
 import { Color } from "../types/color";
 import { RenderContext } from "../render-pipeline/rp";
-import { EventEmitter, IEventSource, EventKeys } from "./event";
+import { EventEmitter, IEventSource, EventKeys } from "../core/event";
 import { vec3 } from "../types/vec3";
 import { ray } from "../types/ray";
 import { vec4 } from "../types/vec4";

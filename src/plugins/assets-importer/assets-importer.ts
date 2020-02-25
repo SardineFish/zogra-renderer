@@ -1,63 +1,41 @@
 import { Asset, IAsset } from "../../core/asset";
-import { GLContext } from "../../core/global";
+import { GLContext, GlobalContext } from "../../core/global";
 import { FBXImporter } from "../fbx-importer/fbx-importer";
+import { TextureImporter } from "../texture-importer/texture-importer";
 import { readBlob } from "../fbx-importer/utils";
 import { ConstructorType } from "../../utils/util";
+import { AssetsPack, AssetImportOptions } from "./types";
+export * from "./types";
 
+const importers = {
+    img: TextureImporter,
+    fbx: FBXImporter
+};
 
-export class AssetsPack
+type BufferImporter = { [key in keyof typeof importers]: (options: AssetImportOptions) => Promise<AssetsPack> };
+function createBufferImporter(buffer: ArrayBuffer, ctx = GlobalContext()): BufferImporter
 {
-    mainAsset: IAsset | null = null;
-    assets: Set<IAsset> = new Set();
-    add(asset: IAsset)
+    const wrapper = {} as any;
+    for (const importer in importers)
     {
-        this.assets.add(asset);
+        wrapper[importer] = (options: AssetImportOptions) => importers[importer as keyof typeof importers].import(buffer, options, ctx);
     }
-    setMain(asset: IAsset)
-    {
-        this.mainAsset = asset;
-    }
-    get<T extends IAsset>(Type: ConstructorType<T>): T | null
-    {
-        for (const asset of this.assets)
-        {
-            if (isInheritFrom(asset, Type))
-                return asset as T;
-        }
-        return null;
-    }
-    getAll<T extends IAsset>(Type: ConstructorType<T>): T[]
-    {
-        return Array.from(this.assets).filter(asset => isInheritFrom(asset, Type)) as T[];
-    }
-}
-
-export interface AssetsImporter
-{
-    import(buffer: ArrayBuffer, ctx?: GLContext): Promise<AssetsPack>;
+    return wrapper;
 }
 
 export const AssetsImporter = {
-    blob(blob: Blob)
+    importers: importers,
+    async url(url: string, ctx = GlobalContext())
     {
-        return {
-            fbx: async () => await FBXImporter.import(await readBlob(blob)),
-        };
-    }, 
-    buffer(buffer: ArrayBuffer)
+        const buffer = await fetch(url).then(r => r.arrayBuffer());
+        return createBufferImporter(buffer, ctx);
+    },
+    async blob(blob: Blob, ctx = GlobalContext())
     {
-        return {
-            fbx: () => FBXImporter.import(buffer),
-        };
+        return createBufferImporter(await readBlob(blob), ctx);
+    },
+    async buffer(buffer: ArrayBuffer, ctx = GlobalContext())
+    {
+        return createBufferImporter(buffer, ctx);
     }
-}
-
-function isInheritFrom(obj: Object, Type: Function)
-{
-    for (var constructor = obj.constructor; constructor != null; constructor = constructor.prototype)
-    {
-        if (constructor === Type)
-            return true;
-    }
-    return false;
-}
+};

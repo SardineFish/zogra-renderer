@@ -141,7 +141,7 @@ function scalingTool(editor: ZograEditor)
         Color.blue
     ];
     const renderer = editor.engine.renderer;
-    const mat = new Material(editor.assets.shaders.tools);
+    const mat = new Material(editor.assets.internal.shaders.tools);
     mat.setProp("uColor", "color", Color.white);
     let controled = -1;
     let baseValue = vec3(0);
@@ -231,7 +231,7 @@ function rotationTool(editor: ZograEditor)
         Color.green,
         Color.blue
     ];
-    const mat = new Material(editor.assets.shaders.rotationTool);
+    const mat = new Material(editor.assets.internal.shaders.rotationTool);
     const renderer = editor.engine.renderer;
 
     let controled = -1;
@@ -325,7 +325,7 @@ function cone(pos: vec3, tangent: vec3, normal: vec3): [vec3[], number[]]
 
 function toolRenderer(editor: ZograEditor, mesh: Mesh, lines: Lines)
 {
-    const mat = new Material(editor.assets.shaders.tools);
+    const mat = new Material(editor.assets.internal.shaders.tools);
     mat.setProp("uColor", "color", Color.white);
     return (pos: vec3, rotate: quat, size: number) =>
     {

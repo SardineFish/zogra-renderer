@@ -6,7 +6,7 @@ import { vec2 } from "../types/vec2";
 import { Entity, EntityEvents } from "./entity";
 import { Color } from "../types/color";
 import { RenderContext } from "../render-pipeline/rp";
-import { IEventSource, EventKeys } from "./event";
+import { IEventSource, EventKeys } from "../core/event";
 import { vec3 } from "../types/vec3";
 import { ray } from "../types/ray";
 export declare enum Projection {

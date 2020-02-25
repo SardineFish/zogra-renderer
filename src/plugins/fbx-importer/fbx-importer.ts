@@ -1,5 +1,6 @@
 import { FBXAssets, FBXMaterial, FBXID, FBXMesh } from "./fbx-types";
-import { AssetsPack, AssetsImporter } from "../assets-importer/assets-importer";
+import { AssetsImporterPlugin } from "../assets-importer/assets-importer";
+import { AssetsPack, AssetImportOptions } from "../assets-importer/types";
 import { GlobalContext, GLContext } from "../../core/global";
 import { Material } from "../../core/material";
 import { Color } from "../../types/color";
@@ -115,8 +116,8 @@ function convertMesh(ctx: GLContext)
     };
 }
 
-export const FBXImporter:AssetsImporter = {
-    async import(buffer: ArrayBuffer, ctx: GLContext = GlobalContext())
+export const FBXImporter: AssetsImporterPlugin = {
+    async import(buffer: ArrayBuffer, options?: AssetImportOptions, ctx: GLContext = GlobalContext())
     {
         const data = parseFBX(buffer);
         const assets = extractFBXAssets(data);

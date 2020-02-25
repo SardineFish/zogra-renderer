@@ -82,3 +82,8 @@ export class DoubleBuffer<T>
         this.currentIdx++;
     }
 }
+
+export function setImmediate(invoker: ()=>void)
+{
+    setTimeout(invoker, 0);
+}
