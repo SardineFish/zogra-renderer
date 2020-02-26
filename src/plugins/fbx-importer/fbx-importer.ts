@@ -28,6 +28,7 @@ function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsPack
         mat.specular = getColor(fbxMat, "Specular", mat.specular);
         mat.emission.mul(vec4(getFloat(fbxMat, "EmissiveFactor", 1)));
         resourceMap.set(fbxMat.id, mat);
+        pack.add(mat.name, mat);
     }
     for (const model of resource.models)
     {
@@ -37,13 +38,14 @@ function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsPack
         obj.localRotation = model.transform.localRotation;
         obj.localScaling = vec3.from(model.transform.localScaling);
         obj.meshes = model.meshes.map(meshConverter);
-        obj.materials = model.meshes.map(mesh => (resourceMap.get(mesh.id) ?? ctx.assets.materials.default) as Material);
+        obj.meshes.forEach((m, i) => pack.add(`${obj.name}_${i}`, m));
+        obj.materials = model.meshes.map(mesh => (resourceMap.get(mesh.material.id) ?? ctx.assets.materials.default) as Material);
         resourceMap.set(model.id, obj);
     }
 
     const wrapper = new Entity();
     wrapper.name = "FBX Model";
-    pack.add(wrapper);
+    pack.add("FBX Model", wrapper);
     pack.setMain(wrapper);
 
     for (const model of resource.models)
@@ -59,7 +61,7 @@ function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsPack
     }
     for (const asset of resourceMap.values())
     {
-        pack.add(asset);
+        pack.add(asset.name, asset);
     }
     return pack;
 }

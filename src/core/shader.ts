@@ -98,7 +98,7 @@ export class Shader extends Asset
 
     readonly attributes: Readonly<AttributeBlock>;
 
-    builtinUniformLocations: { [key in keyof typeof BuiltinUniforms]: WebGLUniformLocation | null };
+    readonly builtinUniformLocations: { [key in keyof typeof BuiltinUniforms]: WebGLUniformLocation | null };
 
     private _compiled = false;
 

@@ -3,7 +3,7 @@ import { ZograRenderPipeline, ZograRenderPipelineConstructor } from "../render-p
 import { PreviewRenderer } from "../render-pipeline/preview-renderer";
 import { Camera } from "./camera";
 import { ZograRenderer } from "../core/core";
-import { EventEmitter } from "../core/event";
+import { EventEmitter, EventDefinitions, IEventSource, EventKeys } from "../core/event";
 
 export interface Time
 {
@@ -11,27 +11,35 @@ export interface Time
     deltaTime: Readonly<number>,
 }
 
-interface ZograEngineEvents
+interface ZograEngineEvents extends EventDefinitions
 {
     update: (t: Time) => void;
     render: (cameras: Camera[]) => void;
     start: () => void;
     stop: () => void;
+    "scene-change": (scene: Scene, previous: Scene) => void;
 }
 
-export class ZograEngine
+export class ZograEngine implements IEventSource<ZograEngineEvents>
 {
-    scene: Scene;
+    private _scene: Scene;
     renderer: ZograRenderer;
     renderPipeline: ZograRenderPipeline;
-    eventEmitter: EventEmitter;
+    eventEmitter: EventEmitter<ZograEngineEvents>;
     private _time: Time = { deltaTime: 0, time: 0 };
     get time(): Readonly<Time> { return this._time; }
+    get scene() { return this._scene }
+    set scene(value)
+    {
+        const previous = this._scene;
+        this._scene = value;
+        this.eventEmitter.emit("scene-change", value, previous);
+    }
     constructor(canvas:HTMLCanvasElement, RenderPipeline: ZograRenderPipelineConstructor = PreviewRenderer)
     {
         this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);
-        this.scene = new Scene();
+        this._scene = new Scene();
         this.eventEmitter = new EventEmitter();
     }
     renderScene()
@@ -69,9 +77,9 @@ export class ZograEngine
                 deltaTime: dt
             };
             this._time = t;
-            this.emit("update", t);
+            this.eventEmitter.emit("update", t);
             this.updateEntities(t);
-            this.emit("render", this.scene.getEntitiesOfType(Camera));
+            this.eventEmitter.emit("render", this.scene.getEntitiesOfType(Camera));
 
             this.renderScene();
 
@@ -79,17 +87,17 @@ export class ZograEngine
         };
         requestAnimationFrame(update);
     }
-    on<T extends keyof ZograEngineEvents>(event: T, listener: ZograEngineEvents[T])
+    on<T extends EventKeys<ZograEngineEvents>>(event: T, listener: ZograEngineEvents[T])
     {
         this.eventEmitter.on(event, listener);
     }
-    off<T extends keyof ZograEngineEvents>(event: T, listener: ZograEngineEvents[T])
+    off<T extends EventKeys<ZograEngineEvents>>(event: T, listener: ZograEngineEvents[T])
     {
         this.eventEmitter.off(event, listener);
     }
-    emit<T extends keyof ZograEngineEvents>(event: T, ...args: Parameters<ZograEngineEvents[T]>)
+    /*emit<T extends keyof ZograEngineEvents>(event: T, ...args: Parameters<ZograEngineEvents[T]>)
     {
         this.eventEmitter.emit(event, ...args);
-    }
+    }*/
     
 }

@@ -152,8 +152,8 @@ export class ZograRenderer
 
     private useShader(shader: Shader)
     {
-        if (shader === this.shader)
-            return;
+        /*if (shader === this.shader)
+            return;*/
         
         const gl = this.gl;
         

@@ -38,8 +38,16 @@ class EntityManager {
         this.entityMap.set(entity.assetID, entity);
         this._entities = Array.from(this.entityMap.values());
     }
-    remove(entity) {
+    removeRecursive(entity) {
         this.entityMap.delete(entity.assetID);
+        for (const child of entity.children)
+            this.removeRecursive(child);
+    }
+    remove(entity) {
+        this.removeRecursive(entity);
+        if (entity.parent) {
+            entity.parent.children.delete(entity);
+        }
         this._entities = Array.from(this.entityMap.values());
     }
 }

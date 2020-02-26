@@ -3,23 +3,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 class AssetsPack {
     constructor() {
         this.mainAsset = null;
-        this.assets = new Set();
+        this.assets = new Map();
     }
-    add(asset) {
-        this.assets.add(asset);
+    add(name, asset) {
+        asset.name = name;
+        this.assets.set(name, asset);
     }
     setMain(asset) {
         this.mainAsset = asset;
     }
     get(Type) {
-        for (const asset of this.assets) {
+        for (const [name, asset] of this.assets) {
             if (asset instanceof Type)
                 return asset;
         }
         return null;
     }
     getAll(Type) {
-        return Array.from(this.assets).filter(asset => asset instanceof Type);
+        return Array.from(this.assets.values()).filter(asset => asset instanceof Type);
     }
 }
 exports.AssetsPack = AssetsPack;

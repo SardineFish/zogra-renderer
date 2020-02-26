@@ -24,5 +24,6 @@ export declare class EntityManager<T extends Entity = Entity> {
     protected _entities: Entity[];
     get entities(): Entity[];
     add(entity: T): void;
+    protected removeRecursive(entity: T): void;
     remove(entity: T): void;
 }

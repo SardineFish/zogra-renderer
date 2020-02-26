@@ -1,5 +1,4 @@
-import { ZograEngine, Camera, vec3, Entity, rgb, EventEmitter, EventDefinitions, IEventSource, EventKeys, InputManager, IAsset, Time } from "zogra-renderer";
-import { initCamera } from "./camera-controller";
+import { ZograEngine, Camera, vec3, Entity, rgb, EventEmitter, EventDefinitions, IEventSource, EventKeys, InputManager, IAsset, Time, Scene } from "zogra-renderer";
 import { initTools } from "./tools";
 import { drawEditorOverlay } from "./editor-overlay";
 import { initEditorAssets } from "./assets/assets";
@@ -8,7 +7,8 @@ import { EditorGLUtils, initGLUtils } from "./gl";
 import { initDebug } from "./debug";
 import { AssetsFolder, UserAssetsManager } from "./assets/user-assets";
 import { LazyEventEmitter } from "../util/utils";
-import { loadSampleProject } from "./sample-scene";
+import { loadExampleProject } from "./example-scene";
+import { EditorEntity } from "./editor-entities";
 
 interface ZograEditorEvents extends EventDefinitions
 {
@@ -28,15 +28,16 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
     //userAssets: AssetsFolder;
     assets: UserAssetsManager;
     input: InputManager;
-    camera: Camera;
+    editorEntity: EditorEntity;
     gl: EditorGLUtils;
+    get camera() { return this.editorEntity.camera };
     constructor(engine: ZograEngine)
     {
         this.engine = engine;
         this.lazyEventEmitter = new LazyEventEmitter(this.eventEmitter, 10);
         this.assets = new UserAssetsManager();
         this.input = initEditorInput(this);
-        this.camera = initCamera(this);
+        this.editorEntity = new EditorEntity(this);
         this.gl = initGLUtils(this);
         this.tools = initTools(this);
         initDebug(this);
@@ -44,13 +45,19 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
     init()
     {
         this.engine.start();
-        loadSampleProject(this);
+        loadExampleProject(this);
         this.camera.on("postrender", () => drawEditorOverlay(this));
         this.engine.on("update", t => this.update(t));
+        this.engine.on("scene-change", (s, p) => this.sceneChange(s, p));
     }
     private update(time: Time)
     {
         this.lazyEventEmitter.update();
+    }
+    private sceneChange(scene: Scene, previous: Scene)
+    {
+        previous.remove(this.editorEntity);
+        scene.add(this.editorEntity);
     }
     selectEntities(entities: Entity[])
     {

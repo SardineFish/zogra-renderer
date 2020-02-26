@@ -14,7 +14,7 @@ exports.TextureImporter = {
                 const tex = new core_1.Texture2D(img.width, img.height, texture_format_1.TextureFormat.RGBA, core_1.FilterMode.Linear, ctx);
                 tex.setData(img);
                 const pack = new types_1.AssetsPack();
-                pack.add(tex);
+                pack.add("img", tex);
                 pack.setMain(tex);
                 resolve(pack);
             };

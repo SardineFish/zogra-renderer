@@ -59,6 +59,9 @@ export class PreviewRenderer implements ZograRenderPipeline
 
     renderCamera(context: RenderContext, data: RenderData)
     {
+        context.renderer.clear(rgb(.3, .3, .3), true);
+
+        
 
         const camera = data.camera;
         camera.__preRender(context);
@@ -67,10 +70,17 @@ export class PreviewRenderer implements ZograRenderPipeline
             context.renderer.setRenderTarget(RenderTarget.CanvasTarget);
         else
             context.renderer.setRenderTarget(camera.output as RenderTexture);
-            
+        
+        
         context.renderer.clear(camera.clearColor, camera.clearDepth);
+
+
+        
+
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
         context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
+
+        
 
         this.setupLight(context, data);
         

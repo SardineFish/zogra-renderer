@@ -21,6 +21,6 @@ export type UniformValueType<T extends UniformType> = (
     : T extends "vec4" ? vec4
     : T extends "vec3" ? vec3
     : T extends "vec2" ? vec2
-    : T extends "color" ? Color
+    : T extends "color" ? (Color | null)
     : T extends "mat4" ? mat4
     : Texture);

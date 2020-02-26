@@ -99,8 +99,8 @@ class ZograRenderer {
         this.viewProjectionMatrix = prevVP;
     }
     useShader(shader) {
-        if (shader === this.shader)
-            return;
+        /*if (shader === this.shader)
+            return;*/
         const gl = this.gl;
         this.shader = shader;
         gl.useProgram(shader.program);

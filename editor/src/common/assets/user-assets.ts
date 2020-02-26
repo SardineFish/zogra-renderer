@@ -84,9 +84,40 @@ export class AssetsFolder extends IAssetNode implements IEventSource<AssetsFolde
     }
     add(asset: IAssetNode | IAsset)
     {
+        if (!asset)
+            return;
         if (!(asset instanceof AssetsFolder || asset instanceof AssetNode))
             asset = new AssetNode(asset as IAsset);
         this.addInternal(asset as IAssetNode);
+    }
+    mkdir(dirname: string): AssetsFolder
+    {
+        if (dirname.startsWith("/"))
+        {
+            if (!this.parent)
+            {
+                const [, selfName, ...sub] = dirname.split("/");
+                if (selfName !== this.name)
+                    throw new Error(`Failed to create invalid folder '${dirname}'`);
+                dirname = sub.join("/");
+            }
+            else
+                return this.parent.mkdir(dirname);
+        }
+        const [name, ...sub] = dirname.split("/");
+        if (name === "")
+            return this;
+        const existed = this.find(name);
+        if (existed instanceof AssetsFolder)
+            return existed.mkdir(sub.join("/"));
+        else if (existed == null)
+            return new AssetsFolder(name, this).mkdir(sub.join("/"));
+        else
+            throw new Error(`'${dirname}' is not a directory.`);
+    }
+    exists(name: string)
+    {
+        return this.find(name) != null;
     }
     remove(asset: IAssetNode | IAsset)
     {
@@ -173,7 +204,7 @@ export class UserAssetsManager
     {
         this.userAssets.set(asset.assetID, data);
     }
-    async import(importer: keyof typeof AssetsImporter.importers, url: string, options: AssetImportOptions, folder = "/assets")
+    async import(importer: keyof typeof AssetsImporter.importers, url: string, options: AssetImportOptions, folder = "/assets", name = Path.basename(url))
     {
 
         const pack = await AssetsImporter.url(url).then(buf => buf[importer](options));
@@ -185,48 +216,42 @@ export class UserAssetsManager
             path: folder
         });
 
-        let container = this.root.find(folder) as AssetsFolder;
-        if (!container)
-            container = this.root;
+        let container = this.root.mkdir(folder);
+        if (container.exists(name))
+        {
+            let numedName = name;
+            for (let i = 1; container.exists(numedName); i++)
+                numedName = name + "_" + i;
+        }
         
         if (pack.assets.size === 1)
         {
-            const asset = [...pack.assets][0];
+            const asset = [...pack.assets.values()][0];
+            asset.name = name;
             container.add(asset);
             this.userAssets.set(asset.assetID, {
-                path: Path.join(folder, asset.name),
+                path: Path.join(folder, name),
                 import: "import"
             });
         }
         else if (pack.assets.size > 1)
         {
-            let subFolderName = Path.parse(url).base;
-            if (container.find(subFolderName))
-            {
-                let numberedName = subFolderName;
-                for (let i = 1; container.find(numberedName); i++)
-                {
-                    numberedName = subFolderName + '_' + i;
-                }
-                subFolderName = numberedName;
-            }
-            const subFolder = new AssetsFolder(subFolderName, container);
-            for (const asset of pack.assets)
+            const subFolder = container.mkdir(name);
+            for (const [, asset] of pack.assets)
             {
                 subFolder.add(asset);
                 this.userAssets.set(asset.assetID, {
-                    path: Path.join(folder, subFolderName, asset.name),
+                    path: Path.join(folder, name, asset.name),
                     import: "import"
                 });
             }
         }
         
-        
         return pack;
     }
     add(asset: IAsset, folder = "/assets")
     {
-        let container = this.root.find(folder) as AssetsFolder;
+        let container = this.root.mkdir(folder);
         if (!(container instanceof AssetsFolder))
             container = this.root;
         this.userAssets.set(asset.assetID, {

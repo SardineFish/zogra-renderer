@@ -52,9 +52,21 @@ export class EntityManager<T extends Entity = Entity>
         this.entityMap.set(entity.assetID, entity);
         this._entities = Array.from(this.entityMap.values());
     }
-    remove(entity: T)
+    protected removeRecursive(entity: T)
     {
         this.entityMap.delete(entity.assetID);
+        for (const child of entity.children)
+            this.removeRecursive(child as T);
+    }
+    remove(entity: T)
+    {
+        this.removeRecursive(entity);
+
+        if (entity.parent)
+        {
+            entity.parent.children.delete(entity);
+        }
+        
         this._entities = Array.from(this.entityMap.values());
     }
 }

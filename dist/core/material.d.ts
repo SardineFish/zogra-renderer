@@ -9,14 +9,17 @@ export interface PropertyBlock {
     [key: string]: {
         type: UniformType;
         location: WebGLUniformLocation;
+        name: string;
     };
 }
 export declare class Material extends Asset {
     [key: string]: any;
-    shader: Shader;
+    private _shader;
     propertyBlock: PropertyBlock;
     gl: WebGL2RenderingContext;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
+    get shader(): Shader;
+    set shader(value: Shader);
     setup(data: BindingData): void;
     setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
 }

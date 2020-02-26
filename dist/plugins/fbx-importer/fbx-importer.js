@@ -22,6 +22,7 @@ function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
         mat.specular = getColor(fbxMat, "Specular", mat.specular);
         mat.emission.mul(vec4_1.vec4(getFloat(fbxMat, "EmissiveFactor", 1)));
         resourceMap.set(fbxMat.id, mat);
+        pack.add(mat.name, mat);
     }
     for (const model of resource.models) {
         const obj = new engine_1.RenderObject(ctx);
@@ -30,12 +31,13 @@ function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
         obj.localRotation = model.transform.localRotation;
         obj.localScaling = vec3_1.vec3.from(model.transform.localScaling);
         obj.meshes = model.meshes.map(meshConverter);
-        obj.materials = model.meshes.map(mesh => { var _a; return (_a = resourceMap.get(mesh.id), (_a !== null && _a !== void 0 ? _a : ctx.assets.materials.default)); });
+        obj.meshes.forEach((m, i) => pack.add(`${obj.name}_${i}`, m));
+        obj.materials = model.meshes.map(mesh => { var _a; return (_a = resourceMap.get(mesh.material.id), (_a !== null && _a !== void 0 ? _a : ctx.assets.materials.default)); });
         resourceMap.set(model.id, obj);
     }
     const wrapper = new engine_1.Entity();
     wrapper.name = "FBX Model";
-    pack.add(wrapper);
+    pack.add("FBX Model", wrapper);
     pack.setMain(wrapper);
     for (const model of resource.models) {
         if (model.transform.parent) {
@@ -47,7 +49,7 @@ function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
             resourceMap.get(model.id).parent = wrapper;
     }
     for (const asset of resourceMap.values()) {
-        pack.add(asset);
+        pack.add(asset.name, asset);
     }
     return pack;
 }

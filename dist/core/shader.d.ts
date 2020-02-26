@@ -67,7 +67,7 @@ export declare class Shader extends Asset {
     fragmentShader: WebGLShader;
     readonly settings: Readonly<StateSettings>;
     readonly attributes: Readonly<AttributeBlock>;
-    builtinUniformLocations: {
+    readonly builtinUniformLocations: {
         [key in keyof typeof BuiltinUniforms]: WebGLUniformLocation | null;
     };
     private _compiled;

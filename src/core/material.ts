@@ -17,14 +17,15 @@ export interface PropertyBlock
 {
     [key: string]: {
         type: UniformType,
-        location: WebGLUniformLocation
+        location: WebGLUniformLocation,
+        name: string,
     };
 }
 
 export class Material extends Asset
 {
     [key: string]: any;
-    shader: Shader;
+    private _shader: Shader;
     propertyBlock: PropertyBlock = {};
     gl: WebGL2RenderingContext;
     constructor(shader: Shader, gl = GL())
@@ -32,7 +33,22 @@ export class Material extends Asset
         super();
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
-        this.shader = shader;
+        this._shader = shader;
+    }
+
+    get shader() { return this._shader }
+    set shader(value)
+    {
+        const gl = this.gl;
+        if (value != this._shader)
+        {
+            this._shader = value;
+            for (const key in this.propertyBlock)
+            {
+                const loc = gl.getUniformLocation(this._shader.program, this.propertyBlock[key].name);
+                this.propertyBlock[key].location = loc as WebGLUniformLocation;
+            }
+        }
     }
 
     setup(data: BindingData)
@@ -85,7 +101,8 @@ export class Material extends Asset
             {
                 this.propertyBlock[name] = {
                     location: loc,
-                    type: type
+                    type: type,
+                    name: name
                 };
             }
         }
@@ -136,6 +153,7 @@ export function materialDefine<T extends { new(...arg:any[]): {} }>(constructor:
                 propertyBlock[key] = {
                     type: prop.type,
                     location: loc,
+                    name: prop.name
                 };
             }
             (this as any as Material).propertyBlock = propertyBlock;

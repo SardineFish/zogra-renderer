@@ -3,8 +3,8 @@ import { ConstructorType } from "../../utils/util";
 import { GLContext } from "../../core/global";
 export declare class AssetsPack {
     mainAsset: IAsset | null;
-    assets: Set<IAsset>;
-    add(asset: IAsset): void;
+    assets: Map<string, IAsset>;
+    add(name: string, asset: IAsset): void;
     setMain(asset: IAsset): void;
     get<T extends IAsset>(Type: ConstructorType<T>): T | null;
     getAll<T extends IAsset>(Type: ConstructorType<T>): T[];

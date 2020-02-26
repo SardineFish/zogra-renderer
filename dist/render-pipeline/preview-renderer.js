@@ -39,6 +39,7 @@ class PreviewRenderer {
         context.renderer.setGlobalUniform("uLightColor", "color", color_1.rgb(.8, .8, .8));
     }
     renderCamera(context, data) {
+        context.renderer.clear(color_1.rgb(.3, .3, .3), true);
         const camera = data.camera;
         camera.__preRender(context);
         if (camera.output === render_target_1.RenderTarget.CanvasTarget)

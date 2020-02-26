@@ -21,7 +21,7 @@ export function Hierarchy()
         };
         engine.scene.on("entity-add", entityChange);
         engine.scene.on("entity-remove", entityChange);
-
+        engine.on("scene-change", entityChange);
     }, [editor]);
     const entitiesSelect = (keys: string[]) =>
     {

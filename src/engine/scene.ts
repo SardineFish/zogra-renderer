@@ -48,14 +48,6 @@ export class Scene extends EntityManager<Entity> implements IAsset, IEventSource
     {
         super.remove(entity);
 
-        const type = entity.constructor;
-        //this.managers.get(type)?.remove(entity);
-        
-        if (entity.parent)
-        {
-            entity.parent.children.delete(entity);
-        }
-
         this.eventEmitter.emit("entity-remove", entity, entity.parent as Entity);
     }
     rootEntities()

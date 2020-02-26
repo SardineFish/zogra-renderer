@@ -10,7 +10,18 @@ class Material extends asset_1.Asset {
         this.propertyBlock = {};
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
-        this.shader = shader;
+        this._shader = shader;
+    }
+    get shader() { return this._shader; }
+    set shader(value) {
+        const gl = this.gl;
+        if (value != this._shader) {
+            this._shader = value;
+            for (const key in this.propertyBlock) {
+                const loc = gl.getUniformLocation(this._shader.program, this.propertyBlock[key].name);
+                this.propertyBlock[key].location = loc;
+            }
+        }
     }
     setup(data) {
         var _a;
@@ -54,7 +65,8 @@ class Material extends asset_1.Asset {
             if (loc) {
                 this.propertyBlock[name] = {
                     location: loc,
-                    type: type
+                    type: type,
+                    name: name
                 };
             }
         }
@@ -96,6 +108,7 @@ function materialDefine(constructor) {
                 propertyBlock[key] = {
                     type: prop.type,
                     location: loc,
+                    name: prop.name
                 };
             }
             this.propertyBlock = propertyBlock;

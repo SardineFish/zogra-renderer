@@ -18,7 +18,7 @@ export const TextureImporter: AssetsImporterPlugin = {
                 const tex = new Texture2D(img.width, img.height, TextureFormat.RGBA, FilterMode.Linear, ctx);
                 tex.setData(img);
                 const pack = new AssetsPack();
-                pack.add(tex);
+                pack.add("img", tex);
                 pack.setMain(tex);
                 resolve(pack);
             };

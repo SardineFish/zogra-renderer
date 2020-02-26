@@ -25,11 +25,6 @@ class Scene extends entity_1.EntityManager {
     }
     remove(entity) {
         super.remove(entity);
-        const type = entity.constructor;
-        //this.managers.get(type)?.remove(entity);
-        if (entity.parent) {
-            entity.parent.children.delete(entity);
-        }
         this.eventEmitter.emit("entity-remove", entity, entity.parent);
     }
     rootEntities() {

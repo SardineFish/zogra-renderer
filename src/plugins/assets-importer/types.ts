@@ -6,10 +6,11 @@ import { GLContext } from "../../core/global";
 export class AssetsPack
 {
     mainAsset: IAsset | null = null;
-    assets: Set<IAsset> = new Set();
-    add(asset: IAsset)
+    assets: Map<string, IAsset> = new Map();
+    add(name: string, asset: IAsset)
     {
-        this.assets.add(asset);
+        asset.name = name;
+        this.assets.set(name, asset);
     }
     setMain(asset: IAsset)
     {
@@ -17,7 +18,7 @@ export class AssetsPack
     }
     get<T extends IAsset>(Type: ConstructorType<T>): T | null
     {
-        for (const asset of this.assets)
+        for (const [name, asset] of this.assets)
         {
             if (asset instanceof Type)
                 return asset as T;
@@ -26,7 +27,7 @@ export class AssetsPack
     }
     getAll<T extends IAsset>(Type: ConstructorType<T>): T[]
     {
-        return Array.from(this.assets).filter(asset => asset instanceof Type) as T[];
+        return Array.from(this.assets.values()).filter(asset => asset instanceof Type) as T[];
     }
 }
 

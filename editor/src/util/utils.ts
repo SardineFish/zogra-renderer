@@ -105,3 +105,8 @@ export class BiMap<TKey, TValue>
     }
 
 }
+
+export function panic(msg?: string): never
+{
+    throw new Error(msg);
+}

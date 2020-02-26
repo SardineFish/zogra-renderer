@@ -10,10 +10,16 @@ class ZograEngine {
         this._time = { deltaTime: 0, time: 0 };
         this.renderer = new core_1.ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);
-        this.scene = new scene_1.Scene();
+        this._scene = new scene_1.Scene();
         this.eventEmitter = new event_1.EventEmitter();
     }
     get time() { return this._time; }
+    get scene() { return this._scene; }
+    set scene(value) {
+        const previous = this._scene;
+        this._scene = value;
+        this.eventEmitter.emit("scene-change", value, previous);
+    }
     renderScene() {
         const cameras = this.scene.getEntitiesOfType(camera_1.Camera);
         this.renderPipeline.render({
@@ -43,9 +49,9 @@ class ZograEngine {
                 deltaTime: dt
             };
             this._time = t;
-            this.emit("update", t);
+            this.eventEmitter.emit("update", t);
             this.updateEntities(t);
-            this.emit("render", this.scene.getEntitiesOfType(camera_1.Camera));
+            this.eventEmitter.emit("render", this.scene.getEntitiesOfType(camera_1.Camera));
             this.renderScene();
             requestAnimationFrame(update);
         };
@@ -56,9 +62,6 @@ class ZograEngine {
     }
     off(event, listener) {
         this.eventEmitter.off(event, listener);
-    }
-    emit(event, ...args) {
-        this.eventEmitter.emit(event, ...args);
     }
 }
 exports.ZograEngine = ZograEngine;
