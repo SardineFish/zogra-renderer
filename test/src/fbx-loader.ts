@@ -84,7 +84,7 @@ async function initObjects()
 
 
     const blob = await (await fetch(fbx)).blob();
-    const assets = await plugins.AssetsImporter.blob(blob).fbx();
+    const assets = await plugins.AssetsImporter.url(fbx).then(r => r.fbx({}));// await plugins.AssetsImporter.blob(blob).fbx();
     (window as any).assets = assets;
 
     const obj = assets.mainAsset as Entity;
