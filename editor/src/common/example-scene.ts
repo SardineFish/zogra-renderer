@@ -1,5 +1,5 @@
 import sphere from "../asset/model/sphere.bin.fbx";
-import { ZograEngine, plugins, Entity, vec3, Scene, materialDefine, MaterialFromShader, shaderProp, Color, Texture, RenderObject } from "zogra-renderer";
+import { ZograEngine, plugins, Entity, vec3, Scene, materialDefine, MaterialFromShader, shaderProp, Color, Texture, RenderObject, Material, Texture2D } from "zogra-renderer";
 import { ZograEditor } from "./zogra-editor";
 import { AssetsFolder, UserAssetsManager } from "./assets/user-assets";
 import texUVGrid from "../asset/img/uv_grid.png";
@@ -72,7 +72,7 @@ async function initScene(editor: ZograEditor)
     const scene = new Scene();
 
     (await editor.assets.import("img", texUVGrid, {}, "/assets/textures"));
-    await editor.assets.import("img", aoLightmap, {}, "/assets/textures");
+    const lightmapTex = (await editor.assets.import("img", aoLightmap, {}, "/assets/textures")).mainAsset as Texture2D;
 
     let asset = await editor.assets.import("fbx", sphere, {}, "/assets/models");
 
@@ -88,10 +88,12 @@ async function initScene(editor: ZograEditor)
 
     asset = await editor.assets.import("fbx", aofbx, {}, "/assets/models");
     entity = asset.mainAsset as Entity;
-    entity.localScaling = vec3(.1, .1, .1);
+    entity.localScaling = vec3(.3, .3, .3);
     scene.add(entity);
     [obj] = entity.children;
-    (obj as RenderObject).materials[0] = mat;
+    const lightmap = new Material(editor.assets.internal.shaders.lightmap);
+    lightmap.setProp("uLightMap", "tex2d", lightmapTex);
+    (obj as RenderObject).materials[0] = lightmap;
     
 
     editor.assets.add(scene, "/assets");

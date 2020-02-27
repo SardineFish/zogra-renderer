@@ -3,7 +3,7 @@ import glslVert from "./vert.glsl";
 import glslColor from "./color.glsl";
 import glslRotationTool from "./rotation-tool.glsl";
 import glslPBRLit from "./pbr-lit.glsl"
-
+import glslLightMap from "./lightmap.glsl";
 
 export function createEditorShaders()
 {
@@ -24,12 +24,17 @@ export function createEditorShaders()
         name: "DefaultLit",
         cull: Culling.Back
     });
+    const lightmap = new Shader(glslVert, glslLightMap, {
+        name: "LightMap",
+        cull: Culling.Back
+    });
 
     return {
         tools: shaderTools,
         color: shaderTools,
         rotationTool: shaderRotationTool,
         defaultLit: pbrLit,
+        lightmap: lightmap
     };
 
 }
