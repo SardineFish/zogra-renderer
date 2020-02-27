@@ -245,8 +245,10 @@ export class ZograRenderer
         }
     }
 
-    drawMesh(mesh: Mesh, transform: mat4, mateiral: Material)
+    drawMesh(mesh: Mesh, transform: mat4, material: Material)
     {
+        if (!material)
+            material = this.assets.materials.error;
         const gl = this.gl;
         const data: BindingData = {
             assets: this.assets,
@@ -256,12 +258,12 @@ export class ZograRenderer
         };
         
         this.target.bind(this.ctx);
-        this.useShader(mateiral.shader);
+        this.useShader(material.shader);
         
-        mateiral.setup(data);
-        this.setupTransforms(mateiral.shader, transform);
-        this.setupGlobalUniforms(mateiral.shader, data);
-        mesh.bind(mateiral.shader, gl);
+        material.setup(data);
+        this.setupTransforms(material.shader, transform);
+        this.setupGlobalUniforms(material.shader, data);
+        mesh.bind(material.shader, gl);
 
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }

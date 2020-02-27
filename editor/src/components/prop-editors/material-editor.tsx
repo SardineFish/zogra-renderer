@@ -19,12 +19,12 @@ export function editMaterial(material: Material)
                     case "vec4":
                     case "vec3":
                     case "vec2":
-                        return editValue(VectorEditor, material, key);
+                        return editValue(VectorEditor, material, key, {key: key} as any);
                     case "int":
                     case "float":
-                        return editValue(NumberEditor, material, key);
+                        return editValue(NumberEditor, material, key, {key: key} as any);
                     case "tex2d":
-                        return <ObjectEditor label={key} target={material} name={key} type={Texture2D}/>
+                        return <ObjectEditor label={key} target={material} name={key} type={Texture2D} key={key}/>
                 }
                 return null;
             })}

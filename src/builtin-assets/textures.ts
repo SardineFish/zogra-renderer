@@ -15,17 +15,26 @@ export function createDefaultTextures(context: GLContext)
     ctx.fillRect(0, 0, size / 2, size / 2);
     ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
 
-    const defaultTex = new Texture2D(size, size, TextureFormat.RGBA, FilterMode.Linear, context);
-    defaultTex.setData(canvas);
+    const errorTex = new Texture2D(size, size, TextureFormat.RGBA, FilterMode.Linear, context);
+    errorTex.setData(canvas);
+    errorTex.name = "Texture-Error";
 
     ctx.fillStyle = "blue";
     ctx.fillRect(0, 0, size, size);
     const defaultNormalTex = new Texture2D(size, size, TextureFormat.RGBA, FilterMode.Linear, context);
     defaultNormalTex.setData(canvas);
+    defaultNormalTex.name = "Default-Normal";
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, size, size);
+    const defaultTex = new Texture2D(size, size, TextureFormat.RGBA, FilterMode.Linear, context);
+    defaultTex.setData(canvas);
+    defaultTex.name = "Default-White";
 
     return {
         default: defaultTex,
         defaultNormal: defaultNormalTex,
+        error: errorTex
     };
 }
 

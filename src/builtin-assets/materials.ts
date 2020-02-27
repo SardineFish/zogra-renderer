@@ -7,9 +7,12 @@ import { Texture } from "../core/texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinTextures } from "./textures";
 
-export function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>, shaders: ReturnType<typeof compileBuiltinShaders>)
+export function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>, shaders: ReturnType<typeof compileBuiltinShaders>, textures: BuiltinTextures)
 {
+    const errorMat = new Material(shaders.ErrorShader, gl);
+    errorMat.setProp("uMainTex", "tex2d", textures.error);
     return {
+        error: errorMat,
         default: new types.DefaultMaterial(gl),
         blitCopy: new types.BlitCopy(gl),
         ColoredLine: new Material(shaders.ColoredLine, gl),

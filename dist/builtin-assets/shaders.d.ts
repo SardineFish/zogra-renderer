@@ -20,4 +20,5 @@ export declare function compileBuiltinShaders(gl: WebGL2RenderingContext): {
     BlitCopy: Shader;
     FlipTexture: Shader;
     ColoredLine: Shader;
+    ErrorShader: Shader;
 };

@@ -10,8 +10,11 @@ const material_1 = require("../core/material");
 const color_1 = require("../types/color");
 const material_type_1 = require("../core/material-type");
 const vec2_1 = require("../types/vec2");
-function createBuiltinMaterial(gl, types, shaders) {
+function createBuiltinMaterial(gl, types, shaders, textures) {
+    const errorMat = new material_1.Material(shaders.ErrorShader, gl);
+    errorMat.setProp("uMainTex", "tex2d", textures.error);
     return {
+        error: errorMat,
         default: new types.DefaultMaterial(gl),
         blitCopy: new types.BlitCopy(gl),
         ColoredLine: new material_1.Material(shaders.ColoredLine, gl),

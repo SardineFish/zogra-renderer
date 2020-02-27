@@ -173,7 +173,9 @@ class ZograRenderer {
             tex.texture.bind(location, data);
         }
     }
-    drawMesh(mesh, transform, mateiral) {
+    drawMesh(mesh, transform, material) {
+        if (!material)
+            material = this.assets.materials.error;
         const gl = this.gl;
         const data = {
             assets: this.assets,
@@ -182,11 +184,11 @@ class ZograRenderer {
             size: vec2_1.vec2(this.width, this.height),
         };
         this.target.bind(this.ctx);
-        this.useShader(mateiral.shader);
-        mateiral.setup(data);
-        this.setupTransforms(mateiral.shader, transform);
-        this.setupGlobalUniforms(mateiral.shader, data);
-        mesh.bind(mateiral.shader, gl);
+        this.useShader(material.shader);
+        material.setup(data);
+        this.setupTransforms(material.shader, transform);
+        this.setupGlobalUniforms(material.shader, data);
+        mesh.bind(material.shader, gl);
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }
     drawLines(lines, transform, material) {

@@ -107,6 +107,21 @@ void main()
     fragColor = vColor;
 }
 `;
+const textureFrag = `#version 300 es
+precision mediump float;
+
+in vec4 vPos;
+in vec2 vUV;
+
+uniform sampler2D uMainTex;
+
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = texture(uMainTex, vUV).rgba;
+}
+`;
 exports.BuiltinShaderSources = {
     DefaultVert: defaultVert,
     DefaultFrag: defaultFrag,
@@ -136,6 +151,9 @@ function compileBuiltinShaders(gl) {
         ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
             blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha]
         }, gl),
+        ErrorShader: new shader_1.Shader(defaultVert, textureFrag, {
+            name: "Error"
+        }, gl)
     };
 }
 exports.compileBuiltinShaders = compileBuiltinShaders;

@@ -5,7 +5,8 @@ import { MaterialType } from "../core/material-type";
 import { Texture } from "../core/texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinTextures } from "./textures";
-export declare function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>, shaders: ReturnType<typeof compileBuiltinShaders>): {
+export declare function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>, shaders: ReturnType<typeof compileBuiltinShaders>, textures: BuiltinTextures): {
+    error: Material;
     default: DefaultMaterialType;
     blitCopy: BlitCopyType;
     ColoredLine: Material;

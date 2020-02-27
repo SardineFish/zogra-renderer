@@ -14,15 +14,23 @@ function createDefaultTextures(context) {
     ctx.fillStyle = "cyan";
     ctx.fillRect(0, 0, size / 2, size / 2);
     ctx.fillRect(size / 2, size / 2, size / 2, size / 2);
-    const defaultTex = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
-    defaultTex.setData(canvas);
+    const errorTex = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
+    errorTex.setData(canvas);
+    errorTex.name = "Texture-Error";
     ctx.fillStyle = "blue";
     ctx.fillRect(0, 0, size, size);
     const defaultNormalTex = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
     defaultNormalTex.setData(canvas);
+    defaultNormalTex.name = "Default-Normal";
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, size, size);
+    const defaultTex = new texture_1.Texture2D(size, size, texture_format_1.TextureFormat.RGBA, texture_1.FilterMode.Linear, context);
+    defaultTex.setData(canvas);
+    defaultTex.name = "Default-White";
     return {
         default: defaultTex,
         defaultNormal: defaultNormalTex,
+        error: errorTex
     };
 }
 exports.createDefaultTextures = createDefaultTextures;
