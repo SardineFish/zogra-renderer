@@ -7,14 +7,16 @@ import { EditorGLUtils, initGLUtils } from "./gl";
 import { initDebug } from "./debug";
 import { AssetsFolder, UserAssetsManager } from "./assets/user-assets";
 import { LazyEventEmitter } from "../util/utils";
-import { loadExampleProject } from "./example-scene";
+import { loadProject, resetProject } from "./example-scene";
 import { EditorEntity } from "./editor-entities";
+import { saveLocalProject, loadLocalProejct } from "./serialization/save-load";
 
 interface ZograEditorEvents extends EventDefinitions
 {
     "selectchange": (selections: Entity[]) => void;
     "toolchange": (editor: ZograEditor) => void;
     "props-reload": (target: any, name: string | number | null, editor: ZograEditor) => void;
+    "editor-reload": (editor: ZograEditor) => void;
 }
 
 export class ZograEditor implements IEventSource<ZograEditorEvents>
@@ -45,10 +47,10 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
     init()
     {
         this.engine.start();
-        loadExampleProject(this);
         this.camera.on("postrender", () => drawEditorOverlay(this));
         this.engine.on("update", t => this.update(t));
         this.engine.on("scene-change", (s, p) => this.sceneChange(s, p));
+        loadProject(this);
     }
     private update(time: Time)
     {
@@ -75,5 +77,22 @@ export class ZograEditor implements IEventSource<ZograEditorEvents>
     off<T extends EventKeys<ZograEditorEvents>>(event: T, listener: ZograEditorEvents[T])
     {
         this.eventEmitter.off(event, listener);
+    }
+    reload()
+    {
+        this.eventEmitter.emit("editor-reload", this);
+    }
+    save(name: string)
+    {
+        saveLocalProject(this, name);
+    }
+    async load(name: string)
+    {
+        await loadLocalProejct(this, name);
+    }
+    async reset()
+    {
+        await resetProject(this);
+        this.reload();
     }
 }

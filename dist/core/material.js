@@ -56,21 +56,30 @@ class Material extends asset_1.Asset {
             }
         }
     }
-    setProp(name, type, value) {
-        if (this.propertyBlock[name]) {
-            this.propertyBlock[name].type = type;
+    setProp(keyOrName, nameOrType, typeOrValue, valueOrNot) {
+        let key = keyOrName;
+        let name = nameOrType;
+        let type = typeOrValue;
+        let value = valueOrNot;
+        if (typeof (typeOrValue) !== "string") {
+            key = name = keyOrName;
+            type = nameOrType;
+            value = typeOrValue;
+        }
+        if (this.propertyBlock[key]) {
+            this.propertyBlock[key].type = type;
         }
         else {
             const loc = this.gl.getUniformLocation(this.shader.program, name);
             if (loc) {
-                this.propertyBlock[name] = {
+                this.propertyBlock[key] = {
                     location: loc,
                     type: type,
                     name: name
                 };
             }
         }
-        this[name] = value;
+        this[key] = value;
     }
 }
 exports.Material = Material;

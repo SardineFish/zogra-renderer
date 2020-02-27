@@ -3,6 +3,7 @@ import { Layout, Menu, Icon } from "antd";
 import { EditorContext } from "../context/editor-context";
 import { Entity, Camera, RenderObject, Light } from "../../../dist";
 import { Tree } from "antd";
+import { EditorEntity } from "../common/editor-entities";
 
 const { DirectoryTree, TreeNode } = Tree;
 
@@ -17,7 +18,7 @@ export function Hierarchy()
         const engine = editor.engine;
         const entityChange = () =>
         {
-            setEntities(engine.scene.rootEntities());
+            setEntities(engine.scene.rootEntities().filter(e=> !(e instanceof EditorEntity)));
         };
         engine.scene.on("entity-add", entityChange);
         engine.scene.on("entity-remove", entityChange);

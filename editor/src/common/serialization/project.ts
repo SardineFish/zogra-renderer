@@ -24,5 +24,5 @@ export async function deserializeProject(editor: ZograEditor, project: Serialize
 {
     const restoredAssets = await deserializeUserAssets(project.assets, editor.assets);
     editor.engine.scene = restoredAssets.get(project.activeScene) as Scene;
-
+    editor.reload();
 }

@@ -6,12 +6,13 @@ import { IAsset, Mesh, Material, Shader, Texture, Entity, Texture2D, AssetManage
 import { IconCubeFill, IconPaintBucket, IconCode, IconTextureBox, IconImage, IconPackage } from "./icons";
 import { AntTreeNodeMouseEvent } from "antd/lib/tree";
 import { AntTreeNodeDropEvent } from "antd/lib/tree/Tree";
+import { useRerender } from "./util-hooks";
 const { DirectoryTree, TreeNode } = Tree;
 
 export function AssetsPanel()
 {
     const editor = useContext(EditorContext);
-    const [, rerender] = useState({});
+    const rerender = useRerender();
 
     useEffect(() =>
     {
@@ -19,8 +20,9 @@ export function AssetsPanel()
             return;
         editor.assets.root.on("change", (type, asset, folder) =>
         {
-            rerender({});
+            rerender();
         });
+        editor.on("editor-reload", () => rerender());
     }, [editor]);
 
     if (!editor)

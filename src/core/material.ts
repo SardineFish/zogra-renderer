@@ -88,25 +88,38 @@ export class Material extends Asset
         }
     }
 
-    setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
+    setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void
+    setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void
+    setProp<T extends UniformType>(keyOrName: string, nameOrType: string | T, typeOrValue: T | UniformValueType<T>, valueOrNot?: UniformValueType<T>): void
     {
-        if (this.propertyBlock[name])
+        let key = keyOrName as string;
+        let name = nameOrType as string;
+        let type = typeOrValue as T;
+        let value = valueOrNot as UniformValueType<T>;
+        if (typeof(typeOrValue) !== "string")
         {
-            this.propertyBlock[name].type = type;
+            key = name = keyOrName as string;
+            type = nameOrType as T;
+            value = typeOrValue as UniformValueType<T>;
+        }
+            
+        if (this.propertyBlock[key])
+        {
+            this.propertyBlock[key].type = type;
         }
         else
         {
             const loc = this.gl.getUniformLocation(this.shader.program, name);
             if (loc)
             {
-                this.propertyBlock[name] = {
+                this.propertyBlock[key] = {
                     location: loc,
                     type: type,
                     name: name
                 };
             }
         }
-        this[name] = value; 
+        this[key] = value; 
     }
 }
 

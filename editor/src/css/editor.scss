@@ -20,6 +20,7 @@
 
 .left-side {
     background: #EEE;
+    overflow-x: hidden;
     .ant-menu-submenu-title {
         background: white;
     }
@@ -227,5 +228,28 @@
 
     .object-name {
         margin-left: .5em;
+    }
+}
+
+.project-actions {
+    list-style: none;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1 0;
+    margin: 0;
+    li {
+        display: flex;
+        fill: #777;
+        margin: 0 .5em;
+        align-items: center;
+
+        &:hover{
+            fill: #1890ff;
+        }
+        .icon {
+            font-size: 1.4em;
+        }
     }
 }

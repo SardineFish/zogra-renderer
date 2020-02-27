@@ -156,7 +156,7 @@ const serializer: Serializers = {
         {
             serialized.props[key] = {
                 type: material.propertyBlock[key].type,
-                value: material.propertyBlock[key].type === "tex2d" ? (material[key] as Texture2D).assetID : serializeProps(material[key]),
+                value: material.propertyBlock[key].type === "tex2d" ? ((material[key] as Texture2D)?.assetID ?? null) : serializeProps(material[key]),
                 name: material.propertyBlock[key].name,
             }
         }
@@ -303,23 +303,22 @@ const deserializer: Deserializers = {
             switch (block[key].type)
             {
                 case "vec2":
-                    material.setProp(block[key].name, block[key].type, deserializeVec[2](block[key].value));
+                    material.setProp(key, block[key].name, block[key].type, deserializeVec[2](block[key].value));
                     break;
                 case "vec3":
-                    material.setProp(block[key].name, block[key].type, deserializeVec[3](block[key].value));
+                    material.setProp(key, block[key].name, block[key].type, deserializeVec[3](block[key].value));
                     break;
                 case "vec4":
-                    material.setProp(block[key].name, block[key].type, deserializeVec[4](block[key].value));
+                    material.setProp(key, block[key].name, block[key].type, deserializeVec[4](block[key].value));
                     break;
                 case "color":
-                    material.setProp(block[key].name, block[key].type, deserializeColor(block[key].value));
+                    material.setProp(key, block[key].name, block[key].type, deserializeColor(block[key].value));
                     break;
                 case "tex2d":
-                    
-                    material.setProp(block[key].name, "tex2d", (restored.get(block[key].value) as Texture2D));
+                    material.setProp(key, block[key].name, "tex2d", (restored.get(block[key].value) as Texture2D));
                     break;
                 default:
-                    material.setProp(block[key].name, block[key].type, block[key].value);
+                    material.setProp(key, block[key].name, block[key].type, block[key].value);
 
             }
         }

@@ -1,9 +1,10 @@
 import React, { useContext, useState } from "react";
 import { EditorContext } from "../context/editor-context";
 import { Radio, Icon, Select } from "antd";
-import { IconMove, IconRotation, IconScale, IconEarth, IconAixs, IconCursor, IconCube, IconCenter, IconRotateOrbit } from "./icons";
+import { IconMove, IconRotation, IconScale, IconEarth, IconAixs, IconCursor, IconCube, IconCenter, IconRotateOrbit, IconNewDoc, IconSave } from "./icons";
 import { RadioChangeEvent } from "antd/lib/radio";
 import { EditorToolsState } from "../common/tools";
+import { message } from "antd";
 
 export function EditorToolBar(props: {})
 {
@@ -86,4 +87,30 @@ export function EditorToolBar(props: {})
             </Radio.Group>
         </li>
     </ul>)
+}
+
+export function SaveAndLoad()
+{
+    const editor = useContext(EditorContext);
+    const newProject = () =>
+    {
+        editor?.reset();
+    };
+    const saveProject = async () =>
+    {
+        if (!editor)
+            return;
+        editor.save("ExampleProject");
+        message.success("Project saved.");
+    }
+    return <ul className="project-actions">
+        <li>
+            <Icon component={IconNewDoc} onClick={newProject} />
+            New
+        </li>
+        <li>
+            <Icon component={IconSave} onClick={saveProject} />
+            Save
+        </li>
+    </ul>
 }

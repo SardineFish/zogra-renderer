@@ -21,6 +21,7 @@ export declare class Material extends Asset {
     get shader(): Shader;
     set shader(value: Shader);
     setup(data: BindingData): void;
+    setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void;
     setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
 }
 export declare function shaderProp(name: string, type: UniformType): {
