@@ -7,11 +7,14 @@ import { Shader } from "./shader";
 import { minus, cross } from "../types/math";
 import { Asset } from "./asset";
 
+const VertDataFloatCount = 14;
+
 export class Mesh extends Asset
 {
     private _verts: vec3[] = [];
     private _triangles: number[] = [];
     private _uvs: vec2[] = [];
+    private _uv2: vec2[] = [];
     private _colors: Color[] = [];
     private _normals: vec3[] = [];
 
@@ -49,6 +52,12 @@ export class Mesh extends Asset
     set uvs(uvs: vec2[])
     {
         this._uvs = uvs;
+        this.dirty = true;
+    }
+    get uv2() { return this._uv2; }
+    set uv2(uv: vec2[])
+    {
+        this._uv2 = uv;
         this.dirty = true;
     }
     get colors() { return this._colors; }
@@ -107,6 +116,8 @@ export class Mesh extends Asset
                 this.colors = [...this.colors, ...fillArray(Color.white, this.verts.length - this.colors.length)];
             if (this.uvs.length !== this.verts.length)
                 this.uvs = [...this.uvs, ...fillArray(vec2(0, 0), this.verts.length - this.uvs.length)];
+            if (this.uv2.length !== this.verts.length)
+                this.uv2 = [...this.uv2, ...fillArray(vec2(0, 0), this.verts.length - this.uv2.length)];
             if (this.normals.length !== this.verts.length)
                 this.normals = [...this.normals, ...fillArray(vec3(0, 0, 0), this.verts.length - this.normals.length)];
                 
@@ -114,8 +125,9 @@ export class Mesh extends Asset
                 ...vert,
                 ...this.colors[idx],
                 ...this.uvs[idx],
+                ...this.uv2[idx],
                 ...this.normals[idx]]));
-            if (this.vertices.length != this.verts.length * 12)
+            if (this.vertices.length != this.verts.length * VertDataFloatCount)
                 throw new Error("Buffer with invalid length.");
             this.indices = new Uint32Array(this.triangles.flat());
 
@@ -147,7 +159,7 @@ export class Mesh extends Asset
         const attributes = shader.attributes;
 
         // Setup VAO
-        const stride = 12 * 4;
+        const stride = VertDataFloatCount * 4;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
         // vert: vec3
         if (attributes.vert >= 0)
@@ -167,10 +179,17 @@ export class Mesh extends Asset
             gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
             gl.enableVertexAttribArray(attributes.uv);
         }
+        // uv2: vec2
+        if (attributes.uv2 >= 0)
+        {
+            gl.vertexAttribPointer(attributes.uv2, 2, gl.FLOAT, false, stride, 9 * 4);
+            gl.enableVertexAttribArray(attributes.uv2);
+        }
+        if (attributes.uv)
         // normal: vec3
         if (attributes.normal >= 0)
         {
-            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
+            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 11 * 4);
             gl.enableVertexAttribArray(attributes.normal);
         }
 

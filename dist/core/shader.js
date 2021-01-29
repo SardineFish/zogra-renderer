@@ -42,6 +42,7 @@ exports.DefaultShaderAttributes = {
     vert: "aPos",
     color: "aColor",
     uv: "aUV",
+    uv2: "aUV2",
     normal: "aNormal",
 };
 class Shader extends asset_1.Asset {
@@ -62,6 +63,7 @@ class Shader extends asset_1.Asset {
             vert: this.gl.getAttribLocation(this.program, attributes.vert),
             color: this.gl.getAttribLocation(this.program, attributes.color),
             uv: this.gl.getAttribLocation(this.program, attributes.uv),
+            uv2: this.gl.getAttribLocation(this.program, attributes.uv2),
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
         };
         this.settings = {

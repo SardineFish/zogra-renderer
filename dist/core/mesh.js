@@ -7,6 +7,7 @@ const global_1 = require("./global");
 const util_1 = require("../utils/util");
 const math_1 = require("../types/math");
 const asset_1 = require("./asset");
+const VertDataFloatCount = 14;
 class Mesh extends asset_1.Asset {
     constructor(gl = global_1.GL()) {
         var _a, _b;
@@ -14,6 +15,7 @@ class Mesh extends asset_1.Asset {
         this._verts = [];
         this._triangles = [];
         this._uvs = [];
+        this._uv2 = [];
         this._colors = [];
         this._normals = [];
         this.dirty = true;
@@ -38,6 +40,11 @@ class Mesh extends asset_1.Asset {
     get uvs() { return this._uvs; }
     set uvs(uvs) {
         this._uvs = uvs;
+        this.dirty = true;
+    }
+    get uv2() { return this._uv2; }
+    set uv2(uv) {
+        this._uv2 = uv;
         this.dirty = true;
     }
     get colors() { return this._colors; }
@@ -84,15 +91,18 @@ class Mesh extends asset_1.Asset {
                 this.colors = [...this.colors, ...util_1.fillArray(color_1.Color.white, this.verts.length - this.colors.length)];
             if (this.uvs.length !== this.verts.length)
                 this.uvs = [...this.uvs, ...util_1.fillArray(vec2_1.vec2(0, 0), this.verts.length - this.uvs.length)];
+            if (this.uv2.length !== this.verts.length)
+                this.uv2 = [...this.uv2, ...util_1.fillArray(vec2_1.vec2(0, 0), this.verts.length - this.uv2.length)];
             if (this.normals.length !== this.verts.length)
                 this.normals = [...this.normals, ...util_1.fillArray(vec3_1.vec3(0, 0, 0), this.verts.length - this.normals.length)];
             this.vertices = new Float32Array(this.verts.flatMap((vert, idx) => [
                 ...vert,
                 ...this.colors[idx],
                 ...this.uvs[idx],
+                ...this.uv2[idx],
                 ...this.normals[idx]
             ]));
-            if (this.vertices.length != this.verts.length * 12)
+            if (this.vertices.length != this.verts.length * VertDataFloatCount)
                 throw new Error("Buffer with invalid length.");
             this.indices = new Uint32Array(this.triangles.flat());
             this.dirty = false;
@@ -114,7 +124,7 @@ class Mesh extends asset_1.Asset {
         this.setup(gl);
         const attributes = shader.attributes;
         // Setup VAO
-        const stride = 12 * 4;
+        const stride = VertDataFloatCount * 4;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
         // vert: vec3
         if (attributes.vert >= 0) {
@@ -131,11 +141,17 @@ class Mesh extends asset_1.Asset {
             gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
             gl.enableVertexAttribArray(attributes.uv);
         }
-        // normal: vec3
-        if (attributes.normal >= 0) {
-            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 9 * 4);
-            gl.enableVertexAttribArray(attributes.normal);
+        // uv2: vec2
+        if (attributes.uv2 >= 0) {
+            gl.vertexAttribPointer(attributes.uv2, 2, gl.FLOAT, false, stride, 9 * 4);
+            gl.enableVertexAttribArray(attributes.uv2);
         }
+        if (attributes.uv)
+            // normal: vec3
+            if (attributes.normal >= 0) {
+                gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 11 * 4);
+                gl.enableVertexAttribArray(attributes.normal);
+            }
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
     }
     destroy() {

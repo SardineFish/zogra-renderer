@@ -7,6 +7,7 @@ export declare class Mesh extends Asset {
     private _verts;
     private _triangles;
     private _uvs;
+    private _uv2;
     private _colors;
     private _normals;
     private dirty;
@@ -23,6 +24,8 @@ export declare class Mesh extends Asset {
     set triangles(triangles: number[]);
     get uvs(): vec2[];
     set uvs(uvs: vec2[]);
+    get uv2(): vec2[];
+    set uv2(uv: vec2[]);
     get colors(): Color[];
     set colors(colors: Color[]);
     get normals(): vec3[];

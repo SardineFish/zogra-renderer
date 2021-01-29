@@ -9,6 +9,7 @@ export interface AttributeBlock
     vert: number;
     color: number;
     uv: number;
+    uv2: number;
     normal: number;
 }
 
@@ -18,6 +19,7 @@ export interface ShaderAttributes
     vert: string;
     color: string;
     uv: string;
+    uv2: string;
     normal: string;
 }
 
@@ -81,6 +83,7 @@ export const DefaultShaderAttributes: ShaderAttributes =
     vert: "aPos",
     color: "aColor",
     uv: "aUV",
+    uv2: "aUV2",
     normal: "aNormal",
 };
 
@@ -124,6 +127,7 @@ export class Shader extends Asset
             vert: this.gl.getAttribLocation(this.program, attributes.vert),
             color: this.gl.getAttribLocation(this.program, attributes.color),
             uv: this.gl.getAttribLocation(this.program, attributes.uv),
+            uv2: this.gl.getAttribLocation(this.program, attributes.uv2),
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
         };
         this.settings = {

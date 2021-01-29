@@ -4,6 +4,7 @@ export interface AttributeBlock {
     vert: number;
     color: number;
     uv: number;
+    uv2: number;
     normal: number;
 }
 export interface ShaderAttributes {
@@ -11,6 +12,7 @@ export interface ShaderAttributes {
     vert: string;
     color: string;
     uv: string;
+    uv2: string;
     normal: string;
 }
 export declare enum DepthTest {
