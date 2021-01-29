@@ -87,6 +87,9 @@ class Vector3 extends Array {
     clone() {
         return vec3(this[0], this[1], this[2]);
     }
+    toVec2() {
+        return vec2_1.vec2(this[0], this[1]);
+    }
     __to(type) {
         switch (type) {
             case vec4_1.Vector4:

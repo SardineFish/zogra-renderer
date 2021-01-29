@@ -52,6 +52,7 @@ class PreviewRenderer {
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {
+            obj.__onRender(context, data);
             const modelMatrix = obj.localToWorldMatrix;
             for (let i = 0; i < obj.meshes.length; i++) {
                 if (!obj.meshes[i])

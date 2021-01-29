@@ -15,6 +15,9 @@ class RenderObject extends entity_1.Entity {
     off(event, listener) {
         this.eventEmitter.off(event, listener);
     }
+    __onRender(context, data) {
+        this.eventEmitter.emit("render", this, context, data);
+    }
 }
 exports.RenderObject = RenderObject;
 //# sourceMappingURL=render-object.js.map

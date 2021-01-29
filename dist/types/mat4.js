@@ -67,12 +67,12 @@ Matrix4x4.transpose = (m) => {
 };
 Matrix4x4.ortho = (height, aspect, near, far) => {
     const out = gl_matrix_1.mat4.create();
-    out[0] = 1 / (aspect * height);
+    out[0] = 2 / (aspect * height);
     out[1] = 0;
     out[2] = 0;
     out[3] = 0;
     out[4] = 0;
-    out[5] = 1 / height;
+    out[5] = 2 / height;
     out[6] = 0;
     out[7] = 0;
     out[8] = 0;

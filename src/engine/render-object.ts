@@ -3,12 +3,12 @@ import { Mesh } from "../core/mesh";
 import { Material } from "../core/core";
 import { GlobalContext } from "../core/global";
 import { Entity, EntityEvents } from "./entity";
-import { RenderContext } from "../render-pipeline/rp";
+import { RenderContext, RenderData } from "../render-pipeline/rp";
 import { EventEmitter, IEventSource, EventKeys } from "../core/event";
 
 interface RenderObjectEvents extends EntityEvents
 {
-    "render": (obj: RenderObject, context: RenderContext) => void;
+    "render": (obj: RenderObject, context: RenderContext, data: RenderData) => void;
 }
 
 export class RenderObject extends Entity implements IEventSource<RenderObjectEvents>
@@ -27,5 +27,9 @@ export class RenderObject extends Entity implements IEventSource<RenderObjectEve
     off<T extends EventKeys<RenderObjectEvents>>(event: T, listener: RenderObjectEvents[T])
     {
         this.eventEmitter.off(event, listener);
+    }
+    __onRender(context: RenderContext, data: RenderData)
+    {
+        this.eventEmitter.emit("render", this, context, data);
     }
 }

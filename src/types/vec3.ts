@@ -117,6 +117,11 @@ export class Vector3 extends Array<number>
         return vec3(this[0], this[1], this[2]);
     }
 
+    toVec2()
+    {
+        return vec2(this[0], this[1]);
+    }
+
     __to(type: Function)
     {
         switch (type)

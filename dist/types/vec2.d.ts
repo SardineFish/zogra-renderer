@@ -28,7 +28,7 @@ export declare class Vector2 extends Array<number> {
      */
     cross(b: Vector2): number;
     clone(): Vector2;
-    __to(type: Function): Vector3 | Vector4 | Vector2;
+    __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec2(x: number): Vector2;
 export declare namespace vec2 {

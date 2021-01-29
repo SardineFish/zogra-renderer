@@ -87,7 +87,9 @@ export class PreviewRenderer implements ZograRenderPipeline
         const objs = data.getVisibleObjects(RenderOrder.NearToFar);
         for (const obj of objs)
         {
+            obj.__onRender(context, data);
             const modelMatrix = obj.localToWorldMatrix;
+
             for (let i = 0; i < obj.meshes.length; i++)
             {
                 if (!obj.meshes[i])
