@@ -5,4 +5,5 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./preview-renderer"));
 __export(require("./render-data"));
+__export(require("./debug-layer"));
 //# sourceMappingURL=rp.js.map

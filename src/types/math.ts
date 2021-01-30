@@ -66,7 +66,7 @@ export function div<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U,
         : rhs.__to(lhs.constructor).div(lhs).inversed;
 }
 
-export function dot(a: vec3, b: vec3)
+export function dot(a: vec3, b: vec3): number
 {
     return a.dot(b);
 }

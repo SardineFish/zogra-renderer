@@ -149,7 +149,9 @@ function compileBuiltinShaders(gl) {
         }, gl),
         FlipTexture: new shader_1.Shader(exports.BuiltinShaderSources.FlipTexVert, exports.BuiltinShaderSources.BlitCopyFrag, {}, gl),
         ColoredLine: new shader_1.Shader(colorVert, colorFrag, {
-            blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha]
+            blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha],
+            depth: shader_1.DepthTest.Disable,
+            zWrite: false,
         }, gl),
         ErrorShader: new shader_1.Shader(defaultVert, textureFrag, {
             name: "Error"

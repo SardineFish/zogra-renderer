@@ -5,10 +5,12 @@ import { ZograRenderer, Material, Mesh } from "../core/core";
 import { RenderData } from "./render-data";
 import { Lines } from "../core/lines";
 import { ConstructorType } from "../utils/util";
+import { DebugLayerRenderer } from "./debug-layer";
 export declare class PreviewRenderer implements ZograRenderPipeline {
     renderer: ZograRenderer;
     grid: Lines;
     materialReplaceMap: Map<Function, Material>;
+    debugLayer: DebugLayerRenderer;
     constructor(renderer: ZograRenderer);
     render(context: RenderContext, cameras: Camera[]): void;
     setupLight(context: RenderContext, data: RenderData): void;

@@ -29,6 +29,14 @@ class Vector2 extends Array {
     static one() {
         return new Vector2(1, 1);
     }
+    static up() {
+        return new Vector2(0, 1);
+    }
+    static down() {
+        return new Vector2(0, -1);
+    }
+    static left() { return new Vector2(-1, 0); }
+    static right() { return new Vector2(1, 0); }
     plus(v) {
         this[0] += v[0];
         this[1] += v[1];
@@ -78,6 +86,9 @@ class Vector2 extends Array {
     clone() {
         return vec2(this[0], this[1]);
     }
+    toVec3(z = 0) {
+        return vec3_1.vec3(this[0], this[1], z);
+    }
     __to(type) {
         switch (type) {
             case vec4_1.Vector4:
@@ -99,4 +110,8 @@ vec2.from = (src) => {
 };
 vec2.zero = Vector2.zero;
 vec2.one = Vector2.one;
+vec2.left = Vector2.left;
+vec2.right = Vector2.right;
+vec2.down = Vector2.down;
+vec2.up = Vector2.up;
 //# sourceMappingURL=vec2.js.map

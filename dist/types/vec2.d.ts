@@ -13,6 +13,10 @@ export declare class Vector2 extends Array<number> {
     constructor(x: number, y: number);
     static zero(): Vector2;
     static one(): Vector2;
+    static up(): Vector2;
+    static down(): Vector2;
+    static left(): Vector2;
+    static right(): Vector2;
     plus(v: Vector2): this;
     minus(v: Vector2): this;
     mul(v: Vector2): this;
@@ -28,6 +32,7 @@ export declare class Vector2 extends Array<number> {
      */
     cross(b: Vector2): number;
     clone(): Vector2;
+    toVec3(z?: number): Vector3;
     __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec2(x: number): Vector2;
@@ -35,10 +40,18 @@ export declare namespace vec2 {
     var from: (src: Iterable<number>) => Vector2;
     var zero: typeof Vector2.zero;
     var one: typeof Vector2.one;
+    var left: typeof Vector2.left;
+    var right: typeof Vector2.right;
+    var down: typeof Vector2.down;
+    var up: typeof Vector2.up;
 }
 export declare function vec2(x: number, y: number): Vector2;
 export declare namespace vec2 {
     var from: (src: Iterable<number>) => Vector2;
     var zero: typeof Vector2.zero;
     var one: typeof Vector2.one;
+    var left: typeof Vector2.left;
+    var right: typeof Vector2.right;
+    var down: typeof Vector2.down;
+    var up: typeof Vector2.up;
 }

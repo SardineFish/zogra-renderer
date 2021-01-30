@@ -42,6 +42,17 @@ export class Vector2 extends Array<number>
     {
         return new Vector2(1, 1);
     }
+    static up()
+    {
+        return new Vector2(0, 1);
+    }
+    static down()
+    {
+        return new Vector2(0, -1);
+    }
+    static left() { return new Vector2(-1, 0) }
+    static right() { return new Vector2(1, 0) }
+    
     plus(v: Vector2)
     {
         this[0] += v[0];
@@ -103,6 +114,10 @@ export class Vector2 extends Array<number>
         return vec2(this[0], this[1]);
     }
 
+    toVec3(z = 0)
+    {
+        return vec3(this[0], this[1], z);
+    }
     __to(type: Function)
     {
         switch (type)
@@ -128,3 +143,7 @@ vec2.from = (src: Iterable<number>) =>
 }
 vec2.zero = Vector2.zero;
 vec2.one = Vector2.one;
+vec2.left = Vector2.left;
+vec2.right = Vector2.right;
+vec2.down = Vector2.down;
+vec2.up = Vector2.up;

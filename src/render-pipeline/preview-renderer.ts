@@ -13,12 +13,15 @@ import { vec3 } from "../types/vec3";
 import { ConstructorType } from "../utils/util";
 import { mul } from "../types/math";
 import { vec4 } from "../types/vec4";
+import { DebugLayerRenderer } from "./debug-layer";
 
 export class PreviewRenderer implements ZograRenderPipeline
 {
     renderer: ZograRenderer;
     grid: Lines;
     materialReplaceMap = new Map<Function, Material>();
+    debugLayer = new DebugLayerRenderer();
+
     constructor(renderer: ZograRenderer)
     {
         this.renderer = renderer;
@@ -98,8 +101,10 @@ export class PreviewRenderer implements ZograRenderPipeline
                 this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
             }
         }
+        
+        this.debugLayer.render(context, data);
 
-        this.renderGrid(context, data);
+        // this.renderGrid(context, data);
         camera.__postRender(context);
     }
 

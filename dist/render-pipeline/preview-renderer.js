@@ -6,9 +6,11 @@ const color_1 = require("../types/color");
 const render_target_1 = require("../core/render-target");
 const lines_1 = require("../core/lines");
 const vec3_1 = require("../types/vec3");
+const debug_layer_1 = require("./debug-layer");
 class PreviewRenderer {
     constructor(renderer) {
         this.materialReplaceMap = new Map();
+        this.debugLayer = new debug_layer_1.DebugLayerRenderer();
         this.renderer = renderer;
         const lineColor = color_1.rgba(1, 1, 1, 0.1);
         const lb = new lines_1.LineBuilder(0, renderer.gl);
@@ -61,7 +63,8 @@ class PreviewRenderer {
                 this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
             }
         }
-        this.renderGrid(context, data);
+        this.debugLayer.render(context, data);
+        // this.renderGrid(context, data);
         camera.__postRender(context);
     }
     renderGrid(context, data) {

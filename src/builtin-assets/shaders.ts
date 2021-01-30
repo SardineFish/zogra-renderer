@@ -159,7 +159,9 @@ export function compileBuiltinShaders(gl: WebGL2RenderingContext)
         }, gl),
         FlipTexture: new Shader(BuiltinShaderSources.FlipTexVert, BuiltinShaderSources.BlitCopyFrag, {}, gl),
         ColoredLine: new Shader(colorVert, colorFrag, {
-            blend: [Blending.SrcAlpha, Blending.OneMinusSrcAlpha]
+            blend: [Blending.SrcAlpha, Blending.OneMinusSrcAlpha],
+            depth: DepthTest.Disable,
+            zWrite: false,
         }, gl),
         ErrorShader: new Shader(defaultVert, textureFrag, {
             name: "Error"
