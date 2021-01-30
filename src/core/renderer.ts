@@ -73,6 +73,9 @@ export class ZograRenderer
         this.ctx.height = height;
     }
 
+    get canvasSize(): vec2 { return vec2(this.width, this.height) }
+    
+
     setViewProjection(view: mat4, projection: mat4)
     {
         this.viewProjectionMatrix = mat4.mul(projection, view);
