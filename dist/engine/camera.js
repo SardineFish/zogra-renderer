@@ -63,8 +63,11 @@ class Camera extends entity_1.Entity {
         return ray_1.ray(this.position, math_1.minus(vec3_1.vec3(p.x, p.y, p.z), this.position));
     }
     screenToWorld(pos) {
+        const w = this.projection == Projection.Perspective
+            ? this.near
+            : 1;
         const ndcXY = this.screenToViewport(pos).mul(vec2_1.vec2(2, -2)).minus(vec2_1.vec2(1, -1));
-        const clip = math_1.mul(vec4_1.vec4(ndcXY.x, ndcXY.y, -1, 1), this.near);
+        const clip = math_1.mul(vec4_1.vec4(ndcXY.x, ndcXY.y, -1, 1), w);
         const matVPInv = mat4_1.mat4.invert(this.viewProjectionMatrix);
         const p = mat4_1.mat4.mulVec4(matVPInv, clip);
         return vec3_1.vec3(p[0], p[1], p[2]);
