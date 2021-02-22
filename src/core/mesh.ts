@@ -156,7 +156,7 @@ export class Mesh extends Asset
     {
         this.setup(gl);
 
-        const attributes = shader.attributes;
+        const attributes = shader._internal().attributes;
 
         // Setup VAO
         const stride = VertDataFloatCount * 4;

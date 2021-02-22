@@ -3,6 +3,7 @@ import { TextureFormat, mapGLFormat } from "./texture-format";
 import { panic } from "../utils/util";
 import { BindingData } from "./types";
 import { Asset } from "./asset";
+import { BuiltinUniformNames } from "../builtin-assets/shaders";
 
 export enum FilterMode
 {
@@ -203,10 +204,10 @@ function flipTexture(
     gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 
     const shader = ctx.assets.shaders.FlipTexture;
-    gl.useProgram(shader.program);
+    shader.use();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, srcTex);
-    gl.uniform1i(shader.builtinUniformLocations.mainTex, 0);
+    gl.uniform1i(shader.uniformLocation(BuiltinUniformNames.mainTex), 0);
 
     const mesh = ctx.assets.meshes.screenQuad;
     mesh.bind(shader, gl);

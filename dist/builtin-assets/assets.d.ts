@@ -1,5 +1,5 @@
 import { createBuiltinMaterialTypes, createBuiltinMaterial } from "./materials";
-import { BuiltinShaderSources, BuiltinUniforms, compileBuiltinShaders } from "./shaders";
+import { BuiltinShaderSources, BuiltinUniformNames, compileBuiltinShaders } from "./shaders";
 import { createDefaultTextures } from "./textures";
 import { createBuiltinMesh } from "./mesh";
 export declare class BuiltinAssets {
@@ -10,6 +10,6 @@ export declare class BuiltinAssets {
     shaders: ReturnType<typeof compileBuiltinShaders>;
     meshes: ReturnType<typeof createBuiltinMesh>;
     textures: ReturnType<typeof createDefaultTextures>;
-    BuiltinUniforms: typeof BuiltinUniforms;
+    BuiltinUniforms: typeof BuiltinUniformNames;
     constructor(gl: WebGL2RenderingContext);
 }

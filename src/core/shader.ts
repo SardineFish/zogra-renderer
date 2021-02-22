@@ -1,8 +1,9 @@
-import { panicNull } from "../utils/util";
-import { GL } from "./global";
-import { BuiltinShaderSources, BuiltinUniforms } from "../builtin-assets/shaders";
+import { panic, panicNull } from "../utils/util";
+import { GL, GlobalContext } from "./global";
+import { BuiltinShaderSources, BuiltinUniformNames } from "../builtin-assets/shaders";
 import { getUniformsLocation } from "../utils/util";
 import { Asset } from "./asset";
+import { mat4 } from "../types/mat4";
 
 export interface AttributeBlock
 {
@@ -89,19 +90,24 @@ export const DefaultShaderAttributes: ShaderAttributes =
 
 export class Shader extends Asset
 {
-    gl: WebGL2RenderingContext;
-    program: WebGLProgram;
-
     vertexShaderSource: string;
     fragmentShaderSouce: string;
-    vertexShader: WebGLShader;
-    fragmentShader: WebGLShader;
 
-    readonly settings: Readonly<StateSettings>;
+    private options: ShaderSettingsOptional;
+    
+    private initialized = false;
 
-    readonly attributes: Readonly<AttributeBlock>;
+    private gl: WebGL2RenderingContext = null as any;
+    private program: WebGLProgram = null as any;
 
-    readonly builtinUniformLocations: { [key in keyof typeof BuiltinUniforms]: WebGLUniformLocation | null };
+    private vertexShader: WebGLShader = null as any;
+    private fragmentShader: WebGLShader = null as any;
+
+    private settings: StateSettings = null as any;
+
+    private attributes: AttributeBlock = null as any;
+
+    private builtinUniformLocations: { [key in keyof typeof BuiltinUniformNames]: WebGLUniformLocation | null } = null as any;
 
     private _compiled = false;
 
@@ -112,16 +118,109 @@ export class Shader extends Asset
         super(options.name);
         if (!options.name)
             this.name = `Shader_${this.assetID}`;
-        this.gl = gl;
-        this.program = panicNull(gl.createProgram(), "Failed to create shader program");
         this.vertexShaderSource = vertexShader;
         this.fragmentShaderSouce = fragmentShader;
+        this.options = options;
+        this.gl = gl;
+
+        this.tryInit();
+    }
+
+    uniformLocation(name: string)
+    {
+        this.tryInit(true);
+
+        return this.gl.getUniformLocation(this.program, name);
+    }
+
+    use()
+    {
+        this.tryInit(true);
+
+        const gl = this.gl;
+        gl.useProgram(this.program);
+
+        if (this.settings.depth === DepthTest.Disable)
+            gl.disable(gl.DEPTH_TEST);
+        else
+        {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(this.settings.zWrite);
+            gl.depthFunc(this.settings.depth);
+        }
+
+        if (this.settings.blend === Blending.Disable)
+            gl.disable(gl.BLEND);
+        else
+        {
+            const [src, dst] = typeof (this.settings.blend) === "number"
+                ? [this.settings.blend, Blending.Zero]
+                : this.settings.blend;
+            gl.enable(gl.BLEND);
+            gl.blendFunc(src, dst);
+        }
+
+        if (this.settings.cull === Culling.Disable)
+            gl.disable(gl.CULL_FACE);
+        else
+        {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(this.settings.cull);
+            gl.frontFace(gl.CCW);
+        }
+    }
+
+    setupBuiltinUniform(params: {
+        matM: mat4,
+        matVP: mat4,
+        matMVP: mat4,
+        matM_IT: mat4,
+        matMV_IT: mat4,
+    })
+    {
+        this.tryInit(true);
+
+        const gl = this.gl;
+
+        this.builtinUniformLocations.matM && gl.uniformMatrix4fv(this.builtinUniformLocations.matM, false, params.matM);
+        this.builtinUniformLocations.matVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matVP, false, params.matVP);
+        this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP);
+        this.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matM_IT, false, params.matM_IT);
+        this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT);
+    }
+
+    _internal()
+    {
+        this.tryInit(true);
+
+        return {
+            attributes: this.attributes
+        };
+    }
+
+
+
+    private tryInit(required = false)
+    {
+        if (this.initialized)
+            return true;
+
+        const gl = this.gl || GL();
+        if (!gl)
+        {
+            return required
+                ? panic("Failed to init shader without a global GL context")
+                : false;
+        }
+
+        this.gl = gl;
+        this.program = panicNull(gl.createProgram(), "Failed to create shader program");
         this.vertexShader = panicNull(gl.createShader(gl.VERTEX_SHADER), "Failed to create vertex shader");
         this.fragmentShader = panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
 
         this.compile();
 
-        const attributes = options.attributes || DefaultShaderAttributes;
+        const attributes = this.options.attributes || DefaultShaderAttributes;
 
         this.attributes = {
             vert: this.gl.getAttribLocation(this.program, attributes.vert),
@@ -131,17 +230,19 @@ export class Shader extends Asset
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
         };
         this.settings = {
-            depth: options.depth || DepthTest.Less,
-            blend: options.blend || Blending.Disable,
-            zWrite: options.zWrite === false ? false : true,
-            cull: options.cull || Culling.Back
+            depth: this.options.depth || DepthTest.Less,
+            blend: this.options.blend || Blending.Disable,
+            zWrite: this.options.zWrite === false ? false : true,
+            cull: this.options.cull || Culling.Back
         };
-        this.builtinUniformLocations = getUniformsLocation(gl, this.program, BuiltinUniforms);
+        this.builtinUniformLocations = getUniformsLocation(gl, this.program, BuiltinUniformNames);
+
+        this.initialized = true;
+        return true;
     }
 
-    compile()
+    private compile()
     {
-        
         this.gl.shaderSource(this.vertexShader, this.vertexShaderSource);
         this.gl.compileShader(this.vertexShader);
         if (!this.gl.getShaderParameter(this.vertexShader, this.gl.COMPILE_STATUS))
@@ -163,7 +264,7 @@ export class Shader extends Asset
 
         if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS))
         {
-            throw new Error("Failed to link shader program:\r\n" + this.gl.getProgramInfoLog(this.program));    
+            throw new Error("Failed to link shader program:\r\n" + this.gl.getProgramInfoLog(this.program));
         }
     }
 }

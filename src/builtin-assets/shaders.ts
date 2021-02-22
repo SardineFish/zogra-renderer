@@ -136,7 +136,7 @@ export const BuiltinShaderSources = {
     FlipTexVert: flipVert,
 };
 
-export const BuiltinUniforms = {
+export const BuiltinUniformNames = {
     matM: "uTransformM",
     matM_IT: "uTransformM_IT",
     matMInv: "uTransformMInv",

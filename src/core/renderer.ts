@@ -161,36 +161,9 @@ export class ZograRenderer
         const gl = this.gl;
         
         this.shader = shader;
-        gl.useProgram(shader.program);
+        shader.use();
 
-        if (shader.settings.depth === DepthTest.Disable)
-            gl.disable(gl.DEPTH_TEST);
-        else
-        {
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthMask(shader.settings.zWrite);
-            gl.depthFunc(shader.settings.depth);
-        }
-
-        if (shader.settings.blend === Blending.Disable)
-            gl.disable(gl.BLEND);
-        else
-        {
-            const [src, dst] = typeof (shader.settings.blend) === "number"
-                ? [shader.settings.blend, Blending.Zero]
-                : shader.settings.blend;
-            gl.enable(gl.BLEND);
-            gl.blendFunc(src, dst);
-        }
-
-        if (shader.settings.cull === Culling.Disable)
-            gl.disable(gl.CULL_FACE);
-        else
-        {
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(shader.settings.cull);
-            gl.frontFace(gl.CCW);
-        }
+        
     }
 
     private setupTransforms(shader: Shader, transformModel: mat4)
@@ -200,11 +173,13 @@ export class ZograRenderer
         const mvp = mat4.mul(this.viewProjectionMatrix, transformModel);
         const mit = mat4.transpose(mat4.invert(transformModel));
         const mvit = mat4.transpose(mat4.invert(mat4.mul(this.viewMatrix, transformModel)));
-        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transformModel);
-        shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
-        shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMVP, false, mvp);
-        shader.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM_IT, false, mit);
-        shader.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMV_IT, false, mvit);
+        shader.setupBuiltinUniform({
+            matM: transformModel,
+            matVP: this.viewProjectionMatrix,
+            matMVP: mvp,
+            matM_IT: mit,
+            matMV_IT: mvit,
+        });
     }
 
     private setupGlobalUniforms(shader: Shader, data: BindingData)
@@ -213,7 +188,7 @@ export class ZograRenderer
 
         for (const val of this.globalUniforms.values())
         {
-            const location = gl.getUniformLocation(shader.program, val.name);
+            const location = shader.uniformLocation(val.name);
             if (!location)
                 continue;
             switch (val.type)
@@ -241,7 +216,7 @@ export class ZograRenderer
 
         for (const tex of this.globalTextures.values())
         {
-            const location = gl.getUniformLocation(shader.program, tex.name);
+            const location = shader.uniformLocation(tex.name);
             if (!location)
                 continue;
             tex.texture.bind(location, data);

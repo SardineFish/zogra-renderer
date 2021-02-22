@@ -14,7 +14,7 @@ class BuiltinAssets {
             height: 0,
         };
         this.gl = gl;
-        this.BuiltinUniforms = shaders_1.BuiltinUniforms;
+        this.BuiltinUniforms = shaders_1.BuiltinUniformNames;
         this.shaderSources = shaders_1.BuiltinShaderSources;
         this.shaders = shaders_1.compileBuiltinShaders(gl);
         this.meshes = mesh_1.createBuiltinMesh(gl);

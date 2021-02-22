@@ -1,4 +1,4 @@
-import { vec3, vec2, Color } from "../types/types";
+import { vec3, vec2, Color, Vector3 } from "../types/types";
 import { GlobalContext } from "../core/global";
 import { Mesh } from "../core/mesh";
 
@@ -57,5 +57,35 @@ export class MeshBuilder
         mesh.uvs = this.uvs;
         mesh.calculateNormals();
         return mesh;
+    }
+
+    static quad()
+    {
+        const quad = new Mesh();
+        quad.verts = [
+            vec3(-.5, -.5, 0),
+            vec3(.5, -.5, 0),
+            vec3(.5, .5, 0),
+            vec3(-.5, .5, 0),
+        ];
+        quad.triangles = [
+            0, 1, 3,
+            1, 2, 3,
+        ];
+        quad.uvs = [
+            vec2(0, 0),
+            vec2(1, 0),
+            vec2(1, 1),
+            vec2(0, 1)
+        ];
+        quad.normals = [
+            vec3(0, 0, 1),
+            vec3(0, 0, 1),
+            vec3(0, 0, 1),
+            vec3(0, 0, 1),
+        ];
+        // quad.calculateNormals();
+        quad.name = "mesh_quad";
+        return quad;
     }
 }

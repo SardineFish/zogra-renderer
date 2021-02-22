@@ -82,4 +82,9 @@ class AssetManagerType implements IEventSource<AssetManagerEvents>
     }
 }
 
+export interface ICloneable<T>
+{
+    clone(): this;
+}
+
 export const AssetManager = new AssetManagerType();

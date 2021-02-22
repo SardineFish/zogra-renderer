@@ -11,7 +11,6 @@ const texture_1 = require("./texture");
 const vec2_1 = require("../types/vec2");
 const assets_1 = require("../builtin-assets/assets");
 const quat_1 = require("../types/quat");
-const shader_1 = require("./shader");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
@@ -105,46 +104,25 @@ class ZograRenderer {
             return;*/
         const gl = this.gl;
         this.shader = shader;
-        gl.useProgram(shader.program);
-        if (shader.settings.depth === shader_1.DepthTest.Disable)
-            gl.disable(gl.DEPTH_TEST);
-        else {
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthMask(shader.settings.zWrite);
-            gl.depthFunc(shader.settings.depth);
-        }
-        if (shader.settings.blend === shader_1.Blending.Disable)
-            gl.disable(gl.BLEND);
-        else {
-            const [src, dst] = typeof (shader.settings.blend) === "number"
-                ? [shader.settings.blend, shader_1.Blending.Zero]
-                : shader.settings.blend;
-            gl.enable(gl.BLEND);
-            gl.blendFunc(src, dst);
-        }
-        if (shader.settings.cull === shader_1.Culling.Disable)
-            gl.disable(gl.CULL_FACE);
-        else {
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(shader.settings.cull);
-            gl.frontFace(gl.CCW);
-        }
+        shader.use();
     }
     setupTransforms(shader, transformModel) {
         const gl = this.gl;
         const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transformModel);
         const mit = mat4_1.mat4.transpose(mat4_1.mat4.invert(transformModel));
         const mvit = mat4_1.mat4.transpose(mat4_1.mat4.invert(mat4_1.mat4.mul(this.viewMatrix, transformModel)));
-        shader.builtinUniformLocations.matM && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM, false, transformModel);
-        shader.builtinUniformLocations.matVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matVP, false, this.viewProjectionMatrix);
-        shader.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMVP, false, mvp);
-        shader.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matM_IT, false, mit);
-        shader.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(shader.builtinUniformLocations.matMV_IT, false, mvit);
+        shader.setupBuiltinUniform({
+            matM: transformModel,
+            matVP: this.viewProjectionMatrix,
+            matMVP: mvp,
+            matM_IT: mit,
+            matMV_IT: mvit,
+        });
     }
     setupGlobalUniforms(shader, data) {
         const gl = this.gl;
         for (const val of this.globalUniforms.values()) {
-            const location = gl.getUniformLocation(shader.program, val.name);
+            const location = shader.uniformLocation(val.name);
             if (!location)
                 continue;
             switch (val.type) {
@@ -169,7 +147,7 @@ class ZograRenderer {
             }
         }
         for (const tex of this.globalTextures.values()) {
-            const location = gl.getUniformLocation(shader.program, tex.name);
+            const location = shader.uniformLocation(tex.name);
             if (!location)
                 continue;
             tex.texture.bind(location, data);

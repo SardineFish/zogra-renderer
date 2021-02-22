@@ -45,6 +45,34 @@ class MeshBuilder {
         mesh.calculateNormals();
         return mesh;
     }
+    static quad() {
+        const quad = new mesh_1.Mesh();
+        quad.verts = [
+            types_1.vec3(-.5, -.5, 0),
+            types_1.vec3(.5, -.5, 0),
+            types_1.vec3(.5, .5, 0),
+            types_1.vec3(-.5, .5, 0),
+        ];
+        quad.triangles = [
+            0, 1, 3,
+            1, 2, 3,
+        ];
+        quad.uvs = [
+            types_1.vec2(0, 0),
+            types_1.vec2(1, 0),
+            types_1.vec2(1, 1),
+            types_1.vec2(0, 1)
+        ];
+        quad.normals = [
+            types_1.vec3(0, 0, 1),
+            types_1.vec3(0, 0, 1),
+            types_1.vec3(0, 0, 1),
+            types_1.vec3(0, 0, 1),
+        ];
+        // quad.calculateNormals();
+        quad.name = "mesh_quad";
+        return quad;
+    }
 }
 exports.MeshBuilder = MeshBuilder;
 //# sourceMappingURL=mesh-builder.js.map

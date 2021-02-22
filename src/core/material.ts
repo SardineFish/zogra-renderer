@@ -45,7 +45,7 @@ export class Material extends Asset
             this._shader = value;
             for (const key in this.propertyBlock)
             {
-                const loc = gl.getUniformLocation(this._shader.program, this.propertyBlock[key].name);
+                const loc = this._shader.uniformLocation(this.propertyBlock[key].name);
                 this.propertyBlock[key].location = loc as WebGLUniformLocation;
             }
         }
@@ -109,7 +109,7 @@ export class Material extends Asset
         }
         else
         {
-            const loc = this.gl.getUniformLocation(this.shader.program, name);
+            const loc = this.shader.uniformLocation(name);
             if (loc)
             {
                 this.propertyBlock[key] = {
@@ -161,7 +161,7 @@ export function materialDefine<T extends { new(...arg:any[]): {} }>(constructor:
                 const prop = getShaderProp(this as any as Material, key);
                 if (!prop)
                     continue;
-                const loc = gl.getUniformLocation(shader.program, prop?.name);
+                const loc = shader.uniformLocation(prop?.name);
                 if (!loc) continue;
                 propertyBlock[key] = {
                     type: prop.type,

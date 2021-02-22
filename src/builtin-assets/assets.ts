@@ -1,7 +1,7 @@
 import { DefaultMaterialType } from "../core/material-type";
 import { Texture2D } from "../core/texture";
 import {  createBuiltinMaterialTypes, createBuiltinMaterial } from "./materials";
-import { BuiltinShaderSources, BuiltinUniforms, compileBuiltinShaders } from "./shaders";
+import { BuiltinShaderSources, BuiltinUniformNames, compileBuiltinShaders } from "./shaders";
 import { createDefaultTextures } from "./textures";
 import { createBuiltinMesh } from "./mesh";
 import { GLContext } from "../core/global";
@@ -15,7 +15,7 @@ export class BuiltinAssets
     shaders: ReturnType<typeof compileBuiltinShaders>;
     meshes: ReturnType<typeof createBuiltinMesh>;
     textures: ReturnType<typeof createDefaultTextures>;
-    BuiltinUniforms: typeof BuiltinUniforms;
+    BuiltinUniforms: typeof BuiltinUniformNames;
     constructor(gl: WebGL2RenderingContext)
     {
         let ctx: GLContext = {
@@ -26,7 +26,7 @@ export class BuiltinAssets
         }
         this.gl = gl;
 
-        this.BuiltinUniforms = BuiltinUniforms;
+        this.BuiltinUniforms = BuiltinUniformNames;
         this.shaderSources = BuiltinShaderSources;
         this.shaders = compileBuiltinShaders(gl);
         this.meshes = createBuiltinMesh(gl);

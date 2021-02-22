@@ -5,7 +5,7 @@ export declare const BuiltinShaderSources: {
     BlitCopyFrag: string;
     FlipTexVert: string;
 };
-export declare const BuiltinUniforms: {
+export declare const BuiltinUniformNames: {
     matM: string;
     matM_IT: string;
     matMInv: string;

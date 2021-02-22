@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compileBuiltinShaders = exports.BuiltinUniforms = exports.BuiltinShaderSources = void 0;
+exports.compileBuiltinShaders = exports.BuiltinUniformNames = exports.BuiltinShaderSources = void 0;
 const shader_1 = require("../core/shader");
 const defaultVert = `#version 300 es
 precision mediump float;
@@ -129,7 +129,7 @@ exports.BuiltinShaderSources = {
     BlitCopyFrag: blitCopy,
     FlipTexVert: flipVert,
 };
-exports.BuiltinUniforms = {
+exports.BuiltinUniformNames = {
     matM: "uTransformM",
     matM_IT: "uTransformM_IT",
     matMInv: "uTransformMInv",

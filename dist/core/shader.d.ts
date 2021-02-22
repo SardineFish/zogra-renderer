@@ -1,5 +1,5 @@
-import { BuiltinUniforms } from "../builtin-assets/shaders";
 import { Asset } from "./asset";
+import { mat4 } from "../types/mat4";
 export interface AttributeBlock {
     vert: number;
     color: number;
@@ -61,20 +61,33 @@ interface ShaderSettingsOptional {
 }
 export declare const DefaultShaderAttributes: ShaderAttributes;
 export declare class Shader extends Asset {
-    gl: WebGL2RenderingContext;
-    program: WebGLProgram;
     vertexShaderSource: string;
     fragmentShaderSouce: string;
-    vertexShader: WebGLShader;
-    fragmentShader: WebGLShader;
-    readonly settings: Readonly<StateSettings>;
-    readonly attributes: Readonly<AttributeBlock>;
-    readonly builtinUniformLocations: {
-        [key in keyof typeof BuiltinUniforms]: WebGLUniformLocation | null;
-    };
+    private options;
+    private initialized;
+    private gl;
+    private program;
+    private vertexShader;
+    private fragmentShader;
+    private settings;
+    private attributes;
+    private builtinUniformLocations;
     private _compiled;
     get compiled(): boolean;
     constructor(vertexShader: string, fragmentShader: string, options?: ShaderSettingsOptional, gl?: WebGL2RenderingContext);
-    compile(): void;
+    uniformLocation(name: string): WebGLUniformLocation | null;
+    use(): void;
+    setupBuiltinUniform(params: {
+        matM: mat4;
+        matVP: mat4;
+        matMVP: mat4;
+        matM_IT: mat4;
+        matMV_IT: mat4;
+    }): void;
+    _internal(): {
+        attributes: AttributeBlock;
+    };
+    private tryInit;
+    private compile;
 }
 export {};

@@ -49,17 +49,86 @@ exports.DefaultShaderAttributes = {
 class Shader extends asset_1.Asset {
     constructor(vertexShader, fragmentShader, options = {}, gl = global_1.GL()) {
         super(options.name);
+        this.initialized = false;
+        this.gl = null;
+        this.program = null;
+        this.vertexShader = null;
+        this.fragmentShader = null;
+        this.settings = null;
+        this.attributes = null;
+        this.builtinUniformLocations = null;
         this._compiled = false;
         if (!options.name)
             this.name = `Shader_${this.assetID}`;
-        this.gl = gl;
-        this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
         this.vertexShaderSource = vertexShader;
         this.fragmentShaderSouce = fragmentShader;
+        this.options = options;
+        this.gl = gl;
+        this.tryInit();
+    }
+    get compiled() { return this._compiled; }
+    uniformLocation(name) {
+        this.tryInit(true);
+        return this.gl.getUniformLocation(this.program, name);
+    }
+    use() {
+        this.tryInit(true);
+        const gl = this.gl;
+        gl.useProgram(this.program);
+        if (this.settings.depth === DepthTest.Disable)
+            gl.disable(gl.DEPTH_TEST);
+        else {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(this.settings.zWrite);
+            gl.depthFunc(this.settings.depth);
+        }
+        if (this.settings.blend === Blending.Disable)
+            gl.disable(gl.BLEND);
+        else {
+            const [src, dst] = typeof (this.settings.blend) === "number"
+                ? [this.settings.blend, Blending.Zero]
+                : this.settings.blend;
+            gl.enable(gl.BLEND);
+            gl.blendFunc(src, dst);
+        }
+        if (this.settings.cull === Culling.Disable)
+            gl.disable(gl.CULL_FACE);
+        else {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(this.settings.cull);
+            gl.frontFace(gl.CCW);
+        }
+    }
+    setupBuiltinUniform(params) {
+        this.tryInit(true);
+        const gl = this.gl;
+        this.builtinUniformLocations.matM && gl.uniformMatrix4fv(this.builtinUniformLocations.matM, false, params.matM);
+        this.builtinUniformLocations.matVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matVP, false, params.matVP);
+        this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP);
+        this.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matM_IT, false, params.matM_IT);
+        this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT);
+    }
+    _internal() {
+        this.tryInit(true);
+        return {
+            attributes: this.attributes
+        };
+    }
+    tryInit(required = false) {
+        if (this.initialized)
+            return true;
+        const gl = this.gl || global_1.GL();
+        if (!gl) {
+            return required
+                ? util_1.panic("Failed to init shader without a global GL context")
+                : false;
+        }
+        this.gl = gl;
+        this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
         this.vertexShader = util_1.panicNull(gl.createShader(gl.VERTEX_SHADER), "Failed to create vertex shader");
         this.fragmentShader = util_1.panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
         this.compile();
-        const attributes = options.attributes || exports.DefaultShaderAttributes;
+        const attributes = this.options.attributes || exports.DefaultShaderAttributes;
         this.attributes = {
             vert: this.gl.getAttribLocation(this.program, attributes.vert),
             color: this.gl.getAttribLocation(this.program, attributes.color),
@@ -68,14 +137,15 @@ class Shader extends asset_1.Asset {
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
         };
         this.settings = {
-            depth: options.depth || DepthTest.Less,
-            blend: options.blend || Blending.Disable,
-            zWrite: options.zWrite === false ? false : true,
-            cull: options.cull || Culling.Back
+            depth: this.options.depth || DepthTest.Less,
+            blend: this.options.blend || Blending.Disable,
+            zWrite: this.options.zWrite === false ? false : true,
+            cull: this.options.cull || Culling.Back
         };
-        this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniforms);
+        this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniformNames);
+        this.initialized = true;
+        return true;
     }
-    get compiled() { return this._compiled; }
     compile() {
         this.gl.shaderSource(this.vertexShader, this.vertexShaderSource);
         this.gl.compileShader(this.vertexShader);

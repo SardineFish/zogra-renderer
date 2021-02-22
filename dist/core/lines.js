@@ -65,7 +65,7 @@ class Lines extends asset_1.Asset {
     bind(shader) {
         const gl = this.gl;
         this.update();
-        const attributes = shader.attributes;
+        const attributes = shader._internal().attributes;
         // Setup VAO
         const stride = 7 * 4;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);

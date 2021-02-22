@@ -123,7 +123,7 @@ class Mesh extends asset_1.Asset {
     }
     bind(shader, gl) {
         this.setup(gl);
-        const attributes = shader.attributes;
+        const attributes = shader._internal().attributes;
         // Setup VAO
         const stride = VertDataFloatCount * 4;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);

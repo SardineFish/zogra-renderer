@@ -5,6 +5,7 @@ const global_1 = require("./global");
 const texture_format_1 = require("./texture-format");
 const util_1 = require("../utils/util");
 const asset_1 = require("./asset");
+const shaders_1 = require("../builtin-assets/shaders");
 var FilterMode;
 (function (FilterMode) {
     FilterMode[FilterMode["Linear"] = WebGL2RenderingContext.LINEAR] = "Linear";
@@ -145,10 +146,10 @@ function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMo
     gl.viewport(0, 0, width, height);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
     const shader = ctx.assets.shaders.FlipTexture;
-    gl.useProgram(shader.program);
+    shader.use();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, srcTex);
-    gl.uniform1i(shader.builtinUniformLocations.mainTex, 0);
+    gl.uniform1i(shader.uniformLocation(shaders_1.BuiltinUniformNames.mainTex), 0);
     const mesh = ctx.assets.meshes.screenQuad;
     mesh.bind(shader, gl);
     gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
