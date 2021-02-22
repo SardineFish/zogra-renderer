@@ -185,7 +185,8 @@ export function materialDefine<T extends { new (...arg: any[]): Material } >(con
             if (!super.tryInit(required))
                 return false;
             
-            const gl = this.gl;
+            const gl = this.gl || GL();
+            this.gl = gl;
             const shader = this.shader;
             const propertyBlock = this.propertyBlock;
             for (const key in this)

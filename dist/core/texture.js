@@ -151,7 +151,7 @@ function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMo
     gl.bindTexture(gl.TEXTURE_2D, srcTex);
     gl.uniform1i(shader.uniformLocation(shaders_1.BuiltinUniformNames.mainTex), 0);
     const mesh = ctx.assets.meshes.screenQuad;
-    mesh.bind(shader, gl);
+    mesh.bind(shader);
     gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     gl.deleteFramebuffer(fbo);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

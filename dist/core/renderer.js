@@ -168,7 +168,7 @@ class ZograRenderer {
         material.setup(data);
         this.setupTransforms(material.shader, transform);
         this.setupGlobalUniforms(material.shader, data);
-        mesh.bind(material.shader, gl);
+        mesh.bind(material.shader);
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
     }
     drawLines(lines, transform, material) {

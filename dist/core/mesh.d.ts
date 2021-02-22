@@ -15,8 +15,9 @@ export declare class Mesh extends Asset {
     private vertices;
     private indices;
     VBO: WebGLBuffer;
-    private EBO;
+    EBO: WebGLBuffer;
     private gl;
+    private initialized;
     constructor(gl?: WebGL2RenderingContext);
     get verts(): vec3[];
     set verts(verts: vec3[]);
@@ -33,7 +34,8 @@ export declare class Mesh extends Asset {
     clear(): void;
     calculateNormals(angleThreshold?: number): void;
     update(): void;
-    setup(gl: WebGL2RenderingContext): WebGLBuffer[];
-    bind(shader: Shader, gl: WebGL2RenderingContext): void;
+    setup(): WebGLBuffer[];
+    bind(shader: Shader): void;
     destroy(): void;
+    private tryInit;
 }

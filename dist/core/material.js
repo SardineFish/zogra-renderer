@@ -124,7 +124,8 @@ function materialDefine(constructor) {
                 return true;
             if (!super.tryInit(required))
                 return false;
-            const gl = this.gl;
+            const gl = this.gl || global_1.GL();
+            this.gl = gl;
             const shader = this.shader;
             const propertyBlock = this.propertyBlock;
             for (const key in this) {

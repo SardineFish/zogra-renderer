@@ -11,7 +11,6 @@ const asset_1 = require("./asset");
 const VertDataFloatCount = 14;
 class Mesh extends asset_1.Asset {
     constructor(gl = global_1.GL()) {
-        var _a, _b;
         super();
         this._verts = [];
         this._triangles = [];
@@ -23,10 +22,12 @@ class Mesh extends asset_1.Asset {
         this.uploaded = false;
         this.vertices = new Float32Array(0);
         this.indices = new Uint32Array(0);
+        this.VBO = null;
+        this.EBO = null;
+        this.initialized = false;
         this.name = `Mesh_${this.assetID}`;
         this.gl = gl;
-        this.VBO = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.");
-        this.EBO = (_b = gl.createBuffer()) !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.");
+        this.tryInit(false);
     }
     get verts() { return this._verts; }
     set verts(verts) {
@@ -110,8 +111,10 @@ class Mesh extends asset_1.Asset {
             this.uploaded = false;
         }
     }
-    setup(gl) {
+    setup() {
         this.update();
+        this.tryInit(true);
+        const gl = this.gl;
         if (!this.uploaded) {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
             gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
@@ -121,8 +124,9 @@ class Mesh extends asset_1.Asset {
         }
         return [this.VBO, this.EBO];
     }
-    bind(shader, gl) {
-        this.setup(gl);
+    bind(shader) {
+        this.setup();
+        const gl = this.gl;
         const attributes = shader._internal().attributes;
         // Setup VAO
         const stride = VertDataFloatCount * 4;
@@ -156,11 +160,29 @@ class Mesh extends asset_1.Asset {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
     }
     destroy() {
+        if (!this.initialized)
+            return;
         if (this.destroyed)
             return;
         this.gl.deleteBuffer(this.VBO);
         this.gl.deleteBuffer(this.EBO);
         super.destroy();
+    }
+    tryInit(required = false) {
+        var _a, _b;
+        if (this.initialized)
+            return true;
+        const gl = this.gl || global_1.GL();
+        if (!gl) {
+            if (required)
+                throw new Error("Failed to init mesh without global GL context");
+            return false;
+        }
+        this.gl = gl;
+        this.VBO = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.");
+        this.EBO = (_b = gl.createBuffer()) !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.");
+        this.initialized = true;
+        return true;
     }
 }
 exports.Mesh = Mesh;

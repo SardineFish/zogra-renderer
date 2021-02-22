@@ -23,17 +23,22 @@ export class Mesh extends Asset
 
     private vertices = new Float32Array(0);
     private indices = new Uint32Array(0);
-    public VBO: WebGLBuffer;
-    private EBO: WebGLBuffer;
+
+
+    VBO: WebGLBuffer = null as any;
+    EBO: WebGLBuffer = null as any;
+
     private gl: WebGL2RenderingContext;
+
+    private initialized = false;
 
     constructor(gl = GL())
     {
         super();
         this.name = `Mesh_${this.assetID}`;
         this.gl = gl;
-        this.VBO = gl.createBuffer() ?? panic("Failed to create vertex buffer.");
-        this.EBO = gl.createBuffer() ?? panic("Failed to create element buffer.");
+
+        this.tryInit(false);
     }
 
     get verts() { return this._verts; }
@@ -136,9 +141,14 @@ export class Mesh extends Asset
         }
     }
 
-    setup(gl: WebGL2RenderingContext)
+    setup()
     {
         this.update();
+
+        this.tryInit(true);
+
+        const gl = this.gl;
+
         if (!this.uploaded)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
@@ -152,9 +162,11 @@ export class Mesh extends Asset
         return [this.VBO, this.EBO];
     }
 
-    bind(shader: Shader, gl:WebGL2RenderingContext)
+    bind(shader: Shader)
     {
-        this.setup(gl);
+        this.setup();
+
+        const gl = this.gl;
 
         const attributes = shader._internal().attributes;
 
@@ -199,10 +211,36 @@ export class Mesh extends Asset
 
     destroy()
     {
+        if (!this.initialized)
+            return;
         if (this.destroyed)
             return;
         this.gl.deleteBuffer(this.VBO);
         this.gl.deleteBuffer(this.EBO);
         super.destroy();
+    }
+
+    private tryInit(required = false): boolean
+    {
+        if (this.initialized)
+            return true;
+
+        const gl = this.gl || GL();
+
+
+        if (!gl)
+        {
+            if (required)
+                throw new Error("Failed to init mesh without global GL context");
+            return false;
+        }
+        
+        this.gl = gl;
+        this.VBO = gl.createBuffer() ?? panic("Failed to create vertex buffer.");
+        this.EBO = gl.createBuffer() ?? panic("Failed to create element buffer.");
+
+        this.initialized = true;
+
+        return true;
     }
 }
