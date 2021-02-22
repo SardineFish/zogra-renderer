@@ -28,6 +28,9 @@ export class Material extends Asset
     private _shader: Shader;
     propertyBlock: PropertyBlock = {};
     gl: WebGL2RenderingContext;
+
+    protected initialized = false;
+
     constructor(shader: Shader, gl = GL())
     {
         super();
@@ -53,6 +56,8 @@ export class Material extends Asset
 
     setup(data: BindingData)
     {
+        this.tryInit(true);
+
         const gl = data.gl;
         for (const key in this.propertyBlock)
         {
@@ -121,6 +126,22 @@ export class Material extends Asset
         }
         this[key] = value; 
     }
+
+    protected tryInit(required = false): boolean
+    {
+        if (this.initialized)
+            return true;
+        
+        const gl = this.gl || GL();
+        if (!gl)
+        {
+            if (required)
+                throw new Error("Failed to intialize material without global GL context");
+            return false;
+        }
+
+        return true;
+    }
 }
 
 
@@ -146,19 +167,30 @@ export function MaterialFromShader(shader: Shader): typeof MaterialType
     };
 }
 
-export function materialDefine<T extends { new(...arg:any[]): {} }>(constructor: T) : T
+export function materialDefine<T extends { new (...arg: any[]): Material } >(constructor: T) : T
 {
     return class extends constructor
     {
         constructor(...arg: any[])
         {
             super(...arg);
-            const gl = (this as any as Material).gl;
-            const shader = (this as any as Material).shader;
-            const propertyBlock = (this as any as Material).propertyBlock;
+            
+            this.tryInit(false);
+        }
+
+        protected tryInit(required = false): boolean
+        {
+            if (super.initialized)
+                return true;
+            if (!super.tryInit(required))
+                return false;
+            
+            const gl = this.gl;
+            const shader = this.shader;
+            const propertyBlock = this.propertyBlock;
             for (const key in this)
             {
-                const prop = getShaderProp(this as any as Material, key);
+                const prop = getShaderProp(this, key);
                 if (!prop)
                     continue;
                 const loc = shader.uniformLocation(prop?.name);
@@ -169,7 +201,9 @@ export function materialDefine<T extends { new(...arg:any[]): {} }>(constructor:
                     name: prop.name
                 };
             }
-            (this as any as Material).propertyBlock = propertyBlock;
+            this.propertyBlock = propertyBlock;
+            
+            return true;
         }
     }
 }

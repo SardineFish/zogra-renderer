@@ -14,4 +14,5 @@ __exportStar(require("./preview-renderer"), exports);
 __exportStar(require("./render-data"), exports);
 __exportStar(require("./render-pipeline"), exports);
 __exportStar(require("./debug-layer"), exports);
+__exportStar(require("./2d-default"), exports);
 //# sourceMappingURL=rp.js.map

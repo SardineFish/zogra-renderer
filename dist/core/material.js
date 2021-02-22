@@ -9,6 +9,7 @@ class Material extends asset_1.Asset {
     constructor(shader, gl = global_1.GL()) {
         super();
         this.propertyBlock = {};
+        this.initialized = false;
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
         this._shader = shader;
@@ -26,6 +27,7 @@ class Material extends asset_1.Asset {
     }
     setup(data) {
         var _a;
+        this.tryInit(true);
         const gl = data.gl;
         for (const key in this.propertyBlock) {
             const prop = this.propertyBlock[key];
@@ -82,6 +84,17 @@ class Material extends asset_1.Asset {
         }
         this[key] = value;
     }
+    tryInit(required = false) {
+        if (this.initialized)
+            return true;
+        const gl = this.gl || global_1.GL();
+        if (!gl) {
+            if (required)
+                throw new Error("Failed to intialize material without global GL context");
+            return false;
+        }
+        return true;
+    }
 }
 exports.Material = Material;
 const shaderPropMetaKey = Symbol("shaderProp");
@@ -104,6 +117,13 @@ function materialDefine(constructor) {
     return class extends constructor {
         constructor(...arg) {
             super(...arg);
+            this.tryInit(false);
+        }
+        tryInit(required = false) {
+            if (super.initialized)
+                return true;
+            if (!super.tryInit(required))
+                return false;
             const gl = this.gl;
             const shader = this.shader;
             const propertyBlock = this.propertyBlock;
@@ -121,6 +141,7 @@ function materialDefine(constructor) {
                 };
             }
             this.propertyBlock = propertyBlock;
+            return true;
         }
     };
 }

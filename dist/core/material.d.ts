@@ -17,12 +17,14 @@ export declare class Material extends Asset {
     private _shader;
     propertyBlock: PropertyBlock;
     gl: WebGL2RenderingContext;
+    protected initialized: boolean;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
     get shader(): Shader;
     set shader(value: Shader);
     setup(data: BindingData): void;
     setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void;
     setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
+    protected tryInit(required?: boolean): boolean;
 }
 export declare function shaderProp(name: string, type: UniformType): {
     (target: Function): void;
@@ -30,5 +32,5 @@ export declare function shaderProp(name: string, type: UniformType): {
 };
 export declare function MaterialFromShader(shader: Shader): typeof MaterialType;
 export declare function materialDefine<T extends {
-    new (...arg: any[]): {};
+    new (...arg: any[]): Material;
 }>(constructor: T): T;

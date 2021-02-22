@@ -10,3 +10,4 @@ export * from "./math";
 export * from "./mat4";
 export * from "./quat";
 export * from "./ray";
+export * from "./rect";

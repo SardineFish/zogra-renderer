@@ -20,4 +20,5 @@ __exportStar(require("./math"), exports);
 __exportStar(require("./mat4"), exports);
 __exportStar(require("./quat"), exports);
 __exportStar(require("./ray"), exports);
+__exportStar(require("./rect"), exports);
 //# sourceMappingURL=types.js.map

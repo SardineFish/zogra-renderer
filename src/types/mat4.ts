@@ -82,29 +82,49 @@ Matrix4x4.transpose = (m: mat4)=>
 {
     return glMat4.transpose(glMat4.create(), m);
 }
-Matrix4x4.ortho = (height: number, aspect: number, near: number, far: number) =>
+function simpleOrthogonal(height: number, aspect: number, near: number, far: number)
 {
     const out = glMat4.create();
     glMat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);
     return out;
-    out[0] = 2 / (aspect * height);
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = 2 / height;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = -2 / (far - near);
-    out[11] = -(far + near) / (far - near);
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-    return out;
 }
+
+function orthogonal(height: number, aspect: number, near: number, far: number): mat4
+function orthogonal(left: number, right: number, bottom: number, top: number, near: number, far: number): mat4
+function orthogonal(...args: number[]): mat4
+{
+    if (args.length === 4)
+        return simpleOrthogonal(...(args as [number, number, number, number]));
+
+    const out = glMat4.create();
+    glMat4.ortho(...([out, ...args] as Parameters<typeof glMat4.ortho>));
+    return out;
+    
+}
+Matrix4x4.ortho = orthogonal;
+// (height: number, aspect: number, near: number, far: number) =>
+// {
+//     const out = glMat4.create();
+//     glMat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);
+//     return out;
+//     out[0] = 2 / (aspect * height);
+//     out[1] = 0;
+//     out[2] = 0;
+//     out[3] = 0;
+//     out[4] = 0;
+//     out[5] = 2 / height;
+//     out[6] = 0;
+//     out[7] = 0;
+//     out[8] = 0;
+//     out[9] = 0;
+//     out[10] = -2 / (far - near);
+//     out[11] = -(far + near) / (far - near);
+//     out[12] = 0;
+//     out[13] = 0;
+//     out[14] = 0;
+//     out[15] = 1;
+//     return out;
+// }
 Matrix4x4.rotate = (m: mat4, axis: vec3, rad: number) =>
 {
     return glMat4.rotate(glMat4.create(), m, rad, axis);

@@ -14,13 +14,15 @@ export declare namespace Matrix4x4 {
     var mulVec4: (m: glMat4, v: import("./vec4").Vector4) => import("./vec4").Vector4;
     var perspective: (fov: number, aspect: number, near: number, far: number) => glMat4;
     var transpose: (m: glMat4) => glMat4;
-    var ortho: (height: number, aspect: number, near: number, far: number) => glMat4;
+    var ortho: typeof orthogonal;
     var rotate: (m: glMat4, axis: import("./vec3").Vector3, rad: number) => glMat4;
     var scale: (m: glMat4, scaling: import("./vec3").Vector3) => glMat4;
     var fromRotation: (axis: import("./vec3").Vector3, rad: number) => glMat4;
     var fromScaling: (scaling: import("./vec3").Vector3) => glMat4;
     var mul: ArithmetricFunction<glMat4>;
 }
+declare function orthogonal(height: number, aspect: number, near: number, far: number): mat4;
+declare function orthogonal(left: number, right: number, bottom: number, top: number, near: number, far: number): mat4;
 declare type ArithmetricFunction<T> = {
     (out: T, a: T, b: T): T;
     (a: T, b: T): T;
