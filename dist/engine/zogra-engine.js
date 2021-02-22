@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ZograEngine = void 0;
 const scene_1 = require("./scene");
 const preview_renderer_1 = require("../render-pipeline/preview-renderer");
 const camera_1 = require("./camera");

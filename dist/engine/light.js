@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Light = exports.LightType = void 0;
 const entity_1 = require("./entity");
 const color_1 = require("../types/color");
 var LightType;

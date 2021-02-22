@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.assert = exports.readString = exports.readBlob = exports.mulVector = exports.mulPoint = void 0;
 const gl_matrix_1 = require("gl-matrix");
 function mulPoint(out, m, v) {
     let [x, y, z] = v;

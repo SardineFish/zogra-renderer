@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AssetManager = exports.Asset = void 0;
 const util_1 = require("../utils/util");
 const event_1 = require("./event");
 class Asset {

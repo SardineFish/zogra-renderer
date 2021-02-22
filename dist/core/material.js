@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.materialDefine = exports.MaterialFromShader = exports.shaderProp = exports.Material = void 0;
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
@@ -102,7 +103,6 @@ exports.MaterialFromShader = MaterialFromShader;
 function materialDefine(constructor) {
     return class extends constructor {
         constructor(...arg) {
-            var _a;
             super(...arg);
             const gl = this.gl;
             const shader = this.shader;
@@ -111,7 +111,7 @@ function materialDefine(constructor) {
                 const prop = getShaderProp(this, key);
                 if (!prop)
                     continue;
-                const loc = gl.getUniformLocation(shader.program, (_a = prop) === null || _a === void 0 ? void 0 : _a.name);
+                const loc = gl.getUniformLocation(shader.program, prop === null || prop === void 0 ? void 0 : prop.name);
                 if (!loc)
                     continue;
                 propertyBlock[key] = {

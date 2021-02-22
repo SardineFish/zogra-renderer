@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RenderData = exports.RenderOrder = void 0;
 const render_object_1 = require("../engine/render-object");
 const light_1 = require("../engine/light");
 const mat4_1 = require("../types/mat4");

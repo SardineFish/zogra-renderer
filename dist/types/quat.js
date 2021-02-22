@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.quat = exports.Quaternion = void 0;
 const gl_matrix_1 = require("gl-matrix");
 const vec3_1 = require("./vec3");
 const math_1 = require("./math");

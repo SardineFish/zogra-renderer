@@ -2,17 +2,30 @@
 // export * from "./core/mesh";
 // export * from "./core/material";
 // export * from "./core/builtin-asset";
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.plugins = void 0;
 // export * from "./types/vec2";
 // export * from "./types/vec3";
 // export * from "./types/vec4";
@@ -20,12 +33,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // export * from "./types/math";
 // export * from "./types/mat4";
 // export * from "./core/shader";
-__export(require("./types/types"));
-__export(require("./core/core"));
-__export(require("./engine/engine"));
-__export(require("./render-pipeline/rp"));
+__exportStar(require("./types/types"), exports);
+__exportStar(require("./core/core"), exports);
+__exportStar(require("./engine/engine"), exports);
+__exportStar(require("./render-pipeline/rp"), exports);
 const pluginsExport = __importStar(require("./plugins/plugins"));
 exports.plugins = pluginsExport;
-__export(require("./plugins/plugins"));
-__export(require("./utils/public-utils"));
+__exportStar(require("./plugins/plugins"), exports);
+__exportStar(require("./utils/public-utils"), exports);
+var global_1 = require("./core/global");
+Object.defineProperty(exports, "GlobalContext", { enumerable: true, get: function () { return global_1.GlobalContext; } });
 //# sourceMappingURL=index.js.map

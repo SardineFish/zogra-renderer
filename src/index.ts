@@ -20,3 +20,4 @@ export const plugins = pluginsExport;
 export * from "./plugins/plugins";
 
 export * from "./utils/public-utils";
+export { GLContext, GlobalContext } from "./core/global";

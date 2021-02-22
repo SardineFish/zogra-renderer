@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DebugLayerRenderer = void 0;
 const core_1 = require("../core/core");
 const color_1 = require("../types/color");
 const mat4_1 = require("../types/mat4");

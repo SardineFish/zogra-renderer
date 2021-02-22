@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setImmediate = exports.DoubleBuffer = exports.fillArray = exports.getUniformsLocation = exports.decorator = exports.warn = exports.panic = exports.panicNull = void 0;
 require("reflect-metadata");
 function panicNull(t, msg) {
     if (t === null)

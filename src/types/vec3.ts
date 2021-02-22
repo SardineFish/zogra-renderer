@@ -3,7 +3,8 @@ import { Vector2, vec2 } from "./vec2";
 
 export type vec3 = Vector3;
 
-export class Vector3 extends Array<number>
+const V3Constructor: new (...p: [number, number, number]) => [number, number, number] = Array as any;
+export class Vector3 extends V3Constructor
 {
     get x() { return this[0]; }
     set x(x: number) { this[0] = x; }

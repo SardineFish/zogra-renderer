@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EntityManager = exports.Entity = void 0;
 const transform_1 = require("./transform");
 const asset_1 = require("../core/asset");
 const event_1 = require("../core/event");

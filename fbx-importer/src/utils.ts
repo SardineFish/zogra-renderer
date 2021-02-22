@@ -18,7 +18,10 @@ export function mulVector(out: vec3, m: mat4, v: vec3)
     return out;
 }
 
-
+export function panic(msg?: string): never
+{
+    throw new Error(msg);
+}
 
 export async function readBlob(blob: Blob)
 {

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createBuiltinMesh = void 0;
 const mesh_1 = require("../core/mesh");
 const vec3_1 = require("../types/vec3");
 const vec2_1 = require("../types/vec2");

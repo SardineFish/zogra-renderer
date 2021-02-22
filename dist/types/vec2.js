@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.vec2 = exports.Vector2 = void 0;
 const vec4_1 = require("./vec4");
 const vec3_1 = require("./vec3");
-class Vector2 extends Array {
+const V2Constructor = Array;
+class Vector2 extends V2Constructor {
     get x() { return this[0]; }
     set x(x) { this[0] = x; }
     get y() { return this[1]; }

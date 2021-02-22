@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.extractFBXAssets = void 0;
 const fbx_types_1 = require("./fbx-types");
 const gl_matrix_1 = require("gl-matrix");
 const util_1 = require("../../utils/util");
@@ -50,7 +51,7 @@ function extractFBXAssets(fbx) {
 }
 exports.extractFBXAssets = extractFBXAssets;
 function importModel(node) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     const model = {
         id: node.properties[0],
         name: node.properties[1].split("\0")[0],
@@ -60,15 +61,15 @@ function importModel(node) {
     };
     model.transform = new fbx_types_1.FBXTransform(model);
     const props = node.nestedNodes.find(n => n.name === "Properties70");
-    const translationNode = (_a = props) === null || _a === void 0 ? void 0 : _a.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
-    const rotationNode = (_b = props) === null || _b === void 0 ? void 0 : _b.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
-    const scalingNode = (_c = props) === null || _c === void 0 ? void 0 : _c.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
-    const preRotation = (_d = props) === null || _d === void 0 ? void 0 : _d.nestedNodes.find(n => n.properties[0] === "PreRotation");
-    model.transform.localPosition = gl_matrix_1.vec3.fromValues((_f = (_e = translationNode) === null || _e === void 0 ? void 0 : _e.properties[4], (_f !== null && _f !== void 0 ? _f : 0)), (_h = (_g = translationNode) === null || _g === void 0 ? void 0 : _g.properties[5], (_h !== null && _h !== void 0 ? _h : 0)), (_k = (_j = translationNode) === null || _j === void 0 ? void 0 : _j.properties[6], (_k !== null && _k !== void 0 ? _k : 0)));
-    model.transform.localRotation = gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_m = (_l = rotationNode) === null || _l === void 0 ? void 0 : _l.properties[4], (_m !== null && _m !== void 0 ? _m : 0)), (_p = (_o = rotationNode) === null || _o === void 0 ? void 0 : _o.properties[5], (_p !== null && _p !== void 0 ? _p : 0)), (_r = (_q = rotationNode) === null || _q === void 0 ? void 0 : _q.properties[6], (_r !== null && _r !== void 0 ? _r : 0)));
-    model.transform.localScaling = gl_matrix_1.vec3.fromValues((_t = (_s = scalingNode) === null || _s === void 0 ? void 0 : _s.properties[4], (_t !== null && _t !== void 0 ? _t : 1)), (_v = (_u = scalingNode) === null || _u === void 0 ? void 0 : _u.properties[5], (_v !== null && _v !== void 0 ? _v : 1)), (_x = (_w = scalingNode) === null || _w === void 0 ? void 0 : _w.properties[6], (_x !== null && _x !== void 0 ? _x : 1)));
+    const translationNode = props === null || props === void 0 ? void 0 : props.nestedNodes.find(n => n.properties[0] === "Lcl Translation");
+    const rotationNode = props === null || props === void 0 ? void 0 : props.nestedNodes.find(n => n.properties[0] === "Lcl Rotation");
+    const scalingNode = props === null || props === void 0 ? void 0 : props.nestedNodes.find(n => n.properties[0] === "Lcl Scaling");
+    const preRotation = props === null || props === void 0 ? void 0 : props.nestedNodes.find(n => n.properties[0] === "PreRotation");
+    model.transform.localPosition = gl_matrix_1.vec3.fromValues(((_a = translationNode === null || translationNode === void 0 ? void 0 : translationNode.properties[4]) !== null && _a !== void 0 ? _a : 0), ((_b = translationNode === null || translationNode === void 0 ? void 0 : translationNode.properties[5]) !== null && _b !== void 0 ? _b : 0), ((_c = translationNode === null || translationNode === void 0 ? void 0 : translationNode.properties[6]) !== null && _c !== void 0 ? _c : 0));
+    model.transform.localRotation = gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), ((_d = rotationNode === null || rotationNode === void 0 ? void 0 : rotationNode.properties[4]) !== null && _d !== void 0 ? _d : 0), ((_e = rotationNode === null || rotationNode === void 0 ? void 0 : rotationNode.properties[5]) !== null && _e !== void 0 ? _e : 0), ((_f = rotationNode === null || rotationNode === void 0 ? void 0 : rotationNode.properties[6]) !== null && _f !== void 0 ? _f : 0));
+    model.transform.localScaling = gl_matrix_1.vec3.fromValues(((_g = scalingNode === null || scalingNode === void 0 ? void 0 : scalingNode.properties[4]) !== null && _g !== void 0 ? _g : 1), ((_h = scalingNode === null || scalingNode === void 0 ? void 0 : scalingNode.properties[5]) !== null && _h !== void 0 ? _h : 1), ((_j = scalingNode === null || scalingNode === void 0 ? void 0 : scalingNode.properties[6]) !== null && _j !== void 0 ? _j : 1));
     if (preRotation) {
-        model.transform.localRotation = gl_matrix_1.quat.mul(model.transform.localRotation, gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_y = preRotation.properties[4], (_y !== null && _y !== void 0 ? _y : 0)), (_z = preRotation.properties[5], (_z !== null && _z !== void 0 ? _z : 0)), (_0 = preRotation.properties[6], (_0 !== null && _0 !== void 0 ? _0 : 0))), model.transform.localRotation);
+        model.transform.localRotation = gl_matrix_1.quat.mul(model.transform.localRotation, gl_matrix_1.quat.fromEuler(gl_matrix_1.quat.create(), (_k = preRotation.properties[4]) !== null && _k !== void 0 ? _k : 0, (_l = preRotation.properties[5]) !== null && _l !== void 0 ? _l : 0, (_m = preRotation.properties[6]) !== null && _m !== void 0 ? _m : 0), model.transform.localRotation);
     }
     return model;
 }
@@ -76,8 +77,8 @@ function importGeometry(node) {
     var _a, _b, _c, _d, _e;
     const geometryID = node.properties[0];
     const geometryName = node.properties[1].split("\0")[0];
-    const vertsArr = (_b = (_a = node.nestedNodes.find(n => n.name === "Vertices")) === null || _a === void 0 ? void 0 : _a.properties[0], (_b !== null && _b !== void 0 ? _b : new Float64Array()));
-    const polygonArr = (_d = (_c = node.nestedNodes.find(n => n.name === "PolygonVertexIndex")) === null || _c === void 0 ? void 0 : _c.properties[0], (_d !== null && _d !== void 0 ? _d : new Int32Array()));
+    const vertsArr = ((_b = (_a = node.nestedNodes.find(n => n.name === "Vertices")) === null || _a === void 0 ? void 0 : _a.properties[0]) !== null && _b !== void 0 ? _b : new Float64Array());
+    const polygonArr = ((_d = (_c = node.nestedNodes.find(n => n.name === "PolygonVertexIndex")) === null || _c === void 0 ? void 0 : _c.properties[0]) !== null && _d !== void 0 ? _d : new Int32Array());
     const normalNode = node.nestedNodes.find(n => n.name === "LayerElementNormal");
     const uv0Node = node.nestedNodes.find(n => n.name === "LayerElementUV" && n.properties[0] === 0);
     const uv1Node = node.nestedNodes.find(n => n.name === "LayerElementUV" && n.properties[0] === 1);
@@ -123,7 +124,7 @@ function importGeometry(node) {
         const materialPolygons = new Map();
         const mappingInfoType = prop(matNode, "MappingInformationType");
         const refInfoType = prop(matNode, "ReferenceInformationType");
-        const materials = (_e = prop(matNode, "Materials"), (_e !== null && _e !== void 0 ? _e : util_1.panic("Missing materials.")));
+        const materials = (_e = prop(matNode, "Materials")) !== null && _e !== void 0 ? _e : util_1.panic("Missing materials.");
         if (mappingInfoType === "AllSame") {
             return [{
                     id: geometryID,
@@ -199,7 +200,7 @@ function importGeometry(node) {
 }
 function extractVertexData(node, propName, polygons, verts, dataWrapper) {
     var _a, _b, _c;
-    const dataProp = (_a = prop(node, propName), (_a !== null && _a !== void 0 ? _a : util_1.panic(`Invalid data format of '${propName}'.`)));
+    const dataProp = (_a = prop(node, propName)) !== null && _a !== void 0 ? _a : util_1.panic(`Invalid data format of '${propName}'.`);
     const dataSet = dataWrapper(dataProp);
     let vertexDataSet = new Array(verts.length);
     const mappingInfoType = prop(node, "MappingInformationType");
@@ -213,7 +214,7 @@ function extractVertexData(node, propName, polygons, verts, dataWrapper) {
             }
         }
         else if (refInfoType === "IndexToDirect") {
-            const dataIndex = (_b = prop(node, `${propName}Index`), (_b !== null && _b !== void 0 ? _b : util_1.panic(`${propName}Index missing.`)));
+            const dataIndex = (_b = prop(node, `${propName}Index`)) !== null && _b !== void 0 ? _b : util_1.panic(`${propName}Index missing.`);
             utils_1.assert(dataIndex.length === verts.length, `Length of ${propName}Index missmatch.`);
             for (let i = 0; i < polygons.length; i++) {
                 for (let j = 0; j < polygons[i].length; j++)
@@ -227,7 +228,7 @@ function extractVertexData(node, propName, polygons, verts, dataWrapper) {
             vertexDataSet = dataSet;
         }
         else if (refInfoType === "IndexToDirect") {
-            const dataIndex = (_c = prop(node, `${propName}Index`), (_c !== null && _c !== void 0 ? _c : util_1.panic(`${propName}Index missing.`)));
+            const dataIndex = (_c = prop(node, `${propName}Index`)) !== null && _c !== void 0 ? _c : util_1.panic(`${propName}Index missing.`);
             utils_1.assert(dataIndex.length === verts.length, `Length of ${propName}Index missmatch.`);
             for (let i = 0; i < dataIndex.length; i++)
                 vertexDataSet[i] = dataSet[dataIndex[i]];

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.PreviewRenderer = void 0;
 const mat4_1 = require("../types/mat4");
 const render_data_1 = require("./render-data");
 const color_1 = require("../types/color");

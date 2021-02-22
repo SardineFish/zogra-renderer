@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RenderObject = void 0;
 const global_1 = require("../core/global");
 const entity_1 = require("./entity");
 class RenderObject extends entity_1.Entity {

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FBXImporter = void 0;
 const types_1 = require("../assets-importer/types");
 const global_1 = require("../../core/global");
 const color_1 = require("../../types/color");
@@ -32,7 +33,7 @@ function toManagedAssets(resource, ctx = global_1.GlobalContext()) {
         obj.localScaling = vec3_1.vec3.from(model.transform.localScaling);
         obj.meshes = model.meshes.map(meshConverter);
         obj.meshes.forEach((m, i) => pack.add(`${obj.name}_${i}`, m));
-        obj.materials = model.meshes.map(mesh => { var _a; return (_a = resourceMap.get(mesh.material.id), (_a !== null && _a !== void 0 ? _a : ctx.assets.materials.default)); });
+        obj.materials = model.meshes.map(mesh => { var _a; return ((_a = resourceMap.get(mesh.material.id)) !== null && _a !== void 0 ? _a : ctx.assets.materials.default); });
         resourceMap.set(model.id, obj);
     }
     const wrapper = new engine_1.Entity();

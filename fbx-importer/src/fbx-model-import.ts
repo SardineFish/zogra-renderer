@@ -1,6 +1,6 @@
 import { FBXFile, FBXModel, FBXTransform, FBXNode, FBXMesh, FBXPropertyType, FBXMaterial, FBXAssets } from "./fbx-types";
 import { vec3, quat, vec2, vec4 } from "gl-matrix";
-import { panic } from "../../utils/util";
+import { panic } from "./utils";
 import { assert } from "./utils";
 
 type Resource = {

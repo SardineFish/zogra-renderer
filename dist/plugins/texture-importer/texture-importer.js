@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TextureImporter = void 0;
 const types_1 = require("../assets-importer/types");
 const core_1 = require("../../core/core");
 const texture_format_1 = require("../../core/texture-format");

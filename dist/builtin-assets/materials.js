@@ -6,6 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createBuiltinMaterialTypes = exports.createBuiltinMaterial = void 0;
 const material_1 = require("../core/material");
 const color_1 = require("../types/color");
 const material_type_1 = require("../core/material-type");

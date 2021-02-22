@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.mapGLFormat = exports.TextureFormat = void 0;
 var TextureFormat;
 (function (TextureFormat) {
     TextureFormat[TextureFormat["RGB"] = 1] = "RGB";

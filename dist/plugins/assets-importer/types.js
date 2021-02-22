@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AssetsPack = void 0;
 class AssetsPack {
     constructor() {
         this.mainAsset = null;

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ZograRenderer = void 0;
 const util_1 = require("../utils/util");
 const global_1 = require("./global");
 const vec3_1 = require("../types/vec3");

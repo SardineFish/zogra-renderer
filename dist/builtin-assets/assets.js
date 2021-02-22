@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BuiltinAssets = void 0;
 const materials_1 = require("./materials");
 const shaders_1 = require("./shaders");
 const textures_1 = require("./textures");

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RenderTexture = exports.DepthTexture = exports.Texture2D = exports.Texture = exports.WrapMode = exports.FilterMode = void 0;
 const global_1 = require("./global");
 const texture_format_1 = require("./texture-format");
 const util_1 = require("../utils/util");
@@ -31,7 +32,7 @@ class TextureBase extends asset_1.Asset {
         this.width = width;
         this.height = height;
         this.filterMode = filterMode;
-        this.glTex = (_a = gl.createTexture(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.")));
+        this.glTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
     }
     setup() {
         const gl = this.ctx.gl;
@@ -123,7 +124,7 @@ exports.RenderTexture = RenderTexture;
 function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMode, mipmapLevel) {
     var _a, _b;
     const gl = ctx.gl;
-    const srcTex = (_a = gl.createTexture(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.")));
+    const srcTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
     const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, texFormat);
     gl.bindTexture(gl.TEXTURE_2D, srcTex);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -138,7 +139,7 @@ function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMo
         src = src;
         gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, internalFormat, width, height, 0, format, type, src);
     }
-    const fbo = (_b = gl.createFramebuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create frame buffer")));
+    const fbo = (_b = gl.createFramebuffer()) !== null && _b !== void 0 ? _b : util_1.panic("Failed to create frame buffer");
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst, 0);
     gl.viewport(0, 0, width, height);

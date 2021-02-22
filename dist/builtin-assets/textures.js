@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createDefaultTextures = void 0;
 const util_1 = require("../utils/util");
 const texture_1 = require("../core/texture");
 const texture_format_1 = require("../core/texture-format");
@@ -8,7 +9,7 @@ function createDefaultTextures(context) {
     const size = 64;
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = size;
-    const ctx = (_a = canvas.getContext("2d"), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create default texture.")));
+    const ctx = (_a = canvas.getContext("2d")) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create default texture.");
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, size, size);
     ctx.fillStyle = "cyan";

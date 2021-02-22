@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Scene = void 0;
 const entity_1 = require("./entity");
 const event_1 = require("../core/event");
 const core_1 = require("../core/core");

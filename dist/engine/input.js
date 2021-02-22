@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Keys = exports.InputManager = exports.KeyState = void 0;
 const vec2_1 = require("../types/vec2");
 const math_1 = require("../types/math");
 const util_1 = require("../utils/util");
@@ -35,7 +36,7 @@ class InputManager {
             this.bound = options.bound;
         else if ((_a = options.target) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect)
             this.bound = options.target;
-        this.pointerLockElement = (_b = options.pointerLockElement, (_b !== null && _b !== void 0 ? _b : document.body));
+        this.pointerLockElement = (_b = options.pointerLockElement) !== null && _b !== void 0 ? _b : document.body;
         this.eventTarget.addEventListener("keydown", (e) => {
             this.states.back.keyStates.set(e.keyCode, KeyState.Pressed);
             this.states.back.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
@@ -49,10 +50,10 @@ class InputManager {
             this.states.back.keyStatesThisFrame.set(e.keyCode, KeyState.Released);
         });
         this.eventTarget.addEventListener("mousedown", e => {
-            var _a, _b;
+            var _a;
             const rect = (_a = this.bound) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
             if (rect) {
-                const offset = vec2_1.vec2(rect.left, (_b = rect) === null || _b === void 0 ? void 0 : _b.top);
+                const offset = vec2_1.vec2(rect.left, rect === null || rect === void 0 ? void 0 : rect.top);
                 const pos = math_1.minus(vec2_1.vec2(e.clientX, e.clientY), offset);
                 if (pos.x < 0 || pos.y < 0 || pos.x > rect.width || pos.y > rect.height)
                     return;
@@ -61,10 +62,10 @@ class InputManager {
             this.states.back.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Pressed);
         });
         this.eventTarget.addEventListener("mouseup", e => {
-            var _a, _b;
+            var _a;
             const rect = (_a = this.bound) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
             if (rect) {
-                const offset = vec2_1.vec2(rect.left, (_b = rect) === null || _b === void 0 ? void 0 : _b.top);
+                const offset = vec2_1.vec2(rect.left, rect === null || rect === void 0 ? void 0 : rect.top);
                 const pos = math_1.minus(vec2_1.vec2(e.clientX, e.clientY), offset);
                 if (pos.x < 0 || pos.y < 0 || pos.x > rect.width || pos.y > rect.height)
                     return;
@@ -73,9 +74,9 @@ class InputManager {
             this.states.back.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Released);
         });
         this.eventTarget.addEventListener("mousemove", e => {
-            var _a, _b, _c, _d, _e;
+            var _a, _b, _c;
             const rect = (_a = this.bound) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
-            const offset = vec2_1.vec2((_c = (_b = rect) === null || _b === void 0 ? void 0 : _b.left, (_c !== null && _c !== void 0 ? _c : 0)), (_e = (_d = rect) === null || _d === void 0 ? void 0 : _d.top, (_e !== null && _e !== void 0 ? _e : 0)));
+            const offset = vec2_1.vec2((_b = rect === null || rect === void 0 ? void 0 : rect.left) !== null && _b !== void 0 ? _b : 0, (_c = rect === null || rect === void 0 ? void 0 : rect.top) !== null && _c !== void 0 ? _c : 0);
             const pos = math_1.minus(vec2_1.vec2(e.clientX, e.clientY), offset);
             this.states.back.mouseDelta.plus(vec2_1.vec2(e.movementX, e.movementY));
             // if (this.mouseDelta.magnitude > 100)

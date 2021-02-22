@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MeshBuilder = void 0;
 const types_1 = require("../types/types");
 const global_1 = require("../core/global");
 const mesh_1 = require("../core/mesh");

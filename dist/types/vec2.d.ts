@@ -1,7 +1,8 @@
 import { Vector4 } from "./vec4";
 import { Vector3 } from "./vec3";
 export declare type vec2 = Vector2;
-export declare class Vector2 extends Array<number> {
+declare const V2Constructor: new (...p: [number, number]) => [number, number];
+export declare class Vector2 extends V2Constructor {
     get x(): number;
     set x(x: number);
     get y(): number;
@@ -55,3 +56,4 @@ export declare namespace vec2 {
     var down: typeof Vector2.down;
     var up: typeof Vector2.up;
 }
+export {};

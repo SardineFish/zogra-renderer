@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Rad2Deg = exports.Deg2Rad = exports.cross = exports.dot = exports.div = exports.mul = exports.minus = exports.plus = void 0;
 const vec3_1 = require("./vec3");
 const vec4_1 = require("./vec4");
 const vec2_1 = require("./vec2");

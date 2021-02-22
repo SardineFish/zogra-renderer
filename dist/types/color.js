@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.rgb = exports.rgba = exports.Color = void 0;
 const vec4_1 = require("./vec4");
 class Color extends vec4_1.Vector4 {
     get r() { return this[0]; }

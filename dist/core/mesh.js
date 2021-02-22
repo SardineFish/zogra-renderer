@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Mesh = void 0;
 const vec3_1 = require("../types/vec3");
 const vec2_1 = require("../types/vec2");
 const color_1 = require("../types/color");
@@ -24,8 +25,8 @@ class Mesh extends asset_1.Asset {
         this.indices = new Uint32Array(0);
         this.name = `Mesh_${this.assetID}`;
         this.gl = gl;
-        this.VBO = (_a = gl.createBuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.")));
-        this.EBO = (_b = gl.createBuffer(), (_b !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.")));
+        this.VBO = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.");
+        this.EBO = (_b = gl.createBuffer()) !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.");
     }
     get verts() { return this._verts; }
     set verts(verts) {

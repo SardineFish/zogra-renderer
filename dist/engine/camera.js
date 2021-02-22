@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Camera = exports.Projection = void 0;
 const texture_1 = require("../core/texture");
 const render_target_1 = require("../core/render-target");
 const global_1 = require("../core/global");

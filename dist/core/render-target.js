@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RenderTarget = void 0;
 const global_1 = require("./global");
 const util_1 = require("../utils/util");
 const FrameBufferAttachment = {
@@ -17,7 +18,7 @@ class RenderTarget {
         if (!ctx)
             this.frameBuffer = null;
         else
-            this.frameBuffer = (_a = ctx.gl.createFramebuffer(), (_a !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer")));
+            this.frameBuffer = (_a = ctx.gl.createFramebuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer");
     }
     addColorAttachment(rt) {
         if (rt === null) {
@@ -33,14 +34,14 @@ class RenderTarget {
         this.colorAttachments.push(FrameBufferAttachment.fromRenderTexture(rt));
     }
     setDepthAttachment(rt) {
-        var _a, _b;
+        var _a;
         if (this.width == 0 && this.height == 0) {
             this.width = rt.width;
             this.height = rt.height;
         }
         if (this.width != rt.width || this.height != rt.height)
             throw new Error("Framebuffer attachments must in same resolution.");
-        this.depthAttachment = { tex: (_b = (_a = rt) === null || _a === void 0 ? void 0 : _a.glTex, (_b !== null && _b !== void 0 ? _b : null)), attachPoint: WebGL2RenderingContext.DEPTH_ATTACHMENT };
+        this.depthAttachment = { tex: (_a = rt === null || rt === void 0 ? void 0 : rt.glTex) !== null && _a !== void 0 ? _a : null, attachPoint: WebGL2RenderingContext.DEPTH_ATTACHMENT };
     }
     bind(ctx = global_1.GlobalContext()) {
         const gl = ctx.gl;

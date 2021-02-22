@@ -2,7 +2,6 @@ import { Camera } from "../engine/camera";
 import { RenderObject } from "../engine/render-object";
 import { Light } from "../engine/light";
 import { Scene } from "../engine/scene";
-import linq from "linq";
 import { vec3, Vector3 } from "../types/vec3";
 import { dot } from "../types/math";
 import { mat4 } from "../types/mat4";

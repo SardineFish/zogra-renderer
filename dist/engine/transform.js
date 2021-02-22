@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Transform = void 0;
 const mat4_1 = require("../types/mat4");
 const vec3_1 = require("../types/vec3");
 const quat_1 = require("../types/quat");
