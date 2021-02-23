@@ -123,7 +123,7 @@ class ZograRenderer {
         if (src)
             this.setGlobalTexture(shaders_1.BuiltinUniformNames.mainTex, src);
         else
-            this.unsetGlobalTexture(shaders_1.BuiltinUniformNames.mainTex);
+            this.setGlobalTexture(shaders_1.BuiltinUniformNames.mainTex, this.assets.textures.default);
         this.drawMesh(mesh, mat4_1.mat4.identity(), material);
         this.unsetGlobalTexture(shaders_1.BuiltinUniformNames.mainTex);
         this.setRenderTarget(prevTarget);

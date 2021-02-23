@@ -42,9 +42,13 @@ function createBuiltinMaterialTypes(gl, builtinTexs, shaders) {
     let BlitCopy = class BlitCopy extends material_1.MaterialFromShader(shaders.BlitCopy) {
         constructor() {
             super(...arguments);
+            this.source = null;
             this.flip = vec2_1.vec2(0, 0);
         }
     };
+    __decorate([
+        material_1.shaderProp("uMainTex", "tex2d")
+    ], BlitCopy.prototype, "source", void 0);
     __decorate([
         material_1.shaderProp("uFlip", "vec2")
     ], BlitCopy.prototype, "flip", void 0);

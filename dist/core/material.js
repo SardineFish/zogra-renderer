@@ -16,7 +16,7 @@ const shaders_1 = require("../builtin-assets/shaders");
 class Material extends asset_1.Asset {
     constructor(shader, gl = global_1.GL()) {
         super();
-        this.propertyBlock = {};
+        this.properties = {};
         this.initialized = false;
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
@@ -27,9 +27,9 @@ class Material extends asset_1.Asset {
         const gl = this.gl;
         if (value != this._shader) {
             this._shader = value;
-            for (const key in this.propertyBlock) {
-                const loc = this._shader.uniformLocation(this.propertyBlock[key].name);
-                this.propertyBlock[key].location = loc;
+            for (const key in this.properties) {
+                const loc = this._shader.uniformLocation(this.properties[key].name);
+                this.properties[key].location = loc;
             }
         }
     }
@@ -37,8 +37,8 @@ class Material extends asset_1.Asset {
         var _a;
         this.tryInit(true);
         const gl = data.gl;
-        for (const key in this.propertyBlock) {
-            const prop = this.propertyBlock[key];
+        for (const key in this.properties) {
+            const prop = this.properties[key];
             switch (prop.type) {
                 case "float":
                     gl.uniform1f(prop.location, this[key]);
@@ -77,13 +77,13 @@ class Material extends asset_1.Asset {
             type = nameOrType;
             value = typeOrValue;
         }
-        if (this.propertyBlock[key]) {
-            this.propertyBlock[key].type = type;
+        if (this.properties[key]) {
+            this.properties[key].type = type;
         }
         else {
             const loc = this.shader.uniformLocation(name);
             if (loc) {
-                this.propertyBlock[key] = {
+                this.properties[key] = {
                     location: loc,
                     type: type,
                     name: name
@@ -155,7 +155,7 @@ function materialDefine(constructor) {
             const gl = this.gl || global_1.GL();
             this.gl = gl;
             const shader = this.shader;
-            const propertyBlock = this.propertyBlock;
+            const propertyBlock = this.properties;
             for (const key in this) {
                 const prop = getShaderProp(this, key);
                 if (!prop)
@@ -169,7 +169,7 @@ function materialDefine(constructor) {
                     name: prop.name
                 };
             }
-            this.propertyBlock = propertyBlock;
+            this.properties = propertyBlock;
             return true;
         }
     };

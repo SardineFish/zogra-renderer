@@ -5,7 +5,7 @@ import "reflect-metadata";
 import { BindingData, UniformValueType } from "./types";
 import { UniformType } from "./types";
 import { Asset } from "./asset";
-export interface PropertyBlock {
+export interface MaterialProperties {
     [key: string]: {
         type: UniformType;
         location: WebGLUniformLocation;
@@ -15,7 +15,7 @@ export interface PropertyBlock {
 export declare class Material extends Asset {
     [key: string]: any;
     private _shader;
-    propertyBlock: PropertyBlock;
+    properties: MaterialProperties;
     gl: WebGL2RenderingContext;
     protected initialized: boolean;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);

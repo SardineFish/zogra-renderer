@@ -33,6 +33,8 @@ export function createBuiltinMaterialTypes(gl: WebGL2RenderingContext, builtinTe
     @materialDefine
     class BlitCopy extends MaterialFromShader(shaders.BlitCopy)
     {
+        @shaderProp("uMainTex", "tex2d")
+        source: Texture | null = null;
         @shaderProp("uFlip", "vec2")
         flip: vec2 = vec2(0, 0);
     }

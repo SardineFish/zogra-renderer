@@ -14,7 +14,7 @@ import { UniformType } from "./types"
 import { Asset } from "./asset";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
 
-export interface PropertyBlock
+export interface MaterialProperties
 {
     [key: string]: {
         type: UniformType,
@@ -27,7 +27,7 @@ export class Material extends Asset
 {
     [key: string]: any;
     private _shader: Shader;
-    propertyBlock: PropertyBlock = {};
+    properties: MaterialProperties = {};
     gl: WebGL2RenderingContext;
 
     protected initialized = false;
@@ -47,10 +47,10 @@ export class Material extends Asset
         if (value != this._shader)
         {
             this._shader = value;
-            for (const key in this.propertyBlock)
+            for (const key in this.properties)
             {
-                const loc = this._shader.uniformLocation(this.propertyBlock[key].name);
-                this.propertyBlock[key].location = loc as WebGLUniformLocation;
+                const loc = this._shader.uniformLocation(this.properties[key].name);
+                this.properties[key].location = loc as WebGLUniformLocation;
             }
         }
     }
@@ -60,9 +60,9 @@ export class Material extends Asset
         this.tryInit(true);
 
         const gl = data.gl;
-        for (const key in this.propertyBlock)
+        for (const key in this.properties)
         {
-            const prop = this.propertyBlock[key];
+            const prop = this.properties[key];
             switch (prop.type)
             {
                 case "float":
@@ -109,16 +109,16 @@ export class Material extends Asset
             value = typeOrValue as UniformValueType<T>;
         }
             
-        if (this.propertyBlock[key])
+        if (this.properties[key])
         {
-            this.propertyBlock[key].type = type;
+            this.properties[key].type = type;
         }
         else
         {
             const loc = this.shader.uniformLocation(name);
             if (loc)
             {
-                this.propertyBlock[key] = {
+                this.properties[key] = {
                     location: loc,
                     type: type,
                     name: name
@@ -204,7 +204,7 @@ export function materialDefine<T extends { new (...arg: any[]): Material } >(con
             const gl = this.gl || GL();
             this.gl = gl;
             const shader = this.shader;
-            const propertyBlock = this.propertyBlock;
+            const propertyBlock = this.properties;
             for (const key in this)
             {
                 const prop = getShaderProp(this, key);
@@ -218,7 +218,7 @@ export function materialDefine<T extends { new (...arg: any[]): Material } >(con
                     name: prop.name
                 };
             }
-            this.propertyBlock = propertyBlock;
+            this.properties = propertyBlock;
             
             return true;
         }

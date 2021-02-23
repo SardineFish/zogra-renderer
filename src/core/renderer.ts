@@ -189,8 +189,8 @@ export class ZograRenderer
         this.viewProjectionMatrix = mat4.identity();
         if (src)
             this.setGlobalTexture(BuiltinUniformNames.mainTex, src);
-        else 
-            this.unsetGlobalTexture(BuiltinUniformNames.mainTex);
+        else
+            this.setGlobalTexture(BuiltinUniformNames.mainTex, this.assets.textures.default);
 
         this.drawMesh(mesh, mat4.identity(), material);
 
