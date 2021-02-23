@@ -23,11 +23,11 @@ export declare abstract class Texture extends Asset {
     abstract get size(): vec2;
     abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
-export declare enum ImageResize {
+export declare enum TextureResizing {
     Discard = 0,
     Stretch = 1,
-    Contain = 2,
-    Fit = 3,
+    Cover = 2,
+    Contain = 3,
     KeepLower = 4,
     KeepHigher = 5,
     Center = 6
@@ -48,7 +48,7 @@ declare class TextureBase extends Asset implements Texture {
     glTex(): WebGLTexture;
     bind(location: WebGLUniformLocation, data: BindingData): void;
     destroy(): void;
-    resize(width: number, height: number, textureContent?: ImageResize): void;
+    resize(width: number, height: number, textureContent?: TextureResizing): void;
     /**
      * Create & allocate texture if not
      */

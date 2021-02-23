@@ -72,7 +72,7 @@ export class RenderTarget
         if (this.isCanvasTarget)
         {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            // gl.viewport(0, 0, ctx.width, ctx.height);
+            gl.viewport(0, 0, ctx.width, ctx.height);
         }
         else
         {
@@ -90,7 +90,7 @@ export class RenderTarget
 
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthAttachment.tex, 0);
 
-            // gl.viewport(0, 0, this.width, this.height);
+            gl.viewport(0, 0, this.width, this.height);
             const buffers = this.colorAttachments.map(t => t.attachPoint);
             gl.drawBuffers(buffers);
         }

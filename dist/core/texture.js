@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderTexture = exports.DepthTexture = exports.Texture2D = exports.ImageResize = exports.Texture = exports.WrapMode = exports.FilterMode = void 0;
+exports.RenderTexture = exports.DepthTexture = exports.Texture2D = exports.TextureResizing = exports.Texture = exports.WrapMode = exports.FilterMode = void 0;
 const global_1 = require("./global");
 const texture_format_1 = require("./texture-format");
 const util_1 = require("../utils/util");
@@ -22,16 +22,16 @@ var WrapMode;
 class Texture extends asset_1.Asset {
 }
 exports.Texture = Texture;
-var ImageResize;
-(function (ImageResize) {
-    ImageResize[ImageResize["Discard"] = 0] = "Discard";
-    ImageResize[ImageResize["Stretch"] = 1] = "Stretch";
-    ImageResize[ImageResize["Contain"] = 2] = "Contain";
-    ImageResize[ImageResize["Fit"] = 3] = "Fit";
-    ImageResize[ImageResize["KeepLower"] = 4] = "KeepLower";
-    ImageResize[ImageResize["KeepHigher"] = 5] = "KeepHigher";
-    ImageResize[ImageResize["Center"] = 6] = "Center";
-})(ImageResize = exports.ImageResize || (exports.ImageResize = {}));
+var TextureResizing;
+(function (TextureResizing) {
+    TextureResizing[TextureResizing["Discard"] = 0] = "Discard";
+    TextureResizing[TextureResizing["Stretch"] = 1] = "Stretch";
+    TextureResizing[TextureResizing["Cover"] = 2] = "Cover";
+    TextureResizing[TextureResizing["Contain"] = 3] = "Contain";
+    TextureResizing[TextureResizing["KeepLower"] = 4] = "KeepLower";
+    TextureResizing[TextureResizing["KeepHigher"] = 5] = "KeepHigher";
+    TextureResizing[TextureResizing["Center"] = 6] = "Center";
+})(TextureResizing = exports.TextureResizing || (exports.TextureResizing = {}));
 class TextureBase extends asset_1.Asset {
     constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
         super();
@@ -68,25 +68,25 @@ class TextureBase extends asset_1.Asset {
         gl.deleteTexture(this._glTex);
         super.destroy();
     }
-    resize(width, height, textureContent = ImageResize.Discard) {
+    resize(width, height, textureContent = TextureResizing.Discard) {
         this.tryInit(true);
         const gl = this.ctx.gl;
         let oldTex = TextureBase.wrapGlTex(this._glTex, this.width, this.height, this.format, this.filterMode, this.ctx);
         let newTex = new RenderTexture(width, height, false, this.format, this.filterMode, this.ctx);
         newTex.create();
         const prevSize = this.size;
+        this.width = width;
+        this.height = height;
         switch (textureContent) {
-            case ImageResize.Discard:
-                break;
-            case ImageResize.Contain:
-                const [srcRect, dstrEect] = image_sizing_1.imageResize(prevSize, this.size, textureContent);
-                this.ctx.renderer.blit(oldTex, newTex, this.ctx.assets.materials.blitCopy, srcRect, dstrEect);
+            case TextureResizing.Discard:
                 break;
             default:
-                throw new Error("Not implement");
+                const [srcRect, dstrEect] = image_sizing_1.imageResize(prevSize, newTex.size, textureContent);
+                this.ctx.renderer.blit(oldTex, newTex, this.ctx.assets.materials.blitCopy, srcRect, dstrEect);
+                break;
         }
         this._glTex = newTex._glTex;
-        gl.deleteTexture(oldTex);
+        gl.deleteTexture(oldTex._glTex);
     }
     /**
      * Create & allocate texture if not

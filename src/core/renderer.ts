@@ -35,7 +35,7 @@ export class ZograRenderer
 
     private target: RenderTarget = RenderTarget.CanvasTarget;
     private shader: Shader | null = null;
-    private viewport: Rect;
+    private scissor: Rect;
     private globalUniforms = new Map<string, GlobalUniform>();
     private globalTextures = new Map<string, GlobalTexture>();
 
@@ -51,7 +51,7 @@ export class ZograRenderer
         this.height = height === undefined ? canvasElement.height : height;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        this.viewport = new Rect(vec2.zero(), vec2(this.width, this.height));
+        this.scissor = new Rect(vec2.zero(), vec2(this.width, this.height));
 
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
 
@@ -70,7 +70,7 @@ export class ZograRenderer
         
         this.helperAssets = {
             clipBlitMesh: MeshBuilder.ndcQuad(),
-            blitMesh: MeshBuilder.ndcQuad(),
+            blitMesh: MeshBuilder.ndcTriangle(),
         };
     }
 
@@ -126,7 +126,7 @@ export class ZograRenderer
             this.target.setDepthAttachment(depthAttachment);
         
 
-        this.viewport = new Rect(vec2.zero(), this.target.size);
+        this.scissor = new Rect(vec2.zero(), this.target.size);
         this.target.bind(this.ctx);
     }
 
@@ -163,7 +163,7 @@ export class ZograRenderer
         const prevVP = this.viewProjectionMatrix;
         const prevTarget = this.target;
         let mesh = this.helperAssets.blitMesh;
-        let viewport = new Rect(vec2.zero(), dst.size);
+        let viewport = dst === RenderTarget.CanvasTarget ? new Rect(vec2.zero(), this.canvasSize) : new Rect(vec2.zero(), dst.size);
 
         if (srcRect || dstRect)
         {
@@ -184,11 +184,11 @@ export class ZograRenderer
         }
 
         this.target = dst;
-        this.viewport = new Rect(vec2.zero(), dst.size);
+        this.scissor = viewport;
         this.viewProjectionMatrix = mat4.identity();
         this.setGlobalTexture("uMainTex", src);
 
-        this.drawMesh(this.assets.meshes.quad, mat4.rts(quat.identity(), vec3(0, 0, 0), vec3(2, 2, 1)), material);
+        this.drawMesh(mesh, mat4.identity(), material);
 
         this.unsetGlobalTexture("uMainTex");
 
@@ -279,7 +279,8 @@ export class ZograRenderer
         };
         
         this.target.bind(this.ctx);
-        this.setupViewport();
+        this.setupScissor();
+        
         this.useShader(material.shader);
         
         material.setup(data);
@@ -301,7 +302,7 @@ export class ZograRenderer
         };
 
         this.target.bind(this.ctx);
-        this.setupViewport();
+        this.setupScissor();
 
         this.useShader(material.shader);
 
@@ -339,10 +340,10 @@ export class ZograRenderer
         this.globalTextures.delete(name);   
     }
 
-    private setupViewport()
+    private setupScissor()
     {
         const gl = this.gl;
-        gl.viewport(this.viewport.xMin, this.viewport.yMin, this.viewport.size.x, this.viewport.size.y);
+        gl.viewport(this.scissor.xMin, this.scissor.yMin, this.scissor.size.x, this.scissor.size.y);
     }
     
 }

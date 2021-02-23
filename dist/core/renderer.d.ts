@@ -23,7 +23,7 @@ export declare class ZograRenderer {
     projectionMatrix: import("gl-matrix").mat4;
     private target;
     private shader;
-    private viewport;
+    private scissor;
     private globalUniforms;
     private globalTextures;
     private helperAssets;
@@ -46,5 +46,5 @@ export declare class ZograRenderer {
     unsetGlobalUniform(name: string): void;
     setGlobalTexture(name: string, texture: Texture): void;
     unsetGlobalTexture(name: string): void;
-    private setupViewport;
+    private setupScissor;
 }

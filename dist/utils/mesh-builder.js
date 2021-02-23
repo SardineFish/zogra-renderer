@@ -84,6 +84,7 @@ class MeshBuilder {
             types_1.vec3(3, -1, 0),
             types_1.vec3(-1, 3, 0),
         ];
+        mesh.triangles = [0, 1, 2];
         mesh.uvs = [
             types_1.vec2(0, 0),
             types_1.vec2(2, 0),

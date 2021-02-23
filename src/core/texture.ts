@@ -36,12 +36,12 @@ export abstract class Texture extends Asset
     abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
 
-export enum ImageResize
+export enum TextureResizing
 {
     Discard = 0,
     Stretch = 1,
-    Contain = 2,
-    Fit = 3,
+    Cover = 2,
+    Contain = 3,
     KeepLower = 4,
     KeepHigher = 5,
     Center = 6,
@@ -102,7 +102,7 @@ class TextureBase extends Asset implements Texture
         super.destroy();
     }
 
-    resize(width: number, height: number, textureContent = ImageResize.Discard)
+    resize(width: number, height: number, textureContent = TextureResizing.Discard)
     {
         this.tryInit(true);
         const gl = this.ctx.gl;
@@ -112,22 +112,22 @@ class TextureBase extends Asset implements Texture
         newTex.create();
 
         const prevSize = this.size;
+        this.width = width;
+        this.height = height;
         
         switch (textureContent)
         {
-            case ImageResize.Discard:
-                break;
-            case ImageResize.Contain:
-                const [srcRect, dstrEect] = imageResize(prevSize, this.size, textureContent as unknown as ImageSizing);
-                this.ctx.renderer.blit(oldTex, newTex, this.ctx.assets.materials.blitCopy, srcRect, dstrEect);
+            case TextureResizing.Discard:
                 break;
             default:
-                throw new Error("Not implement")
+                const [srcRect, dstrEect] = imageResize(prevSize, newTex.size, textureContent as unknown as ImageSizing);
+                this.ctx.renderer.blit(oldTex, newTex, this.ctx.assets.materials.blitCopy, srcRect, dstrEect);
+                break;
         }
 
         this._glTex = newTex._glTex;
 
-        gl.deleteTexture(oldTex);
+        gl.deleteTexture(oldTex._glTex);
     }
 
     /**

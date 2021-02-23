@@ -104,6 +104,7 @@ export class MeshBuilder
             vec3(3, -1, 0),
             vec3(-1, 3, 0),
         ];
+        mesh.triangles = [0, 1, 2];
         mesh.uvs = [
             vec2(0, 0),
             vec2(2, 0),

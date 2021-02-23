@@ -3,14 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ZograRenderer = void 0;
 const util_1 = require("../utils/util");
 const global_1 = require("./global");
-const vec3_1 = require("../types/vec3");
 const color_1 = require("../types/color");
 const mat4_1 = require("../types/mat4");
 const render_target_1 = require("./render-target");
 const texture_1 = require("./texture");
 const vec2_1 = require("../types/vec2");
 const assets_1 = require("../builtin-assets/assets");
-const quat_1 = require("../types/quat");
 const rect_1 = require("../types/rect");
 const mesh_builder_1 = require("../utils/mesh-builder");
 const math_1 = require("../types/math");
@@ -28,7 +26,7 @@ class ZograRenderer {
         this.height = height === undefined ? canvasElement.height : height;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        this.viewport = new rect_1.Rect(vec2_1.vec2.zero(), vec2_1.vec2(this.width, this.height));
+        this.scissor = new rect_1.Rect(vec2_1.vec2.zero(), vec2_1.vec2(this.width, this.height));
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         this.assets = new assets_1.BuiltinAssets(this.gl);
         this.ctx = {
@@ -42,7 +40,7 @@ class ZograRenderer {
             this.use();
         this.helperAssets = {
             clipBlitMesh: mesh_builder_1.MeshBuilder.ndcQuad(),
-            blitMesh: mesh_builder_1.MeshBuilder.ndcQuad(),
+            blitMesh: mesh_builder_1.MeshBuilder.ndcTriangle(),
         };
     }
     use() {
@@ -79,7 +77,7 @@ class ZograRenderer {
         }
         if (depthAttachment)
             this.target.setDepthAttachment(depthAttachment);
-        this.viewport = new rect_1.Rect(vec2_1.vec2.zero(), this.target.size);
+        this.scissor = new rect_1.Rect(vec2_1.vec2.zero(), this.target.size);
         this.target.bind(this.ctx);
     }
     clear(color = color_1.Color.black, clearDepth = true) {
@@ -102,7 +100,7 @@ class ZograRenderer {
         const prevVP = this.viewProjectionMatrix;
         const prevTarget = this.target;
         let mesh = this.helperAssets.blitMesh;
-        let viewport = new rect_1.Rect(vec2_1.vec2.zero(), dst.size);
+        let viewport = dst === render_target_1.RenderTarget.CanvasTarget ? new rect_1.Rect(vec2_1.vec2.zero(), this.canvasSize) : new rect_1.Rect(vec2_1.vec2.zero(), dst.size);
         if (srcRect || dstRect) {
             viewport = dstRect || viewport;
             if (srcRect) {
@@ -119,10 +117,10 @@ class ZograRenderer {
             }
         }
         this.target = dst;
-        this.viewport = new rect_1.Rect(vec2_1.vec2.zero(), dst.size);
+        this.scissor = viewport;
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         this.setGlobalTexture("uMainTex", src);
-        this.drawMesh(this.assets.meshes.quad, mat4_1.mat4.rts(quat_1.quat.identity(), vec3_1.vec3(0, 0, 0), vec3_1.vec3(2, 2, 1)), material);
+        this.drawMesh(mesh, mat4_1.mat4.identity(), material);
         this.unsetGlobalTexture("uMainTex");
         this.setRenderTarget(prevTarget);
         this.viewProjectionMatrix = prevVP;
@@ -192,7 +190,7 @@ class ZograRenderer {
             size: vec2_1.vec2(this.width, this.height),
         };
         this.target.bind(this.ctx);
-        this.setupViewport();
+        this.setupScissor();
         this.useShader(material.shader);
         material.setup(data);
         this.setupTransforms(material.shader, transform);
@@ -209,7 +207,7 @@ class ZograRenderer {
             size: vec2_1.vec2(this.width, this.height),
         };
         this.target.bind(this.ctx);
-        this.setupViewport();
+        this.setupScissor();
         this.useShader(material.shader);
         material.setup(data);
         this.setupTransforms(material.shader, transform);
@@ -236,9 +234,9 @@ class ZograRenderer {
     unsetGlobalTexture(name) {
         this.globalTextures.delete(name);
     }
-    setupViewport() {
+    setupScissor() {
         const gl = this.gl;
-        gl.viewport(this.viewport.xMin, this.viewport.yMin, this.viewport.size.x, this.viewport.size.y);
+        gl.viewport(this.scissor.xMin, this.scissor.yMin, this.scissor.size.x, this.scissor.size.y);
     }
 }
 exports.ZograRenderer = ZograRenderer;
