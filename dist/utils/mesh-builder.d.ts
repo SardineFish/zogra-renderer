@@ -10,5 +10,7 @@ export declare class MeshBuilder {
     addPolygon(verts: vec3[], uvs: vec2[]): void;
     addSubMesh(verts: vec3[], triangles: number[], colors?: Color[], uvs?: vec2[]): void;
     toMesh(): Mesh;
-    static quad(): Mesh;
+    static quad(center?: import("../types/vec2").Vector2, size?: import("../types/vec2").Vector2): Mesh;
+    static ndcQuad(): Mesh;
+    static ndcTriangle(): Mesh;
 }

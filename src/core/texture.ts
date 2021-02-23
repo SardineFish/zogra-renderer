@@ -4,6 +4,8 @@ import { panic } from "../utils/util";
 import { BindingData } from "./types";
 import { Asset } from "./asset";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
+import { vec2 } from "../types/vec2";
+import { imageResize, ImageSizing } from "../utils/image-sizing";
 
 export enum FilterMode
 {
@@ -29,18 +31,19 @@ export abstract class Texture extends Asset
     abstract wrapMode: WrapMode;
 
     abstract glTex(): WebGLTexture;
+    abstract get size(): vec2;
 
     abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
 
-export enum ResizeContent
+export enum ImageResize
 {
     Discard = 0,
     Stretch = 1,
-    Cover = 2,
+    Contain = 2,
     Fit = 3,
-    PaddingHigher = 4,
-    PaddingLower = 5,
+    KeepLower = 4,
+    KeepHigher = 5,
     Center = 6,
 }
 
@@ -72,6 +75,8 @@ class TextureBase extends Asset implements Texture
         this.tryInit(false);
     }
 
+    get size() { return vec2(this.width, this.height) }
+
     glTex()
     { 
         this.create();
@@ -97,26 +102,30 @@ class TextureBase extends Asset implements Texture
         super.destroy();
     }
 
-    resize(textureContent = ResizeContent.Discard)
+    resize(width: number, height: number, textureContent = ImageResize.Discard)
     {
         this.tryInit(true);
         const gl = this.ctx.gl;
 
-        let oldTex = this._glTex;
-        const tex = gl.createTexture() ?? panic("Failed to create texture.");
+        let oldTex = TextureBase.wrapGlTex(this._glTex, this.width, this.height, this.format, this.filterMode, this.ctx);
+        let newTex = new RenderTexture(width, height, false, this.format, this.filterMode, this.ctx);
+        newTex.create();
 
-        this._glTex = tex;
-
-        this.created = false;
-        this.create();
-
+        const prevSize = this.size;
+        
         switch (textureContent)
         {
-            case ResizeContent.Discard:
+            case ImageResize.Discard:
+                break;
+            case ImageResize.Contain:
+                const [srcRect, dstrEect] = imageResize(prevSize, this.size, textureContent as unknown as ImageSizing);
+                this.ctx.renderer.blit(oldTex, newTex, this.ctx.assets.materials.blitCopy, srcRect, dstrEect);
                 break;
             default:
                 throw new Error("Not implement")
         }
+
+        this._glTex = newTex._glTex;
 
         gl.deleteTexture(oldTex);
     }
@@ -173,6 +182,15 @@ class TextureBase extends Asset implements Texture
 
         this.initialized = true;
         return true;
+    }
+    
+    protected static wrapGlTex(glTex: WebGLTexture, width: number, height: number, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext()): TextureBase
+    {
+        var texture = new TextureBase(width, height, format, filterMode, ctx);
+        texture._glTex = glTex;
+        texture.initialized = true;
+        texture.created = true;
+        return texture;
     }
 }
 

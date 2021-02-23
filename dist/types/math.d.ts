@@ -1,15 +1,16 @@
 import { Vector3, vec3 } from "./vec3";
-import { vec4 } from "./vec4";
+import { vec4, Vector } from "./vec4";
 import { vec2 } from "./vec2";
 declare type vec = number | vec2 | vec3 | vec4;
 declare type Larger<U extends vec, V extends vec> = U extends vec4 ? vec4 : V extends vec4 ? vec4 : U extends vec3 ? vec3 : V extends vec3 ? vec3 : U extends vec2 ? vec2 : V extends vec2 ? vec2 : number;
-declare type ArithmeticType<U extends vec, V extends vec> = Larger<U, V>;
+declare type ArithmeticType<U extends vec, V extends vec> = Larger<U, V> & Vector;
 export declare function plus<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>;
 export declare function minus<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>;
 export declare function mul<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>;
 export declare function div<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>;
 export declare function dot(a: vec3, b: vec3): number;
 export declare function cross(a: vec3, b: vec3): Vector3;
+export declare function distance<V extends vec>(a: V, b: V): number;
 export declare const Deg2Rad: number;
 export declare const Rad2Deg: number;
 export {};

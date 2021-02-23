@@ -45,13 +45,14 @@ class MeshBuilder {
         mesh.calculateNormals();
         return mesh;
     }
-    static quad() {
+    static quad(center = types_1.vec2.zero(), size = types_1.vec2.one()) {
+        const halfSize = types_1.mul(size, types_1.vec2(0.5));
         const quad = new mesh_1.Mesh();
         quad.verts = [
-            types_1.vec3(-.5, -.5, 0),
-            types_1.vec3(.5, -.5, 0),
-            types_1.vec3(.5, .5, 0),
-            types_1.vec3(-.5, .5, 0),
+            types_1.vec3(center.x - halfSize.x, center.y - halfSize.y, 0),
+            types_1.vec3(center.x + halfSize.x, center.y - halfSize.y, 0),
+            types_1.vec3(center.x + halfSize.x, center.y + halfSize.y, 0),
+            types_1.vec3(center.x - halfSize.x, center.y + halfSize.y, 0),
         ];
         quad.triangles = [
             0, 1, 3,
@@ -72,6 +73,29 @@ class MeshBuilder {
         // quad.calculateNormals();
         quad.name = "mesh_quad";
         return quad;
+    }
+    static ndcQuad() {
+        return this.quad(types_1.vec2.zero(), types_1.vec2(2, 2));
+    }
+    static ndcTriangle() {
+        const mesh = new mesh_1.Mesh();
+        mesh.verts = [
+            types_1.vec3(-1, -1, 0),
+            types_1.vec3(3, -1, 0),
+            types_1.vec3(-1, 3, 0),
+        ];
+        mesh.uvs = [
+            types_1.vec2(0, 0),
+            types_1.vec2(2, 0),
+            types_1.vec2(0, 2),
+        ];
+        mesh.normals = [
+            types_1.vec3(0, 0, 1),
+            types_1.vec3(0, 0, 1),
+            types_1.vec3(0, 0, 1),
+        ];
+        mesh.name = "mesh_ndc_triangle";
+        return mesh;
     }
 }
 exports.MeshBuilder = MeshBuilder;

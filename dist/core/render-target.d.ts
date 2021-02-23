@@ -17,6 +17,7 @@ export declare class RenderTarget {
     isCanvasTarget: boolean;
     static CanvasTarget: Readonly<RenderTarget>;
     constructor(width?: number, height?: number, ctx?: GLContext);
+    get size(): import("../types/vec2").Vector2;
     addColorAttachment(rt: RenderTexture): void;
     setDepthAttachment(rt: DepthTexture): void;
     bind(ctx?: GLContext): void;

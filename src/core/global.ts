@@ -1,4 +1,5 @@
 import { BuiltinAssets } from "../builtin-assets/assets";
+import { ZograRenderer } from "./renderer";
 
 
 export interface GLContext
@@ -7,6 +8,7 @@ export interface GLContext
     width: number;
     height: number;
     assets: BuiltinAssets;
+    renderer: ZograRenderer;
 }
 
 let ctx: GLContext;

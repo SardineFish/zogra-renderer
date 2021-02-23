@@ -1,6 +1,7 @@
 import { RenderTexture, DepthTexture } from "./texture";
 import { GL, GlobalContext, GLContext } from "./global";
 import { panic } from "../utils/util";
+import { vec2 } from "../types/vec2";
 
 interface FrameBufferAttachment
 {
@@ -33,6 +34,8 @@ export class RenderTarget
         else
             this.frameBuffer = ctx.gl.createFramebuffer() ?? panic("Failed to create frame buffer");
     }
+
+    get size() { return vec2(this.width, this.height) }
 
     addColorAttachment(rt: RenderTexture)
     {
@@ -69,7 +72,7 @@ export class RenderTarget
         if (this.isCanvasTarget)
         {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            gl.viewport(0, 0, ctx.width, ctx.height);
+            // gl.viewport(0, 0, ctx.width, ctx.height);
         }
         else
         {
@@ -87,7 +90,7 @@ export class RenderTarget
 
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthAttachment.tex, 0);
 
-            gl.viewport(0, 0, this.width, this.height);
+            // gl.viewport(0, 0, this.width, this.height);
             const buffers = this.colorAttachments.map(t => t.attachPoint);
             gl.drawBuffers(buffers);
         }

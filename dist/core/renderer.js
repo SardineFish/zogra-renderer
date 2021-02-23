@@ -11,6 +11,9 @@ const texture_1 = require("./texture");
 const vec2_1 = require("../types/vec2");
 const assets_1 = require("../builtin-assets/assets");
 const quat_1 = require("../types/quat");
+const rect_1 = require("../types/rect");
+const mesh_builder_1 = require("../utils/mesh-builder");
+const math_1 = require("../types/math");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
@@ -25,6 +28,7 @@ class ZograRenderer {
         this.height = height === undefined ? canvasElement.height : height;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
+        this.viewport = new rect_1.Rect(vec2_1.vec2.zero(), vec2_1.vec2(this.width, this.height));
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         this.assets = new assets_1.BuiltinAssets(this.gl);
         this.ctx = {
@@ -32,9 +36,14 @@ class ZograRenderer {
             width: this.width,
             height: this.height,
             assets: this.assets,
+            renderer: this,
         };
         if (!global_1.GlobalContext())
             this.use();
+        this.helperAssets = {
+            clipBlitMesh: mesh_builder_1.MeshBuilder.ndcQuad(),
+            blitMesh: mesh_builder_1.MeshBuilder.ndcQuad(),
+        };
     }
     use() {
         global_1.setGlobalContext(this.ctx);
@@ -70,13 +79,14 @@ class ZograRenderer {
         }
         if (depthAttachment)
             this.target.setDepthAttachment(depthAttachment);
+        this.viewport = new rect_1.Rect(vec2_1.vec2.zero(), this.target.size);
         this.target.bind(this.ctx);
     }
     clear(color = color_1.Color.black, clearDepth = true) {
         this.gl.clearColor(color.r, color.g, color.b, color.a);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
     }
-    blit(src, dst, material = this.assets.materials.blitCopy) {
+    blit(src, dst, material = this.assets.materials.blitCopy, srcRect, dstRect) {
         if (dst instanceof texture_1.RenderTexture) {
             const target = new render_target_1.RenderTarget(dst.width, dst.height, this.ctx);
             target.addColorAttachment(dst);
@@ -91,12 +101,30 @@ class ZograRenderer {
         }
         const prevVP = this.viewProjectionMatrix;
         const prevTarget = this.target;
+        let mesh = this.helperAssets.blitMesh;
+        let viewport = new rect_1.Rect(vec2_1.vec2.zero(), dst.size);
+        if (srcRect || dstRect) {
+            viewport = dstRect || viewport;
+            if (srcRect) {
+                mesh = this.helperAssets.clipBlitMesh;
+                let uvMin = math_1.div(srcRect.min, src.size);
+                let uvMax = math_1.div(srcRect.max, src.size);
+                mesh.uvs = [
+                    vec2_1.vec2(uvMin.x, uvMin.y),
+                    vec2_1.vec2(uvMax.x, uvMin.y),
+                    vec2_1.vec2(uvMax.x, uvMax.y),
+                    vec2_1.vec2(uvMin.x, uvMax.y),
+                ];
+                mesh.update();
+            }
+        }
         this.target = dst;
+        this.viewport = new rect_1.Rect(vec2_1.vec2.zero(), dst.size);
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         this.setGlobalTexture("uMainTex", src);
         this.drawMesh(this.assets.meshes.quad, mat4_1.mat4.rts(quat_1.quat.identity(), vec3_1.vec3(0, 0, 0), vec3_1.vec3(2, 2, 1)), material);
         this.unsetGlobalTexture("uMainTex");
-        this.target = prevTarget;
+        this.setRenderTarget(prevTarget);
         this.viewProjectionMatrix = prevVP;
     }
     useShader(shader) {
@@ -164,6 +192,7 @@ class ZograRenderer {
             size: vec2_1.vec2(this.width, this.height),
         };
         this.target.bind(this.ctx);
+        this.setupViewport();
         this.useShader(material.shader);
         material.setup(data);
         this.setupTransforms(material.shader, transform);
@@ -180,6 +209,7 @@ class ZograRenderer {
             size: vec2_1.vec2(this.width, this.height),
         };
         this.target.bind(this.ctx);
+        this.setupViewport();
         this.useShader(material.shader);
         material.setup(data);
         this.setupTransforms(material.shader, transform);
@@ -205,6 +235,10 @@ class ZograRenderer {
     }
     unsetGlobalTexture(name) {
         this.globalTextures.delete(name);
+    }
+    setupViewport() {
+        const gl = this.gl;
+        gl.viewport(this.viewport.xMin, this.viewport.yMin, this.viewport.size.x, this.viewport.size.y);
     }
 }
 exports.ZograRenderer = ZograRenderer;

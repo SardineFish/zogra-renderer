@@ -26,6 +26,11 @@ export class Color extends Vector4
     static get yellow() { return new Color(1, 1, 0); }
     static get magenta() { return new Color(1, 0, 1); }
     static get gray() { return new Color(.5, .5, .5); }
+
+    transparent(): Color
+    {
+        return new Color(this.r, this.g, this.b, 0);
+    }
 }
 
 export const rgba = (r: number, g: number, b: number, a: number = 1) => new Color(r, g, b, a);

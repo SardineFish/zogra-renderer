@@ -10,6 +10,7 @@ import { vec2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { UniformType, UniformValueType } from "./types";
 import { Lines } from "./lines";
+import { Rect } from "../types/rect";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
     gl: WebGL2RenderingContext;
@@ -22,8 +23,10 @@ export declare class ZograRenderer {
     projectionMatrix: import("gl-matrix").mat4;
     private target;
     private shader;
+    private viewport;
     private globalUniforms;
     private globalTextures;
+    private helperAssets;
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number);
     use(): void;
     setSize(width: number, height: number): void;
@@ -33,7 +36,7 @@ export declare class ZograRenderer {
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture): void;
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture): void;
     clear(color?: Color, clearDepth?: boolean): void;
-    blit(src: Texture, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material): void;
+    blit(src: Texture, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
     private useShader;
     private setupTransforms;
     private setupGlobalUniforms;
@@ -43,4 +46,5 @@ export declare class ZograRenderer {
     unsetGlobalUniform(name: string): void;
     setGlobalTexture(name: string, texture: Texture): void;
     unsetGlobalTexture(name: string): void;
+    private setupViewport;
 }

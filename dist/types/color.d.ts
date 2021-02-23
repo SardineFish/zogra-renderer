@@ -19,6 +19,7 @@ export declare class Color extends Vector4 {
     static get yellow(): Color;
     static get magenta(): Color;
     static get gray(): Color;
+    transparent(): Color;
 }
 export declare const rgba: (r: number, g: number, b: number, a?: number) => Color;
 export declare const rgb: (r: number, g: number, b: number) => Color;

@@ -1,10 +1,16 @@
 import { Vector3, vec3 } from "./vec3";
 import { Vector2, vec2 } from "./vec2";
 
+export interface Vector
+{
+    magnitude: number;
+    normalized: ThisType<this>;
+}
+
 export type vec4 = Vector4;
 
 const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number] = Array as any;
-export class Vector4 extends V4Constructor
+export class Vector4 extends V4Constructor implements Vector
 {
     get x() { return this[0]; }
     set x(x: number) { this[0] = x; }

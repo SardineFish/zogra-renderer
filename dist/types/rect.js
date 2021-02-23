@@ -26,6 +26,9 @@ class Rect {
     expand(thickness) {
         return new Rect(math_1.minus(this.min, vec2_1.vec2(thickness)), math_1.plus(this.size, vec2_1.vec2(2 * thickness)));
     }
+    static box01() {
+        return new Rect(vec2_1.vec2.zero(), vec2_1.vec2.one());
+    }
 }
 exports.Rect = Rect;
 //# sourceMappingURL=rect.js.map

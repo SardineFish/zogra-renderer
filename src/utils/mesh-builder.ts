@@ -1,4 +1,4 @@
-import { vec3, vec2, Color, Vector3 } from "../types/types";
+import { vec3, vec2, Color, Vector3, mul } from "../types/types";
 import { GlobalContext } from "../core/global";
 import { Mesh } from "../core/mesh";
 
@@ -59,14 +59,16 @@ export class MeshBuilder
         return mesh;
     }
 
-    static quad()
+    static quad(center = vec2.zero(), size = vec2.one())
     {
+        const halfSize = mul(size, vec2(0.5));
+
         const quad = new Mesh();
         quad.verts = [
-            vec3(-.5, -.5, 0),
-            vec3(.5, -.5, 0),
-            vec3(.5, .5, 0),
-            vec3(-.5, .5, 0),
+            vec3(center.x - halfSize.x, center.y - halfSize.y, 0),
+            vec3(center.x + halfSize.x, center.y - halfSize.y, 0),
+            vec3(center.x + halfSize.x, center.y + halfSize.y, 0),
+            vec3(center.x - halfSize.x, center.y + halfSize.y, 0),
         ];
         quad.triangles = [
             0, 1, 3,
@@ -87,5 +89,32 @@ export class MeshBuilder
         // quad.calculateNormals();
         quad.name = "mesh_quad";
         return quad;
+    }
+
+    static ndcQuad()
+    {
+        return this.quad(vec2.zero(), vec2(2, 2));
+    }
+
+    static ndcTriangle()
+    {
+        const mesh = new Mesh();
+        mesh.verts = [
+            vec3(-1, -1, 0),
+            vec3(3, -1, 0),
+            vec3(-1, 3, 0),
+        ];
+        mesh.uvs = [
+            vec2(0, 0),
+            vec2(2, 0),
+            vec2(0, 2),
+        ];
+        mesh.normals = [
+            vec3(0, 0, 1),
+            vec3(0, 0, 1),
+            vec3(0, 0, 1),
+        ];
+        mesh.name = "mesh_ndc_triangle";
+        return mesh;
     }
 }

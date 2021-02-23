@@ -1,10 +1,10 @@
-import { vec4, Vector4 } from "./vec4";
+import { vec4, Vector, Vector4 } from "./vec4";
 import { Vector3, vec3 } from "./vec3";
 
 export type vec2 = Vector2;
 
 const V2Constructor: new (...p: [number, number]) => [number, number] = Array as any;
-export class Vector2 extends V2Constructor
+export class Vector2 extends V2Constructor implements Vector
 {
     get x() { return this[0]; }
     set x(x: number) { this[0] = x; }

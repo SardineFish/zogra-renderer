@@ -1,11 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderTexture = exports.DepthTexture = exports.Texture2D = exports.ResizeContent = exports.Texture = exports.WrapMode = exports.FilterMode = void 0;
+exports.RenderTexture = exports.DepthTexture = exports.Texture2D = exports.ImageResize = exports.Texture = exports.WrapMode = exports.FilterMode = void 0;
 const global_1 = require("./global");
 const texture_format_1 = require("./texture-format");
 const util_1 = require("../utils/util");
 const asset_1 = require("./asset");
 const shaders_1 = require("../builtin-assets/shaders");
+const vec2_1 = require("../types/vec2");
+const image_sizing_1 = require("../utils/image-sizing");
 var FilterMode;
 (function (FilterMode) {
     FilterMode[FilterMode["Linear"] = WebGL2RenderingContext.LINEAR] = "Linear";
@@ -20,16 +22,16 @@ var WrapMode;
 class Texture extends asset_1.Asset {
 }
 exports.Texture = Texture;
-var ResizeContent;
-(function (ResizeContent) {
-    ResizeContent[ResizeContent["Discard"] = 0] = "Discard";
-    ResizeContent[ResizeContent["Stretch"] = 1] = "Stretch";
-    ResizeContent[ResizeContent["Cover"] = 2] = "Cover";
-    ResizeContent[ResizeContent["Fit"] = 3] = "Fit";
-    ResizeContent[ResizeContent["PaddingHigher"] = 4] = "PaddingHigher";
-    ResizeContent[ResizeContent["PaddingLower"] = 5] = "PaddingLower";
-    ResizeContent[ResizeContent["Center"] = 6] = "Center";
-})(ResizeContent = exports.ResizeContent || (exports.ResizeContent = {}));
+var ImageResize;
+(function (ImageResize) {
+    ImageResize[ImageResize["Discard"] = 0] = "Discard";
+    ImageResize[ImageResize["Stretch"] = 1] = "Stretch";
+    ImageResize[ImageResize["Contain"] = 2] = "Contain";
+    ImageResize[ImageResize["Fit"] = 3] = "Fit";
+    ImageResize[ImageResize["KeepLower"] = 4] = "KeepLower";
+    ImageResize[ImageResize["KeepHigher"] = 5] = "KeepHigher";
+    ImageResize[ImageResize["Center"] = 6] = "Center";
+})(ImageResize = exports.ImageResize || (exports.ImageResize = {}));
 class TextureBase extends asset_1.Asset {
     constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
         super();
@@ -46,6 +48,7 @@ class TextureBase extends asset_1.Asset {
         this.filterMode = filterMode;
         this.tryInit(false);
     }
+    get size() { return vec2_1.vec2(this.width, this.height); }
     glTex() {
         this.create();
         return this._glTex;
@@ -65,21 +68,24 @@ class TextureBase extends asset_1.Asset {
         gl.deleteTexture(this._glTex);
         super.destroy();
     }
-    resize(textureContent = ResizeContent.Discard) {
-        var _a;
+    resize(width, height, textureContent = ImageResize.Discard) {
         this.tryInit(true);
         const gl = this.ctx.gl;
-        let oldTex = this._glTex;
-        const tex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
-        this._glTex = tex;
-        this.created = false;
-        this.create();
+        let oldTex = TextureBase.wrapGlTex(this._glTex, this.width, this.height, this.format, this.filterMode, this.ctx);
+        let newTex = new RenderTexture(width, height, false, this.format, this.filterMode, this.ctx);
+        newTex.create();
+        const prevSize = this.size;
         switch (textureContent) {
-            case ResizeContent.Discard:
+            case ImageResize.Discard:
+                break;
+            case ImageResize.Contain:
+                const [srcRect, dstrEect] = image_sizing_1.imageResize(prevSize, this.size, textureContent);
+                this.ctx.renderer.blit(oldTex, newTex, this.ctx.assets.materials.blitCopy, srcRect, dstrEect);
                 break;
             default:
                 throw new Error("Not implement");
         }
+        this._glTex = newTex._glTex;
         gl.deleteTexture(oldTex);
     }
     /**
@@ -119,6 +125,13 @@ class TextureBase extends asset_1.Asset {
         this._glTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
         this.initialized = true;
         return true;
+    }
+    static wrapGlTex(glTex, width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
+        var texture = new TextureBase(width, height, format, filterMode, ctx);
+        texture._glTex = glTex;
+        texture.initialized = true;
+        texture.created = true;
+        return texture;
     }
 }
 class Texture2D extends TextureBase {

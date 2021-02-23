@@ -15,6 +15,9 @@ import { quat } from "../types/quat";
 import { BindingData, UniformType, UniformValueType } from "./types";
 import { Shader, DepthTest, Blending, Culling } from "./shader";
 import { Lines } from "./lines";
+import { Rect } from "../types/rect";
+import { MeshBuilder } from "../utils/mesh-builder";
+import { div } from "../types/math";
 
 export class ZograRenderer
 {
@@ -32,8 +35,14 @@ export class ZograRenderer
 
     private target: RenderTarget = RenderTarget.CanvasTarget;
     private shader: Shader | null = null;
+    private viewport: Rect;
     private globalUniforms = new Map<string, GlobalUniform>();
     private globalTextures = new Map<string, GlobalTexture>();
+
+    private helperAssets: {
+        clipBlitMesh: Mesh,
+        blitMesh: Mesh,
+    };
 
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number)
     {
@@ -42,6 +51,7 @@ export class ZograRenderer
         this.height = height === undefined ? canvasElement.height : height;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
+        this.viewport = new Rect(vec2.zero(), vec2(this.width, this.height));
 
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
 
@@ -52,10 +62,16 @@ export class ZograRenderer
             width: this.width,
             height: this.height,
             assets: this.assets,
+            renderer: this,
         };
 
         if (!GlobalContext())
             this.use();
+        
+        this.helperAssets = {
+            clipBlitMesh: MeshBuilder.ndcQuad(),
+            blitMesh: MeshBuilder.ndcQuad(),
+        };
     }
 
     use()
@@ -91,7 +107,6 @@ export class ZograRenderer
             if (this.target !== colorAttachments)
                 this.target.release();
             this.target = colorAttachments;
-            
         }
         else if (colorAttachments instanceof Array)
         {
@@ -110,6 +125,8 @@ export class ZograRenderer
         if (depthAttachment)
             this.target.setDepthAttachment(depthAttachment);
         
+
+        this.viewport = new Rect(vec2.zero(), this.target.size);
         this.target.bind(this.ctx);
     }
 
@@ -119,7 +136,12 @@ export class ZograRenderer
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
     }
 
-    blit(src: Texture, dst: RenderTarget | RenderTexture | RenderTexture[], material: Material = this.assets.materials.blitCopy)
+    blit(
+        src: Texture,
+        dst: RenderTarget | RenderTexture | RenderTexture[],
+        material: Material = this.assets.materials.blitCopy,
+        srcRect?: Rect,
+        dstRect?: Rect)
     {
         
         if (dst instanceof RenderTexture)
@@ -140,8 +162,29 @@ export class ZograRenderer
 
         const prevVP = this.viewProjectionMatrix;
         const prevTarget = this.target;
+        let mesh = this.helperAssets.blitMesh;
+        let viewport = new Rect(vec2.zero(), dst.size);
+
+        if (srcRect || dstRect)
+        {
+            viewport = dstRect || viewport;
+            if (srcRect)
+            {
+                mesh = this.helperAssets.clipBlitMesh;
+                let uvMin = div(srcRect.min, src.size);
+                let uvMax = div(srcRect.max, src.size);
+                mesh.uvs = [
+                    vec2(uvMin.x, uvMin.y),
+                    vec2(uvMax.x, uvMin.y),
+                    vec2(uvMax.x, uvMax.y),
+                    vec2(uvMin.x, uvMax.y),
+                ];
+                mesh.update();
+            }
+        }
 
         this.target = dst;
+        this.viewport = new Rect(vec2.zero(), dst.size);
         this.viewProjectionMatrix = mat4.identity();
         this.setGlobalTexture("uMainTex", src);
 
@@ -149,7 +192,7 @@ export class ZograRenderer
 
         this.unsetGlobalTexture("uMainTex");
 
-        this.target = prevTarget;
+        this.setRenderTarget(prevTarget);
         this.viewProjectionMatrix = prevVP;
     }
 
@@ -236,6 +279,7 @@ export class ZograRenderer
         };
         
         this.target.bind(this.ctx);
+        this.setupViewport();
         this.useShader(material.shader);
         
         material.setup(data);
@@ -257,6 +301,8 @@ export class ZograRenderer
         };
 
         this.target.bind(this.ctx);
+        this.setupViewport();
+
         this.useShader(material.shader);
 
         material.setup(data);
@@ -292,6 +338,13 @@ export class ZograRenderer
     {
         this.globalTextures.delete(name);   
     }
+
+    private setupViewport()
+    {
+        const gl = this.gl;
+        gl.viewport(this.viewport.xMin, this.viewport.yMin, this.viewport.size.x, this.viewport.size.y);
+    }
+    
 }
 
 interface GlobalUniform

@@ -2,6 +2,7 @@ import { GLContext } from "./global";
 import { TextureFormat } from "./texture-format";
 import { BindingData } from "./types";
 import { Asset } from "./asset";
+import { vec2 } from "../types/vec2";
 export declare enum FilterMode {
     Linear,
     Nearest
@@ -19,15 +20,16 @@ export declare abstract class Texture extends Asset {
     abstract filterMode: FilterMode;
     abstract wrapMode: WrapMode;
     abstract glTex(): WebGLTexture;
+    abstract get size(): vec2;
     abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
-export declare enum ResizeContent {
+export declare enum ImageResize {
     Discard = 0,
     Stretch = 1,
-    Cover = 2,
+    Contain = 2,
     Fit = 3,
-    PaddingHigher = 4,
-    PaddingLower = 5,
+    KeepLower = 4,
+    KeepHigher = 5,
     Center = 6
 }
 declare class TextureBase extends Asset implements Texture {
@@ -42,16 +44,18 @@ declare class TextureBase extends Asset implements Texture {
     protected initialized: boolean;
     protected created: boolean;
     constructor(width: number, height: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
+    get size(): import("../types/vec2").Vector2;
     glTex(): WebGLTexture;
     bind(location: WebGLUniformLocation, data: BindingData): void;
     destroy(): void;
-    resize(textureContent?: ResizeContent): void;
+    resize(width: number, height: number, textureContent?: ImageResize): void;
     /**
      * Create & allocate texture if not
      */
     protected create(): void;
     protected setData(pixels: ArrayBufferView | TexImageSource): void;
     protected tryInit(required?: boolean): boolean;
+    protected static wrapGlTex(glTex: WebGLTexture, width: number, height: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext): TextureBase;
 }
 export declare class Texture2D extends TextureBase {
     constructor(width?: number, height?: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);

@@ -33,4 +33,9 @@ export class Rect
     {
         return new Rect(minus(this.min, vec2(thickness)), plus(this.size, vec2(2 * thickness)));
     }
+
+    static box01()
+    {
+        return new Rect(vec2.zero(), vec2.one());
+    }
 }

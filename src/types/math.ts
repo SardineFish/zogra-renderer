@@ -1,6 +1,5 @@
 import { Vector3, vec3 } from "./vec3";
-import { vec4, Vector4 } from "./vec4";
-import { mat4, vec3 as v3, vec4 as v4, vec2 as v2 } from "gl-matrix";
+import { vec4, Vector, Vector4 } from "./vec4";
 import { vec2, Vector2 } from "./vec2";
 
 type vec = number | vec2 | vec3 | vec4;
@@ -14,7 +13,7 @@ type Larger<U extends vec, V extends vec> =
     V extends vec2 ? vec2 :
     number;
 
-type ArithmeticType<U extends vec, V extends vec> = Larger<U, V>
+type ArithmeticType<U extends vec, V extends vec> = Larger<U, V> & Vector;
 
 (Number as any).prototype.__to = function (type: Function)
 {
@@ -73,6 +72,11 @@ export function dot(a: vec3, b: vec3): number
 export function cross(a: vec3, b: vec3)
 {
     return a.cross(b);
+}
+
+export function distance<V extends vec>(a: V, b: V): number
+{
+    return minus(b, a).magnitude;
 }
 
 

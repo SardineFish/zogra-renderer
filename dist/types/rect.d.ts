@@ -7,8 +7,9 @@ export declare class Rect {
     get yMin(): number;
     get xMax(): number;
     get yMax(): number;
-    get size(): import("./vec2").Vector2;
-    get center(): import("./vec2").Vector2;
+    get size(): import("./vec2").Vector2 & import("./vec4").Vector;
+    get center(): import("./vec2").Vector2 & import("./vec4").Vector;
     shrink(thickness: number): Rect;
     expand(thickness: number): Rect;
+    static box01(): Rect;
 }

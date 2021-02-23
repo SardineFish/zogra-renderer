@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RenderTarget = void 0;
 const global_1 = require("./global");
 const util_1 = require("../utils/util");
+const vec2_1 = require("../types/vec2");
 const FrameBufferAttachment = {
     canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK },
     fromRenderTexture: (rt) => ({ tex: rt.glTex() })
@@ -20,6 +21,7 @@ class RenderTarget {
         else
             this.frameBuffer = (_a = ctx.gl.createFramebuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer");
     }
+    get size() { return vec2_1.vec2(this.width, this.height); }
     addColorAttachment(rt) {
         if (rt === null) {
             return;
@@ -47,7 +49,7 @@ class RenderTarget {
         const gl = ctx.gl;
         if (this.isCanvasTarget) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            gl.viewport(0, 0, ctx.width, ctx.height);
+            // gl.viewport(0, 0, ctx.width, ctx.height);
         }
         else {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
@@ -59,7 +61,7 @@ class RenderTarget {
                 }
             }
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthAttachment.tex, 0);
-            gl.viewport(0, 0, this.width, this.height);
+            // gl.viewport(0, 0, this.width, this.height);
             const buffers = this.colorAttachments.map(t => t.attachPoint);
             gl.drawBuffers(buffers);
         }

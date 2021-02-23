@@ -1,8 +1,8 @@
-import { Vector4 } from "./vec4";
+import { Vector, Vector4 } from "./vec4";
 import { Vector3 } from "./vec3";
 export declare type vec2 = Vector2;
 declare const V2Constructor: new (...p: [number, number]) => [number, number];
-export declare class Vector2 extends V2Constructor {
+export declare class Vector2 extends V2Constructor implements Vector {
     get x(): number;
     set x(x: number);
     get y(): number;
@@ -34,7 +34,7 @@ export declare class Vector2 extends V2Constructor {
     cross(b: Vector2): number;
     clone(): Vector2;
     toVec3(z?: number): Vector3;
-    __to(type: Function): Vector3 | Vector2 | Vector4;
+    __to(type: Function): Vector2 | Vector3 | Vector4;
 }
 export declare function vec2(x: number): Vector2;
 export declare namespace vec2 {
