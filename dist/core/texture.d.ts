@@ -12,29 +12,31 @@ export declare enum WrapMode {
     Mirror
 }
 export declare abstract class Texture extends Asset {
-    abstract ctx: GLContext;
     abstract format: TextureFormat;
     abstract width: number;
     abstract height: number;
     abstract mipmapLevel: number;
-    abstract glTex: WebGLTexture;
     abstract filterMode: FilterMode;
     abstract wrapMode: WrapMode;
+    abstract get glTex(): WebGLTexture;
     abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
 declare class TextureBase extends Asset implements Texture {
-    ctx: GLContext;
+    protected ctx: GLContext;
     format: TextureFormat;
     width: number;
     height: number;
     mipmapLevel: number;
-    glTex: WebGLTexture;
     filterMode: FilterMode;
     wrapMode: WrapMode;
+    protected _glTex: WebGLTexture;
+    protected initialized: boolean;
     constructor(width: number, height: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
+    get glTex(): WebGLTexture;
     protected setup(): void;
     bind(location: WebGLUniformLocation, data: BindingData): void;
     destroy(): void;
+    protected tryInit(required?: boolean): boolean;
 }
 export declare class Texture2D extends TextureBase {
     constructor(width?: number, height?: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);

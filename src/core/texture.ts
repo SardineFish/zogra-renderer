@@ -20,44 +20,52 @@ export enum WrapMode
 
 export abstract class Texture extends Asset
 {
-    abstract ctx: GLContext;
+    // abstract ctx: GLContext;
     abstract format: TextureFormat;
     abstract width: number;
     abstract height: number;
     abstract mipmapLevel: number;
-    abstract glTex: WebGLTexture;
     abstract filterMode: FilterMode;
     abstract wrapMode: WrapMode;
+
+    abstract get glTex(): WebGLTexture;
 
     abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
 }
 
 class TextureBase extends Asset implements Texture
 {
-    ctx: GLContext;
+    protected ctx: GLContext;
     format: TextureFormat;
     width: number;
     height: number;
     mipmapLevel: number = 0;
-    glTex: WebGLTexture;
     filterMode: FilterMode;
     wrapMode = WrapMode.Repeat;
+
+
+    protected _glTex: WebGLTexture = null as any;
+    protected initialized = false;
 
     constructor(width: number, height: number, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
     {
         super();
         this.name = `Texture_${this.assetID}`;
-        const gl = ctx.gl;
         this.ctx = ctx;
         this.format = format;
         this.width = width;
         this.height = height;
         this.filterMode = filterMode;
-        this.glTex = gl.createTexture() ?? panic("Failed to create texture.");
+
+        this.tryInit(false);
     }
+
+    get glTex() { return this._glTex }
 
     protected setup()
     {
+        this.tryInit(true);
+
         const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
@@ -68,6 +76,8 @@ class TextureBase extends Asset implements Texture
 
     bind(location: WebGLUniformLocation, data: BindingData)
     {
+        this.tryInit(true);
+
         const gl = data.gl;
         gl.activeTexture(gl.TEXTURE0 + data.nextTextureUnit);
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
@@ -76,11 +86,32 @@ class TextureBase extends Asset implements Texture
     }
     destroy()
     {
-        if (this.destroyed)
+        if (!this.initialized || this.destroyed)
             return;
         const gl = this.ctx.gl;
-        gl.deleteTexture(this.glTex);
+        gl.deleteTexture(this._glTex);
         super.destroy();
+    }
+
+    protected tryInit(required = false): boolean
+    {
+        if (this.initialized)
+            return true;
+        
+        const ctx = this.ctx || GlobalContext();
+        if (!ctx)
+        {
+            if (required)
+                throw new Error("Failed to initialize texture without a global GL context");
+            return false;
+        }
+
+        const gl = ctx.gl;
+
+        this._glTex = gl.createTexture() ?? panic("Failed to create texture.");
+
+        this.initialized = true;
+        return true;
     }
 }
 

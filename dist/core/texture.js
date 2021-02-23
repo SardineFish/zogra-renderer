@@ -22,20 +22,22 @@ class Texture extends asset_1.Asset {
 exports.Texture = Texture;
 class TextureBase extends asset_1.Asset {
     constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
-        var _a;
         super();
         this.mipmapLevel = 0;
         this.wrapMode = WrapMode.Repeat;
+        this._glTex = null;
+        this.initialized = false;
         this.name = `Texture_${this.assetID}`;
-        const gl = ctx.gl;
         this.ctx = ctx;
         this.format = format;
         this.width = width;
         this.height = height;
         this.filterMode = filterMode;
-        this.glTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
+        this.tryInit(false);
     }
+    get glTex() { return this._glTex; }
     setup() {
+        this.tryInit(true);
         const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
@@ -44,6 +46,7 @@ class TextureBase extends asset_1.Asset {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
     }
     bind(location, data) {
+        this.tryInit(true);
         const gl = data.gl;
         gl.activeTexture(gl.TEXTURE0 + data.nextTextureUnit);
         gl.bindTexture(gl.TEXTURE_2D, this.glTex);
@@ -51,11 +54,26 @@ class TextureBase extends asset_1.Asset {
         data.nextTextureUnit++;
     }
     destroy() {
-        if (this.destroyed)
+        if (!this.initialized || this.destroyed)
             return;
         const gl = this.ctx.gl;
-        gl.deleteTexture(this.glTex);
+        gl.deleteTexture(this._glTex);
         super.destroy();
+    }
+    tryInit(required = false) {
+        var _a;
+        if (this.initialized)
+            return true;
+        const ctx = this.ctx || global_1.GlobalContext();
+        if (!ctx) {
+            if (required)
+                throw new Error("Failed to initialize texture without a global GL context");
+            return false;
+        }
+        const gl = ctx.gl;
+        this._glTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
+        this.initialized = true;
+        return true;
     }
 }
 class Texture2D extends TextureBase {
