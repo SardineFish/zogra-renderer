@@ -14,6 +14,7 @@ export declare const BuiltinUniformNames: {
     matMV_IT: string;
     flipUV: string;
     mainTex: string;
+    color: string;
 };
 export declare function compileBuiltinShaders(gl: WebGL2RenderingContext): {
     DefaultShader: Shader;

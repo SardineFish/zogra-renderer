@@ -5,7 +5,7 @@ const global_1 = require("./global");
 const util_1 = require("../utils/util");
 const FrameBufferAttachment = {
     canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK },
-    fromRenderTexture: (rt) => ({ tex: rt.glTex })
+    fromRenderTexture: (rt) => ({ tex: rt.glTex() })
 };
 class RenderTarget {
     constructor(width = 0, height = 0, ctx = global_1.GlobalContext()) {

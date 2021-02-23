@@ -1,10 +1,18 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.materialDefine = exports.MaterialFromShader = exports.shaderProp = exports.Material = void 0;
+exports.materialDefine = exports.SimpleTexturedMaterial = exports.MaterialFromShader = exports.shaderProp = exports.Material = void 0;
+const color_1 = require("../types/color");
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
 const asset_1 = require("./asset");
+const shaders_1 = require("../builtin-assets/shaders");
 class Material extends asset_1.Asset {
     constructor(shader, gl = global_1.GL()) {
         super();
@@ -113,6 +121,26 @@ function MaterialFromShader(shader) {
     };
 }
 exports.MaterialFromShader = MaterialFromShader;
+function SimpleTexturedMaterial(shader) {
+    let Mat = class Mat extends MaterialFromShader(shader) {
+        constructor() {
+            super(...arguments);
+            this.texture = null;
+            this.color = new color_1.Color(1, 1, 1, 1);
+        }
+    };
+    __decorate([
+        shaderProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d")
+    ], Mat.prototype, "texture", void 0);
+    __decorate([
+        shaderProp(shaders_1.BuiltinUniformNames.color, "color")
+    ], Mat.prototype, "color", void 0);
+    Mat = __decorate([
+        materialDefine
+    ], Mat);
+    return Mat;
+}
+exports.SimpleTexturedMaterial = SimpleTexturedMaterial;
 function materialDefine(constructor) {
     return class extends constructor {
         constructor(...arg) {

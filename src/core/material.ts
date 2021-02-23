@@ -8,10 +8,11 @@ import "reflect-metadata";
 import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
 import { vec4, mat4 } from "gl-matrix";
-import { Texture } from "./texture";
+import { Texture, Texture2D } from "./texture";
 import { BindingData, UniformValueType } from "./types";
 import { UniformType } from "./types"
 import { Asset } from "./asset";
+import { BuiltinUniformNames } from "../builtin-assets/shaders";
 
 export interface PropertyBlock
 {
@@ -165,6 +166,21 @@ export function MaterialFromShader(shader: Shader): typeof MaterialType
             super(shader, gl);
         }
     };
+}
+
+export function SimpleTexturedMaterial(shader: Shader): typeof MaterialType
+{
+    @materialDefine
+    class Mat extends MaterialFromShader(shader)
+    {
+        @shaderProp(BuiltinUniformNames.mainTex, "tex2d")
+        texture: Texture2D | null = null;
+
+        @shaderProp(BuiltinUniformNames.color, "color")
+        color: Color = new Color(1, 1, 1, 1);
+    }
+
+    return Mat;
 }
 
 export function materialDefine<T extends { new (...arg: any[]): Material } >(constructor: T) : T

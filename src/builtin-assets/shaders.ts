@@ -145,6 +145,7 @@ export const BuiltinUniformNames = {
     matMV_IT: "uTransformMV_IT",
     flipUV: "uFlipUV",
     mainTex: "uMainTex",
+    color: "uColor",
 };
 
 export function compileBuiltinShaders(gl: WebGL2RenderingContext)

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderTexture = exports.DepthTexture = exports.Texture2D = exports.Texture = exports.WrapMode = exports.FilterMode = void 0;
+exports.RenderTexture = exports.DepthTexture = exports.Texture2D = exports.ResizeContent = exports.Texture = exports.WrapMode = exports.FilterMode = void 0;
 const global_1 = require("./global");
 const texture_format_1 = require("./texture-format");
 const util_1 = require("../utils/util");
@@ -20,6 +20,16 @@ var WrapMode;
 class Texture extends asset_1.Asset {
 }
 exports.Texture = Texture;
+var ResizeContent;
+(function (ResizeContent) {
+    ResizeContent[ResizeContent["Discard"] = 0] = "Discard";
+    ResizeContent[ResizeContent["Stretch"] = 1] = "Stretch";
+    ResizeContent[ResizeContent["Cover"] = 2] = "Cover";
+    ResizeContent[ResizeContent["Fit"] = 3] = "Fit";
+    ResizeContent[ResizeContent["PaddingHigher"] = 4] = "PaddingHigher";
+    ResizeContent[ResizeContent["PaddingLower"] = 5] = "PaddingLower";
+    ResizeContent[ResizeContent["Center"] = 6] = "Center";
+})(ResizeContent = exports.ResizeContent || (exports.ResizeContent = {}));
 class TextureBase extends asset_1.Asset {
     constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
         super();
@@ -27,6 +37,7 @@ class TextureBase extends asset_1.Asset {
         this.wrapMode = WrapMode.Repeat;
         this._glTex = null;
         this.initialized = false;
+        this.created = false;
         this.name = `Texture_${this.assetID}`;
         this.ctx = ctx;
         this.format = format;
@@ -35,21 +46,15 @@ class TextureBase extends asset_1.Asset {
         this.filterMode = filterMode;
         this.tryInit(false);
     }
-    get glTex() { return this._glTex; }
-    setup() {
-        this.tryInit(true);
-        const gl = this.ctx.gl;
-        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.filterMode);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this.wrapMode);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
+    glTex() {
+        this.create();
+        return this._glTex;
     }
     bind(location, data) {
-        this.tryInit(true);
+        this.create();
         const gl = data.gl;
         gl.activeTexture(gl.TEXTURE0 + data.nextTextureUnit);
-        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
+        gl.bindTexture(gl.TEXTURE_2D, this._glTex);
         gl.uniform1i(location, data.nextTextureUnit);
         data.nextTextureUnit++;
     }
@@ -59,6 +64,46 @@ class TextureBase extends asset_1.Asset {
         const gl = this.ctx.gl;
         gl.deleteTexture(this._glTex);
         super.destroy();
+    }
+    resize(textureContent = ResizeContent.Discard) {
+        var _a;
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        let oldTex = this._glTex;
+        const tex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
+        this._glTex = tex;
+        this.created = false;
+        this.create();
+        switch (textureContent) {
+            case ResizeContent.Discard:
+                break;
+            default:
+                throw new Error("Not implement");
+        }
+        gl.deleteTexture(oldTex);
+    }
+    /**
+     * Create & allocate texture if not
+     */
+    create() {
+        if (this.created)
+            return;
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this._glTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.filterMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this.wrapMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
+        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
+        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+        this.created = true;
+    }
+    setData(pixels) {
+        this.create();
+        const gl = this.ctx.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this._glTex);
+        flipTexture(this.ctx, this._glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
     }
     tryInit(required = false) {
         var _a;
@@ -81,18 +126,12 @@ class Texture2D extends TextureBase {
         super(width, height, format, filterMode, ctx);
     }
     setData(pixels) {
-        super.setup();
-        const gl = this.ctx.gl;
-        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
         if (pixels.width !== undefined && pixels.height !== undefined) {
             pixels = pixels;
             this.width = pixels.width;
             this.height = pixels.height;
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
         }
-        else
-            gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
-        flipTexture(this.ctx, this.glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
+        super.setData(pixels);
     }
 }
 exports.Texture2D = Texture2D;
@@ -101,39 +140,24 @@ class DepthTexture extends TextureBase {
         super(width, height, texture_format_1.TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
     }
     create() {
-        super.setup();
-        const gl = this.ctx.gl;
-        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
-        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, texture_format_1.TextureFormat.DEPTH_COMPONENT);
-        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+        super.create();
     }
 }
 exports.DepthTexture = DepthTexture;
 class RenderTexture extends TextureBase {
-    constructor(width, height, depth, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
+    constructor(width, height, depth = false, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
         super(width, height, format, filterMode, ctx);
         this.depthTexture = null;
         if (depth) {
             this.depthTexture = new DepthTexture(width, height, ctx);
         }
-        this.update();
-    }
-    update() {
-        super.setup();
-        const gl = this.ctx.gl;
-        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
-        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
     }
     setData(pixels) {
-        const gl = this.ctx.gl;
-        gl.bindTexture(gl.TEXTURE_2D, this.glTex);
-        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
-        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
-        flipTexture(this.ctx, this.glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
+        super.setData(pixels);
     }
     destroy() {
         var _a;
-        if (this.destroyed)
+        if (!this.initialized || this.destroyed)
             return;
         (_a = this.depthTexture) === null || _a === void 0 ? void 0 : _a.destroy();
         super.destroy();

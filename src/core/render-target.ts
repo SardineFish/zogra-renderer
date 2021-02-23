@@ -9,7 +9,7 @@ interface FrameBufferAttachment
 }
 const FrameBufferAttachment = {
     canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK } as FrameBufferAttachment,
-    fromRenderTexture: (rt: RenderTexture) => ({ tex: rt.glTex } as FrameBufferAttachment)
+    fromRenderTexture: (rt: RenderTexture) => ({ tex: rt.glTex() } as FrameBufferAttachment)
 };
 
 export class RenderTarget

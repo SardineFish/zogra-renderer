@@ -138,6 +138,7 @@ exports.BuiltinUniformNames = {
     matMV_IT: "uTransformMV_IT",
     flipUV: "uFlipUV",
     mainTex: "uMainTex",
+    color: "uColor",
 };
 function compileBuiltinShaders(gl) {
     return {
