@@ -32,6 +32,10 @@ export declare function shaderProp(name: string, type: UniformType): {
 };
 export declare function MaterialFromShader(shader: Shader): typeof MaterialType;
 export declare function SimpleTexturedMaterial(shader: Shader): typeof MaterialType;
+/**
+ *
+ * @deprecated
+ */
 export declare function materialDefine<T extends {
     new (...arg: any[]): Material;
 }>(constructor: T): T;

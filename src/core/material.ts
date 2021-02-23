@@ -38,6 +38,7 @@ export class Material extends Asset
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
         this._shader = shader;
+
     }
 
     get shader() { return this._shader }
@@ -141,7 +142,26 @@ export class Material extends Asset
             return false;
         }
 
+        this.gl = gl;
+        const shader = this.shader;
+        const propertyBlock = this.properties;
+        for (const key in this)
+        {
+            const prop = getShaderProp(this, key);
+            if (!prop)
+                continue;
+            const loc = shader.uniformLocation(prop?.name);
+            if (!loc) continue;
+            propertyBlock[key] = {
+                type: prop.type,
+                location: loc,
+                name: prop.name
+            };
+        }
+        this.properties = propertyBlock;
+
         return true;
+
     }
 }
 
@@ -183,6 +203,10 @@ export function SimpleTexturedMaterial(shader: Shader): typeof MaterialType
     return Mat;
 }
 
+/**
+ * 
+ * @deprecated
+ */
 export function materialDefine<T extends { new (...arg: any[]): Material } >(constructor: T) : T
 {
     return class extends constructor
@@ -190,37 +214,6 @@ export function materialDefine<T extends { new (...arg: any[]): Material } >(con
         constructor(...arg: any[])
         {
             super(...arg);
-            
-            this.tryInit(false);
-        }
-
-        protected tryInit(required = false): boolean
-        {
-            if (super.initialized)
-                return true;
-            if (!super.tryInit(required))
-                return false;
-            
-            const gl = this.gl || GL();
-            this.gl = gl;
-            const shader = this.shader;
-            const propertyBlock = this.properties;
-            for (const key in this)
-            {
-                const prop = getShaderProp(this, key);
-                if (!prop)
-                    continue;
-                const loc = shader.uniformLocation(prop?.name);
-                if (!loc) continue;
-                propertyBlock[key] = {
-                    type: prop.type,
-                    location: loc,
-                    name: prop.name
-                };
-            }
-            this.properties = propertyBlock;
-            
-            return true;
         }
     }
 }

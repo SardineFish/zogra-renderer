@@ -101,6 +101,23 @@ class Material extends asset_1.Asset {
                 throw new Error("Failed to intialize material without global GL context");
             return false;
         }
+        this.gl = gl;
+        const shader = this.shader;
+        const propertyBlock = this.properties;
+        for (const key in this) {
+            const prop = getShaderProp(this, key);
+            if (!prop)
+                continue;
+            const loc = shader.uniformLocation(prop === null || prop === void 0 ? void 0 : prop.name);
+            if (!loc)
+                continue;
+            propertyBlock[key] = {
+                type: prop.type,
+                location: loc,
+                name: prop.name
+            };
+        }
+        this.properties = propertyBlock;
         return true;
     }
 }
@@ -141,36 +158,14 @@ function SimpleTexturedMaterial(shader) {
     return Mat;
 }
 exports.SimpleTexturedMaterial = SimpleTexturedMaterial;
+/**
+ *
+ * @deprecated
+ */
 function materialDefine(constructor) {
     return class extends constructor {
         constructor(...arg) {
             super(...arg);
-            this.tryInit(false);
-        }
-        tryInit(required = false) {
-            if (super.initialized)
-                return true;
-            if (!super.tryInit(required))
-                return false;
-            const gl = this.gl || global_1.GL();
-            this.gl = gl;
-            const shader = this.shader;
-            const propertyBlock = this.properties;
-            for (const key in this) {
-                const prop = getShaderProp(this, key);
-                if (!prop)
-                    continue;
-                const loc = shader.uniformLocation(prop === null || prop === void 0 ? void 0 : prop.name);
-                if (!loc)
-                    continue;
-                propertyBlock[key] = {
-                    type: prop.type,
-                    location: loc,
-                    name: prop.name
-                };
-            }
-            this.properties = propertyBlock;
-            return true;
         }
     };
 }
