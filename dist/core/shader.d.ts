@@ -47,14 +47,18 @@ export declare enum Culling {
 }
 export interface StateSettings {
     depth: DepthTest;
-    blend: [Blending, Blending] | Blending;
+    blend: boolean;
+    blendRGB: [Blending, Blending];
+    blendAlpha: [Blending, Blending];
     zWrite: boolean;
     cull: Culling;
 }
 interface ShaderSettingsOptional {
     name?: string;
     depth?: DepthTest;
-    blend?: [Blending, Blending] | Blending;
+    blend?: [Blending, Blending] | boolean | Blending;
+    blendRGB?: [Blending, Blending];
+    blendAlpha?: [Blending, Blending];
     cull?: Culling;
     zWrite?: boolean;
     attributes?: ShaderAttributes;

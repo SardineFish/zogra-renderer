@@ -14,6 +14,18 @@ class Rect {
     get yMax() { return this.max.y; }
     get size() { return math_1.minus(this.max, this.min); }
     get center() { return math_1.plus(this.min, this.max).mul(vec2_1.vec2(.5)); }
+    shrink(thickness) {
+        let min = math_1.plus(this.min, vec2_1.vec2(thickness));
+        let max = math_1.minus(this.max, vec2_1.vec2(thickness));
+        if (min.x > max.x)
+            min.x = max.x = (min.x + max.x) / 2;
+        if (min.y > max.y)
+            min.y = max.y = (min.y + max.y) / 2;
+        return new Rect(min, max.minus(min));
+    }
+    expand(thickness) {
+        return new Rect(math_1.minus(this.min, vec2_1.vec2(thickness)), math_1.plus(this.size, vec2_1.vec2(2 * thickness)));
+    }
 }
 exports.Rect = Rect;
 //# sourceMappingURL=rect.js.map

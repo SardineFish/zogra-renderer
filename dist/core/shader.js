@@ -82,14 +82,13 @@ class Shader extends asset_1.Asset {
             gl.depthMask(this.settings.zWrite);
             gl.depthFunc(this.settings.depth);
         }
-        if (this.settings.blend === Blending.Disable)
+        if (!this.settings.blend)
             gl.disable(gl.BLEND);
         else {
-            const [src, dst] = typeof (this.settings.blend) === "number"
-                ? [this.settings.blend, Blending.Zero]
-                : this.settings.blend;
+            const [srcRGB, dstRGB] = this.settings.blendRGB;
+            const [srcAlpha, dstAlpha] = this.settings.blendAlpha;
             gl.enable(gl.BLEND);
-            gl.blendFunc(src, dst);
+            gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
         }
         if (this.settings.cull === Culling.Disable)
             gl.disable(gl.CULL_FACE);
@@ -136,9 +135,31 @@ class Shader extends asset_1.Asset {
             uv2: this.gl.getAttribLocation(this.program, attributes.uv2),
             normal: this.gl.getAttribLocation(this.program, attributes.normal)
         };
+        let blend = false;
+        let blendRGB = [Blending.One, Blending.Zero];
+        let blendAlpha = [Blending.One, Blending.OneMinusSrcAlpha];
+        if (typeof (this.options.blend) === "number" && this.options.blend !== Blending.Disable) {
+            blend = true;
+            blendRGB = [this.options.blend, this.options.blend];
+            blendAlpha = [this.options.blend, this.options.blend];
+        }
+        else if (this.options.blend instanceof Array) {
+            blend = true;
+            blendRGB = this.options.blend;
+        }
+        if (this.options.blendRGB) {
+            blend = this.options.blend !== false && this.options.blend !== Blending.Disable;
+            blendRGB = this.options.blendRGB;
+        }
+        if (this.options.blendAlpha) {
+            blend = this.options.blend !== false && this.options.blend !== Blending.Disable;
+            blendAlpha = this.options.blendAlpha;
+        }
         this.settings = {
             depth: this.options.depth || DepthTest.Less,
-            blend: this.options.blend || Blending.Disable,
+            blend,
+            blendRGB,
+            blendAlpha,
             zWrite: this.options.zWrite === false ? false : true,
             cull: this.options.cull || Culling.Back
         };

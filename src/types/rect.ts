@@ -18,4 +18,19 @@ export class Rect
     get size() { return minus(this.max, this.min) }
     get center() { return plus(this.min, this.max).mul(vec2(.5)) }
 
+    shrink(thickness: number)
+    {
+        let min = plus(this.min, vec2(thickness));
+        let max = minus(this.max, vec2(thickness));
+        if (min.x > max.x)
+            min.x = max.x = (min.x + max.x) / 2;
+        if (min.y > max.y)
+            min.y = max.y = (min.y + max.y) / 2;
+        return new Rect(min, max.minus(min));
+    }
+
+    expand(thickness: number)
+    {
+        return new Rect(minus(this.min, vec2(thickness)), plus(this.size, vec2(2 * thickness)));
+    }
 }
