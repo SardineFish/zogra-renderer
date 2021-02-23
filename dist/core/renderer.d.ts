@@ -36,7 +36,7 @@ export declare class ZograRenderer {
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture): void;
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture): void;
     clear(color?: Color, clearDepth?: boolean): void;
-    blit(src: Texture, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
+    blit(src: Texture | null, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
     private useShader;
     private setupTransforms;
     private setupGlobalUniforms;

@@ -12,6 +12,7 @@ const assets_1 = require("../builtin-assets/assets");
 const rect_1 = require("../types/rect");
 const mesh_builder_1 = require("../utils/mesh-builder");
 const math_1 = require("../types/math");
+const shaders_1 = require("../builtin-assets/shaders");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
@@ -101,7 +102,7 @@ class ZograRenderer {
         const prevTarget = this.target;
         let mesh = this.helperAssets.blitMesh;
         let viewport = dst === render_target_1.RenderTarget.CanvasTarget ? new rect_1.Rect(vec2_1.vec2.zero(), this.canvasSize) : new rect_1.Rect(vec2_1.vec2.zero(), dst.size);
-        if (srcRect || dstRect) {
+        if (src && (srcRect || dstRect)) {
             viewport = dstRect || viewport;
             if (srcRect) {
                 mesh = this.helperAssets.clipBlitMesh;
@@ -119,9 +120,12 @@ class ZograRenderer {
         this.target = dst;
         this.scissor = viewport;
         this.viewProjectionMatrix = mat4_1.mat4.identity();
-        this.setGlobalTexture("uMainTex", src);
+        if (src)
+            this.setGlobalTexture(shaders_1.BuiltinUniformNames.mainTex, src);
+        else
+            this.unsetGlobalTexture(shaders_1.BuiltinUniformNames.mainTex);
         this.drawMesh(mesh, mat4_1.mat4.identity(), material);
-        this.unsetGlobalTexture("uMainTex");
+        this.unsetGlobalTexture(shaders_1.BuiltinUniformNames.mainTex);
         this.setRenderTarget(prevTarget);
         this.viewProjectionMatrix = prevVP;
     }

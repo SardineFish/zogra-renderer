@@ -29,8 +29,8 @@ declare class AssetManagerType implements IEventSource<AssetManagerEvents> {
     on<T extends EventKeys<AssetManagerEvents>>(event: T, listener: import("./event").EventListener): void;
     off<T extends EventKeys<AssetManagerEvents>>(event: T, listener: import("./event").EventListener): void;
 }
-export interface ICloneable<T> {
-    clone(): this;
+export interface ICloneable {
+    clone(): ThisType<this>;
 }
 export declare const AssetManager: AssetManagerType;
 export {};

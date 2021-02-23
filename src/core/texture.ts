@@ -2,7 +2,7 @@ import { GL, GLContext, GlobalContext } from "./global";
 import { TextureFormat, mapGLFormat } from "./texture-format";
 import { panic } from "../utils/util";
 import { BindingData } from "./types";
-import { Asset } from "./asset";
+import { Asset, ICloneable } from "./asset";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { vec2 } from "../types/vec2";
 import { imageResize, ImageSizing } from "../utils/image-sizing";
@@ -46,6 +46,8 @@ export enum TextureResizing
     KeepHigher = 5,
     Center = 6,
 }
+
+export type TextureData = ArrayBufferView | TexImageSource;
 
 class TextureBase extends Asset implements Texture
 {
@@ -153,7 +155,7 @@ class TextureBase extends Asset implements Texture
         this.created = true;
     }
 
-    protected setData(pixels: ArrayBufferView | TexImageSource)
+    protected setData(pixels: TextureData)
     {
         this.create();
         const gl = this.ctx.gl;
@@ -194,13 +196,13 @@ class TextureBase extends Asset implements Texture
     }
 }
 
-export class Texture2D extends TextureBase
+export class Texture2D extends TextureBase implements ICloneable
 {
     constructor(width = 0, height = 0, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
     {
         super(width, height, format, filterMode, ctx);
     }
-    setData(pixels: ArrayBufferView | TexImageSource)
+    setData(pixels: TextureData)
     {
         if ((pixels as TexImageSource).width !== undefined && (pixels as TexImageSource).height !== undefined)
         {
@@ -210,6 +212,20 @@ export class Texture2D extends TextureBase
         }
 
         super.setData(pixels);
+    }
+    clone(): Texture2D
+    {
+        if (!this.created)
+            this.create();
+
+        let rt = new RenderTexture(this.width, this.height, false, this.format, this.filterMode, this.ctx);
+
+        this.ctx.renderer.blit(this, rt);
+        let tex = new Texture2D(this.width, this.height, this.format, this.filterMode, this.ctx);
+        tex._glTex = rt.glTex();
+        tex.initialized = true;
+        tex.created = true;
+        return tex;
     }
 }
 
@@ -237,7 +253,7 @@ export class RenderTexture extends TextureBase
             this.depthTexture = new DepthTexture(width, height, ctx);
         }
     }
-    setData(pixels: ArrayBufferView | TexImageSource)
+    setData(pixels: TextureData)
     {
         super.setData(pixels);
     }

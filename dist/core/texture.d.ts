@@ -1,7 +1,7 @@
 import { GLContext } from "./global";
 import { TextureFormat } from "./texture-format";
 import { BindingData } from "./types";
-import { Asset } from "./asset";
+import { Asset, ICloneable } from "./asset";
 import { vec2 } from "../types/vec2";
 export declare enum FilterMode {
     Linear,
@@ -32,6 +32,7 @@ export declare enum TextureResizing {
     KeepHigher = 5,
     Center = 6
 }
+export declare type TextureData = ArrayBufferView | TexImageSource;
 declare class TextureBase extends Asset implements Texture {
     protected ctx: GLContext;
     format: TextureFormat;
@@ -53,13 +54,14 @@ declare class TextureBase extends Asset implements Texture {
      * Create & allocate texture if not
      */
     protected create(): void;
-    protected setData(pixels: ArrayBufferView | TexImageSource): void;
+    protected setData(pixels: TextureData): void;
     protected tryInit(required?: boolean): boolean;
     protected static wrapGlTex(glTex: WebGLTexture, width: number, height: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext): TextureBase;
 }
-export declare class Texture2D extends TextureBase {
+export declare class Texture2D extends TextureBase implements ICloneable {
     constructor(width?: number, height?: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
-    setData(pixels: ArrayBufferView | TexImageSource): void;
+    setData(pixels: TextureData): void;
+    clone(): Texture2D;
 }
 export declare class DepthTexture extends TextureBase {
     constructor(width: number, height: number, ctx?: GLContext);
@@ -68,7 +70,7 @@ export declare class DepthTexture extends TextureBase {
 export declare class RenderTexture extends TextureBase {
     depthTexture: DepthTexture | null;
     constructor(width: number, height: number, depth?: boolean, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
-    setData(pixels: ArrayBufferView | TexImageSource): void;
+    setData(pixels: TextureData): void;
     destroy(): void;
 }
 export {};

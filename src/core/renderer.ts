@@ -18,6 +18,7 @@ import { Lines } from "./lines";
 import { Rect } from "../types/rect";
 import { MeshBuilder } from "../utils/mesh-builder";
 import { div } from "../types/math";
+import { BuiltinUniformNames } from "../builtin-assets/shaders";
 
 export class ZograRenderer
 {
@@ -137,7 +138,7 @@ export class ZograRenderer
     }
 
     blit(
-        src: Texture,
+        src: Texture | null,
         dst: RenderTarget | RenderTexture | RenderTexture[],
         material: Material = this.assets.materials.blitCopy,
         srcRect?: Rect,
@@ -165,7 +166,7 @@ export class ZograRenderer
         let mesh = this.helperAssets.blitMesh;
         let viewport = dst === RenderTarget.CanvasTarget ? new Rect(vec2.zero(), this.canvasSize) : new Rect(vec2.zero(), dst.size);
 
-        if (srcRect || dstRect)
+        if (src && (srcRect || dstRect))
         {
             viewport = dstRect || viewport;
             if (srcRect)
@@ -186,11 +187,14 @@ export class ZograRenderer
         this.target = dst;
         this.scissor = viewport;
         this.viewProjectionMatrix = mat4.identity();
-        this.setGlobalTexture("uMainTex", src);
+        if (src)
+            this.setGlobalTexture(BuiltinUniformNames.mainTex, src);
+        else 
+            this.unsetGlobalTexture(BuiltinUniformNames.mainTex);
 
         this.drawMesh(mesh, mat4.identity(), material);
 
-        this.unsetGlobalTexture("uMainTex");
+        this.unsetGlobalTexture(BuiltinUniformNames.mainTex);
 
         this.setRenderTarget(prevTarget);
         this.viewProjectionMatrix = prevVP;

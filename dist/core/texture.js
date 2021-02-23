@@ -146,6 +146,17 @@ class Texture2D extends TextureBase {
         }
         super.setData(pixels);
     }
+    clone() {
+        if (!this.created)
+            this.create();
+        let rt = new RenderTexture(this.width, this.height, false, this.format, this.filterMode, this.ctx);
+        this.ctx.renderer.blit(this, rt);
+        let tex = new Texture2D(this.width, this.height, this.format, this.filterMode, this.ctx);
+        tex._glTex = rt.glTex();
+        tex.initialized = true;
+        tex.created = true;
+        return tex;
+    }
 }
 exports.Texture2D = Texture2D;
 class DepthTexture extends TextureBase {
