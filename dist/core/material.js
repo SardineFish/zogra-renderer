@@ -11,86 +11,98 @@ const color_1 = require("../types/color");
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
+const gl_matrix_1 = require("gl-matrix");
+const texture_1 = require("./texture");
 const asset_1 = require("./asset");
 const shaders_1 = require("../builtin-assets/shaders");
+/**
+ * Inicate where to get the value from material
+ */
+var ValueReference;
+(function (ValueReference) {
+    ValueReference[ValueReference["Field"] = 0] = "Field";
+    ValueReference[ValueReference["Dynamic"] = 1] = "Dynamic";
+})(ValueReference || (ValueReference = {}));
+// export type MaterialProperties = Map<string, NumericProperty<NumericUnifromTypes> | TextureProperty<TextureUniformTypes>>;
 class Material extends asset_1.Asset {
     constructor(shader, gl = global_1.GL()) {
         super();
         this.properties = {};
+        this.textureCount = 0;
         this.initialized = false;
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
         this._shader = shader;
     }
     get shader() { return this._shader; }
-    set shader(value) {
-        const gl = this.gl;
-        if (value != this._shader) {
-            this._shader = value;
-            for (const key in this.properties) {
-                const loc = this._shader.uniformLocation(this.properties[key].name);
-                this.properties[key].location = loc;
-            }
-        }
-    }
+    // set shader(value)
+    // {
+    //     const gl = this.gl;
+    //     if (value != this._shader)
+    //     {
+    //         this._shader = value;
+    //         for (const uniformName in this.properties)
+    //         {
+    //             const loc = this._shader.uniformLocation(uniformName);
+    //             this.properties[uniformName].location = loc;
+    //         }
+    //     }
+    // }
     setup(data) {
-        var _a;
         this.tryInit(true);
         const gl = data.gl;
-        for (const key in this.properties) {
-            const prop = this.properties[key];
-            switch (prop.type) {
-                case "float":
-                    gl.uniform1f(prop.location, this[key]);
-                    break;
-                case "vec2":
-                    gl.uniform2fv(prop.location, this[key]);
-                    break;
-                case "vec3":
-                    gl.uniform3fv(prop.location, this[key]);
-                    break;
-                case "vec4":
-                    gl.uniform4fv(prop.location, this[key]);
-                    break;
-                case "color":
-                    gl.uniform4fv(prop.location, this[key]);
-                    break;
-                case "mat4":
-                    gl.uniformMatrix4fv(prop.location, false, this[key]);
-                    break;
-                case "tex2d":
-                    if (!this[key])
-                        data.assets.textures.default.bind(prop.location, data);
-                    else
-                        (_a = (this[key] || null)) === null || _a === void 0 ? void 0 : _a.bind(prop.location, data);
-                    break;
-            }
+        for (const uniformName in this.properties) {
+            this.setUniform(uniformName);
         }
     }
-    setProp(keyOrName, nameOrType, typeOrValue, valueOrNot) {
-        let key = keyOrName;
-        let name = nameOrType;
-        let type = typeOrValue;
-        let value = valueOrNot;
-        if (typeof (typeOrValue) !== "string") {
-            key = name = keyOrName;
-            type = nameOrType;
-            value = typeOrValue;
+    // setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void
+    // setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void
+    setProp(uniformName, type, value) {
+        this.tryInit(true);
+        let prop = this.properties[uniformName];
+        if (!prop) {
+            // console.log("set new prop");
+            switch (type) {
+                case "tex2d":
+                    this.properties[uniformName] = {
+                        type: type,
+                        textureUnit: this.textureCount++,
+                        location: undefined,
+                        uploaded: null,
+                        value: value
+                    };
+                    break;
+                default:
+                    this.properties[uniformName] = {
+                        type: type,
+                        location: undefined,
+                        uploaded: null,
+                        value: value
+                    };
+            }
+            return;
         }
-        if (this.properties[key]) {
-            this.properties[key].type = type;
+        if (prop.key) {
+            this[prop.key] = value;
         }
         else {
-            const loc = this.shader.uniformLocation(name);
-            if (loc) {
-                this.properties[key] = {
-                    location: loc,
-                    type: type,
-                    name: name
-                };
+            prop.value = value;
+        }
+    }
+    /**
+     * Unbind all render textures from active texture slot due to avoid
+     * 'Feedback loop formed between Framebuffer and active Texture' in chrome since version 83
+     */
+    unbindRenderTextures() {
+        this.tryInit(true);
+        const gl = this.gl;
+        for (const uniformName in this.properties) {
+            const prop = this.properties[uniformName];
+            if (prop.uploaded instanceof texture_1.RenderTexture) {
+                prop.uploaded.unbind(prop.textureUnit);
+                prop.uploaded = null;
             }
         }
-        this[key] = value;
     }
     tryInit(required = false) {
         if (this.initialized)
@@ -103,7 +115,8 @@ class Material extends asset_1.Asset {
         }
         this.gl = gl;
         const shader = this.shader;
-        const propertyBlock = this.properties;
+        const properties = this.properties;
+        // shader.use();
         for (const key in this) {
             const prop = getShaderProp(this, key);
             if (!prop)
@@ -111,14 +124,89 @@ class Material extends asset_1.Asset {
             const loc = shader.uniformLocation(prop === null || prop === void 0 ? void 0 : prop.name);
             if (!loc)
                 continue;
-            propertyBlock[key] = {
-                type: prop.type,
-                location: loc,
-                name: prop.name
-            };
+            switch (prop.type) {
+                case "tex2d":
+                    properties[prop.name] = {
+                        type: prop.type,
+                        uploaded: null,
+                        key: key,
+                        location: loc,
+                        textureUnit: this.textureCount++,
+                    };
+                    break;
+                default:
+                    properties[prop.name] = {
+                        type: prop.type,
+                        location: loc,
+                        uploaded: null,
+                        key: key
+                    };
+            }
         }
-        this.properties = propertyBlock;
+        this.properties = properties;
+        this.initialized = true;
         return true;
+    }
+    setUniform(uniformName) {
+        const prop = this.properties[uniformName];
+        const gl = this.gl;
+        if (prop.location === undefined) {
+            // this.shader.use();
+            prop.location = this.shader.uniformLocation(uniformName);
+        }
+        if (!prop.location)
+            return false;
+        let value = (prop.key
+            ? this[prop.key]
+            : prop.value);
+        let dirty = false;
+        if (prop.uploaded == null && value == null)
+            return false;
+        switch (prop.type) {
+            case "tex2d":
+            case "float":
+            case "int":
+                dirty = prop.uploaded !== value;
+                break;
+            case "mat4":
+                dirty = !gl_matrix_1.mat4.exactEquals(prop.uploaded, value);
+                break;
+            default:
+                dirty = !prop.uploaded.equals(value);
+                break;
+        }
+        // if (!dirty)
+        //     return false;
+        switch (prop.type) {
+            case "float":
+                gl.uniform1f(prop.location, value);
+                break;
+            case "vec2":
+                gl.uniform2fv(prop.location, value);
+                break;
+            case "vec3":
+                gl.uniform3fv(prop.location, value);
+                break;
+            case "vec4":
+                gl.uniform4fv(prop.location, value);
+                break;
+            case "color":
+                gl.uniform4fv(prop.location, value);
+                break;
+            case "mat4":
+                gl.uniformMatrix4fv(prop.location, false, value);
+                break;
+            case "tex2d":
+                // Update texture to texture unit instead of update uniform1i
+                // Due to performance issue mentioned in https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14.10
+                value.bind(prop.textureUnit);
+                if (!prop.uniformSet) {
+                    gl.uniform1i(prop.location, prop.textureUnit);
+                    prop.uniformSet = true;
+                }
+                break;
+        }
+        prop.uploaded = value;
     }
 }
 exports.Material = Material;

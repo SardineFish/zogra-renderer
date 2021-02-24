@@ -73,8 +73,10 @@ class Shader extends asset_1.Asset {
     }
     use() {
         this.tryInit(true);
+        this.gl.useProgram(this.program);
+    }
+    setupPipelineStates() {
         const gl = this.gl;
-        gl.useProgram(this.program);
         if (this.settings.depth === DepthTest.Disable)
             gl.disable(gl.DEPTH_TEST);
         else {
@@ -101,6 +103,8 @@ class Shader extends asset_1.Asset {
     setupBuiltinUniform(params) {
         this.tryInit(true);
         const gl = this.gl;
+        // gl.useProgram(this.program);
+        // console.log(this.builtinUniformLocations.matMVP);
         this.builtinUniformLocations.matM && gl.uniformMatrix4fv(this.builtinUniformLocations.matM, false, params.matM);
         this.builtinUniformLocations.matVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matVP, false, params.matVP);
         this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP);
@@ -127,6 +131,7 @@ class Shader extends asset_1.Asset {
         this.vertexShader = util_1.panicNull(gl.createShader(gl.VERTEX_SHADER), "Failed to create vertex shader");
         this.fragmentShader = util_1.panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
         this.compile();
+        gl.useProgram(this.program);
         const attributes = this.options.attributes || exports.DefaultShaderAttributes;
         this.attributes = {
             vert: this.gl.getAttribLocation(this.program, attributes.vert),

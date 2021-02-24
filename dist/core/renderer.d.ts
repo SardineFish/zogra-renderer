@@ -8,7 +8,6 @@ import { RenderTarget } from "./render-target";
 import { RenderTexture, DepthTexture, Texture } from "./texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
-import { UniformType, UniformValueType } from "./types";
 import { Lines } from "./lines";
 import { Rect } from "../types/rect";
 export declare class ZograRenderer {
@@ -39,12 +38,7 @@ export declare class ZograRenderer {
     blit(src: Texture | null, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
     private useShader;
     private setupTransforms;
-    private setupGlobalUniforms;
     drawMesh(mesh: Mesh, transform: mat4, material: Material): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
-    setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
-    unsetGlobalUniform(name: string): void;
-    setGlobalTexture(name: string, texture: Texture): void;
-    unsetGlobalTexture(name: string): void;
     private setupScissor;
 }

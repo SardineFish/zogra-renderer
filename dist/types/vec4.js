@@ -90,6 +90,14 @@ class Vector4 extends V4Constructor {
     clone() {
         return vec4(this[0], this[1], this[2], this[3]);
     }
+    equals(v) {
+        if (v === undefined)
+            return false;
+        return v[0] === this[0]
+            && v[1] === this[1]
+            && v[2] === this[2]
+            && v[3] === this[3];
+    }
     __to(type) {
         switch (type) {
             case Vector4:

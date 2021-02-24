@@ -81,6 +81,7 @@ export declare class Shader extends Asset {
     constructor(vertexShader: string, fragmentShader: string, options?: ShaderSettingsOptional, gl?: WebGL2RenderingContext);
     uniformLocation(name: string): WebGLUniformLocation | null;
     use(): void;
+    setupPipelineStates(): void;
     setupBuiltinUniform(params: {
         matM: mat4;
         matVP: mat4;

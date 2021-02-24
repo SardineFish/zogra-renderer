@@ -114,6 +114,13 @@ Matrix4x4.fromRotation = (axis, rad) => {
 Matrix4x4.fromScaling = (scaling) => {
     return gl_matrix_1.mat4.fromScaling(gl_matrix_1.mat4.create(), scaling);
 };
+Matrix4x4.equal = (a, b) => {
+    if (a === undefined || b === undefined)
+        return false;
+    if (!(a instanceof gl_matrix_1.mat4) || !(b instanceof gl_matrix_1.mat4))
+        return false;
+    return gl_matrix_1.mat4.exactEquals(a, b);
+};
 Matrix4x4.mul = ((out, a, b) => {
     if (!b) {
         b = a;

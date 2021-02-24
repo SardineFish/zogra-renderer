@@ -26,14 +26,14 @@ export abstract class Texture extends Asset
     abstract format: TextureFormat;
     abstract width: number;
     abstract height: number;
-    abstract mipmapLevel: number;
+    // abstract mipmapLevel: number;
     abstract filterMode: FilterMode;
     abstract wrapMode: WrapMode;
 
     abstract glTex(): WebGLTexture;
     abstract get size(): vec2;
 
-    abstract bind: (location: WebGLUniformLocation, data: BindingData) => void;
+    abstract bind: (unit: number) => void;
 }
 
 export enum TextureResizing
@@ -55,7 +55,7 @@ class TextureBase extends Asset implements Texture
     format: TextureFormat;
     width: number;
     height: number;
-    mipmapLevel: number = 0;
+    autoMipmap: boolean = true;
     filterMode: FilterMode;
     wrapMode = WrapMode.Repeat;
 
@@ -85,15 +85,25 @@ class TextureBase extends Asset implements Texture
         return this._glTex;
     }
 
-    bind(location: WebGLUniformLocation, data: BindingData)
+    bind(unit: number)
     {
         this.create();
 
-        const gl = data.gl;
-        gl.activeTexture(gl.TEXTURE0 + data.nextTextureUnit);
+        const gl = this.ctx.gl;
+
+        gl.activeTexture(gl.TEXTURE0 + unit);
         gl.bindTexture(gl.TEXTURE_2D, this._glTex);
-        gl.uniform1i(location, data.nextTextureUnit);
-        data.nextTextureUnit++;
+        // gl.uniform1i(location, data.nextTextureUnit);
+        // data.nextTextureUnit++;
+    }
+    unbind(unit: number)
+    {
+        this.create();
+
+        const gl = this.ctx.gl;
+
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
     destroy()
     {
@@ -132,6 +142,15 @@ class TextureBase extends Asset implements Texture
         gl.deleteTexture(oldTex._glTex);
     }
 
+    generateMipmap()
+    {
+        this.create();
+
+        const gl = this.ctx.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this._glTex);
+        gl.generateMipmap(gl.TEXTURE_2D);
+    }
+
     /**
      * Create & allocate texture if not
      */
@@ -150,7 +169,7 @@ class TextureBase extends Asset implements Texture
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
 
         const [internalFormat, format, type] = mapGLFormat(gl, this.format);
-        gl.texImage2D(gl.TEXTURE_2D, this.mipmapLevel, internalFormat, this.width, this.height, 0, format, type, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, this.width, this.height, 0, format, type, null);
 
         this.created = true;
     }
@@ -162,7 +181,9 @@ class TextureBase extends Asset implements Texture
 
         gl.bindTexture(gl.TEXTURE_2D, this._glTex);
 
-        flipTexture(this.ctx, this._glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, this.mipmapLevel);
+        flipTexture(this.ctx, this._glTex, pixels, this.width, this.height, this.format, this.filterMode, this.wrapMode, 0);
+
+        
     }
 
     protected tryInit(required = false): boolean
@@ -278,6 +299,7 @@ function flipTexture(
     mipmapLevel: number)
 {
     const gl = ctx.gl;
+    const renderer = ctx.renderer;
     const srcTex = gl.createTexture() ?? panic("Failed to create texture.");
     const [internalFormat, format, type] = mapGLFormat(gl, texFormat);
     gl.bindTexture(gl.TEXTURE_2D, srcTex);
@@ -305,6 +327,7 @@ function flipTexture(
 
     const shader = ctx.assets.shaders.FlipTexture;
     shader.use();
+    
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, srcTex);
     gl.uniform1i(shader.uniformLocation(BuiltinUniformNames.mainTex), 0);
@@ -313,6 +336,10 @@ function flipTexture(
     mesh.bind(shader);
 
     gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 
     gl.deleteFramebuffer(fbo);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

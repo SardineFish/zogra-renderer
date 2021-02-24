@@ -11,5 +11,7 @@ export interface BindingData {
     nextTextureUnit: number;
     size: vec2;
 }
-export declare type UniformType = "int" | "float" | "vec4" | "vec3" | "vec2" | "tex2d" | "color" | "mat4";
+export declare type NumericUnifromTypes = "int" | "float" | "vec4" | "vec3" | "vec2" | "color" | "mat4";
+export declare type TextureUniformTypes = "tex2d";
+export declare type UniformType = NumericUnifromTypes | TextureUniformTypes;
 export declare type UniformValueType<T extends UniformType> = (T extends "int" ? number : T extends "float" ? number : T extends "vec4" ? vec4 : T extends "vec3" ? vec3 : T extends "vec2" ? vec2 : T extends "color" ? (Color | null) : T extends "mat4" ? mat4 : Texture);

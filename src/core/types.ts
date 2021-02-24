@@ -14,7 +14,10 @@ export interface BindingData
     size: vec2;
 }
 
-export type UniformType = "int" | "float" | "vec4" | "vec3" | "vec2" | "tex2d" | "color" | "mat4";
+export type NumericUnifromTypes = "int" | "float" | "vec4" | "vec3" | "vec2" | "color" | "mat4";
+export type TextureUniformTypes = "tex2d";
+
+export type UniformType = NumericUnifromTypes | TextureUniformTypes;
 export type UniformValueType<T extends UniformType> = (
     T extends "int" ? number
     : T extends "float" ? number

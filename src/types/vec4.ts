@@ -5,6 +5,7 @@ export interface Vector
 {
     magnitude: number;
     normalized: ThisType<this>;
+    equals(v: any): boolean;
 }
 
 export type vec4 = Vector4;
@@ -117,6 +118,17 @@ export class Vector4 extends V4Constructor implements Vector
     {
         return vec4(this[0], this[1], this[2], this[3]);
     }
+    equals(v: any)
+    {
+        if (v === undefined)
+            return false;
+
+        return v[0] === this[0]
+            && v[1] === this[1]
+            && v[2] === this[2]
+            && v[3] === this[3];
+    }
+
     __to(type: Function)
     {
         switch (type)

@@ -53,6 +53,10 @@ Quaternion.rotate = (q: quat, v: vec3) =>
 {
     return glVec3.transformQuat(vec3(0, 0, 0) as any as glVec3, v, q) as any as vec3;
 }
+Quaternion.equals = (a: any, b: any) =>
+{
+    return glQuat.exactEquals(a, b);
+}
 
 export const quat = Quaternion;
 quat.identity = Quaternion.identity;

@@ -12,6 +12,7 @@ class BuiltinAssets {
             gl: gl,
             width: 0,
             height: 0,
+            renderer: null,
         };
         this.gl = gl;
         this.BuiltinUniforms = shaders_1.BuiltinUniformNames;

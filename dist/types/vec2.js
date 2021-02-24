@@ -100,6 +100,11 @@ class Vector2 extends V2Constructor {
         }
         return this.clone();
     }
+    equals(v) {
+        if (v === undefined)
+            return false;
+        return v[0] === this[0] && v[1] === this[1];
+    }
 }
 exports.Vector2 = Vector2;
 function vec2(x, y = x) {

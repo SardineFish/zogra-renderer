@@ -23,6 +23,7 @@ export class BuiltinAssets
             gl: gl,
             width: 0,
             height: 0,
+            renderer: null as any,
         }
         this.gl = gl;
 

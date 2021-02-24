@@ -123,6 +123,16 @@ export class Vector3 extends V3Constructor implements Vector
         return vec2(this[0], this[1]);
     }
 
+    equals(v: any)
+    {
+        if (v === undefined)
+            return false;
+
+        return v[0] === this[0]
+            && v[1] === this[1]
+            && v[2] === this[2];
+    }
+
     __to(type: Function)
     {
         switch (type)

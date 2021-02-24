@@ -130,6 +130,14 @@ export class Vector2 extends V2Constructor implements Vector
         }
         return this.clone();
     }
+
+    equals(v: any)
+    {
+        if (v === undefined)
+            return false;
+        
+        return v[0] === this[0] && v[1] === this[1];
+    }
 }
 export function vec2(x: number): Vector2
 export function vec2(x: number, y: number): Vector2

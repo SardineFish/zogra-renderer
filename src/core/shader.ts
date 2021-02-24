@@ -141,8 +141,12 @@ export class Shader extends Asset
     {
         this.tryInit(true);
 
+        this.gl.useProgram(this.program);
+    }
+
+    setupPipelineStates()
+    {
         const gl = this.gl;
-        gl.useProgram(this.program);
 
         if (this.settings.depth === DepthTest.Disable)
             gl.disable(gl.DEPTH_TEST);
@@ -185,6 +189,9 @@ export class Shader extends Asset
 
         const gl = this.gl;
 
+        // gl.useProgram(this.program);
+
+        // console.log(this.builtinUniformLocations.matMVP);
         this.builtinUniformLocations.matM && gl.uniformMatrix4fv(this.builtinUniformLocations.matM, false, params.matM);
         this.builtinUniformLocations.matVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matVP, false, params.matVP);
         this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP);
@@ -222,6 +229,7 @@ export class Shader extends Asset
         this.fragmentShader = panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
 
         this.compile();
+        gl.useProgram(this.program);
 
         const attributes = this.options.attributes || DefaultShaderAttributes;
 

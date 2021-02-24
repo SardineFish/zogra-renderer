@@ -92,6 +92,13 @@ class Vector3 extends V3Constructor {
     toVec2() {
         return vec2_1.vec2(this[0], this[1]);
     }
+    equals(v) {
+        if (v === undefined)
+            return false;
+        return v[0] === this[0]
+            && v[1] === this[1]
+            && v[2] === this[2];
+    }
     __to(type) {
         switch (type) {
             case vec4_1.Vector4:

@@ -46,7 +46,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
         context.renderer.clear(camera.clearColor, camera.clearDepth);
 
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
+        // context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
 
         const objs = data.getVisibleObjects(RenderOrder.FarToNear);
         for (const obj of objs)
@@ -59,6 +59,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
                 if (!obj.meshes[i])
                     continue;
                 const mat = obj.materials[i] || context.renderer.assets.materials.default;
+                mat.setProp("uCameraPos", "vec3", camera.position);
                 context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
             }
         }

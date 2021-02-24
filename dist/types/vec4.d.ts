@@ -3,6 +3,7 @@ import { Vector2 } from "./vec2";
 export interface Vector {
     magnitude: number;
     normalized: ThisType<this>;
+    equals(v: any): boolean;
 }
 export declare type vec4 = Vector4;
 declare const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number];
@@ -31,7 +32,8 @@ export declare class Vector4 extends V4Constructor implements Vector {
     inverse(): this;
     negate(): this;
     clone(): Vector4;
-    __to(type: Function): Vector2 | Vector3 | Vector4;
+    equals(v: any): boolean;
+    __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec4(x: number): Vector4;
 export declare namespace vec4 {

@@ -26,7 +26,7 @@ class Default2DRenderPipeline {
             context.renderer.setRenderTarget(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
+        // context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.FarToNear);
         for (const obj of objs) {
             obj.__onRender(context, data);
@@ -35,6 +35,7 @@ class Default2DRenderPipeline {
                 if (!obj.meshes[i])
                     continue;
                 const mat = obj.materials[i] || context.renderer.assets.materials.default;
+                mat.setProp("uCameraPos", "vec3", camera.position);
                 context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
             }
         }

@@ -2,29 +2,52 @@ import { Shader } from "./shader";
 import "reflect-metadata";
 import { MaterialType } from "./material-type";
 import "reflect-metadata";
-import { BindingData, UniformValueType } from "./types";
+import { BindingData, NumericUnifromTypes, TextureUniformTypes, UniformValueType } from "./types";
 import { UniformType } from "./types";
 import { Asset } from "./asset";
+interface FieldProperty {
+    key: string;
+    value?: never;
+}
+interface DynamicProperty<T extends UniformType> {
+    key?: never;
+    value: UniformValueType<T>;
+}
+declare type PropertyReference<T extends UniformType> = FieldProperty | DynamicProperty<T>;
+declare type NumericProperty<T extends NumericUnifromTypes> = PropertyReference<T> & {
+    type: T;
+    location: WebGLUniformLocation | null | undefined;
+    uploaded: UniformValueType<T>;
+};
+declare type TextureProperty<T extends TextureUniformTypes> = PropertyReference<T> & {
+    type: T;
+    location: WebGLUniformLocation | null | undefined;
+    textureUnit: number;
+    uploaded: UniformValueType<T> | null;
+    uniformSet?: true;
+};
+declare type PropertyInfo = NumericProperty<NumericUnifromTypes> | TextureProperty<TextureUniformTypes>;
 export interface MaterialProperties {
-    [key: string]: {
-        type: UniformType;
-        location: WebGLUniformLocation;
-        name: string;
-    };
+    [uniformName: string]: PropertyInfo;
 }
 export declare class Material extends Asset {
     [key: string]: any;
     private _shader;
     properties: MaterialProperties;
     gl: WebGL2RenderingContext;
+    private textureCount;
     protected initialized: boolean;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
     get shader(): Shader;
-    set shader(value: Shader);
     setup(data: BindingData): void;
-    setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void;
-    setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
+    setProp<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>): void;
+    /**
+     * Unbind all render textures from active texture slot due to avoid
+     * 'Feedback loop formed between Framebuffer and active Texture' in chrome since version 83
+     */
+    unbindRenderTextures(): void;
     protected tryInit(required?: boolean): boolean;
+    private setUniform;
 }
 export declare function shaderProp(name: string, type: UniformType): {
     (target: Function): void;
@@ -39,3 +62,4 @@ export declare function SimpleTexturedMaterial(shader: Shader): typeof MaterialT
 export declare function materialDefine<T extends {
     new (...arg: any[]): Material;
 }>(constructor: T): T;
+export {};

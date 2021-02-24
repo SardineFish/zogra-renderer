@@ -121,20 +121,22 @@ class ZograRenderer {
         this.scissor = viewport;
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         if (src)
-            this.setGlobalTexture(shaders_1.BuiltinUniformNames.mainTex, src);
+            material.setProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d", src);
         else
-            this.setGlobalTexture(shaders_1.BuiltinUniformNames.mainTex, this.assets.textures.default);
+            material.setProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d", this.assets.textures.default);
         this.drawMesh(mesh, mat4_1.mat4.identity(), material);
-        this.unsetGlobalTexture(shaders_1.BuiltinUniformNames.mainTex);
+        // this.unsetGlobalTexture(BuiltinUniformNames.mainTex);
         this.setRenderTarget(prevTarget);
         this.viewProjectionMatrix = prevVP;
     }
     useShader(shader) {
-        /*if (shader === this.shader)
-            return;*/
+        // Shader state may be modified by flip texure.
+        // if (shader === this.shader)
+        //     return;
         const gl = this.gl;
         this.shader = shader;
         shader.use();
+        shader.setupPipelineStates();
     }
     setupTransforms(shader, transformModel) {
         const gl = this.gl;
@@ -149,40 +151,44 @@ class ZograRenderer {
             matMV_IT: mvit,
         });
     }
-    setupGlobalUniforms(shader, data) {
-        const gl = this.gl;
-        for (const val of this.globalUniforms.values()) {
-            const location = shader.uniformLocation(val.name);
-            if (!location)
-                continue;
-            switch (val.type) {
-                case "int":
-                    gl.uniform1i(location, val.value);
-                    break;
-                case "float":
-                    gl.uniform1f(location, val.value);
-                    break;
-                case "vec2":
-                    gl.uniform2fv(location, val.value, 0, 2);
-                    break;
-                case "vec3":
-                    gl.uniform3fv(location, val.value, 0, 3);
-                    break;
-                case "vec4":
-                    gl.uniform4fv(location, val.value, 0, 4);
-                    break;
-                case "color":
-                    gl.uniform4fv(location, val.value, 0, 4);
-                    break;
-            }
-        }
-        for (const tex of this.globalTextures.values()) {
-            const location = shader.uniformLocation(tex.name);
-            if (!location)
-                continue;
-            tex.texture.bind(location, data);
-        }
-    }
+    // private setupGlobalUniforms(shader: Shader, data: BindingData)
+    // {
+    //     const gl = this.gl;
+    //     for (const val of this.globalUniforms.values())
+    //     {
+    //         const location = shader.uniformLocation(val.name);
+    //         if (!location)
+    //             continue;
+    //         switch (val.type)
+    //         {
+    //             case "int":
+    //                 gl.uniform1i(location, val.value as number);
+    //                 break;
+    //             case "float":
+    //                 gl.uniform1f(location, val.value as number);
+    //                 break;
+    //             case "vec2":
+    //                 gl.uniform2fv(location, val.value as vec2, 0, 2);
+    //                 break;
+    //             case "vec3":
+    //                 gl.uniform3fv(location, val.value as vec3, 0, 3);
+    //                 break;
+    //             case "vec4":
+    //                 gl.uniform4fv(location, val.value as vec4, 0, 4);
+    //                 break;
+    //             case "color":
+    //                 gl.uniform4fv(location, val.value as Color, 0, 4);
+    //                 break;
+    //         }
+    //     }
+    //     for (const tex of this.globalTextures.values())
+    //     {
+    //         const location = shader.uniformLocation(tex.name);
+    //         if (!location)
+    //             continue;
+    //         tex.texture.bind(location, data);
+    //     }
+    // }
     drawMesh(mesh, transform, material) {
         if (!material)
             material = this.assets.materials.error;
@@ -198,9 +204,10 @@ class ZograRenderer {
         this.useShader(material.shader);
         material.setup(data);
         this.setupTransforms(material.shader, transform);
-        this.setupGlobalUniforms(material.shader, data);
+        // this.setupGlobalUniforms(material.shader, data);
         mesh.bind(material.shader);
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        material.unbindRenderTextures();
     }
     drawLines(lines, transform, material) {
         const gl = this.gl;
@@ -215,29 +222,33 @@ class ZograRenderer {
         this.useShader(material.shader);
         material.setup(data);
         this.setupTransforms(material.shader, transform);
-        this.setupGlobalUniforms(material.shader, data);
+        // this.setupGlobalUniforms(material.shader, data);
         lines.bind(material.shader);
         gl.drawElements(gl.LINES, lines.lines.length, gl.UNSIGNED_INT, 0);
     }
-    setGlobalUniform(name, type, value) {
-        this.globalUniforms.set(name, {
-            name: name,
-            type: type,
-            value: value,
-        });
-    }
-    unsetGlobalUniform(name) {
-        this.globalUniforms.delete(name);
-    }
-    setGlobalTexture(name, texture) {
-        this.globalTextures.set(name, {
-            name: name,
-            texture: texture,
-        });
-    }
-    unsetGlobalTexture(name) {
-        this.globalTextures.delete(name);
-    }
+    // setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
+    // {
+    //     this.globalUniforms.set(name, {
+    //         name: name,
+    //         type: type,
+    //         value: value,
+    //     });
+    // }
+    // unsetGlobalUniform(name: string)
+    // {
+    //     this.globalUniforms.delete(name);
+    // }
+    // setGlobalTexture(name: string, texture: Texture)
+    // {
+    //     this.globalTextures.set(name, {
+    //         name: name,
+    //         texture: texture,
+    //     });
+    // }
+    // unsetGlobalTexture(name: string)
+    // {
+    //     this.globalTextures.delete(name);   
+    // }
     setupScissor() {
         const gl = this.gl;
         gl.viewport(this.scissor.xMin, this.scissor.yMin, this.scissor.size.x, this.scissor.size.y);

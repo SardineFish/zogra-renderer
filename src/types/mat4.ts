@@ -142,6 +142,15 @@ Matrix4x4.fromScaling = (scaling: vec3) =>
     return glMat4.fromScaling(glMat4.create(), scaling);
 }
 
+Matrix4x4.equal = (a: any, b: any) =>
+{
+    if (a === undefined || b === undefined)
+        return false;
+    if (!(a instanceof glMat4) || !(b instanceof glMat4))
+        return false;
+    return glMat4.exactEquals(a, b);
+}
+
 type ArithmetricFunction<T> = {
     (out: T, a: T, b: T): T;
     (a: T, b: T): T;

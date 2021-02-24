@@ -41,6 +41,9 @@ Quaternion.fromEuler = (e) => {
 Quaternion.rotate = (q, v) => {
     return gl_matrix_1.vec3.transformQuat(vec3_1.vec3(0, 0, 0), v, q);
 };
+Quaternion.equals = (a, b) => {
+    return gl_matrix_1.quat.exactEquals(a, b);
+};
 exports.quat = Quaternion;
 exports.quat.identity = Quaternion.identity;
 //# sourceMappingURL=quat.js.map
