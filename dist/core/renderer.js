@@ -122,8 +122,6 @@ class ZograRenderer {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         if (src)
             material.setProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d", src);
-        else
-            material.setProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d", this.assets.textures.default);
         this.drawMesh(mesh, mat4_1.mat4.identity(), material);
         // this.unsetGlobalTexture(BuiltinUniformNames.mainTex);
         this.setRenderTarget(prevTarget);

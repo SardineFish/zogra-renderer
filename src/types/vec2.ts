@@ -150,6 +150,8 @@ vec2.from = (src: Iterable<number>) =>
     const [x = 0, y = 0] = src;
     return vec2(x, y);
 }
+
+vec2.floor = (v: vec2) => vec2(Math.floor(v.x), Math.floor(v.y));
 vec2.zero = Vector2.zero;
 vec2.one = Vector2.one;
 vec2.left = Vector2.left;

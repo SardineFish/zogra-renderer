@@ -11,7 +11,6 @@ const color_1 = require("../types/color");
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
-const gl_matrix_1 = require("gl-matrix");
 const texture_1 = require("./texture");
 const asset_1 = require("./asset");
 const shaders_1 = require("../builtin-assets/shaders");
@@ -162,19 +161,20 @@ class Material extends asset_1.Asset {
         let dirty = false;
         if (prop.uploaded == null && value == null)
             return false;
-        switch (prop.type) {
-            case "tex2d":
-            case "float":
-            case "int":
-                dirty = prop.uploaded !== value;
-                break;
-            case "mat4":
-                dirty = !gl_matrix_1.mat4.exactEquals(prop.uploaded, value);
-                break;
-            default:
-                dirty = !prop.uploaded.equals(value);
-                break;
-        }
+        // switch (prop.type)
+        // {
+        //     case "tex2d":
+        //     case "float":
+        //     case "int":
+        //         dirty = prop.uploaded !== value;
+        //         break;
+        //     case "mat4":
+        //         dirty = !mat4.exactEquals(prop.uploaded as mat4, value as mat4);
+        //         break;
+        //     default:
+        //         dirty = !(prop.uploaded as Vector).equals(value);
+        //         break;
+        // }
         // if (!dirty)
         //     return false;
         switch (prop.type) {

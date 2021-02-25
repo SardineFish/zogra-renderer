@@ -155,5 +155,6 @@ vec4.from = (src: Iterable<number>) =>
     const [x = 0, y = 0, z = 0, w=0] = src;
     return vec4(x, y, z, w);
 }
+vec4.floor = (v: vec4) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z), Math.floor(v.w));
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;

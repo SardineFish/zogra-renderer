@@ -118,6 +118,7 @@ vec3.from = (src) => {
     const [x = 0, y = 0, z = 0] = src;
     return vec3(x, y, z);
 };
+vec3.floor = (v) => vec3(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z));
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 //# sourceMappingURL=vec3.js.map

@@ -240,20 +240,20 @@ export class Material extends Asset
         if (prop.uploaded == null && value == null)
             return false;
         
-        switch (prop.type)
-        {
-            case "tex2d":
-            case "float":
-            case "int":
-                dirty = prop.uploaded !== value;
-                break;
-            case "mat4":
-                dirty = !mat4.exactEquals(prop.uploaded as mat4, value as mat4);
-                break;
-            default:
-                dirty = !(prop.uploaded as Vector).equals(value);
-                break;
-        }
+        // switch (prop.type)
+        // {
+        //     case "tex2d":
+        //     case "float":
+        //     case "int":
+        //         dirty = prop.uploaded !== value;
+        //         break;
+        //     case "mat4":
+        //         dirty = !mat4.exactEquals(prop.uploaded as mat4, value as mat4);
+        //         break;
+        //     default:
+        //         dirty = !(prop.uploaded as Vector).equals(value);
+        //         break;
+        // }
         // if (!dirty)
         //     return false;
         
