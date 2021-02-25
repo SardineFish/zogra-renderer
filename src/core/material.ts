@@ -2,7 +2,7 @@ import { Shader } from "./shader";
 import { Color } from "../types/color";
 import { decorator, panic } from "../utils/util";
 import "reflect-metadata";
-import { GL, GLContext } from "./global";
+import { GL, GLContext, GlobalContext } from "./global";
 import { MaterialType } from "./material-type";
 import "reflect-metadata";
 import { vec2 } from "../types/vec2";
@@ -40,7 +40,7 @@ type NumericProperty<T extends NumericUnifromTypes> = PropertyReference<T> &
 {
     type: T;
     location: WebGLUniformLocation | null | undefined;
-    uploaded: UniformValueType<T>;
+    uploaded?: UniformValueType<T>;
 };
 
 type TextureProperty<T extends TextureUniformTypes> = PropertyReference<T> &
@@ -48,7 +48,7 @@ type TextureProperty<T extends TextureUniformTypes> = PropertyReference<T> &
     type: T;
     location: WebGLUniformLocation | null | undefined;
     textureUnit: number;
-    uploaded: UniformValueType<T> | null;
+    uploaded?: UniformValueType<T> | null;
     uniformSet?: true;
 };
 
@@ -122,7 +122,7 @@ export class Material extends Asset
                         type: type as TextureUniformTypes,
                         textureUnit: this.textureCount++,
                         location: undefined,
-                        uploaded: null,
+                        uploaded: undefined,
                         value: value as Texture
                     };
                     break;
@@ -130,7 +130,7 @@ export class Material extends Asset
                     this.properties[uniformName] = {
                         type: type as NumericUnifromTypes,
                         location: undefined,
-                        uploaded: null,
+                        uploaded: undefined,
                         value: value as any
                     };
             }
@@ -195,7 +195,7 @@ export class Material extends Asset
                 case "tex2d":
                     properties[prop.name] = {
                         type: prop.type,
-                        uploaded: null,
+                        uploaded: undefined,
                         key: key,
                         location: loc,
                         textureUnit: this.textureCount++,
@@ -205,7 +205,7 @@ export class Material extends Asset
                     properties[prop.name] = {
                         type: prop.type,
                         location: loc,
-                        uploaded: null,
+                        uploaded: undefined,
                         key: key
                     };
             }
@@ -223,6 +223,7 @@ export class Material extends Asset
         const prop = this.properties[uniformName];
 
         const gl = this.gl;
+        const ctx = GlobalContext();
 
         if (prop.location === undefined)
         {
@@ -237,7 +238,7 @@ export class Material extends Asset
             : prop.value) as UniformValueType<UniformType>;
         
         let dirty = false;
-        if (prop.uploaded == null && value == null)
+        if (prop.uploaded === null && value === null)
             return false;
         
         // switch (prop.type)
@@ -280,6 +281,8 @@ export class Material extends Asset
             case "tex2d":
                 // Update texture to texture unit instead of update uniform1i
                 // Due to performance issue mentioned in https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14.10
+                value = value || ctx.renderer.assets.textures.default;
+                    
                 (value as Texture).bind(prop.textureUnit);
                 if (!prop.uniformSet)
                 {

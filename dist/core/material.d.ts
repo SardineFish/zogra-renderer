@@ -17,13 +17,13 @@ declare type PropertyReference<T extends UniformType> = FieldProperty | DynamicP
 declare type NumericProperty<T extends NumericUnifromTypes> = PropertyReference<T> & {
     type: T;
     location: WebGLUniformLocation | null | undefined;
-    uploaded: UniformValueType<T>;
+    uploaded?: UniformValueType<T>;
 };
 declare type TextureProperty<T extends TextureUniformTypes> = PropertyReference<T> & {
     type: T;
     location: WebGLUniformLocation | null | undefined;
     textureUnit: number;
-    uploaded: UniformValueType<T> | null;
+    uploaded?: UniformValueType<T> | null;
     uniformSet?: true;
 };
 declare type PropertyInfo = NumericProperty<NumericUnifromTypes> | TextureProperty<TextureUniformTypes>;

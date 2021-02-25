@@ -67,7 +67,7 @@ class Material extends asset_1.Asset {
                         type: type,
                         textureUnit: this.textureCount++,
                         location: undefined,
-                        uploaded: null,
+                        uploaded: undefined,
                         value: value
                     };
                     break;
@@ -75,7 +75,7 @@ class Material extends asset_1.Asset {
                     this.properties[uniformName] = {
                         type: type,
                         location: undefined,
-                        uploaded: null,
+                        uploaded: undefined,
                         value: value
                     };
             }
@@ -127,7 +127,7 @@ class Material extends asset_1.Asset {
                 case "tex2d":
                     properties[prop.name] = {
                         type: prop.type,
-                        uploaded: null,
+                        uploaded: undefined,
                         key: key,
                         location: loc,
                         textureUnit: this.textureCount++,
@@ -137,7 +137,7 @@ class Material extends asset_1.Asset {
                     properties[prop.name] = {
                         type: prop.type,
                         location: loc,
-                        uploaded: null,
+                        uploaded: undefined,
                         key: key
                     };
             }
@@ -149,6 +149,7 @@ class Material extends asset_1.Asset {
     setUniform(uniformName) {
         const prop = this.properties[uniformName];
         const gl = this.gl;
+        const ctx = global_1.GlobalContext();
         if (prop.location === undefined) {
             // this.shader.use();
             prop.location = this.shader.uniformLocation(uniformName);
@@ -159,7 +160,7 @@ class Material extends asset_1.Asset {
             ? this[prop.key]
             : prop.value);
         let dirty = false;
-        if (prop.uploaded == null && value == null)
+        if (prop.uploaded === null && value === null)
             return false;
         // switch (prop.type)
         // {
@@ -199,6 +200,7 @@ class Material extends asset_1.Asset {
             case "tex2d":
                 // Update texture to texture unit instead of update uniform1i
                 // Due to performance issue mentioned in https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14.10
+                value = value || ctx.renderer.assets.textures.default;
                 value.bind(prop.textureUnit);
                 if (!prop.uniformSet) {
                     gl.uniform1i(prop.location, prop.textureUnit);
