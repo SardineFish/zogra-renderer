@@ -10,6 +10,7 @@ import { vec2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { Lines } from "./lines";
 import { Rect } from "../types/rect";
+import { BufferStructure, InstanceBuffer } from "./buffer";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
     gl: WebGL2RenderingContext;
@@ -38,6 +39,7 @@ export declare class ZograRenderer {
     blit(src: Texture | null, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
     private useShader;
     private setupTransforms;
+    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: InstanceBuffer<T>, material: Material, count: number): void;
     drawMesh(mesh: Mesh, transform: mat4, material: Material): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
     private setupScissor;

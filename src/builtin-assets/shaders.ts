@@ -1,4 +1,4 @@
-import { ShaderAttributes, Shader, DepthTest, Blending } from "../core/shader";
+import { ShaderAttributeNames, Shader, DepthTest, Blending } from "../core/shader";
 
 const defaultVert = `#version 300 es
 precision mediump float;

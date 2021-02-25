@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Shader = exports.DefaultShaderAttributes = exports.Culling = exports.Blending = exports.DepthTest = void 0;
+exports.Shader = exports.DefaultShaderAttributeNames = exports.Culling = exports.Blending = exports.DepthTest = void 0;
 const util_1 = require("../utils/util");
 const global_1 = require("./global");
 const shaders_1 = require("../builtin-assets/shaders");
@@ -39,7 +39,7 @@ var Culling;
     Culling[Culling["Front"] = WebGL2RenderingContext.FRONT] = "Front";
     Culling[Culling["Both"] = WebGL2RenderingContext.FRONT_AND_BACK] = "Both";
 })(Culling = exports.Culling || (exports.Culling = {}));
-exports.DefaultShaderAttributes = {
+exports.DefaultShaderAttributeNames = {
     vert: "aPos",
     color: "aColor",
     uv: "aUV",
@@ -49,13 +49,13 @@ exports.DefaultShaderAttributes = {
 class Shader extends asset_1.Asset {
     constructor(vertexShader, fragmentShader, options = {}, gl = global_1.GL()) {
         super(options.name);
+        this.attributes = null;
         this.initialized = false;
         this.gl = null;
         this.program = null;
         this.vertexShader = null;
         this.fragmentShader = null;
         this.settings = null;
-        this.attributes = null;
         this.builtinUniformLocations = null;
         this._compiled = false;
         if (!options.name)
@@ -132,14 +132,12 @@ class Shader extends asset_1.Asset {
         this.fragmentShader = util_1.panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
         this.compile();
         gl.useProgram(this.program);
-        const attributes = this.options.attributes || exports.DefaultShaderAttributes;
-        this.attributes = {
-            vert: this.gl.getAttribLocation(this.program, attributes.vert),
-            color: this.gl.getAttribLocation(this.program, attributes.color),
-            uv: this.gl.getAttribLocation(this.program, attributes.uv),
-            uv2: this.gl.getAttribLocation(this.program, attributes.uv2),
-            normal: this.gl.getAttribLocation(this.program, attributes.normal)
-        };
+        // const attributes = this.options.attributes || DefaultShaderAttributes;
+        const attributeNames = Object.assign(Object.assign({}, exports.DefaultShaderAttributeNames), this.options.attributes);
+        this.attributes = {};
+        for (const key in attributeNames) {
+            this.attributes[key] = gl.getAttribLocation(this.program, attributeNames[key]);
+        }
         let blend = false;
         let blendRGB = [Blending.One, Blending.Zero];
         let blendAlpha = [Blending.One, Blending.OneMinusSrcAlpha];

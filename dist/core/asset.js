@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AssetManager = exports.Asset = void 0;
+exports.AssetManager = exports.LazyInitAsset = exports.Asset = void 0;
 const util_1 = require("../utils/util");
 const event_1 = require("./event");
+const global_1 = require("./global");
 class Asset {
     constructor(name) {
         this.destroyed = false;
@@ -15,6 +16,34 @@ class Asset {
     }
 }
 exports.Asset = Asset;
+class LazyInitAsset extends Asset {
+    constructor(ctx = global_1.GlobalContext()) {
+        super();
+        this.initialzed = false;
+        this.ctx = ctx;
+    }
+    tryInit(required = false) {
+        if (this.initialzed)
+            return true;
+        const ctx = this.ctx || global_1.GlobalContext();
+        if (!ctx) {
+            if (required)
+                throw new Error("Failed to initialize GPU resource withou a global GL context.");
+            return false;
+        }
+        this.ctx = ctx;
+        if (this.init()) {
+            this.initialzed = true;
+            return true;
+        }
+        else {
+            if (required)
+                throw new Error("Failed to initialize required GPU resource.");
+            return false;
+        }
+    }
+}
+exports.LazyInitAsset = LazyInitAsset;
 class AssetManagerType {
     constructor() {
         this.assetsMap = new Map();

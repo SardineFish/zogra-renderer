@@ -19,4 +19,5 @@ __exportStar(require("./texture"), exports);
 __exportStar(require("./asset"), exports);
 __exportStar(require("./lines"), exports);
 __exportStar(require("./event"), exports);
+__exportStar(require("./buffer"), exports);
 //# sourceMappingURL=core.js.map

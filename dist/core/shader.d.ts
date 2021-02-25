@@ -1,13 +1,14 @@
 import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";
-export interface AttributeBlock {
+export interface AttributeLocations {
+    [key: string]: number;
     vert: number;
     color: number;
     uv: number;
     uv2: number;
     normal: number;
 }
-export interface ShaderAttributes {
+export interface ShaderAttributeNames {
     [key: string]: string;
     vert: string;
     color: string;
@@ -61,12 +62,13 @@ interface ShaderSettingsOptional {
     blendAlpha?: [Blending, Blending];
     cull?: Culling;
     zWrite?: boolean;
-    attributes?: ShaderAttributes;
+    attributes?: Partial<ShaderAttributeNames>;
 }
-export declare const DefaultShaderAttributes: ShaderAttributes;
+export declare const DefaultShaderAttributeNames: ShaderAttributeNames;
 export declare class Shader extends Asset {
     vertexShaderSource: string;
     fragmentShaderSouce: string;
+    attributes: AttributeLocations;
     private options;
     private initialized;
     private gl;
@@ -74,7 +76,6 @@ export declare class Shader extends Asset {
     private vertexShader;
     private fragmentShader;
     private settings;
-    private attributes;
     private builtinUniformLocations;
     private _compiled;
     get compiled(): boolean;
@@ -90,7 +91,7 @@ export declare class Shader extends Asset {
         matMV_IT: mat4;
     }): void;
     _internal(): {
-        attributes: AttributeBlock;
+        attributes: AttributeLocations;
     };
     private tryInit;
     private compile;

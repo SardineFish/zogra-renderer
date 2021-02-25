@@ -1,5 +1,6 @@
 import { ConstructorType } from "../utils/util";
 import { EventDefinitions, IEventSource, EventKeys } from "./event";
+import { GLContext } from "./global";
 export interface IAsset {
     assetID: number;
     name: string;
@@ -11,6 +12,13 @@ export declare class Asset implements IAsset {
     protected destroyed: boolean;
     constructor(name?: string);
     destroy(): void;
+}
+export declare abstract class LazyInitAsset extends Asset {
+    protected ctx: GLContext;
+    protected initialzed: boolean;
+    constructor(ctx?: GLContext);
+    protected abstract init(): boolean;
+    protected tryInit(required?: boolean): boolean;
 }
 interface AssetManagerEvents extends EventDefinitions {
     "asset-created": (asset: IAsset) => void;

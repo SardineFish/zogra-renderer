@@ -5,8 +5,9 @@ import { getUniformsLocation } from "../utils/util";
 import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";
 
-export interface AttributeBlock
+export interface AttributeLocations
 {
+    [key: string]: number;
     vert: number;
     color: number;
     uv: number;
@@ -14,7 +15,7 @@ export interface AttributeBlock
     normal: number;
 }
 
-export interface ShaderAttributes
+export interface ShaderAttributeNames
 {
     [key: string]: string;
     vert: string;
@@ -80,10 +81,10 @@ interface ShaderSettingsOptional
     blendAlpha?: [Blending, Blending];
     cull?: Culling
     zWrite?: boolean;
-    attributes?: ShaderAttributes;
+    attributes?: Partial<ShaderAttributeNames>;
 }
 
-export const DefaultShaderAttributes: ShaderAttributes =
+export const DefaultShaderAttributeNames: ShaderAttributeNames =
 {
     vert: "aPos",
     color: "aColor",
@@ -97,6 +98,8 @@ export class Shader extends Asset
     vertexShaderSource: string;
     fragmentShaderSouce: string;
 
+    attributes: AttributeLocations = null as any;
+
     private options: ShaderSettingsOptional;
     
     private initialized = false;
@@ -108,8 +111,6 @@ export class Shader extends Asset
     private fragmentShader: WebGLShader = null as any;
 
     private settings: StateSettings = null as any;
-
-    private attributes: AttributeBlock = null as any;
 
     private builtinUniformLocations: { [key in keyof typeof BuiltinUniformNames]: WebGLUniformLocation | null } = null as any;
 
@@ -231,15 +232,15 @@ export class Shader extends Asset
         this.compile();
         gl.useProgram(this.program);
 
-        const attributes = this.options.attributes || DefaultShaderAttributes;
+        // const attributes = this.options.attributes || DefaultShaderAttributes;
+        const attributeNames = { ...DefaultShaderAttributeNames, ...this.options.attributes };
 
-        this.attributes = {
-            vert: this.gl.getAttribLocation(this.program, attributes.vert),
-            color: this.gl.getAttribLocation(this.program, attributes.color),
-            uv: this.gl.getAttribLocation(this.program, attributes.uv),
-            uv2: this.gl.getAttribLocation(this.program, attributes.uv2),
-            normal: this.gl.getAttribLocation(this.program, attributes.normal)
-        };
+        this.attributes = {} as AttributeLocations;
+
+        for (const key in attributeNames)
+        {
+            this.attributes[key] = gl.getAttribLocation(this.program, attributeNames[key] as string);
+        }
 
         let blend = false;
         let blendRGB: [Blending, Blending] = [Blending.One, Blending.Zero];

@@ -1,5 +1,6 @@
 import { ConstructorType, setImmediate } from "../utils/util";
 import { EventDefinitions, IEventSource, EventKeys, EventEmitter } from "./event";
+import { GLContext, GlobalContext } from "./global";
 
 export interface IAsset
 {
@@ -21,6 +22,46 @@ export class Asset implements IAsset
     {
         this.destroyed = true;
         AssetManager.destroy(this.assetID);
+    }
+}
+
+export abstract class LazyInitAsset extends Asset
+{
+    protected ctx: GLContext;
+    protected initialzed = false;
+
+    constructor(ctx = GlobalContext())
+    {
+        super();
+        this.ctx = ctx;
+    }
+
+    protected abstract init(): boolean;
+
+    protected tryInit(required = false)
+    {
+        if (this.initialzed)
+            return true;
+        const ctx = this.ctx || GlobalContext();
+        if (!ctx)
+        {
+            if (required)
+                throw new Error("Failed to initialize GPU resource withou a global GL context.");
+            return false;
+        }
+        this.ctx = ctx;
+
+        if (this.init())
+        {
+            this.initialzed = true;
+            return true;
+        }
+        else
+        {
+            if (required)
+                throw new Error("Failed to initialize required GPU resource.");
+            return false;
+        }
     }
 }
 

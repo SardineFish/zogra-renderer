@@ -7,3 +7,4 @@ export * from "./texture";
 export * from "./asset";
 export * from "./lines";
 export * from "./event"
+export * from "./buffer";
