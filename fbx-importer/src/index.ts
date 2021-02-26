@@ -1,6 +1,5 @@
 import { FBXAssets, FBXMaterial, FBXID, FBXMesh } from "./fbx-types";
-import { AssetsImporterPlugin } from "zogra-renderer";
-import { AssetsPack, AssetImportOptions } from "zogra-renderer";
+import { AssetsPack, AssetImportOptions, AssetImporterPlugin, AssetsImporter } from "zogra-renderer";
 import { GlobalContext, GLContext } from "zogra-renderer";
 import { Material } from "zogra-renderer";
 import { Color } from "zogra-renderer";
@@ -118,7 +117,7 @@ function convertMesh(ctx: GLContext)
     };
 }
 
-export const FBXImporter: AssetsImporterPlugin = {
+const FBXModelImporter: AssetImporterPlugin<{}, AssetsPack> = {
     async import(buffer: ArrayBuffer, options?: AssetImportOptions, ctx: GLContext = GlobalContext())
     {
         const data = parseFBX(buffer);
@@ -126,3 +125,9 @@ export const FBXImporter: AssetsImporterPlugin = {
         return toManagedAssets(assets, ctx);
     }
 }
+
+const importers = {
+    fbx: FBXModelImporter
+};
+
+export const FBXImporter = new AssetsImporter(importers);

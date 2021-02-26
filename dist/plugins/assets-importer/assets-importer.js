@@ -12,26 +12,47 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssetsImporter = void 0;
 const global_1 = require("../../core/global");
-const texture_importer_1 = require("../texture-importer/texture-importer");
 __exportStar(require("./types"), exports);
-const importers = {
-    img: texture_importer_1.TextureImporter,
-};
-function createBufferImporter(buffer, ctx = global_1.GlobalContext()) {
-    const wrapper = {};
-    for (const importer in importers) {
-        wrapper[importer] = (options) => importers[importer].import(buffer, options, ctx);
+// const importers = {
+//     img: TextureImporter,
+// };
+class AssetsImporter {
+    constructor(importers) {
+        this.importers = importers;
     }
-    return wrapper;
-}
-exports.AssetsImporter = {
-    importers: importers,
     async url(url, ctx = global_1.GlobalContext()) {
         const buffer = await fetch(url).then(r => r.arrayBuffer());
-        return createBufferImporter(buffer, ctx);
-    },
-    async buffer(buffer, ctx = global_1.GlobalContext()) {
-        return createBufferImporter(buffer, ctx);
+        return await this.buffer(buffer, ctx);
     }
-};
+    async buffer(buffer, ctx = global_1.GlobalContext()) {
+        const bufImporters = {};
+        for (const key in this.importers) {
+            bufImporters[key] = (options) => this.importers[key].import(buffer, options, ctx);
+        }
+        return bufImporters;
+    }
+}
+exports.AssetsImporter = AssetsImporter;
+// type BufferImporter = { [key in keyof typeof importers]: (options: AssetImportOptions) => Promise<AssetsPack> };
+// function createBufferImporter(buffer: ArrayBuffer, ctx = GlobalContext()): BufferImporter
+// {
+//     const wrapper = {} as any;
+//     for (const importer in importers)
+//     {
+//         wrapper[importer] = (options?: AssetImportOptions) => importers[importer as keyof typeof importers].import(buffer, options, ctx);
+//     }
+//     return wrapper;
+// }
+// export const AssetsImporter = {
+//     importers: importers,
+//     async url(url: string, ctx = GlobalContext())
+//     {
+//         const buffer = await fetch(url).then(r => r.arrayBuffer());
+//         return createBufferImporter(buffer, ctx);
+//     },
+//     async buffer(buffer: ArrayBuffer, ctx = GlobalContext())
+//     {
+//         return createBufferImporter(buffer, ctx);
+//     }
+// };
 //# sourceMappingURL=assets-importer.js.map

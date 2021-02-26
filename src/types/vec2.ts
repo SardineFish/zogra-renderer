@@ -34,7 +34,6 @@ export class Vector2 extends V2Constructor implements Vector
     {
         super(x, y);
     }
-
     static zero()
     {
         return new Vector2(0, 0);
@@ -53,6 +52,14 @@ export class Vector2 extends V2Constructor implements Vector
     }
     static left() { return new Vector2(-1, 0) }
     static right() { return new Vector2(1, 0) }
+    static distance(u: Vector2, v: Vector2)
+    {
+        return Math.sqrt((u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y));
+    }
+    static distanceSquared(u: Vector2, v: Vector2)
+    {
+        return (u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y);
+    }
     
     plus(v: Vector2)
     {

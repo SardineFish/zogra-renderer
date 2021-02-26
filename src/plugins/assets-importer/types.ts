@@ -31,9 +31,9 @@ export class AssetsPack
     }
 }
 
-export interface AssetsImporterPlugin
+export interface AssetImporterPlugin<TOption, TAsset>
 {
-    import(buffer: ArrayBuffer, options?: AssetImportOptions, ctx?: GLContext): Promise<AssetsPack>;
+    import(buffer: ArrayBuffer, options?: TOption, ctx?: GLContext): Promise<TAsset>;
 }
 
 type SerializableValueType = number | string | boolean | { [key: string]: SerializableValueType } | SerializableValueType[];

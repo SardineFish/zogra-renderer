@@ -11,4 +11,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./assets-importer/assets-importer"), exports);
+__exportStar(require("./texture-importer/texture-importer"), exports);
 //# sourceMappingURL=plugins.js.map

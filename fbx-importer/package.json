@@ -4,13 +4,13 @@
   "description": "Fbx import plugin for zogra renderer",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx tsc",
+    "build:watch": "npx tsc -w"
   },
   "author": "SardineFish",
   "license": "MIT",
   "dependencies": {
     "@types/pako": "^1.0.1",
-    "gl-matrix": "^3.3.0",
     "pako": "^2.0.3",
     "zogra-renderer": "file://../"
   }

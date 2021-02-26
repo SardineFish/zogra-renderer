@@ -9,8 +9,8 @@ export declare class AssetsPack {
     get<T extends IAsset>(Type: ConstructorType<T>): T | null;
     getAll<T extends IAsset>(Type: ConstructorType<T>): T[];
 }
-export interface AssetsImporterPlugin {
-    import(buffer: ArrayBuffer, options?: AssetImportOptions, ctx?: GLContext): Promise<AssetsPack>;
+export interface AssetImporterPlugin<TOption, TAsset> {
+    import(buffer: ArrayBuffer, options?: TOption, ctx?: GLContext): Promise<TAsset>;
 }
 declare type SerializableValueType = number | string | boolean | {
     [key: string]: SerializableValueType;

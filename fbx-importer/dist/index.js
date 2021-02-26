@@ -98,11 +98,15 @@ function convertMesh(ctx) {
         return mesh;
     };
 }
-exports.FBXImporter = {
+const FBXModelImporter = {
     async import(buffer, options, ctx = zogra_renderer_2.GlobalContext()) {
         const data = fbx_binary_parser_1.parseFBX(buffer);
         const assets = fbx_model_import_1.extractFBXAssets(data);
         return toManagedAssets(assets, ctx);
     }
 };
+const importers = {
+    fbx: FBXModelImporter
+};
+exports.FBXImporter = new zogra_renderer_1.AssetsImporter(importers);
 //# sourceMappingURL=index.js.map

@@ -39,6 +39,12 @@ class Vector2 extends V2Constructor {
     }
     static left() { return new Vector2(-1, 0); }
     static right() { return new Vector2(1, 0); }
+    static distance(u, v) {
+        return Math.sqrt((u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y));
+    }
+    static distanceSquared(u, v) {
+        return (u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y);
+    }
     plus(v) {
         this[0] += v[0];
         this[1] += v[1];

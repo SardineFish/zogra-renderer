@@ -18,6 +18,8 @@ export declare class Vector2 extends V2Constructor implements Vector {
     static down(): Vector2;
     static left(): Vector2;
     static right(): Vector2;
+    static distance(u: Vector2, v: Vector2): number;
+    static distanceSquared(u: Vector2, v: Vector2): number;
     plus(v: Vector2): this;
     minus(v: Vector2): this;
     mul(v: Vector2): this;
