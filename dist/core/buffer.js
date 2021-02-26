@@ -147,6 +147,35 @@ class InstanceBuffer extends Array {
             loc >= 0 && gl.vertexAttribDivisor(loc, 1);
         }
     }
+    unbind(shader) {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        const locations = shader.attributes;
+        for (const key in this.structure) {
+            const loc = locations[key];
+            switch (this.structure[key]) {
+                case "float":
+                case "vec2":
+                case "vec3":
+                case "vec4":
+                    loc >= 0 && gl.vertexAttribDivisor(loc, 0);
+                    loc >= 0 && gl.disableVertexAttribArray(loc);
+                    break;
+                case "mat4":
+                    if (loc >= 0) {
+                        gl.vertexAttribDivisor(loc + 0, 0);
+                        gl.vertexAttribDivisor(loc + 1, 0);
+                        gl.vertexAttribDivisor(loc + 2, 0);
+                        gl.vertexAttribDivisor(loc + 3, 0);
+                        gl.disableVertexAttribArray(loc + 0);
+                        gl.disableVertexAttribArray(loc + 1);
+                        gl.disableVertexAttribArray(loc + 2);
+                        gl.disableVertexAttribArray(loc + 3);
+                    }
+                    break;
+            }
+        }
+    }
 }
 exports.InstanceBuffer = InstanceBuffer;
 //# sourceMappingURL=buffer.js.map

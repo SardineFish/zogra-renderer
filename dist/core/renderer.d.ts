@@ -1,4 +1,3 @@
-/// <reference types="gl-matrix" />
 import { GLContext } from "./global";
 import { Mesh } from "./mesh";
 import { Material } from "./material";
@@ -18,9 +17,9 @@ export declare class ZograRenderer {
     assets: BuiltinAssets;
     private width;
     private height;
-    viewProjectionMatrix: import("gl-matrix").mat4;
-    viewMatrix: import("gl-matrix").mat4;
-    projectionMatrix: import("gl-matrix").mat4;
+    viewProjectionMatrix: any;
+    viewMatrix: any;
+    projectionMatrix: any;
     private target;
     private shader;
     private scissor;

@@ -22,5 +22,6 @@ export declare class InstanceBuffer<T extends BufferStructure> extends Array<Buf
     markDirty(): void;
     upload(force?: boolean): boolean;
     bind(shader: Shader): void;
+    unbind(shader: Shader): void;
 }
 export {};

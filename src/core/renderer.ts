@@ -294,6 +294,7 @@ export class ZograRenderer
 
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
 
+        buffer.unbind(material.shader);
         material.unbindRenderTextures();
     }
 

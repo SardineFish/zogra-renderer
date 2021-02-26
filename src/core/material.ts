@@ -7,13 +7,13 @@ import { MaterialType } from "./material-type";
 import "reflect-metadata";
 import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
-import {  mat4 } from "gl-matrix";
 import { RenderTexture, Texture, Texture2D } from "./texture";
 import { BindingData, NumericUnifromTypes, TextureUniformTypes, UniformValueType } from "./types";
 import { UniformType } from "./types"
 import { Asset } from "./asset";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { vec4, Vector } from "../types/vec4";
+import { mat4 } from "../types/mat4";
 
 /**
  * Inicate where to get the value from material

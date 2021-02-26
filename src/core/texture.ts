@@ -121,6 +121,8 @@ class TextureBase extends Asset implements Texture
 
         let oldTex = TextureBase.wrapGlTex(this._glTex, this.width, this.height, this.format, this.filterMode, this.ctx);
         let newTex = new RenderTexture(width, height, false, this.format, this.filterMode, this.ctx);
+        newTex.wrapMode = this.wrapMode;
+        newTex.autoMipmap = this.autoMipmap;
         newTex.create();
 
         const prevSize = this.size;
@@ -136,6 +138,8 @@ class TextureBase extends Asset implements Texture
                 this.ctx.renderer.blit(oldTex, newTex, this.ctx.assets.materials.blitCopy, srcRect, dstrEect);
                 break;
         }
+        if (this.autoMipmap)
+            newTex.generateMipmap();
 
         this._glTex = newTex._glTex;
 
