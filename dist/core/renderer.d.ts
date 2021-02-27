@@ -1,3 +1,4 @@
+/// <reference types="gl-matrix" />
 import { GLContext } from "./global";
 import { Mesh } from "./mesh";
 import { Material } from "./material";
@@ -7,6 +8,7 @@ import { RenderTarget } from "./render-target";
 import { RenderTexture, DepthTexture, Texture } from "./texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
+import { UniformType, UniformValueType } from "./types";
 import { Lines } from "./lines";
 import { Rect } from "../types/rect";
 import { BufferStructure, InstanceBuffer } from "./buffer";
@@ -17,9 +19,9 @@ export declare class ZograRenderer {
     assets: BuiltinAssets;
     private width;
     private height;
-    viewProjectionMatrix: any;
-    viewMatrix: any;
-    projectionMatrix: any;
+    viewProjectionMatrix: import("gl-matrix").mat4;
+    viewMatrix: import("gl-matrix").mat4;
+    projectionMatrix: import("gl-matrix").mat4;
     private target;
     private shader;
     private scissor;
@@ -38,8 +40,11 @@ export declare class ZograRenderer {
     blit(src: Texture | null, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
     private useShader;
     private setupTransforms;
+    private setupGlobalUniforms;
     drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: InstanceBuffer<T>, material: Material, count: number): void;
     drawMesh(mesh: Mesh, transform: mat4, material: Material): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
+    setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
+    unsetGlobalUniform(name: string): void;
     private setupScissor;
 }

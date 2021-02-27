@@ -33,7 +33,7 @@ export declare class Vector4 extends V4Constructor implements Vector {
     negate(): this;
     clone(): Vector4;
     equals(v: any): boolean;
-    __to(type: Function): Vector2 | Vector3 | Vector4;
+    __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec4(x: number): Vector4;
 export declare namespace vec4 {

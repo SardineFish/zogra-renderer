@@ -33,7 +33,7 @@ export declare class Vector3 extends V3Constructor implements Vector {
     clone(): Vector3;
     toVec2(): Vector2;
     equals(v: any): boolean;
-    __to(type: Function): Vector2 | Vector3 | Vector4;
+    __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec3(x: number): Vector3;
 export declare namespace vec3 {

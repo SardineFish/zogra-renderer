@@ -39,14 +39,14 @@ type PropertyReference<T extends UniformType> = FieldProperty | DynamicProperty<
 type NumericProperty<T extends NumericUnifromTypes> = PropertyReference<T> &
 {
     type: T;
-    location: WebGLUniformLocation | null | undefined;
+    location: WebGLUniformLocation | null;
     uploaded?: UniformValueType<T>;
 };
 
 type TextureProperty<T extends TextureUniformTypes> = PropertyReference<T> &
 {
     type: T;
-    location: WebGLUniformLocation | null | undefined;
+    location: WebGLUniformLocation | null;
     textureUnit: number;
     uploaded?: UniformValueType<T> | null;
     uniformSet?: true;
@@ -94,14 +94,18 @@ export class Material extends Asset
     //     }
     // }
 
-    setup(data: BindingData)
+    upload(data: BindingData)
     {
         this.tryInit(true);
 
-        const gl = data.gl;
         for (const uniformName in this.properties)
         {
-            this.setUniform(uniformName);
+            const prop = this.properties[uniformName];
+            const value = prop.key
+                ? this[prop.key]
+                : prop.value;
+            
+            this.uploadUniform(prop, value);
         }
     }
 
@@ -111,39 +115,18 @@ export class Material extends Asset
     {
         this.tryInit(true);
 
-        let prop = this.properties[uniformName];
-        if (!prop)
+        const prop = this.getOrCreatePropInfo(uniformName, type);
+        
+        if (type !== prop.type)
         {
-            // console.log("set new prop");
-            switch (type)
-            {
-                case "tex2d":
-                    this.properties[uniformName] = {
-                        type: type as TextureUniformTypes,
-                        textureUnit: this.textureCount++,
-                        location: undefined,
-                        uploaded: undefined,
-                        value: value as Texture
-                    };
-                    break;
-                default:
-                    this.properties[uniformName] = {
-                        type: type as NumericUnifromTypes,
-                        location: undefined,
-                        uploaded: undefined,
-                        value: value as any
-                    };
-            }
+            console.warn("Uniform type missmatch");
             return;
         }
+
         if (prop.key)
-        {
             this[prop.key] = value;
-        }
         else
-        {
             prop.value = value;
-        }
     }
 
     /**
@@ -178,39 +161,16 @@ export class Material extends Asset
                 throw new Error("Failed to intialize material without global GL context");
             return false;
         }
-
         this.gl = gl;
-        const shader = this.shader;
-        const properties = this.properties;
-        // shader.use();
+
         for (const key in this)
         {
-            const prop = getShaderProp(this, key);
-            if (!prop)
+            const propInfo = getShaderProp(this, key);
+            if (!propInfo)
                 continue;
-            const loc = shader.uniformLocation(prop?.name);
-            if (!loc) continue;
-            switch (prop.type)
-            {
-                case "tex2d":
-                    properties[prop.name] = {
-                        type: prop.type,
-                        uploaded: undefined,
-                        key: key,
-                        location: loc,
-                        textureUnit: this.textureCount++,
-                    };
-                    break;
-                default:
-                    properties[prop.name] = {
-                        type: prop.type,
-                        location: loc,
-                        uploaded: undefined,
-                        key: key
-                    };
-            }
+            const prop = this.getOrCreatePropInfo(propInfo.name, propInfo.type);
+            prop.key = key;
         }
-        this.properties = properties;
 
         this.initialized = true;
 
@@ -218,24 +178,51 @@ export class Material extends Asset
 
     }
 
-    private setUniform(uniformName: string)
+    public setUniformDirectly<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>)
     {
-        const prop = this.properties[uniformName];
+        this.tryInit(true);
+
+        const prop = this.getOrCreatePropInfo(uniformName, type);
+        if (!prop.location)
+            return;
+        
+        this.uploadUniform(prop, value);
+    }
+
+    private getOrCreatePropInfo<T extends UniformType>(uniformName: string, type: T): PropertyInfo
+    {
+        let prop = this.properties[uniformName];
+        if (prop)
+            return prop;
+        switch (type)
+        {
+            case "tex2d":
+                prop = {
+                    type: type,
+                    uploaded: undefined,
+                    location: this.shader.uniformLocation(uniformName),
+                    textureUnit: this.textureCount++,
+                } as any;
+                break;
+            default:
+                prop = {
+                    type: type,
+                    location: this.shader.uniformLocation(uniformName),
+                    uploaded: undefined,
+                } as any;
+        }
+        this.properties[uniformName] = prop;
+        return prop;
+    }
+
+    private uploadUniform(prop: PropertyInfo, value: UniformValueType<UniformType>)
+    {
 
         const gl = this.gl;
         const ctx = GlobalContext();
 
-        if (prop.location === undefined)
-        {
-            // this.shader.use();
-            prop.location = this.shader.uniformLocation(uniformName);   
-        }
         if (!prop.location)
             return false;
-
-        let value = (prop.key
-            ? this[prop.key]
-            : prop.value) as UniformValueType<UniformType>;
         
         let dirty = false;
         if (prop.uploaded === null && value === null)

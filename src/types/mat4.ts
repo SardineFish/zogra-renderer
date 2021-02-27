@@ -146,9 +146,9 @@ Matrix4x4.equal = (a: any, b: any) =>
 {
     if (a === undefined || b === undefined)
         return false;
-    if (!(a instanceof glMat4) || !(b instanceof glMat4))
+    if (!(a instanceof Array || a instanceof Float32Array) || !(b instanceof Array || b instanceof Float32Array))
         return false;
-    return glMat4.exactEquals(a, b);
+    return glMat4.exactEquals(a as glMat4, b as glMat4);
 }
 
 type ArithmetricFunction<T> = {

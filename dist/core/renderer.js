@@ -149,44 +149,11 @@ class ZograRenderer {
             matMV_IT: mvit,
         });
     }
-    // private setupGlobalUniforms(shader: Shader, data: BindingData)
-    // {
-    //     const gl = this.gl;
-    //     for (const val of this.globalUniforms.values())
-    //     {
-    //         const location = shader.uniformLocation(val.name);
-    //         if (!location)
-    //             continue;
-    //         switch (val.type)
-    //         {
-    //             case "int":
-    //                 gl.uniform1i(location, val.value as number);
-    //                 break;
-    //             case "float":
-    //                 gl.uniform1f(location, val.value as number);
-    //                 break;
-    //             case "vec2":
-    //                 gl.uniform2fv(location, val.value as vec2, 0, 2);
-    //                 break;
-    //             case "vec3":
-    //                 gl.uniform3fv(location, val.value as vec3, 0, 3);
-    //                 break;
-    //             case "vec4":
-    //                 gl.uniform4fv(location, val.value as vec4, 0, 4);
-    //                 break;
-    //             case "color":
-    //                 gl.uniform4fv(location, val.value as Color, 0, 4);
-    //                 break;
-    //         }
-    //     }
-    //     for (const tex of this.globalTextures.values())
-    //     {
-    //         const location = shader.uniformLocation(tex.name);
-    //         if (!location)
-    //             continue;
-    //         tex.texture.bind(location, data);
-    //     }
-    // }
+    setupGlobalUniforms(material) {
+        for (const val of this.globalUniforms.values()) {
+            material.setUniformDirectly(val.name, val.type, val.value);
+        }
+    }
     drawMeshInstance(mesh, buffer, material, count) {
         if (!material)
             material = this.assets.materials.error;
@@ -200,7 +167,7 @@ class ZograRenderer {
         this.target.bind(this.ctx);
         this.setupScissor();
         this.useShader(material.shader);
-        material.setup(data);
+        material.upload(data);
         this.setupTransforms(material.shader, mat4_1.mat4.identity());
         mesh.bind(material.shader);
         buffer.bind(material.shader);
@@ -221,7 +188,7 @@ class ZograRenderer {
         this.target.bind(this.ctx);
         this.setupScissor();
         this.useShader(material.shader);
-        material.setup(data);
+        material.upload(data);
         this.setupTransforms(material.shader, transform);
         // this.setupGlobalUniforms(material.shader, data);
         mesh.bind(material.shader);
@@ -239,35 +206,22 @@ class ZograRenderer {
         this.target.bind(this.ctx);
         this.setupScissor();
         this.useShader(material.shader);
-        material.setup(data);
+        material.upload(data);
         this.setupTransforms(material.shader, transform);
         // this.setupGlobalUniforms(material.shader, data);
         lines.bind(material.shader);
         gl.drawElements(gl.LINES, lines.lines.length, gl.UNSIGNED_INT, 0);
     }
-    // setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
-    // {
-    //     this.globalUniforms.set(name, {
-    //         name: name,
-    //         type: type,
-    //         value: value,
-    //     });
-    // }
-    // unsetGlobalUniform(name: string)
-    // {
-    //     this.globalUniforms.delete(name);
-    // }
-    // setGlobalTexture(name: string, texture: Texture)
-    // {
-    //     this.globalTextures.set(name, {
-    //         name: name,
-    //         texture: texture,
-    //     });
-    // }
-    // unsetGlobalTexture(name: string)
-    // {
-    //     this.globalTextures.delete(name);   
-    // }
+    setGlobalUniform(name, type, value) {
+        this.globalUniforms.set(name, {
+            name: name,
+            type: type,
+            value: value,
+        });
+    }
+    unsetGlobalUniform(name) {
+        this.globalUniforms.delete(name);
+    }
     setupScissor() {
         const gl = this.gl;
         gl.viewport(this.scissor.xMin, this.scissor.yMin, this.scissor.size.x, this.scissor.size.y);

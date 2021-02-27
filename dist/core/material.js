@@ -47,46 +47,29 @@ class Material extends asset_1.Asset {
     //         }
     //     }
     // }
-    setup(data) {
+    upload(data) {
         this.tryInit(true);
-        const gl = data.gl;
         for (const uniformName in this.properties) {
-            this.setUniform(uniformName);
+            const prop = this.properties[uniformName];
+            const value = prop.key
+                ? this[prop.key]
+                : prop.value;
+            this.uploadUniform(prop, value);
         }
     }
     // setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void
     // setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void
     setProp(uniformName, type, value) {
         this.tryInit(true);
-        let prop = this.properties[uniformName];
-        if (!prop) {
-            // console.log("set new prop");
-            switch (type) {
-                case "tex2d":
-                    this.properties[uniformName] = {
-                        type: type,
-                        textureUnit: this.textureCount++,
-                        location: undefined,
-                        uploaded: undefined,
-                        value: value
-                    };
-                    break;
-                default:
-                    this.properties[uniformName] = {
-                        type: type,
-                        location: undefined,
-                        uploaded: undefined,
-                        value: value
-                    };
-            }
+        const prop = this.getOrCreatePropInfo(uniformName, type);
+        if (type !== prop.type) {
+            console.warn("Uniform type missmatch");
             return;
         }
-        if (prop.key) {
+        if (prop.key)
             this[prop.key] = value;
-        }
-        else {
+        else
             prop.value = value;
-        }
     }
     /**
      * Unbind all render textures from active texture slot due to avoid
@@ -113,52 +96,51 @@ class Material extends asset_1.Asset {
             return false;
         }
         this.gl = gl;
-        const shader = this.shader;
-        const properties = this.properties;
-        // shader.use();
         for (const key in this) {
-            const prop = getShaderProp(this, key);
-            if (!prop)
+            const propInfo = getShaderProp(this, key);
+            if (!propInfo)
                 continue;
-            const loc = shader.uniformLocation(prop === null || prop === void 0 ? void 0 : prop.name);
-            if (!loc)
-                continue;
-            switch (prop.type) {
-                case "tex2d":
-                    properties[prop.name] = {
-                        type: prop.type,
-                        uploaded: undefined,
-                        key: key,
-                        location: loc,
-                        textureUnit: this.textureCount++,
-                    };
-                    break;
-                default:
-                    properties[prop.name] = {
-                        type: prop.type,
-                        location: loc,
-                        uploaded: undefined,
-                        key: key
-                    };
-            }
+            const prop = this.getOrCreatePropInfo(propInfo.name, propInfo.type);
+            prop.key = key;
         }
-        this.properties = properties;
         this.initialized = true;
         return true;
     }
-    setUniform(uniformName) {
-        const prop = this.properties[uniformName];
+    setUniformDirectly(uniformName, type, value) {
+        this.tryInit(true);
+        const prop = this.getOrCreatePropInfo(uniformName, type);
+        if (!prop.location)
+            return;
+        this.uploadUniform(prop, value);
+    }
+    getOrCreatePropInfo(uniformName, type) {
+        let prop = this.properties[uniformName];
+        if (prop)
+            return prop;
+        switch (type) {
+            case "tex2d":
+                prop = {
+                    type: type,
+                    uploaded: undefined,
+                    location: this.shader.uniformLocation(uniformName),
+                    textureUnit: this.textureCount++,
+                };
+                break;
+            default:
+                prop = {
+                    type: type,
+                    location: this.shader.uniformLocation(uniformName),
+                    uploaded: undefined,
+                };
+        }
+        this.properties[uniformName] = prop;
+        return prop;
+    }
+    uploadUniform(prop, value) {
         const gl = this.gl;
         const ctx = global_1.GlobalContext();
-        if (prop.location === undefined) {
-            // this.shader.use();
-            prop.location = this.shader.uniformLocation(uniformName);
-        }
         if (!prop.location)
             return false;
-        let value = (prop.key
-            ? this[prop.key]
-            : prop.value);
         let dirty = false;
         if (prop.uploaded === null && value === null)
             return false;

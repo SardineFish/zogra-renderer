@@ -29,6 +29,8 @@ class Color extends vec4_1.Vector4 {
     }
 }
 exports.Color = Color;
-exports.rgba = (r, g, b, a = 1) => new Color(r, g, b, a);
-exports.rgb = (r, g, b) => new Color(r, g, b, 1);
+const rgba = (r, g, b, a = 1) => new Color(r, g, b, a);
+exports.rgba = rgba;
+const rgb = (r, g, b) => new Color(r, g, b, 1);
+exports.rgb = rgb;
 //# sourceMappingURL=color.js.map

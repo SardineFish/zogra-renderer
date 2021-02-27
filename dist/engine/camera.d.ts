@@ -1,3 +1,4 @@
+/// <reference types="gl-matrix" />
 import { RenderTexture } from "../core/texture";
 import { RenderTarget } from "../core/render-target";
 import { GLContext } from "../core/global";
@@ -28,8 +29,8 @@ export declare class Camera extends Entity implements IEventSource<CameraEvents>
     clearDepth: boolean;
     get pixelSize(): import("../types/vec2").Vector2;
     get aspectRatio(): number;
-    get viewProjectionMatrix(): any;
-    get projectionMatrix(): any;
+    get viewProjectionMatrix(): import("gl-matrix").mat4;
+    get projectionMatrix(): import("gl-matrix").mat4;
     constructor(ctx?: GLContext);
     on<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T]): void;
     off<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T]): void;

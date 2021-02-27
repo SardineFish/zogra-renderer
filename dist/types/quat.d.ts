@@ -1,15 +1,15 @@
 import { quat as glQuat } from "gl-matrix";
 export declare type quat = glQuat;
-export declare function Quaternion(): any;
+export declare function Quaternion(): import("gl-matrix").mat2;
 export declare namespace Quaternion {
-    var identity: () => any;
-    var axis: (axis: import("./vec3").Vector3, rad: number) => any;
-    var mul: (a: any, b: any) => any;
-    var invert: (q: any) => any;
-    var normalize: (q: any) => any;
-    var euler: (q: any) => import("./vec3").Vector3;
-    var fromEuler: (e: import("./vec3").Vector3) => any;
-    var rotate: (q: any, v: import("./vec3").Vector3) => import("./vec3").Vector3;
-    var equals: (a: any, b: any) => any;
+    var identity: () => import("gl-matrix").mat2;
+    var axis: (axis: import("./vec3").Vector3, rad: number) => import("gl-matrix").mat2;
+    var mul: (a: import("gl-matrix").mat2, b: import("gl-matrix").mat2) => import("gl-matrix").mat2;
+    var invert: (q: import("gl-matrix").mat2) => import("gl-matrix").mat2;
+    var normalize: (q: import("gl-matrix").mat2) => import("gl-matrix").mat2;
+    var euler: (q: import("gl-matrix").mat2) => import("./vec3").Vector3;
+    var fromEuler: (e: import("./vec3").Vector3) => import("gl-matrix").mat2;
+    var rotate: (q: import("gl-matrix").mat2, v: import("./vec3").Vector3) => import("./vec3").Vector3;
+    var equals: (a: any, b: any) => boolean;
 }
 export declare const quat: typeof Quaternion;

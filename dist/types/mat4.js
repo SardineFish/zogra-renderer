@@ -117,7 +117,7 @@ Matrix4x4.fromScaling = (scaling) => {
 Matrix4x4.equal = (a, b) => {
     if (a === undefined || b === undefined)
         return false;
-    if (!(a instanceof gl_matrix_1.mat4) || !(b instanceof gl_matrix_1.mat4))
+    if (!(a instanceof Array || a instanceof Float32Array) || !(b instanceof Array || b instanceof Float32Array))
         return false;
     return gl_matrix_1.mat4.exactEquals(a, b);
 };

@@ -16,12 +16,12 @@ interface DynamicProperty<T extends UniformType> {
 declare type PropertyReference<T extends UniformType> = FieldProperty | DynamicProperty<T>;
 declare type NumericProperty<T extends NumericUnifromTypes> = PropertyReference<T> & {
     type: T;
-    location: WebGLUniformLocation | null | undefined;
+    location: WebGLUniformLocation | null;
     uploaded?: UniformValueType<T>;
 };
 declare type TextureProperty<T extends TextureUniformTypes> = PropertyReference<T> & {
     type: T;
-    location: WebGLUniformLocation | null | undefined;
+    location: WebGLUniformLocation | null;
     textureUnit: number;
     uploaded?: UniformValueType<T> | null;
     uniformSet?: true;
@@ -39,7 +39,7 @@ export declare class Material extends Asset {
     protected initialized: boolean;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
     get shader(): Shader;
-    setup(data: BindingData): void;
+    upload(data: BindingData): void;
     setProp<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>): void;
     /**
      * Unbind all render textures from active texture slot due to avoid
@@ -47,7 +47,9 @@ export declare class Material extends Asset {
      */
     unbindRenderTextures(): void;
     protected tryInit(required?: boolean): boolean;
-    private setUniform;
+    setUniformDirectly<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>): void;
+    private getOrCreatePropInfo;
+    private uploadUniform;
 }
 export declare function shaderProp(name: string, type: UniformType): {
     (target: Function): void;
