@@ -82,6 +82,7 @@ class TextureBase extends asset_1.Asset {
         newTex.wrapMode = this.wrapMode;
         newTex.autoMipmap = this.autoMipmap;
         newTex.create();
+        newTex.updateParameters();
         const prevSize = this.size;
         this.width = width;
         this.height = height;
@@ -104,6 +105,15 @@ class TextureBase extends asset_1.Asset {
         gl.bindTexture(gl.TEXTURE_2D, this._glTex);
         gl.generateMipmap(gl.TEXTURE_2D);
     }
+    updateParameters() {
+        this.create();
+        const gl = this.ctx.gl;
+        gl.bindTexture(gl.TEXTURE_2D, this._glTex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.filterMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this.wrapMode);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
+    }
     /**
      * Create & allocate texture if not
      */
@@ -113,13 +123,10 @@ class TextureBase extends asset_1.Asset {
         this.tryInit(true);
         const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this._glTex);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.filterMode);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.filterMode);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this.wrapMode);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.wrapMode);
         const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, this.width, this.height, 0, format, type, null);
         this.created = true;
+        this.updateParameters();
     }
     setData(pixels) {
         this.create();

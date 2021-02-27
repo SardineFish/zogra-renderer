@@ -24,6 +24,7 @@ const Texture2DImporter = {
                 const tex = new core_1.Texture2D(opt.width, opt.height, opt.format, opt.filterMode, ctx);
                 tex.autoMipmap = opt.mipmap;
                 tex.wrapMode = opt.wrapMpde;
+                tex.updateParameters();
                 tex.setData(img);
                 resolve(tex);
             };

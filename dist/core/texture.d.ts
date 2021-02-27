@@ -50,6 +50,7 @@ declare class TextureBase extends Asset implements Texture {
     destroy(): void;
     resize(width: number, height: number, textureContent?: TextureResizing): void;
     generateMipmap(): void;
+    updateParameters(): void;
     /**
      * Create & allocate texture if not
      */

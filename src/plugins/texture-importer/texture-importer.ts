@@ -35,7 +35,7 @@ const Texture2DImporter: AssetImporterPlugin<Partial<TextureImportOptions>, Text
                 const tex = new Texture2D(opt.width, opt.height, opt.format, opt.filterMode, ctx);
                 tex.autoMipmap = opt.mipmap;
                 tex.wrapMode = opt.wrapMpde;
-
+                tex.updateParameters();
                 tex.setData(img);
                 resolve(tex);
             };
