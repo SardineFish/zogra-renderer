@@ -19,7 +19,7 @@ import { Rect } from "../types/rect";
 import { MeshBuilder } from "../utils/mesh-builder";
 import { div } from "../types/math";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
-import { BufferStructure, InstanceBuffer } from "./buffer";
+import { BufferStructure, RenderBuffer } from "./buffer";
 
 export class ZograRenderer
 {
@@ -237,7 +237,7 @@ export class ZograRenderer
         }
     }
 
-    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: InstanceBuffer<T>, material: Material, count: number)
+    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: RenderBuffer<T>, material: Material, count: number)
     {
         if (!material)
             material = this.assets.materials.error;
@@ -257,11 +257,11 @@ export class ZograRenderer
         material.upload(data);
         this.setupTransforms(material.shader, mat4.identity());
         mesh.bind(material.shader);
-        buffer.bind(material.shader);
+        buffer.bindInstanceDraw(material.shader);
 
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
 
-        buffer.unbind(material.shader);
+        buffer.cleanupInstanceDraw(material.shader);
         material.unbindRenderTextures();
     }
 

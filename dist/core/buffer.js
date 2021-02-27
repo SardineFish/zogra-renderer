@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InstanceBuffer = void 0;
+exports.RenderBuffer = void 0;
 const util_1 = require("../utils/util");
 const global_1 = require("./global");
-class InstanceBuffer extends Array {
+class RenderBuffer extends Array {
     constructor(structure, items, ctx = global_1.GlobalContext()) {
         super(items);
         this.static = false;
@@ -33,14 +33,44 @@ class InstanceBuffer extends Array {
             }
         }
         const elementBytes = elementSize * 4;
-        this.buffer = new Float32Array(elementSize * items);
+        this.buffer = null;
         this.byteSize = elementBytes * items;
+        this.elementSize = elementSize;
         this.elementByteSize = elementBytes;
+        this.resize(items);
+        this.tryInit(false);
+    }
+    tryInit(required = false) {
+        var _a;
+        if (this.initialized)
+            return true;
+        const ctx = this.ctx || global_1.GlobalContext();
+        if (!ctx) {
+            if (required)
+                throw new Error("Failed to init render buffer without a global GL context.");
+            return false;
+        }
+        this.ctx = ctx;
+        const gl = ctx.gl;
+        this.glBuf = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer");
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, this.byteSize, this.static ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
+        this.initialized = true;
+        return true;
+    }
+    resize(length, keepContent = true) {
+        const oldBuffer = this.buffer;
+        this.buffer = new Float32Array(this.elementSize * length);
+        if (keepContent && oldBuffer) {
+            this.buffer.set(oldBuffer, 0);
+        }
+        this.length = length;
+        const elementBytes = this.elementByteSize;
         for (let i = 0; i < this.length; i++) {
             const element = {};
             let offset = 0;
-            for (const key in structure) {
-                switch (structure[key]) {
+            for (const key in this.structure) {
+                switch (this.structure[key]) {
                     case "float":
                         element[key] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 1);
                         offset += 1;
@@ -66,25 +96,6 @@ class InstanceBuffer extends Array {
             this[i] = element;
         }
         this.dirty = true;
-        this.tryInit(false);
-    }
-    tryInit(required = false) {
-        var _a;
-        if (this.initialized)
-            return true;
-        const ctx = this.ctx || global_1.GlobalContext();
-        if (!ctx) {
-            if (required)
-                throw new Error("Failed to init render buffer without a global GL context.");
-            return false;
-        }
-        this.ctx = ctx;
-        const gl = ctx.gl;
-        this.glBuf = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer");
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
-        gl.bufferData(gl.ARRAY_BUFFER, this.byteSize, this.static ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
-        this.initialized = true;
-        return true;
     }
     markDirty() {
         this.dirty = true;
@@ -99,7 +110,7 @@ class InstanceBuffer extends Array {
         this.dirty = false;
         return true;
     }
-    bind(shader) {
+    bindInstanceDraw(shader) {
         this.tryInit(true);
         const gl = this.ctx.gl;
         this.upload() || gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
@@ -147,7 +158,7 @@ class InstanceBuffer extends Array {
             loc >= 0 && gl.vertexAttribDivisor(loc, 1);
         }
     }
-    unbind(shader) {
+    cleanupInstanceDraw(shader) {
         this.tryInit(true);
         const gl = this.ctx.gl;
         const locations = shader.attributes;
@@ -177,5 +188,5 @@ class InstanceBuffer extends Array {
         }
     }
 }
-exports.InstanceBuffer = InstanceBuffer;
+exports.RenderBuffer = RenderBuffer;
 //# sourceMappingURL=buffer.js.map

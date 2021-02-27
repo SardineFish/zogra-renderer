@@ -11,7 +11,7 @@ import { BuiltinAssets } from "../builtin-assets/assets";
 import { UniformType, UniformValueType } from "./types";
 import { Lines } from "./lines";
 import { Rect } from "../types/rect";
-import { BufferStructure, InstanceBuffer } from "./buffer";
+import { BufferStructure, RenderBuffer } from "./buffer";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
     gl: WebGL2RenderingContext;
@@ -41,7 +41,7 @@ export declare class ZograRenderer {
     private useShader;
     private setupTransforms;
     private setupGlobalUniforms;
-    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: InstanceBuffer<T>, material: Material, count: number): void;
+    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: RenderBuffer<T>, material: Material, count: number): void;
     drawMesh(mesh: Mesh, transform: mat4, material: Material): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;

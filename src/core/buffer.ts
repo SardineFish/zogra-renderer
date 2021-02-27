@@ -11,12 +11,13 @@ export interface BufferStructure
     [key: string]: BufferElementType;
 }
 
-export class InstanceBuffer<T extends BufferStructure> extends Array<BufferElementView<T>>
+export class RenderBuffer<T extends BufferStructure> extends Array<BufferElementView<T>>
 {
     public static = false;
     private structure: T & BufferStructure;
     private byteSize: number;
     private elementByteSize: number;
+    private elementSize: number;
     private buffer: Float32Array;
     private dirty = false;
     private ctx: GLContext;
@@ -52,45 +53,14 @@ export class InstanceBuffer<T extends BufferStructure> extends Array<BufferEleme
             }
         }
         const elementBytes = elementSize * 4;
-        this.buffer = new Float32Array(elementSize * items);
+        this.buffer = null as any;
         this.byteSize = elementBytes * items;
+        this.elementSize = elementSize;
         this.elementByteSize = elementBytes;
 
 
-        for (let i = 0; i < this.length; i++)
-        {
-            const element = {} as any as BufferElementView<T>;
-            let offset = 0;
-            for (const key in structure)
-            {
-                switch (structure[key])
-                {
-                    case "float":
-                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 1);
-                        offset += 1;
-                        break;
-                    case "vec2":
-                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 2);
-                        offset += 2;
-                        break;
-                    case "vec3":
-                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 3);
-                        offset += 3;
-                        break;
-                    case "vec4":
-                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 4);
-                        offset += 4;
-                        break;
-                    case "mat4":
-                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 16);
-                        offset += 16;
-                        break;
-                }
-            }
-            this[i] = element;
-        }
-
-        this.dirty = true;
+        this.resize(items);
+        
         this.tryInit(false);
 
     }
@@ -118,6 +88,54 @@ export class InstanceBuffer<T extends BufferStructure> extends Array<BufferEleme
         return true;
     }
 
+    resize(length: number, keepContent = true)
+    {
+        const oldBuffer = this.buffer;
+        this.buffer = new Float32Array(this.elementSize * length);
+        if (keepContent && oldBuffer)
+        {
+            this.buffer.set(oldBuffer, 0);
+        }
+
+        this.length = length;
+
+        const elementBytes = this.elementByteSize;
+        for (let i = 0; i < this.length; i++)
+        {
+            const element = {} as any as BufferElementView<T>;
+            let offset = 0;
+            for (const key in this.structure)
+            {
+                switch (this.structure[key])
+                {
+                    case "float":
+                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 1);
+                        offset += 1;
+                        break;
+                    case "vec2":
+                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 2);
+                        offset += 2;
+                        break;
+                    case "vec3":
+                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 3);
+                        offset += 3;
+                        break;
+                    case "vec4":
+                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 4);
+                        offset += 4;
+                        break;
+                    case "mat4":
+                        element[key as keyof T] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 16);
+                        offset += 16;
+                        break;
+                }
+            }
+            this[i] = element;
+        }
+
+        this.dirty = true;
+    }
+
     markDirty()
     {
         this.dirty = true;
@@ -138,7 +156,7 @@ export class InstanceBuffer<T extends BufferStructure> extends Array<BufferEleme
         return true;
     }
 
-    bind(shader: Shader)
+    bindInstanceDraw(shader: Shader)
     {
         this.tryInit(true);
 
@@ -197,7 +215,7 @@ export class InstanceBuffer<T extends BufferStructure> extends Array<BufferEleme
         }
     }
 
-    unbind(shader: Shader)
+    cleanupInstanceDraw(shader: Shader)
     {
         this.tryInit(true);
         const gl = this.ctx.gl;

@@ -170,9 +170,9 @@ class ZograRenderer {
         material.upload(data);
         this.setupTransforms(material.shader, mat4_1.mat4.identity());
         mesh.bind(material.shader);
-        buffer.bind(material.shader);
+        buffer.bindInstanceDraw(material.shader);
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
-        buffer.unbind(material.shader);
+        buffer.cleanupInstanceDraw(material.shader);
         material.unbindRenderTextures();
     }
     drawMesh(mesh, transform, material) {
