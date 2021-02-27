@@ -3,7 +3,7 @@ import { Color } from "../types/color";
 import { decorator, panic } from "../utils/util";
 import "reflect-metadata";
 import { GL, GLContext, GlobalContext } from "./global";
-import { MaterialType } from "./material-type";
+import { MaterialType, SimpleTexturedMaterialClass } from "./material-type";
 import "reflect-metadata";
 import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
@@ -116,7 +116,7 @@ export class Material extends Asset
         this.tryInit(true);
 
         const prop = this.getOrCreatePropInfo(uniformName, type);
-        
+
         if (type !== prop.type)
         {
             console.warn("Uniform type missmatch");
@@ -306,13 +306,12 @@ export function MaterialFromShader(shader: Shader): typeof MaterialType
     };
 }
 
-export function SimpleTexturedMaterial(shader: Shader): typeof MaterialType
+export function SimpleTexturedMaterial(shader: Shader): typeof SimpleTexturedMaterialClass
 {
-    @materialDefine
     class Mat extends MaterialFromShader(shader)
     {
         @shaderProp(BuiltinUniformNames.mainTex, "tex2d")
-        texture: Texture2D | null = null;
+        texture: Texture | null = null;
 
         @shaderProp(BuiltinUniformNames.color, "color")
         color: Color = new Color(1, 1, 1, 1);

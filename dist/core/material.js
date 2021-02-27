@@ -211,22 +211,19 @@ function MaterialFromShader(shader) {
 }
 exports.MaterialFromShader = MaterialFromShader;
 function SimpleTexturedMaterial(shader) {
-    let Mat = class Mat extends MaterialFromShader(shader) {
+    class Mat extends MaterialFromShader(shader) {
         constructor() {
             super(...arguments);
             this.texture = null;
             this.color = new color_1.Color(1, 1, 1, 1);
         }
-    };
+    }
     __decorate([
         shaderProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d")
     ], Mat.prototype, "texture", void 0);
     __decorate([
         shaderProp(shaders_1.BuiltinUniformNames.color, "color")
     ], Mat.prototype, "color", void 0);
-    Mat = __decorate([
-        materialDefine
-    ], Mat);
     return Mat;
 }
 exports.SimpleTexturedMaterial = SimpleTexturedMaterial;

@@ -1,6 +1,6 @@
 import { Shader } from "./shader";
 import "reflect-metadata";
-import { MaterialType } from "./material-type";
+import { MaterialType, SimpleTexturedMaterialClass } from "./material-type";
 import "reflect-metadata";
 import { BindingData, NumericUnifromTypes, TextureUniformTypes, UniformValueType } from "./types";
 import { UniformType } from "./types";
@@ -56,7 +56,7 @@ export declare function shaderProp(name: string, type: UniformType): {
     (target: Object, propertyKey: string | symbol): void;
 };
 export declare function MaterialFromShader(shader: Shader): typeof MaterialType;
-export declare function SimpleTexturedMaterial(shader: Shader): typeof MaterialType;
+export declare function SimpleTexturedMaterial(shader: Shader): typeof SimpleTexturedMaterialClass;
 /**
  *
  * @deprecated

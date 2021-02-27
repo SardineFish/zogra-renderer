@@ -1,7 +1,16 @@
 import { Shader } from "./shader";
 import { Color } from "../types/color";
 import { Material } from "./material";
+import { Texture, Texture2D } from "./texture";
 
+export declare class SimpleTexturedMaterialClass extends Material
+{
+    constructor(gl?: WebGL2RenderingContext)
+
+    texture: Texture | null;
+
+    color: Color;
+}
 
 export declare class MaterialType extends Material
 {
