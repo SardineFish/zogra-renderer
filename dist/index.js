@@ -25,7 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GlobalContext = exports.plugins = void 0;
+exports.Utils = exports.GlobalContext = exports.plugins = void 0;
 // export * from "./types/vec2";
 // export * from "./types/vec3";
 // export * from "./types/vec4";
@@ -43,4 +43,6 @@ __exportStar(require("./plugins/plugins"), exports);
 __exportStar(require("./utils/public-utils"), exports);
 var global_1 = require("./core/global");
 Object.defineProperty(exports, "GlobalContext", { enumerable: true, get: function () { return global_1.GlobalContext; } });
+const Utils = __importStar(require("./utils/index"));
+exports.Utils = Utils;
 //# sourceMappingURL=index.js.map
