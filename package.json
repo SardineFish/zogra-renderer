@@ -15,7 +15,7 @@
   "author": "SardineFish",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^3.7.4"
+    "typescript": "^4.1.5"
   },
   "dependencies": {
     "gl-matrix": "^3.3.0",
