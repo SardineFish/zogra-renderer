@@ -55,7 +55,7 @@ class Shader extends asset_1.Asset {
         this.program = null;
         this.vertexShader = null;
         this.fragmentShader = null;
-        this.settings = null;
+        this.pipelineStates = null;
         this.builtinUniformLocations = null;
         this._compiled = false;
         if (!options.name)
@@ -77,26 +77,26 @@ class Shader extends asset_1.Asset {
     }
     setupPipelineStates() {
         const gl = this.gl;
-        if (this.settings.depth === DepthTest.Disable)
+        if (this.pipelineStates.depth === DepthTest.Disable)
             gl.disable(gl.DEPTH_TEST);
         else {
             gl.enable(gl.DEPTH_TEST);
-            gl.depthMask(this.settings.zWrite);
-            gl.depthFunc(this.settings.depth);
+            gl.depthMask(this.pipelineStates.zWrite);
+            gl.depthFunc(this.pipelineStates.depth);
         }
-        if (!this.settings.blend)
+        if (!this.pipelineStates.blend)
             gl.disable(gl.BLEND);
         else {
-            const [srcRGB, dstRGB] = this.settings.blendRGB;
-            const [srcAlpha, dstAlpha] = this.settings.blendAlpha;
+            const [srcRGB, dstRGB] = this.pipelineStates.blendRGB;
+            const [srcAlpha, dstAlpha] = this.pipelineStates.blendAlpha;
             gl.enable(gl.BLEND);
             gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
         }
-        if (this.settings.cull === Culling.Disable)
+        if (this.pipelineStates.cull === Culling.Disable)
             gl.disable(gl.CULL_FACE);
         else {
             gl.enable(gl.CULL_FACE);
-            gl.cullFace(this.settings.cull);
+            gl.cullFace(this.pipelineStates.cull);
             gl.frontFace(gl.CCW);
         }
     }
@@ -110,6 +110,42 @@ class Shader extends asset_1.Asset {
         this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP);
         this.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matM_IT, false, params.matM_IT);
         this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT);
+    }
+    setPipelineStates(settings) {
+        if (this.initialized)
+            this.setPipelineStateInternal(settings);
+        else
+            this.options = Object.assign(Object.assign({}, this.options), settings);
+    }
+    setPipelineStateInternal(settings) {
+        let blend = false;
+        let blendRGB = [Blending.One, Blending.Zero];
+        let blendAlpha = [Blending.One, Blending.OneMinusSrcAlpha];
+        if (typeof (settings.blend) === "number" && settings.blend !== Blending.Disable) {
+            blend = true;
+            blendRGB = [settings.blend, settings.blend];
+            blendAlpha = [settings.blend, settings.blend];
+        }
+        else if (settings.blend instanceof Array) {
+            blend = true;
+            blendRGB = settings.blend;
+        }
+        if (settings.blendRGB) {
+            blend = settings.blend !== false && settings.blend !== Blending.Disable;
+            blendRGB = settings.blendRGB;
+        }
+        if (settings.blendAlpha) {
+            blend = settings.blend !== false && settings.blend !== Blending.Disable;
+            blendAlpha = settings.blendAlpha;
+        }
+        this.pipelineStates = {
+            depth: settings.depth || DepthTest.Less,
+            blend,
+            blendRGB,
+            blendAlpha,
+            zWrite: settings.zWrite === false ? false : true,
+            cull: settings.cull || Culling.Back
+        };
     }
     _internal() {
         this.tryInit(true);
@@ -138,34 +174,7 @@ class Shader extends asset_1.Asset {
         for (const key in attributeNames) {
             this.attributes[key] = gl.getAttribLocation(this.program, attributeNames[key]);
         }
-        let blend = false;
-        let blendRGB = [Blending.One, Blending.Zero];
-        let blendAlpha = [Blending.One, Blending.OneMinusSrcAlpha];
-        if (typeof (this.options.blend) === "number" && this.options.blend !== Blending.Disable) {
-            blend = true;
-            blendRGB = [this.options.blend, this.options.blend];
-            blendAlpha = [this.options.blend, this.options.blend];
-        }
-        else if (this.options.blend instanceof Array) {
-            blend = true;
-            blendRGB = this.options.blend;
-        }
-        if (this.options.blendRGB) {
-            blend = this.options.blend !== false && this.options.blend !== Blending.Disable;
-            blendRGB = this.options.blendRGB;
-        }
-        if (this.options.blendAlpha) {
-            blend = this.options.blend !== false && this.options.blend !== Blending.Disable;
-            blendAlpha = this.options.blendAlpha;
-        }
-        this.settings = {
-            depth: this.options.depth || DepthTest.Less,
-            blend,
-            blendRGB,
-            blendAlpha,
-            zWrite: this.options.zWrite === false ? false : true,
-            cull: this.options.cull || Culling.Back
-        };
+        this.setPipelineStateInternal(this.options);
         this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniformNames);
         this.initialized = true;
         return true;

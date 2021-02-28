@@ -72,15 +72,19 @@ export interface StateSettings
     cull: Culling
 }
 
-interface ShaderSettingsOptional
+interface ShaderPipelineStateSettinsOptional
 {
-    name?: string;
     depth?: DepthTest,
     blend?: [Blending, Blending] | boolean | Blending;
     blendRGB?: [Blending, Blending];
     blendAlpha?: [Blending, Blending];
     cull?: Culling
     zWrite?: boolean;
+}
+
+interface ShaderSettingsOptional extends ShaderPipelineStateSettinsOptional
+{
+    name?: string;
     attributes?: Partial<ShaderAttributeNames>;
 }
 
@@ -110,7 +114,7 @@ export class Shader extends Asset
     private vertexShader: WebGLShader = null as any;
     private fragmentShader: WebGLShader = null as any;
 
-    private settings: StateSettings = null as any;
+    private pipelineStates: StateSettings = null as any;
 
     private builtinUniformLocations: { [key in keyof typeof BuiltinUniformNames]: WebGLUniformLocation | null } = null as any;
 
@@ -149,31 +153,31 @@ export class Shader extends Asset
     {
         const gl = this.gl;
 
-        if (this.settings.depth === DepthTest.Disable)
+        if (this.pipelineStates.depth === DepthTest.Disable)
             gl.disable(gl.DEPTH_TEST);
         else
         {
             gl.enable(gl.DEPTH_TEST);
-            gl.depthMask(this.settings.zWrite);
-            gl.depthFunc(this.settings.depth);
+            gl.depthMask(this.pipelineStates.zWrite);
+            gl.depthFunc(this.pipelineStates.depth);
         }
 
-        if (!this.settings.blend)
+        if (!this.pipelineStates.blend)
             gl.disable(gl.BLEND);
         else
         {
-            const [srcRGB, dstRGB] = this.settings.blendRGB;
-            const [srcAlpha, dstAlpha] = this.settings.blendAlpha;
+            const [srcRGB, dstRGB] = this.pipelineStates.blendRGB;
+            const [srcAlpha, dstAlpha] = this.pipelineStates.blendAlpha;
             gl.enable(gl.BLEND);
             gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
         }
 
-        if (this.settings.cull === Culling.Disable)
+        if (this.pipelineStates.cull === Culling.Disable)
             gl.disable(gl.CULL_FACE);
         else
         {
             gl.enable(gl.CULL_FACE);
-            gl.cullFace(this.settings.cull);
+            gl.cullFace(this.pipelineStates.cull);
             gl.frontFace(gl.CCW);
         }
     }
@@ -200,6 +204,51 @@ export class Shader extends Asset
         this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT);
     }
 
+    public setPipelineStates(settings: ShaderPipelineStateSettinsOptional)
+    {
+        if (this.initialized)
+            this.setPipelineStateInternal(settings);
+        else
+            this.options = { ...this.options, ...settings };
+    }
+
+    private setPipelineStateInternal(settings: ShaderPipelineStateSettinsOptional)
+    {
+        let blend = false;
+        let blendRGB: [Blending, Blending] = [Blending.One, Blending.Zero];
+        let blendAlpha: [Blending, Blending] = [Blending.One, Blending.OneMinusSrcAlpha];
+        if (typeof (settings.blend) === "number" && settings.blend !== Blending.Disable)
+        {
+            blend = true;
+            blendRGB = [settings.blend, settings.blend];
+            blendAlpha = [settings.blend, settings.blend];
+        }
+        else if (settings.blend instanceof Array)
+        {
+            blend = true;
+            blendRGB = settings.blend;
+        }
+        if (settings.blendRGB)
+        {
+            blend = settings.blend !== false && settings.blend !== Blending.Disable;
+            blendRGB = settings.blendRGB;
+        }
+        if (settings.blendAlpha)
+        {
+            blend = settings.blend !== false && settings.blend !== Blending.Disable;
+            blendAlpha = settings.blendAlpha;
+        }
+
+        this.pipelineStates = {
+            depth: settings.depth || DepthTest.Less,
+            blend,
+            blendRGB,
+            blendAlpha,
+            zWrite: settings.zWrite === false ? false : true,
+            cull: settings.cull || Culling.Back
+        };
+    }
+
     _internal()
     {
         this.tryInit(true);
@@ -208,7 +257,6 @@ export class Shader extends Asset
             attributes: this.attributes
         };
     }
-
 
 
     private tryInit(required = false)
@@ -242,39 +290,8 @@ export class Shader extends Asset
             this.attributes[key] = gl.getAttribLocation(this.program, attributeNames[key] as string);
         }
 
-        let blend = false;
-        let blendRGB: [Blending, Blending] = [Blending.One, Blending.Zero];
-        let blendAlpha: [Blending, Blending] = [Blending.One, Blending.OneMinusSrcAlpha];
-        if (typeof(this.options.blend) === "number" && this.options.blend !== Blending.Disable)
-        {
-            blend = true;
-            blendRGB = [this.options.blend, this.options.blend];
-            blendAlpha = [this.options.blend, this.options.blend];
-        }
-        else if (this.options.blend instanceof Array)
-        {
-            blend = true;
-            blendRGB = this.options.blend;
-        }
-        if (this.options.blendRGB)
-        {
-            blend = this.options.blend !== false && this.options.blend !== Blending.Disable;
-            blendRGB = this.options.blendRGB;
-        }
-        if (this.options.blendAlpha)
-        {
-            blend = this.options.blend !== false && this.options.blend !== Blending.Disable;
-            blendAlpha = this.options.blendAlpha;
-        }
+        this.setPipelineStateInternal(this.options);
         
-        this.settings = {
-            depth: this.options.depth || DepthTest.Less,
-            blend,
-            blendRGB,
-            blendAlpha,
-            zWrite: this.options.zWrite === false ? false : true,
-            cull: this.options.cull || Culling.Back
-        };
         this.builtinUniformLocations = getUniformsLocation(gl, this.program, BuiltinUniformNames);
 
         this.initialized = true;

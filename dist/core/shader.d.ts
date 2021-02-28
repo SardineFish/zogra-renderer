@@ -54,14 +54,16 @@ export interface StateSettings {
     zWrite: boolean;
     cull: Culling;
 }
-interface ShaderSettingsOptional {
-    name?: string;
+interface ShaderPipelineStateSettinsOptional {
     depth?: DepthTest;
     blend?: [Blending, Blending] | boolean | Blending;
     blendRGB?: [Blending, Blending];
     blendAlpha?: [Blending, Blending];
     cull?: Culling;
     zWrite?: boolean;
+}
+interface ShaderSettingsOptional extends ShaderPipelineStateSettinsOptional {
+    name?: string;
     attributes?: Partial<ShaderAttributeNames>;
 }
 export declare const DefaultShaderAttributeNames: ShaderAttributeNames;
@@ -75,7 +77,7 @@ export declare class Shader extends Asset {
     private program;
     private vertexShader;
     private fragmentShader;
-    private settings;
+    private pipelineStates;
     private builtinUniformLocations;
     private _compiled;
     get compiled(): boolean;
@@ -90,6 +92,8 @@ export declare class Shader extends Asset {
         matM_IT: mat4;
         matMV_IT: mat4;
     }): void;
+    setPipelineStates(settings: ShaderPipelineStateSettinsOptional): void;
+    private setPipelineStateInternal;
     _internal(): {
         attributes: AttributeLocations;
     };

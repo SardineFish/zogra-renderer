@@ -10,6 +10,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TextureFormat = void 0;
 __exportStar(require("./material"), exports);
 __exportStar(require("./material-type"), exports);
 __exportStar(require("./mesh"), exports);
@@ -20,4 +21,7 @@ __exportStar(require("./asset"), exports);
 __exportStar(require("./lines"), exports);
 __exportStar(require("./event"), exports);
 __exportStar(require("./buffer"), exports);
+__exportStar(require("./render-target"), exports);
+var texture_format_1 = require("./texture-format");
+Object.defineProperty(exports, "TextureFormat", { enumerable: true, get: function () { return texture_format_1.TextureFormat; } });
 //# sourceMappingURL=core.js.map
