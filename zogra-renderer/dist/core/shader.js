@@ -112,10 +112,9 @@ class Shader extends asset_1.Asset {
         this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT);
     }
     setPipelineStates(settings) {
+        this.options = Object.assign(Object.assign({}, this.options), settings);
         if (this.initialized)
             this.setPipelineStateInternal(settings);
-        else
-            this.options = Object.assign(Object.assign({}, this.options), settings);
     }
     setPipelineStateInternal(settings) {
         let blend = false;
@@ -150,7 +149,8 @@ class Shader extends asset_1.Asset {
     _internal() {
         this.tryInit(true);
         return {
-            attributes: this.attributes
+            attributes: this.attributes,
+            options: this.options,
         };
     }
     tryInit(required = false) {

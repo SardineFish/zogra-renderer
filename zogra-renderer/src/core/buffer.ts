@@ -164,7 +164,7 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
 
         this.upload() || gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
 
-        const locations = shader.attributes;
+        const locations = shader._internal().attributes;
 
         let floatOffset = 0;
         for (const key in this.structure)
@@ -220,7 +220,7 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
         this.tryInit(true);
         const gl = this.ctx.gl;
 
-        const locations = shader.attributes;
+        const locations = shader._internal().attributes;
 
         for (const key in this.structure)
         {

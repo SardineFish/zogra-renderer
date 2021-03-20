@@ -1,9 +1,9 @@
 import { Asset, Shader, Material, Texture, Mesh, RenderObject, Entity, Camera, Light, IAsset, RenderTexture, Texture2D, Scene, vec3, quat, vec2, Vector2, Vector3, Vector4, vec4, Color, rgba, PropertyBlock } from "zogra-renderer";
 import { UserAssetsManager, AssetNode } from "../assets/user-assets";
-import { RenderTarget } from "../../../../dist/core/render-target";
+import { RenderTarget } from "zogra-renderer";
 import { serializeScene, deserializeScene, SerializedScene } from "./scene";
 import path from "path-browserify";
-import { panic } from "../../../../dist/utils/util";
+import { panic } from "zogra-renderer";
 
 export interface SerializedAsset
 {
@@ -144,7 +144,7 @@ function typeOf(asset: IAsset): AssetTypes
 const serializer: Serializers = {
     "shader": (shader: Shader) =>
     {
-        return serializeProps(shader, ["attributes", "vertexShaderSource", "fragmentShaderSouce", "settings"]);
+        return serializeProps(shader, ["vertexShaderSource", "fragmentShaderSouce", "_internal"]);
     },
     "material": (material: Material) =>
     {
@@ -168,7 +168,7 @@ const serializer: Serializers = {
     },
     "render-texture": (rt: RenderTexture) =>
     {
-        const serialized = serializeProps(rt, ["filterMode", "format", "width", "height", "wrapMode", "mipmapLevel"]);
+        const serialized = serializeProps(rt, ["filterMode", "format", "width", "height", "wrapMode", "autoMipmap"]);
         serialized.depth = rt.depthTexture === null;
         return serialized;
     },
@@ -212,6 +212,19 @@ const serializer: Serializers = {
     }
 }
 
+type SerializedValue<T> =
+    T extends number ? number
+    : T extends string ? string
+    : T extends boolean ? boolean
+    : T extends (...args: any) => any ? ReturnType<T>
+    : T extends Array<any> ? T
+    : T extends object ? T
+    : never;
+
+type SerializedObject<T> = {
+    [key in keyof T]: SerializedValue<T[key]>;
+}
+
 function serializeProps<T>(obj: T, keys?: (keyof T)[]): any | null
 {
     if (typeof (obj) === "number")
@@ -222,6 +235,11 @@ function serializeProps<T>(obj: T, keys?: (keyof T)[]): any | null
         return obj;
     else if (obj instanceof Array)
         return obj.map(element => serializeProps(element));
+    else if (obj instanceof Function)
+    {
+        let returnValue = obj();
+        return serializeProps(returnValue, Object.keys(returnValue));
+    }
     
     if (keys)
     {
@@ -245,7 +263,7 @@ const instantiaters: Instantiaters = {
     "camera": () => new Camera(),
     "entity": () => new Entity(),
     "light": () => new Light(),
-    "material": () => new Material(null as any as Shader),
+    "material": (prop) => new Material(null as any as Shader),
     "render-object": () => new RenderObject(),
     "render-texture": (props) =>
     {
@@ -257,8 +275,8 @@ const instantiaters: Instantiaters = {
     "scene": () => new Scene(),
     "shader": (props) =>
     {
-        const shader = props as Shader;
-        return new Shader(shader.vertexShaderSource, shader.fragmentShaderSouce, shader.settings);
+        const shader = props as SerializedObject<Shader>;
+        return new Shader(shader.vertexShaderSource, shader.fragmentShaderSouce, shader._internal.options);
     },
     unknown: () => new Entity()
 }

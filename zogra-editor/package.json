@@ -36,6 +36,6 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "reflect-metadata": "^0.1.13",
-    "zogra-renderer": "file:///.."
+    "zogra-renderer": "file:///../zogra-engine"
   }
 }

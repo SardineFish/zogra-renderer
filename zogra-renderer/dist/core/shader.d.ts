@@ -70,7 +70,7 @@ export declare const DefaultShaderAttributeNames: ShaderAttributeNames;
 export declare class Shader extends Asset {
     vertexShaderSource: string;
     fragmentShaderSouce: string;
-    attributes: AttributeLocations;
+    private attributes;
     private options;
     private initialized;
     private gl;
@@ -96,6 +96,7 @@ export declare class Shader extends Asset {
     private setPipelineStateInternal;
     _internal(): {
         attributes: AttributeLocations;
+        options: ShaderSettingsOptional;
     };
     private tryInit;
     private compile;

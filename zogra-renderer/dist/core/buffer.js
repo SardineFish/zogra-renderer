@@ -114,7 +114,7 @@ class RenderBuffer extends Array {
         this.tryInit(true);
         const gl = this.ctx.gl;
         this.upload() || gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
-        const locations = shader.attributes;
+        const locations = shader._internal().attributes;
         let floatOffset = 0;
         for (const key in this.structure) {
             const loc = locations[key];
@@ -161,7 +161,7 @@ class RenderBuffer extends Array {
     cleanupInstanceDraw(shader) {
         this.tryInit(true);
         const gl = this.ctx.gl;
-        const locations = shader.attributes;
+        const locations = shader._internal().attributes;
         for (const key in this.structure) {
             const loc = locations[key];
             switch (this.structure[key]) {

@@ -12,4 +12,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./engine/engine"), exports);
 __exportStar(require("./render-pipeline/rp"), exports);
+__exportStar(require("zogra-renderer"), exports);
 //# sourceMappingURL=index.js.map

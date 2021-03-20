@@ -102,7 +102,7 @@ export class Shader extends Asset
     vertexShaderSource: string;
     fragmentShaderSouce: string;
 
-    attributes: AttributeLocations = null as any;
+    private attributes: AttributeLocations = null as any;
 
     private options: ShaderSettingsOptional;
     
@@ -206,10 +206,9 @@ export class Shader extends Asset
 
     public setPipelineStates(settings: ShaderPipelineStateSettinsOptional)
     {
+        this.options = { ...this.options, ...settings };
         if (this.initialized)
             this.setPipelineStateInternal(settings);
-        else
-            this.options = { ...this.options, ...settings };
     }
 
     private setPipelineStateInternal(settings: ShaderPipelineStateSettinsOptional)
@@ -254,7 +253,8 @@ export class Shader extends Asset
         this.tryInit(true);
 
         return {
-            attributes: this.attributes
+            attributes: this.attributes,
+            options: this.options,
         };
     }
 
