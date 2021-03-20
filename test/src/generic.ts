@@ -2,8 +2,8 @@ import frag from "!!raw-loader!./shader/default-frag.glsl";
 import vert from "!!raw-loader!./shader/default-vert.glsl";
 import { ZograRenderer, Mesh, vec3, MaterialFromShader, Shader, mat4, Color, shaderProp, rgb, quat, vec2, materialDefine } from "zogra-renderer";
 import "./css/base.css";
-import { RenderTexture, Texture } from "../../dist/core/texture";
-import { RenderTarget } from "../../dist/core/render-target";
+import { RenderTexture, Texture } from "zogra-engine";
+import { RenderTarget } from "zogra-engine";
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 

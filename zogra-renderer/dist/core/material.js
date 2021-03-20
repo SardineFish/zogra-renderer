@@ -54,7 +54,8 @@ class Material extends asset_1.Asset {
             const value = prop.key
                 ? this[prop.key]
                 : prop.value;
-            this.uploadUniform(prop, value);
+            if (value !== undefined)
+                this.uploadUniform(prop, value);
         }
     }
     // setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void
@@ -107,6 +108,8 @@ class Material extends asset_1.Asset {
         return true;
     }
     setUniformDirectly(uniformName, type, value) {
+        if (value === undefined)
+            throw new Error("");
         this.tryInit(true);
         const prop = this.getOrCreatePropInfo(uniformName, type);
         if (!prop.location)
@@ -142,7 +145,7 @@ class Material extends asset_1.Asset {
         if (!prop.location)
             return false;
         let dirty = false;
-        if (prop.uploaded === null && value === null)
+        if (prop.uploaded === null && value === null && prop.type !== "tex2d")
             return false;
         // switch (prop.type)
         // {

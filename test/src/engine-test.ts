@@ -1,8 +1,20 @@
 import "./css/base.css";
-import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul } from "../..";
+import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul, PreviewRenderer, Projection, MaterialFromShader, Shader, Culling, DepthTest, MeshBuilder, Color, RenderTarget, Light, LightType, shaderProp, Texture } from "zogra-engine";
+import frag from "./shader/default-frag.glsl";
+import vert from "./shader/default-vert.glsl";
+
+class Mat extends MaterialFromShader(new Shader(vert, frag, {
+}))
+{
+    @shaderProp("uColor", "color")
+    color: Color = Color.white;
+
+    @shaderProp("uMainTex", "tex2d")
+    texture: Texture | null = null;
+}
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
-const engine = new ZograEngine(canvas);
+const engine = new ZograEngine(canvas, PreviewRenderer);
 const input = new InputManager();
 
 initCamera();
@@ -11,18 +23,24 @@ initObjects();
 engine.start();
 engine.on('update', () => input.update());
 
+
+
+
 function initCamera()
 {
     const wrapper = new Entity();
     engine.scene.add(wrapper);
     wrapper.position = vec3(0, 2, 20);
+
     const camera = new Camera();
-    engine.scene.add(camera, wrapper);
     camera.clearColor = rgb(.3, .3, .3);
     camera.FOV = 60;
+    engine.scene.add(camera, wrapper);
 
     engine.on("update", (time) =>
     {
+        // engine.renderer.clear(Color.white, true);
+        // engine.renderer.drawMesh(mesh, mat4.identity(), new Mat());
         const sensity = 0.0001 * 10;
 
         let v = vec3.zero();
@@ -68,7 +86,9 @@ function initObjects()
 {
     const cube = new RenderObject();
     engine.scene.add(cube);
-    cube.meshes.push(engine.renderer.assets.meshes.cube);
+    // cube.meshes.push(engine.renderer.assets.meshes.cube);
+    cube.meshes[0] = engine.renderer.assets.meshes.cube;
+    cube.materials[0] = new Mat();
 
     engine.on("update", (time) =>
     {

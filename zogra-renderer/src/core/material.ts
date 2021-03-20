@@ -104,8 +104,8 @@ export class Material extends Asset
             const value = prop.key
                 ? this[prop.key]
                 : prop.value;
-            
-            this.uploadUniform(prop, value);
+            if (value !== undefined)
+                this.uploadUniform(prop, value);
         }
     }
 
@@ -180,6 +180,8 @@ export class Material extends Asset
 
     public setUniformDirectly<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>)
     {
+        if (value === undefined)
+            throw new Error("")
         this.tryInit(true);
 
         const prop = this.getOrCreatePropInfo(uniformName, type);
@@ -225,7 +227,7 @@ export class Material extends Asset
             return false;
         
         let dirty = false;
-        if (prop.uploaded === null && value === null)
+        if (prop.uploaded === null && value === null && prop.type !== "tex2d")
             return false;
         
         // switch (prop.type)

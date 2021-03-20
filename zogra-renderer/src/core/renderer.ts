@@ -329,7 +329,7 @@ export class ZograRenderer
         
         material.upload(data);
         this.setupTransforms(material.shader, transform);
-        // this.setupGlobalUniforms(material.shader, data);
+        this.setupGlobalUniforms(material);
         mesh.bind(material.shader);
 
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);

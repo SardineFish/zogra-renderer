@@ -1,9 +1,10 @@
 import fbx from "./asset/model/sphere.bin.fbx";
-import { plugins, materialDefine, shaderProp, MaterialFromShader, Shader, Color, Texture, Culling } from "../..";
-import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul } from "../..";
+import { plugins, materialDefine, shaderProp, MaterialFromShader, Shader, Color, Texture, Culling } from "zogra-engine";
+import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul } from "zogra-engine";
 import "./css/base.css";
 import vert from "./shader/default-vert.glsl";
 import frag from "./shader/pbr-frag.glsl";
+import FBXImporter from "fbx-importer";
 
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
@@ -83,8 +84,10 @@ async function initObjects()
     });
 
 
-    const blob = await (await fetch(fbx)).blob();
-    const assets = await plugins.AssetsImporter.url(fbx).then(r => r.fbx({}));// await plugins.AssetsImporter.blob(blob).fbx();
+    // const blob = await (await fetch(fbx)).blob();
+    const assets = await FBXImporter.url(fbx).then(r => r.fbx());
+    
+    // const assets = await plugins.AssetsImporter.url(fbx).then(r => r.fbx({}));// await plugins.AssetsImporter.blob(blob).fbx();
     (window as any).assets = assets;
 
     const obj = assets.mainAsset as Entity;

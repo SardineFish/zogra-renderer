@@ -8,7 +8,7 @@
     "build": "npx webpack",
     "build:watch": "npx webpack --watch",
     "build:prod": "npx webpack --mode production --devtool none",
-    "start": "webpack-dev-server --open"
+    "start": "npx webpack-dev-server --open"
   },
   "author": "SardineFish",
   "license": "MIT",
@@ -22,9 +22,11 @@
     "style-loader": "^1.1.2",
     "ts-loader": "^6.2.1",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
-    "zogra-renderer": "file:///.."
+    "fbx-importer": "file:///../fbx-importer",
+    "zogra-engine": "file:///../zogra-engine"
   }
 }

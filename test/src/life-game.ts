@@ -4,9 +4,9 @@ import frag from "!!raw-loader!./shader/life-game.glsl";
 import blitFrag from "!!raw-loader!./shader/life-game-render.glsl";
 import "./css/base.css";
 import seedTest from "./asset/img/dual-gun.png";
-import { RenderTexture, FilterMode, WrapMode, Texture2D } from "../../dist/core/texture";
-import { TextureFormat } from "../../dist/core/texture-format";
-import { RenderTarget } from "../../dist/core/render-target";
+import { RenderTexture, FilterMode, WrapMode, Texture2D } from "zogra-engine";
+import { TextureFormat } from "zogra-engine";
+import { RenderTarget } from "zogra-engine";
 import { loadImage } from "./misc/util";
 
 const Width = 2446;
@@ -41,8 +41,8 @@ const rts = [
 ] as [RenderTexture, RenderTexture];
 rts[0].wrapMode = WrapMode.Clamp;
 rts[1].wrapMode = WrapMode.Clamp;
-rts[0].update();
-rts[1].update();
+// rts[0].update();
+// rts[1].update();
 const backBuffer = new RenderTexture(Width, Height, false);
 const mesh = new Mesh();
 mesh.verts = [
@@ -112,7 +112,8 @@ async function lifeGame()
         const dst = rts[(frameIdx + 1) % 2];
         frameIdx++;
 
-        renderer.setGlobalTexture("uLastFrame", src);
+        // renderer.setGlobalTexture("uLastFrame", src);
+        renderer.setGlobalUniform("uLastFrame", "tex2d", src);
         renderer.setGlobalUniform("uSize", "vec4", vec4(Width, Height, 1 / Width, 1 / Height));
 
         renderer.setRenderTarget(dst);
