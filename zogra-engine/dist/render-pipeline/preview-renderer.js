@@ -64,8 +64,8 @@ class PreviewRenderer {
                 this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
             }
         }
-        this.debugLayer.render(context, data);
-        // this.renderGrid(context, data);
+        // this.debugLayer.render(context, data);
+        this.renderGrid(context, data);
         camera.__postRender(context);
     }
     renderGrid(context, data) {

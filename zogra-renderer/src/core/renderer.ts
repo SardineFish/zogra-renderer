@@ -6,7 +6,7 @@ import { vec3, Vector3 } from "../types/vec3";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
-import { RenderTarget } from "./render-target";
+import { IRenderTarget, RenderTarget } from "./render-target";
 import { RenderTexture, DepthTexture, Texture, Texture2D } from "./texture";
 import { vec4 } from "../types/vec4";
 import { vec2, Vector2 } from "../types/vec2";
@@ -35,7 +35,7 @@ export class ZograRenderer
     viewMatrix = mat4.identity();
     projectionMatrix = mat4.identity();
 
-    private target: RenderTarget = RenderTarget.CanvasTarget;
+    private target: IRenderTarget = RenderTarget.CanvasTarget;
     private shader: Shader | null = null;
     private scissor: Rect;
     private globalUniforms = new Map<string, GlobalUniform>();
@@ -99,37 +99,56 @@ export class ZograRenderer
         this.viewProjectionMatrix = mat4.mul(projection, view);
     }
 
-    setRenderTarget(rt: RenderTarget) : void
+    setRenderTarget(rt: IRenderTarget) : void
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture):void
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture):void
-    setRenderTarget(colorAttachments: RenderTexture[] | RenderTexture | RenderTarget, depthAttachment?: DepthTexture)
+    setRenderTarget(colorAttachments: RenderTexture[] | RenderTexture | IRenderTarget, depthAttachment?: DepthTexture)
     {
-        if (colorAttachments instanceof RenderTarget)
+        if (colorAttachments === RenderTarget.CanvasTarget)
         {
             if (this.target !== colorAttachments)
                 this.target.release();
             this.target = colorAttachments;
         }
-        else if (colorAttachments instanceof Array)
+        else if (colorAttachments instanceof RenderTarget)
         {
-            this.target.release();
-            this.target = new RenderTarget(colorAttachments[0].width, colorAttachments[0].height, this.ctx);
-            for (let i = 0; i < colorAttachments.length; i++)
-                this.target.addColorAttachment(colorAttachments[i]);
-        }
-        else if (colorAttachments instanceof RenderTexture)
-        {
-            this.target.release();
-            this.target = new RenderTarget(colorAttachments.width, colorAttachments.height, this.ctx);
-            this.target.addColorAttachment(colorAttachments);
-        }
+            if (this.target !== colorAttachments)
+                this.target.release();
+            this.target = colorAttachments;
 
-        if (depthAttachment)
-            this.target.setDepthAttachment(depthAttachment);
+            if (depthAttachment)
+            {
+                (this.target as RenderTarget).setDepthAttachment(depthAttachment);
+            }
+        }
+        else
+        {
+            let target: RenderTarget;
+            if (colorAttachments instanceof Array)
+            {
+                this.target.release();
+                target = new RenderTarget(colorAttachments[0].width, colorAttachments[0].height, this.ctx);
+                for (let i = 0; i < colorAttachments.length; i++)
+                    target.addColorAttachment(colorAttachments[i]);
+            }
+            else if (colorAttachments instanceof RenderTexture)
+            {
+                this.target.release();
+                target = new RenderTarget(colorAttachments.width, colorAttachments.height, this.ctx);
+                target.addColorAttachment(colorAttachments);
+            }
+            else
+                throw new Error("Invalid render target");
+
+            if (depthAttachment)
+                target.setDepthAttachment(depthAttachment);
+            
+            this.target = target;
+        }
         
 
         this.scissor = new Rect(vec2.zero(), this.target.size);
-        this.target.bind(this.ctx);
+        this.target.bind();
     }
 
     clear(color = Color.black, clearDepth = true)
@@ -249,7 +268,7 @@ export class ZograRenderer
             size: vec2(this.width, this.height),
         };
 
-        this.target.bind(this.ctx);
+        this.target.bind();
         this.setupScissor();
 
         this.useShader(material.shader);
@@ -277,7 +296,7 @@ export class ZograRenderer
             size: vec2(this.width, this.height),
         };
 
-        this.target.bind(this.ctx);
+        this.target.bind();
         this.setupScissor();
 
         this.useShader(material.shader);
@@ -303,7 +322,7 @@ export class ZograRenderer
             size: vec2(this.width, this.height),
         };
         
-        this.target.bind(this.ctx);
+        this.target.bind();
         this.setupScissor();
         
         this.useShader(material.shader);
@@ -328,7 +347,7 @@ export class ZograRenderer
             size: vec2(this.width, this.height),
         };
 
-        this.target.bind(this.ctx);
+        this.target.bind();
         this.setupScissor();
 
         this.useShader(material.shader);

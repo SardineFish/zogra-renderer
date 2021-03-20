@@ -102,9 +102,9 @@ export class PreviewRenderer implements ZograRenderPipeline
             }
         }
         
-        this.debugLayer.render(context, data);
+        // this.debugLayer.render(context, data);
 
-        // this.renderGrid(context, data);
+        this.renderGrid(context, data);
         camera.__postRender(context);
     }
 

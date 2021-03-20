@@ -13,17 +13,40 @@ const FrameBufferAttachment = {
     fromRenderTexture: (rt: RenderTexture) => ({ tex: rt.glTex() } as FrameBufferAttachment)
 };
 
-export class RenderTarget
+export interface IRenderTarget
+{
+    readonly width: number;
+    readonly height: number;
+    readonly size: vec2;
+    bind(): void;
+    release(): void;
+}
+
+class CanvasTarget implements IRenderTarget
+{
+    get width() { return GlobalContext().width }
+    get height() { return GlobalContext().height }
+    get size() { return GlobalContext().renderer.canvasSize }
+    bind()
+    {
+        const gl = GlobalContext().gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, this.width, this.height);
+    }
+    release() { }
+}
+
+export class RenderTarget implements IRenderTarget
 {
     width: number;
     height: number;
-    colorAttachments: FrameBufferAttachment[] = [];
-    depthAttachment: FrameBufferAttachment = FrameBufferAttachment.canvasOutput;
-    frameBuffer: WebGLFramebuffer | null;
+    private colorAttachments: FrameBufferAttachment[] = [];
+    private depthAttachment: FrameBufferAttachment = FrameBufferAttachment.canvasOutput;
+    private frameBuffer: WebGLFramebuffer | null;
 
-    isCanvasTarget = true;
+    isCanvasTarget = false;
 
-    static CanvasTarget = Object.freeze(new RenderTarget());
+    static CanvasTarget = Object.freeze(new CanvasTarget());
 
     constructor(width = 0, height = 0, ctx = GlobalContext())
     {
@@ -43,7 +66,7 @@ export class RenderTarget
         {
             return;
         }
-        this.isCanvasTarget = false;
+        // this.isCanvasTarget = false;
         if (this.width == 0 && this.height == 0)
         {
             this.width = rt.width;

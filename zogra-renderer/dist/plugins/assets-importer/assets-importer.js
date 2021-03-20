@@ -24,6 +24,10 @@ class AssetsImporter {
         const buffer = await fetch(url).then(r => r.arrayBuffer());
         return await this.buffer(buffer, ctx);
     }
+    async blob(blob, ctx = global_1.GlobalContext()) {
+        const buffer = await blob.arrayBuffer();
+        return await this.buffer(buffer, ctx);
+    }
     async buffer(buffer, ctx = global_1.GlobalContext()) {
         const bufImporters = {};
         for (const key in this.importers) {

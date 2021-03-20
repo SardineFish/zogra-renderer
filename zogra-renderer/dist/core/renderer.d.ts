@@ -4,7 +4,7 @@ import { Mesh } from "./mesh";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
-import { RenderTarget } from "./render-target";
+import { IRenderTarget, RenderTarget } from "./render-target";
 import { RenderTexture, DepthTexture, Texture } from "./texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
@@ -33,7 +33,7 @@ export declare class ZograRenderer {
     setSize(width: number, height: number): void;
     get canvasSize(): vec2;
     setViewProjection(view: mat4, projection: mat4): void;
-    setRenderTarget(rt: RenderTarget): void;
+    setRenderTarget(rt: IRenderTarget): void;
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture): void;
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture): void;
     clear(color?: Color, clearDepth?: boolean): void;

@@ -8,12 +8,23 @@ const FrameBufferAttachment = {
     canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK },
     fromRenderTexture: (rt) => ({ tex: rt.glTex() })
 };
+class CanvasTarget {
+    get width() { return global_1.GlobalContext().width; }
+    get height() { return global_1.GlobalContext().height; }
+    get size() { return global_1.GlobalContext().renderer.canvasSize; }
+    bind() {
+        const gl = global_1.GlobalContext().gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, this.width, this.height);
+    }
+    release() { }
+}
 class RenderTarget {
     constructor(width = 0, height = 0, ctx = global_1.GlobalContext()) {
         var _a;
         this.colorAttachments = [];
         this.depthAttachment = FrameBufferAttachment.canvasOutput;
-        this.isCanvasTarget = true;
+        this.isCanvasTarget = false;
         this.width = width;
         this.height = height;
         if (!ctx)
@@ -26,7 +37,7 @@ class RenderTarget {
         if (rt === null) {
             return;
         }
-        this.isCanvasTarget = false;
+        // this.isCanvasTarget = false;
         if (this.width == 0 && this.height == 0) {
             this.width = rt.width;
             this.height = rt.height;
@@ -74,5 +85,5 @@ class RenderTarget {
     }
 }
 exports.RenderTarget = RenderTarget;
-RenderTarget.CanvasTarget = Object.freeze(new RenderTarget());
+RenderTarget.CanvasTarget = Object.freeze(new CanvasTarget());
 //# sourceMappingURL=render-target.js.map

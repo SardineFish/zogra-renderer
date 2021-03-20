@@ -8,6 +8,7 @@ export declare class AssetsImporter<T extends Importers> {
     private importers;
     constructor(importers: T);
     url(url: string, ctx?: import("../../core/global").GLContext): Promise<BufferImporter<T>>;
+    blob(blob: Blob, ctx?: import("../../core/global").GLContext): Promise<BufferImporter<T>>;
     buffer(buffer: ArrayBuffer, ctx?: import("../../core/global").GLContext): Promise<BufferImporter<T>>;
 }
 declare type BufferImporter<T extends Importers> = {

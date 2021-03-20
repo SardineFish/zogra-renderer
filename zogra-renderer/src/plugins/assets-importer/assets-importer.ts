@@ -25,6 +25,11 @@ export class AssetsImporter<T extends Importers>
         const buffer = await fetch(url).then(r => r.arrayBuffer());
         return await this.buffer(buffer, ctx);
     }
+    async blob(blob: Blob, ctx = GlobalContext())
+    {
+        const buffer = await blob.arrayBuffer();
+        return await this.buffer(buffer, ctx);
+    }
     async buffer(buffer: ArrayBuffer, ctx = GlobalContext()): Promise<BufferImporter<T>>
     {
         const bufImporters: BufferImporter<T> = {} as any;
