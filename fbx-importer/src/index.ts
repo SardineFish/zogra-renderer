@@ -1,14 +1,14 @@
 import { FBXAssets, FBXMaterial, FBXID, FBXMesh } from "./fbx-types";
-import { AssetsPack, AssetImportOptions, AssetImporterPlugin, AssetsImporter } from "zogra-renderer";
-import { GlobalContext, GLContext } from "zogra-renderer";
-import { Material } from "zogra-renderer";
-import { Color } from "zogra-renderer";
-import { vec4 } from "zogra-renderer";
-import { Asset, IAsset } from "zogra-renderer";
-import { RenderObject, Entity } from "zogra-renderer";
-import { vec3 } from "zogra-renderer";
-import { Mesh } from "zogra-renderer";
-import { vec2 } from "zogra-renderer";
+import { AssetsPack, AssetImportOptions, AssetImporterPlugin, AssetsImporter } from "zogra-engine";
+import { GlobalContext, GLContext } from "zogra-engine";
+import { Material } from "zogra-engine";
+import { Color } from "zogra-engine";
+import { vec4 } from "zogra-engine";
+import { Asset, IAsset } from "zogra-engine";
+import { RenderObject, Entity } from "zogra-engine";
+import { vec3 } from "zogra-engine";
+import { Mesh } from "zogra-engine";
+import { vec2 } from "zogra-engine";
 import { parseFBX } from "./fbx-binary-parser";
 import { extractFBXAssets } from "./fbx-model-import";
 
@@ -130,4 +130,5 @@ const importers = {
     fbx: FBXModelImporter
 };
 
-export const FBXImporter = new AssetsImporter(importers);
+const FBXImporter = new AssetsImporter(importers);
+export default FBXImporter;

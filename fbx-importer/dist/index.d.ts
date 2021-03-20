@@ -1,4 +1,5 @@
-import { AssetsPack, AssetImporterPlugin, AssetsImporter } from "zogra-renderer";
-export declare const FBXImporter: AssetsImporter<{
+import { AssetsPack, AssetImporterPlugin, AssetsImporter } from "zogra-engine";
+declare const FBXImporter: AssetsImporter<{
     fbx: AssetImporterPlugin<{}, AssetsPack>;
 }>;
+export default FBXImporter;

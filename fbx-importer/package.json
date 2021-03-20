@@ -12,6 +12,6 @@
   "dependencies": {
     "@types/pako": "^1.0.1",
     "pako": "^2.0.3",
-    "zogra-renderer": "file://../"
+    "zogra-engine": "file://../zogra-engine"
   }
 }
