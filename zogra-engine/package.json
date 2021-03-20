@@ -1,0 +1,31 @@
+{
+  "name": "zogra-engine",
+  "version": "1.2.0",
+  "description": "A tiny render engine based on zogra-renderer",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "build:watch": "npx tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SardineFish/zogra-renderer.git"
+  },
+  "keywords": [
+    "webgl",
+    "renderer",
+    "engine"
+  ],
+  "author": "SardineFish",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SardineFish/zogra-renderer/issues"
+  },
+  "homepage": "https://github.com/SardineFish/zogra-renderer#readme",
+  "dependencies": {
+    "zogra-renderer": "file:///../zogra-renderer"
+  },
+  "devDependencies": {
+    "typescript": "^4.1.5"
+  }
+}

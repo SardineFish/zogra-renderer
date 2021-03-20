@@ -1,0 +1,32 @@
+{
+  "name": "zogra-renderer",
+  "version": "1.2.0",
+  "description": "core renderer module of zogra-renderer",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "build:watch": "npx tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SardineFish/zogra-renderer.git"
+  },
+  "keywords": [
+    "webgl",
+    "renderer",
+    "zogra"
+  ],
+  "author": "SardineFish",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SardineFish/zogra-renderer/issues"
+  },
+  "homepage": "https://github.com/SardineFish/zogra-renderer#readme",
+  "devDependencies": {
+    "typescript": "^4.1.5"
+  },
+  "dependencies": {
+    "gl-matrix": "^3.3.0",
+    "reflect-metadata": "^0.1.13"
+  }
+}
