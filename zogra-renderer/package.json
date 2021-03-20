@@ -1,5 +1,5 @@
 {
-  "name": "zogra-renderer",
+  "name": "@sardinefish/zogra-renderer",
   "version": "1.2.0",
   "description": "core renderer module of zogra-renderer",
   "main": "dist/index.js",
