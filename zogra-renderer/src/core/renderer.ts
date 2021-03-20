@@ -159,7 +159,7 @@ export class ZograRenderer
 
     blit(
         src: Texture | null,
-        dst: RenderTarget | RenderTexture | RenderTexture[],
+        dst: IRenderTarget | RenderTexture | RenderTexture[],
         material: Material = this.assets.materials.blitCopy,
         srcRect?: Rect,
         dstRect?: Rect)

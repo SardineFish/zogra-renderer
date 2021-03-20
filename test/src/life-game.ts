@@ -131,6 +131,6 @@ window.addEventListener("mousemove", (e) =>
     const pos = vec2(e.clientX, e.clientY);
     const center = vec2(window.innerWidth / 2, window.innerHeight / 2);
     const d = minus(pos, center);
-    d.mul(vec2(-.2, .2));
+    d.mul(vec2(.2, -.2));
     blitMat.setProp("uOffset", "vec2", plus(Offset, d));
 });

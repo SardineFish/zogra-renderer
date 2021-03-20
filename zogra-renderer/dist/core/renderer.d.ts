@@ -4,7 +4,7 @@ import { Mesh } from "./mesh";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
-import { IRenderTarget, RenderTarget } from "./render-target";
+import { IRenderTarget } from "./render-target";
 import { RenderTexture, DepthTexture, Texture } from "./texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
@@ -37,7 +37,7 @@ export declare class ZograRenderer {
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture): void;
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture): void;
     clear(color?: Color, clearDepth?: boolean): void;
-    blit(src: Texture | null, dst: RenderTarget | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
+    blit(src: Texture | null, dst: IRenderTarget | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
     private useShader;
     private setupTransforms;
     private setupGlobalUniforms;
