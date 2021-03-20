@@ -3,7 +3,7 @@ import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, Input
 import frag from "./shader/default-frag.glsl";
 import vert from "./shader/default-vert.glsl";
 
-class Mat extends MaterialFromShader(new Shader(vert, frag, {
+class LambertMaterial extends MaterialFromShader(new Shader(vert, frag, {
 }))
 {
     @shaderProp("uColor", "color")
@@ -88,7 +88,7 @@ function initObjects()
     engine.scene.add(cube);
     // cube.meshes.push(engine.renderer.assets.meshes.cube);
     cube.meshes[0] = engine.renderer.assets.meshes.cube;
-    cube.materials[0] = new Mat();
+    cube.materials[0] = new LambertMaterial();
 
     engine.on("update", (time) =>
     {
