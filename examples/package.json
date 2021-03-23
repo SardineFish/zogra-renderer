@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "fbx-importer": "file:///../fbx-importer",
-    "zogra-engine": "file:///../zogra-engine"
+    "zogra-engine": "file:///../zogra-engine",
+    "zogra-renderer": "file:///../zogra-renderer"
   }
 }

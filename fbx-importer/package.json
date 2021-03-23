@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/pako": "^1.0.1",
+    "gl-matrix": "^3.3.0",
     "pako": "^2.0.3",
     "zogra-engine": "file://../zogra-engine"
   }
