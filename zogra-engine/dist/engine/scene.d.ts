@@ -7,7 +7,7 @@ interface SceneEvents extends EventDefinitions {
     "entity-remove": (entity: Entity, parent: Entity | null) => void;
 }
 export declare class Scene extends EntityManager<Entity> implements IAsset, IEventSource<SceneEvents> {
-    assetID: number;
+    readonly assetID: number;
     name: string;
     private eventEmitter;
     constructor();

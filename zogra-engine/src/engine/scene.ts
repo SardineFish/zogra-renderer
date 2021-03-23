@@ -9,12 +9,12 @@ import { IAsset, AssetManager } from "zogra-renderer";
 interface SceneEvents extends EventDefinitions
 {
     "entity-add": (entity: Entity, parent: Entity | null) => void;
-    "entity-remove": (entity: Entity, parent: Entity | null) => void;
+    "entity-remove": (entity: Entity, parent: Entity | null) => void; 
 }
 
 export class Scene extends EntityManager<Entity> implements IAsset, IEventSource<SceneEvents>
 {
-    assetID: number;
+    readonly assetID: number;
     name: string;
     //private managers = new Map<Function, EntityManager>();
 

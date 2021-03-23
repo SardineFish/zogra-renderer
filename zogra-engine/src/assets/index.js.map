@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../assets/index.ts", "../../assets/shader/shader.ts"],
+  "sourcesContent": ["export * from \"./shader/shader\";", "import _2dVert from \"./2d-vert.glsl\";\r\nimport _2dFrag from \"./2d-frag.glsl\";\r\n\r\nexport const ShaderSource: { [key: string]: [string, string] } = {\r\n    default2D: [_2dVert, _2dFrag],\r\n\r\n};"],
+  "mappings": "gIAAA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GCGO,GAAM,GAAoD,CAC7D,UAAW,CAAC,EAAS",
+  "names": []
+}

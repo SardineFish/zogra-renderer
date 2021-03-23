@@ -79,6 +79,10 @@ export function distance<V extends vec>(a: V, b: V): number
     return minus(b, a).magnitude;
 }
 
+export function floor2(v: Vector2)
+{
+    return vec2(Math.floor(v.x), Math.floor(v.y));
+}
 
 export const Deg2Rad = Math.PI / 180;
 export const Rad2Deg = 180 / Math.PI;

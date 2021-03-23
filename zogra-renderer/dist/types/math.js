@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Rad2Deg = exports.Deg2Rad = exports.distance = exports.cross = exports.dot = exports.div = exports.mul = exports.minus = exports.plus = void 0;
+exports.Rad2Deg = exports.Deg2Rad = exports.floor2 = exports.distance = exports.cross = exports.dot = exports.div = exports.mul = exports.minus = exports.plus = void 0;
 const vec3_1 = require("./vec3");
 const vec4_1 = require("./vec4");
 const vec2_1 = require("./vec2");
@@ -58,6 +58,10 @@ function distance(a, b) {
     return minus(b, a).magnitude;
 }
 exports.distance = distance;
+function floor2(v) {
+    return vec2_1.vec2(Math.floor(v.x), Math.floor(v.y));
+}
+exports.floor2 = floor2;
 exports.Deg2Rad = Math.PI / 180;
 exports.Rad2Deg = 180 / Math.PI;
 //# sourceMappingURL=math.js.map
