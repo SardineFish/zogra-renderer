@@ -1,6 +1,6 @@
 import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, floor2, mat4 } from "zogra-renderer";
-import { RenderContext, RenderData, Camera } from "..";
-import { RenderObject } from "../engine/render-object";
+import { RenderContext, RenderData, Camera } from "../..";
+import { RenderObject } from "../../engine/render-object";
 import { Default2DMaterial } from "./materials";
 
 const ChunkSize = 16;
