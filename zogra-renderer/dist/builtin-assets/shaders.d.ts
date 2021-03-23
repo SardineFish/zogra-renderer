@@ -1,10 +1,4 @@
 import { Shader } from "../core/shader";
-export declare const BuiltinShaderSources: {
-    DefaultVert: string;
-    DefaultFrag: string;
-    BlitCopyFrag: string;
-    FlipTexVert: string;
-};
 export declare const BuiltinUniformNames: {
     matM: string;
     matM_IT: string;

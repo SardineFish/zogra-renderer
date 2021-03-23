@@ -6,7 +6,8 @@
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc -w",
-    "build:assets": "node ./build/build-assets.js && npx tsc -b ./assets/tsconfig.json"
+    "build:assets": "node ./build/build-assets.js && npx tsc -b ./assets/tsconfig.json",
+    "build:assets:watch": "node ./build/build-watch.js"
   },
   "repository": {
     "type": "git",
