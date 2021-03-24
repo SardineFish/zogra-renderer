@@ -5,6 +5,8 @@ import { Light } from "./light";
 import { EventDefinitions, EventEmitter, IEventSource, EventKeys } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
 import { IAsset, AssetManager } from "zogra-renderer";
+import { IPhysicsSystem, IPhysicsSystemClass, UnknownPhysics } from "../physics/physics-generic";
+import { Physics2D } from "../2d/physics/physics-2d";
 
 interface SceneEvents extends EventDefinitions
 {
@@ -12,24 +14,28 @@ interface SceneEvents extends EventDefinitions
     "entity-remove": (entity: Entity, parent: Entity | null) => void; 
 }
 
-export class Scene extends EntityManager<Entity> implements IAsset, IEventSource<SceneEvents>
+export class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> extends EntityManager<Entity> implements IAsset, IEventSource<SceneEvents>
 {
     readonly assetID: number;
     name: string;
+    physics: Physics;
+
     //private managers = new Map<Function, EntityManager>();
 
     private eventEmitter = new EventEmitter<SceneEvents>();
 
-    constructor()
+    constructor(PhysicsSystem: ConstructorType<Physics>)
     {
         super();
         this.assetID = AssetManager.newAssetID(this);
         this.name = `Scene_${this.assetID}`;
+        this.physics = new PhysicsSystem();
     }
 
     add(entity: Entity, parent?: Entity)
     {
         super.add(entity);
+        entity.__addToScene(this);
 
         const type = entity.constructor;
         // if (!this.managers.has(type))

@@ -11,6 +11,15 @@ class Entity extends transform_1.Transform {
         this.name = `Entity_${this.assetID}`;
         this.eventEmitter = new zogra_renderer_2.EventEmitter();
         this.destroyed = false;
+        this._collider = null;
+    }
+    get collider() { return this._collider; }
+    set collider(value) {
+        if (this.scene && value)
+            value.__bind(this, this.scene);
+        if (this._collider && this._collider !== value)
+            this._collider.__unbind();
+        this._collider = value;
     }
     on(event, listener) {
         return this.eventEmitter.on(event, listener);
@@ -18,14 +27,27 @@ class Entity extends transform_1.Transform {
     off(event, listener) {
         this.eventEmitter.off(event, listener);
     }
+    destroy() {
+        this.destroyed = true;
+        zogra_renderer_1.AssetManager.destroy(this.assetID);
+    }
+    /** @internal */
     __updateRecursive(time) {
         this.eventEmitter.emit("update", this, time);
         for (const entity of this.children)
             entity.__updateRecursive(time);
     }
-    destroy() {
-        this.destroyed = true;
-        zogra_renderer_1.AssetManager.destroy(this.assetID);
+    /** @internal */
+    __addToScene(scene) {
+        var _a;
+        super.__addToScene(scene);
+        (_a = this._collider) === null || _a === void 0 ? void 0 : _a.__bind(this, scene);
+    }
+    /** @internal */
+    __removeFromScene(scene) {
+        var _a;
+        super.__removeFromScene(scene);
+        (_a = this._collider) === null || _a === void 0 ? void 0 : _a.__unbindPhysics();
     }
 }
 exports.Entity = Entity;

@@ -1,6 +1,7 @@
 import { mat4 } from "zogra-renderer";
 import { vec3, Vector3 } from "zogra-renderer";
 import { quat } from "zogra-renderer";
+import { Scene } from "./scene";
 
 export class Transform
 {
@@ -29,6 +30,9 @@ export class Transform
     localPosition: vec3 = vec3.zero();
     localRotation: quat = quat.identity();
     localScaling: vec3 = vec3.one();
+
+    private _scene: Scene | null = null;
+    get scene() { return this._scene }
 
     get position()
     {
@@ -89,5 +93,16 @@ export class Transform
         {
             p.children.add(this);
         }
+    }
+
+    /** @internal */
+    __addToScene(scene: Scene)
+    {
+        this._scene = scene;
+    }
+    /** @internal */
+    __removeFromScene(scene: Scene)
+    {
+        this._scene = null;
     }
 }

@@ -5,15 +5,17 @@ const entity_1 = require("./entity");
 const zogra_renderer_1 = require("zogra-renderer");
 const zogra_renderer_2 = require("zogra-renderer");
 class Scene extends entity_1.EntityManager {
-    constructor() {
+    constructor(PhysicsSystem) {
         super();
         //private managers = new Map<Function, EntityManager>();
         this.eventEmitter = new zogra_renderer_1.EventEmitter();
         this.assetID = zogra_renderer_2.AssetManager.newAssetID(this);
         this.name = `Scene_${this.assetID}`;
+        this.physics = new PhysicsSystem();
     }
     add(entity, parent) {
         super.add(entity);
+        entity.__addToScene(this);
         const type = entity.constructor;
         // if (!this.managers.has(type))
         //     this.managers.set(type, new EntityManager());

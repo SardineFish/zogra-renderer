@@ -27,7 +27,9 @@ class Transform {
         this.localPosition = zogra_renderer_2.vec3.zero();
         this.localRotation = zogra_renderer_3.quat.identity();
         this.localScaling = zogra_renderer_2.vec3.one();
+        this._scene = null;
     }
+    get scene() { return this._scene; }
     get position() {
         if (!this._parent)
             return this.localPosition;
@@ -78,6 +80,14 @@ class Transform {
         if (p) {
             p.children.add(this);
         }
+    }
+    /** @internal */
+    __addToScene(scene) {
+        this._scene = scene;
+    }
+    /** @internal */
+    __removeFromScene(scene) {
+        this._scene = null;
     }
 }
 exports.Transform = Transform;
