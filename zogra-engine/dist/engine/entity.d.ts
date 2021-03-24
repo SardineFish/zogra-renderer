@@ -2,21 +2,25 @@ import { Transform } from "./transform";
 import { IAsset } from "zogra-renderer";
 import { EventDefinitions, IEventSource, EventEmitter, EventKeys } from "zogra-renderer";
 import { Time } from "./zogra-engine";
+import { ICollider } from "../physics/physics-generic";
 export interface EntityEvents extends EventDefinitions {
     "update": (entity: Entity, time: Time) => void;
 }
 export interface IEntity {
     assetID: number;
     name: string;
+    collider: ICollider | null;
 }
 export declare class Entity extends Transform implements IAsset, IEventSource<EntityEvents>, IEntity {
     assetID: number;
     name: string;
     protected eventEmitter: EventEmitter<EntityEvents>;
     protected destroyed: boolean;
+    private _collider;
+    get collider(): ICollider | null;
+    set collider(value: ICollider | null);
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void;
     off<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void;
-    __updateRecursive(time: Time): void;
     destroy(): void;
 }
 export declare class EntityManager<T extends Entity = Entity> {

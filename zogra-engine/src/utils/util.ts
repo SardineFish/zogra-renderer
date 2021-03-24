@@ -1,5 +1,9 @@
+export interface Into<T>
+{
+    into<T>(): T;
+}
 
-export type ConstructorType<T> = { prototype: T } & Function;
+export type ConstructorType<T> = new (...args: any[]) => T & { prototype: T } & Function;
 
 export class DoubleBuffer<T>
 {

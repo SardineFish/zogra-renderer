@@ -25,7 +25,6 @@ engine.on('update', () => input.update());
 
 
 
-
 function initCamera()
 {
     const wrapper = new Entity();

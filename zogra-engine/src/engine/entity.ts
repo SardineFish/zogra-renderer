@@ -3,6 +3,8 @@ import { IAsset, AssetManager } from "zogra-renderer";
 import { EventDefinitions, IEventSource, EventEmitter, EventKeys } from "zogra-renderer";
 import { Time } from "./zogra-engine";
 import { RenderContext } from "../render-pipeline/rp";
+import { ICollider } from "../physics/physics-generic";
+import { Scene } from "./scene";
 
 export interface EntityEvents extends EventDefinitions
 {
@@ -13,6 +15,7 @@ export interface IEntity
 {
     assetID: number;
     name: string;
+    collider: ICollider | null;
 }
 
 export class Entity extends Transform implements IAsset, IEventSource<EntityEvents>, IEntity
@@ -21,6 +24,19 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     name: string = `Entity_${this.assetID}`;
     protected eventEmitter = new EventEmitter<EntityEvents>();
     protected destroyed: boolean = false;
+
+    private _collider: ICollider | null = null;
+
+    get collider() { return this._collider }
+    set collider(value: ICollider | null)
+    {
+        if (this.scene && value)
+            value.__bind(this, this.scene);
+        if (this._collider && this._collider !== value)
+            this._collider.__unbind();
+        this._collider = value;
+    }
+
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void
     {
         return this.eventEmitter.on(event, listener);
@@ -29,6 +45,13 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     {
         this.eventEmitter.off(event, listener);
     }
+    destroy()
+    {
+        this.destroyed = true;
+        AssetManager.destroy(this.assetID);
+    }
+    
+    /** @internal */
     __updateRecursive(time: Time)
     {
         type t = Parameters<EntityEvents["update"]>;
@@ -36,10 +59,17 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
         for (const entity of this.children)
             (entity as Entity).__updateRecursive(time);
     }
-    destroy()
+    /** @internal */
+    __addToScene(scene: Scene)
     {
-        this.destroyed = true;
-        AssetManager.destroy(this.assetID);
+        super.__addToScene(scene);
+        this._collider?.__bind(this, scene);
+    }
+    /** @internal */
+    __removeFromScene(scene: Scene)
+    {
+        super.__removeFromScene(scene);
+        this._collider?.__unbindPhysics();
     }
 }
 
