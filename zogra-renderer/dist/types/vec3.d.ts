@@ -1,4 +1,4 @@
-import { Vector, Vector4 } from "./vec4";
+import { VecMathArgs, Vector, Vector4 } from "./vec4";
 import { Vector2 } from "./vec2";
 export declare type vec3 = Vector3;
 declare const V3Constructor: new (...p: [number, number, number]) => [number, number, number];
@@ -33,6 +33,7 @@ export declare class Vector3 extends V3Constructor implements Vector {
     clone(): Vector3;
     toVec2(): Vector2;
     equals(v: any): boolean;
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector3>) => Vector3;
     __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec3(x: number): Vector3;

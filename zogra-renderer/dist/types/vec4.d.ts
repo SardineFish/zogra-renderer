@@ -6,6 +6,9 @@ export interface Vector {
     equals(v: any): boolean;
 }
 export declare type vec4 = Vector4;
+export declare type VecMathArgs<T, U> = T extends number[] ? {
+    [key in keyof T]: U;
+} : never;
 declare const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number];
 export declare class Vector4 extends V4Constructor implements Vector {
     get x(): number;
@@ -33,6 +36,7 @@ export declare class Vector4 extends V4Constructor implements Vector {
     negate(): this;
     clone(): Vector4;
     equals(v: any): boolean;
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector4>) => Vector4;
     __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec4(x: number): Vector4;

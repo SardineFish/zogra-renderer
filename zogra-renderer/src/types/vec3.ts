@@ -1,4 +1,4 @@
-import { vec4, Vector, Vector4 } from "./vec4";
+import { vec4, VecMathArgs, Vector, Vector4 } from "./vec4";
 import { Vector2, vec2 } from "./vec2";
 
 export type vec3 = Vector3;
@@ -131,6 +131,18 @@ export class Vector3 extends V3Constructor implements Vector
         return v[0] === this[0]
             && v[1] === this[1]
             && v[2] === this[2];
+    }
+
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector3>) => Vector3
+    {
+        return (...args: vec3[]) =>
+        {
+            return vec3(
+                func(...args.map(v => v.x)),
+                func(...args.map(v => v.y)),
+                func(...args.map(v => v.z)),
+            );
+        };
     }
 
     __to(type: Function)

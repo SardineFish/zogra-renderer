@@ -1,4 +1,4 @@
-import { Vector, Vector4 } from "./vec4";
+import { VecMathArgs, Vector, Vector4 } from "./vec4";
 import { Vector3 } from "./vec3";
 export declare type vec2 = Vector2;
 declare const V2Constructor: new (...p: [number, number]) => [number, number];
@@ -20,6 +20,7 @@ export declare class Vector2 extends V2Constructor implements Vector {
     static right(): Vector2;
     static distance(u: Vector2, v: Vector2): number;
     static distanceSquared(u: Vector2, v: Vector2): number;
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector2>) => Vector2;
     plus(v: Vector2): this;
     minus(v: Vector2): this;
     mul(v: Vector2): this;
