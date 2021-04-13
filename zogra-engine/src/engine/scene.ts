@@ -11,7 +11,7 @@ import { Physics2D } from "../2d/physics/physics-2d";
 interface SceneEvents extends EventDefinitions
 {
     "entity-add": (entity: Entity, parent: Entity | null) => void;
-    "entity-remove": (entity: Entity, parent: Entity | null) => void; 
+    "entity-remove": (entity: Entity, parent: Entity | null) => void;
 }
 
 export class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> extends EntityManager<Entity> implements IAsset, IEventSource<SceneEvents>

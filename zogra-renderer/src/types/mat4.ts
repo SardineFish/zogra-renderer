@@ -53,14 +53,14 @@ Matrix4x4.getScaling = (m: mat4) =>
     glMat4.getScaling(out as any as glVec3, m);
     return out;
 };
-Matrix4x4.mulPoint = (m: mat4, p: vec3) =>
+Matrix4x4.mulPoint = (m: mat4, p: Readonly<vec3>) =>
 {
     let v = vec4(p.x, p.y, p.z, 1);
     let out = vec4.zero();
     glVec4.transformMat4(out as any as glVec4, v, m);
     return vec3(out.x, out.y, out.z);
 }
-Matrix4x4.mulVector = (m: mat4, v: vec3) =>
+Matrix4x4.mulVector = (m: mat4, v: Readonly<vec3>) =>
 {
     let v4 = vec4(v.x, v.y, v.z, 0);
     let out = vec4.zero();

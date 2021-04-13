@@ -3,6 +3,7 @@ import { ZograRenderPipeline, ZograRenderPipelineConstructor, PreviewRenderer } 
 import { Camera } from "./camera";
 import { ZograRenderer } from "zogra-renderer";
 import { EventEmitter, EventDefinitions, IEventSource, EventKeys } from "zogra-renderer";
+import { UnknownPhysics } from "../physics/physics-generic";
 
 export interface Time
 {
@@ -38,7 +39,7 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
     {
         this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);
-        this._scene = new Scene();
+        this._scene = new Scene(UnknownPhysics);
         this.eventEmitter = new EventEmitter();
     }
     renderScene()
@@ -54,6 +55,10 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
         const entities = this.scene.rootEntities();
         for (const entity of entities)
             entity.__updateRecursive(time);
+    }
+    private updatePhysics(time: Readonly<Time>)
+    {
+        this.scene.physics.update(time);
     }
     start()
     {
@@ -78,6 +83,7 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
             this._time = t;
             this.eventEmitter.emit("update", t);
             this.updateEntities(t);
+            this.updatePhysics(t);
             this.eventEmitter.emit("render", this.scene.getEntitiesOfType(Camera));
 
             this.renderScene();

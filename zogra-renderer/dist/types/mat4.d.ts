@@ -9,8 +9,8 @@ export declare namespace Matrix4x4 {
     var getTranslation: (m: glMat4) => import("./vec3").Vector3;
     var getRotation: (m: glMat4) => glQuat;
     var getScaling: (m: glMat4) => import("./vec3").Vector3;
-    var mulPoint: (m: glMat4, p: import("./vec3").Vector3) => import("./vec3").Vector3;
-    var mulVector: (m: glMat4, v: import("./vec3").Vector3) => import("./vec3").Vector3;
+    var mulPoint: (m: glMat4, p: Readonly<import("./vec3").Vector3>) => import("./vec3").Vector3;
+    var mulVector: (m: glMat4, v: Readonly<import("./vec3").Vector3>) => import("./vec3").Vector3;
     var mulVec4: (m: glMat4, v: import("./vec4").Vector4) => import("./vec4").Vector4;
     var perspective: (fov: number, aspect: number, near: number, far: number) => glMat4;
     var transpose: (m: glMat4) => glMat4;

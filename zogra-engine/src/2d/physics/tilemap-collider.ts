@@ -23,8 +23,8 @@ export class TilemapCollider extends Collider2D
             this.tilemap = entity;
     }
 
-
-    protected checkCollision(other: Collider2D, otherMotion: vec2): CollisionInfo2D | null
+    /** @internal */
+    checkCollision(other: Collider2D, otherMotion: vec2): CollisionInfo2D | null
     {
         if (other instanceof BoxCollider)
             return checkCollisionTilemapBox(this, other, otherMotion);

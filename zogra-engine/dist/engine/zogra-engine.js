@@ -6,12 +6,13 @@ const rp_1 = require("../render-pipeline/rp");
 const camera_1 = require("./camera");
 const zogra_renderer_1 = require("zogra-renderer");
 const zogra_renderer_2 = require("zogra-renderer");
+const physics_generic_1 = require("../physics/physics-generic");
 class ZograEngine {
     constructor(canvas, RenderPipeline = rp_1.PreviewRenderer) {
         this._time = { deltaTime: 0, time: 0 };
         this.renderer = new zogra_renderer_1.ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);
-        this._scene = new scene_1.Scene();
+        this._scene = new scene_1.Scene(physics_generic_1.UnknownPhysics);
         this.eventEmitter = new zogra_renderer_2.EventEmitter();
     }
     get time() { return this._time; }
@@ -33,6 +34,9 @@ class ZograEngine {
         for (const entity of entities)
             entity.__updateRecursive(time);
     }
+    updatePhysics(time) {
+        this.scene.physics.update(time);
+    }
     start() {
         let previousDelay = 0;
         let startDelay = 0;
@@ -52,6 +56,7 @@ class ZograEngine {
             this._time = t;
             this.eventEmitter.emit("update", t);
             this.updateEntities(t);
+            this.updatePhysics(t);
             this.eventEmitter.emit("render", this.scene.getEntitiesOfType(camera_1.Camera));
             this.renderScene();
             requestAnimationFrame(update);

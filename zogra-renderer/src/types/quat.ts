@@ -1,4 +1,4 @@
-import { quat as glQuat, vec3 as glVec3 } from "gl-matrix";
+import { quat as glQuat, ReadonlyQuat, vec3 as glVec3 } from "gl-matrix";
 import { vec3 } from "./vec3";
 import { Rad2Deg } from "./math";
 
@@ -23,19 +23,19 @@ Quaternion.axis = (axis: vec3, rad: number) =>
 {
     return glQuat.setAxisAngle(glQuat.create(), axis, rad);
 }
-Quaternion.mul = (a: quat, b: quat) =>
+Quaternion.mul = (a: Readonly<quat>, b: Readonly<quat>) =>
 {
     const out = glQuat.create();
-    return glQuat.mul(out, a, b);
+    return glQuat.mul(out, a as ReadonlyQuat, b as ReadonlyQuat);
 }
-Quaternion.invert = (q: quat) =>
+Quaternion.invert = (q: Readonly<quat>) =>
 {
     const out = glQuat.create();
-    return glQuat.invert(out, q);
+    return glQuat.invert(out, q as ReadonlyQuat);
 };
-Quaternion.normalize = (q: quat) =>
+Quaternion.normalize = (q: Readonly<quat>) =>
 {
-    return glQuat.normalize(glQuat.create(), q);
+    return glQuat.normalize(glQuat.create(), q as ReadonlyQuat);
 }
 Quaternion.euler = (q: quat) =>
 {

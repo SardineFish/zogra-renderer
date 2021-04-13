@@ -10,12 +10,15 @@ export declare class Transform {
     localScaling: vec3;
     private _scene;
     get scene(): Scene<import("../physics/physics-generic").IPhysicsSystem> | null;
-    get position(): vec3;
-    set position(position: vec3);
-    get rotation(): quat;
-    set rotation(rotation: quat);
+    get position(): Readonly<vec3>;
+    set position(position: Readonly<vec3>);
+    get rotation(): Readonly<quat>;
+    set rotation(rotation: Readonly<quat>);
+    get scaling(): Readonly<vec3>;
+    set scaling(scaling: Readonly<vec3>);
     get localToWorldMatrix(): mat4;
     get worldToLocalMatrix(): mat4;
     get parent(): Transform | null;
     set parent(p: Transform | null);
+    translate(motion: Readonly<vec3>): void;
 }

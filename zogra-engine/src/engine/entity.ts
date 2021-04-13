@@ -1,5 +1,5 @@
 import { Transform } from "./transform";
-import { IAsset, AssetManager } from "zogra-renderer";
+import { IAsset, AssetManager, EventListener } from "zogra-renderer";
 import { EventDefinitions, IEventSource, EventEmitter, EventKeys } from "zogra-renderer";
 import { Time } from "./zogra-engine";
 import { RenderContext } from "../render-pipeline/rp";
@@ -8,7 +8,7 @@ import { Scene } from "./scene";
 
 export interface EntityEvents extends EventDefinitions
 {
-    "update": (entity: Entity, time: Time) => void;    
+    "update": (entity: Entity, time: Time) => void;
 }
 
 export interface IEntity
@@ -50,7 +50,7 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
         this.destroyed = true;
         AssetManager.destroy(this.assetID);
     }
-    
+
     /** @internal */
     __updateRecursive(time: Time)
     {

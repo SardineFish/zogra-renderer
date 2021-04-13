@@ -8,7 +8,8 @@ export class BoxCollider extends Collider2D
     offset: vec2 = vec2.zero();
     size: vec2 = vec2.one();
 
-    protected checkCollision(other: Collider2D, otherMotion: vec2): CollisionInfo2D | null
+    /** @internal */
+    checkCollision(other: Collider2D, otherMotion: vec2): CollisionInfo2D | null
     {
         if (other instanceof TilemapCollider)
             return checkCollisionTilemapBox(other, this, otherMotion.negative);
