@@ -1,9 +1,7 @@
 export interface Into<T> {
     into<T>(): T;
 }
-export declare type ConstructorType<T> = new (...args: any[]) => T & {
-    prototype: T;
-} & Function;
+export declare type ConstructorType<T> = new (...args: any[]) => T;
 export declare class DoubleBuffer<T> {
     private currentIdx;
     private buffers;

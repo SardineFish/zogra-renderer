@@ -37,7 +37,7 @@ class Transform {
     }
     set position(position) {
         if (!this._parent)
-            this.localPosition = position;
+            this.localPosition.set(position);
         else
             this.localPosition = zogra_renderer_1.mat4.mulPoint(this._parent.worldToLocalMatrix, position);
     }
@@ -52,19 +52,17 @@ class Transform {
         else
             this.localRotation = zogra_renderer_3.quat.normalize(zogra_renderer_3.quat.mul(zogra_renderer_3.quat.invert(this._parent.rotation), rotation));
     }
-    /*get scaling()
-    {
+    get scaling() {
         if (!this._parent)
             return this.localScaling;
-        return mat4.mulVector(this.localToWorldMatrix, vec3.one());
+        return zogra_renderer_1.mat4.mulVector(this.localToWorldMatrix, zogra_renderer_2.vec3.one());
     }
-    set scaling(scaling: vec3)
-    {
+    set scaling(scaling) {
         if (!this._parent)
-            this.localScaling = scaling;
+            this.localScaling.set(scaling);
         else
-            this.localScaling = mat4.mulVector(this.worldToLocalMatrix)
-    }*/
+            this.localScaling = zogra_renderer_1.mat4.getScaling(this._parent.worldToLocalMatrix).mul(scaling);
+    }
     get localToWorldMatrix() {
         if (!this._parent)
             return zogra_renderer_1.mat4.rts(this.localRotation, this.localPosition, this.localScaling);
@@ -80,6 +78,12 @@ class Transform {
         if (p) {
             p.children.add(this);
         }
+    }
+    translate(motion) {
+        if (!this._parent)
+            this.localPosition.plus(motion);
+        else
+            this.localPosition.plus(zogra_renderer_1.mat4.mulVector(this._parent.worldToLocalMatrix, motion));
     }
     /** @internal */
     __addToScene(scene) {

@@ -1,12 +1,18 @@
 import { ConstructorType } from "zogra-renderer/dist/utils/util";
 import { Entity } from "../engine/entity";
 import { Scene } from "../engine/scene";
+import { Time } from "../engine/zogra-engine";
 import { Into } from "../utils/util";
 
 export interface IPhysicsSystem
 {
     /** @internal */
     __addCollider(collider: ICollider): void;
+
+    /** @internal */
+    __removeCollider(collider: ICollider): void;
+
+    update(time: Readonly<Time>): void;
 }
 
 export type IPhysicsSystemClass<T extends IPhysicsSystemClass<T>> = (new (...args: any[]) => IPhysicsSystem) & { current(scene: Scene): InstanceType<T> };
@@ -15,6 +21,11 @@ export class UnknownPhysics implements IPhysicsSystem
 {
     /** @internal */
     __addCollider() { }
+
+    /** @internal */
+    __removeCollider() { }
+
+    update() { }
 }
 
 export interface ICollider

@@ -34,45 +34,45 @@ export class Transform
     private _scene: Scene | null = null;
     get scene() { return this._scene }
 
-    get position()
+    get position(): Readonly<vec3>
     {
         if (!this._parent)
             return this.localPosition;
         return mat4.mulPoint(this._parent.localToWorldMatrix, this.localPosition);
     }
-    set position(position: vec3)
+    set position(position)
     {
         if (!this._parent)
-            this.localPosition = position;
+            this.localPosition.set(position);
         else
             this.localPosition = mat4.mulPoint(this._parent.worldToLocalMatrix, position);
     }
-    get rotation()
+    get rotation(): Readonly<quat>
     {
         if (!this._parent)
             return this.localRotation;
         return quat.mul(this._parent.rotation, this.localRotation);
     }
-    set rotation(rotation: quat)
+    set rotation(rotation)
     {
         if (!this._parent)
             this.localRotation = quat.normalize(rotation);
         else
             this.localRotation = quat.normalize(quat.mul(quat.invert(this._parent.rotation), rotation));
     }
-    /*get scaling()
+    get scaling(): Readonly<vec3>
     {
         if (!this._parent)
             return this.localScaling;
         return mat4.mulVector(this.localToWorldMatrix, vec3.one());
     }
-    set scaling(scaling: vec3)
+    set scaling(scaling)
     {
         if (!this._parent)
-            this.localScaling = scaling;
+            this.localScaling.set(scaling);
         else
-            this.localScaling = mat4.mulVector(this.worldToLocalMatrix)
-    }*/
+            this.localScaling = mat4.getScaling(this._parent.worldToLocalMatrix).mul(scaling);
+    }
     get localToWorldMatrix(): mat4
     {
         if (!this._parent)
@@ -93,6 +93,14 @@ export class Transform
         {
             p.children.add(this);
         }
+    }
+
+    translate(motion: Readonly<vec3>)
+    {
+        if (!this._parent)
+            this.localPosition.plus(motion);
+        else
+            this.localPosition.plus(mat4.mulVector(this._parent.worldToLocalMatrix, motion));
     }
 
     /** @internal */

@@ -4,6 +4,9 @@ exports.ColliderBase = exports.UnknownPhysics = void 0;
 class UnknownPhysics {
     /** @internal */
     __addCollider() { }
+    /** @internal */
+    __removeCollider() { }
+    update() { }
 }
 exports.UnknownPhysics = UnknownPhysics;
 class ColliderBase {
