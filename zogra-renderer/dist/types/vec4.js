@@ -98,6 +98,11 @@ class Vector4 extends V4Constructor {
             && v[2] === this[2]
             && v[3] === this[3];
     }
+    static math(func) {
+        return (...args) => {
+            return vec4(func(...args.map(v => v.x)), func(...args.map(v => v.y)), func(...args.map(v => v.z)), func(...args.map(v => v.w)));
+        };
+    }
     __to(type) {
         switch (type) {
             case Vector4:

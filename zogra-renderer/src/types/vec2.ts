@@ -1,4 +1,4 @@
-import { vec4, Vector, Vector4 } from "./vec4";
+import { vec4, VecMathArgs, Vector, Vector4 } from "./vec4";
 import { Vector3, vec3 } from "./vec3";
 
 export type vec2 = Vector2;
@@ -59,6 +59,17 @@ export class Vector2 extends V2Constructor implements Vector
     static distanceSquared(u: Vector2, v: Vector2)
     {
         return (u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y);
+    }
+
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector2>) => Vector2
+    {
+        return (...args: vec2[]) =>
+        {
+            return vec2(
+                func(...args.map(v => v.x)),
+                func(...args.map(v => v.y)),
+            );
+        };
     }
     
     plus(v: Vector2)

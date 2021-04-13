@@ -10,6 +10,8 @@ export interface Vector
 
 export type vec4 = Vector4;
 
+export type VecMathArgs<T, U> = T extends number[] ? { [key in keyof T]: U } : never;
+
 const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number] = Array as any;
 export class Vector4 extends V4Constructor implements Vector
 {
@@ -127,6 +129,18 @@ export class Vector4 extends V4Constructor implements Vector
             && v[1] === this[1]
             && v[2] === this[2]
             && v[3] === this[3];
+    }
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector4>) => Vector4
+    {
+        return (...args: vec4[]) =>
+        {
+            return vec4(
+                func(...args.map(v => v.x)),
+                func(...args.map(v => v.y)),
+                func(...args.map(v => v.z)),
+                func(...args.map(v => v.w)),
+            );
+        };
     }
 
     __to(type: Function)

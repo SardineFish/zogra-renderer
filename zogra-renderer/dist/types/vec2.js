@@ -45,6 +45,11 @@ class Vector2 extends V2Constructor {
     static distanceSquared(u, v) {
         return (u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y);
     }
+    static math(func) {
+        return (...args) => {
+            return vec2(func(...args.map(v => v.x)), func(...args.map(v => v.y)));
+        };
+    }
     plus(v) {
         this[0] += v[0];
         this[1] += v[1];

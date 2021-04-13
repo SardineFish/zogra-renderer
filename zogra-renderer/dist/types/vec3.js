@@ -99,6 +99,11 @@ class Vector3 extends V3Constructor {
             && v[1] === this[1]
             && v[2] === this[2];
     }
+    static math(func) {
+        return (...args) => {
+            return vec3(func(...args.map(v => v.x)), func(...args.map(v => v.y)), func(...args.map(v => v.z)));
+        };
+    }
     __to(type) {
         switch (type) {
             case vec4_1.Vector4:
