@@ -99,6 +99,11 @@ class Vector3 extends V3Constructor {
             && v[1] === this[1]
             && v[2] === this[2];
     }
+    set(v) {
+        this[0] = v[0];
+        this[1] = v[1];
+        this[2] = v[2];
+    }
     static math(func) {
         return (...args) => {
             return vec3(func(...args.map(v => v.x)), func(...args.map(v => v.y)), func(...args.map(v => v.z)));
@@ -126,4 +131,5 @@ vec3.from = (src) => {
 vec3.floor = (v) => vec3(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z));
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
+vec3.math = Vector3.math;
 //# sourceMappingURL=vec3.js.map

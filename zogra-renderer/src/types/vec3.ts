@@ -18,7 +18,7 @@ export class Vector3 extends V3Constructor implements Vector
         return Math.hypot(...this);
     }
 
-    get normalized()
+    get normalized(): Vector3
     {
         const m = this.magnitude;
         return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
@@ -46,35 +46,35 @@ export class Vector3 extends V3Constructor implements Vector
     {
         return new Vector3(1, 1, 1);
     }
-    plus(v: Vector3)
+    plus(v: Readonly<vec3>)
     {
         this[0] += v[0];
         this[1] += v[1];
         this[2] += v[2];
         return this;
     }
-    minus(v: Vector3)
+    minus(v: Readonly<vec3>)
     {
         this[0] -= v[0];
         this[1] -= v[1];
         this[2] -= v[2];
         return this;
     }
-    mul(v: Vector3)
+    mul(v: Readonly<vec3>)
     {
         this[0] *= v[0];
         this[1] *= v[1];
         this[2] *= v[2];
         return this;
     }
-    div(v: Vector3)
+    div(v: Readonly<vec3>)
     {
         this[0] /= v[0];
         this[1] /= v[1];
         this[2] /= v[2];
         return this;
     }
-    dot(v: Vector3)
+    dot(v: Readonly<vec3>)
     {
         return this[0] * v[0]
             + this[1] * v[1]
@@ -104,7 +104,7 @@ export class Vector3 extends V3Constructor implements Vector
      * @param a u
      * @param b v
      */
-    cross(b: Vector3)
+    cross(b: Readonly<vec3>)
     {
         return vec3(
             this.y * b.z - this.z * b.y,
@@ -131,6 +131,13 @@ export class Vector3 extends V3Constructor implements Vector
         return v[0] === this[0]
             && v[1] === this[1]
             && v[2] === this[2];
+    }
+
+    set(v: Readonly<vec3>)
+    {
+        this[0] = v[0];
+        this[1] = v[1];
+        this[2] = v[2];
     }
 
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector3>) => Vector3
@@ -171,3 +178,4 @@ vec3.from = (src: Iterable<number>) =>
 vec3.floor = (v: vec3) => vec3(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z));
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
+vec3.math = Vector3.math;

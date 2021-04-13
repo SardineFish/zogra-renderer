@@ -22,6 +22,7 @@ __exportStar(require("./lines"), exports);
 __exportStar(require("./event"), exports);
 __exportStar(require("./buffer"), exports);
 __exportStar(require("./render-target"), exports);
+__exportStar(require("./debug"), exports);
 var texture_format_1 = require("./texture-format");
 Object.defineProperty(exports, "TextureFormat", { enumerable: true, get: function () { return texture_format_1.TextureFormat; } });
 //# sourceMappingURL=core.js.map

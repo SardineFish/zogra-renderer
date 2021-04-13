@@ -98,6 +98,12 @@ class Vector4 extends V4Constructor {
             && v[2] === this[2]
             && v[3] === this[3];
     }
+    set(v) {
+        this[0] = v[0];
+        this[1] = v[1];
+        this[2] = v[2];
+        this[3] = v[3];
+    }
     static math(func) {
         return (...args) => {
             return vec4(func(...args.map(v => v.x)), func(...args.map(v => v.y)), func(...args.map(v => v.z)), func(...args.map(v => v.w)));
@@ -127,4 +133,5 @@ vec4.from = (src) => {
 vec4.floor = (v) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z), Math.floor(v.w));
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
+vec4.math = Vector4.math;
 //# sourceMappingURL=vec4.js.map

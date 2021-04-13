@@ -61,8 +61,10 @@ class Vector2 extends V2Constructor {
         return this;
     }
     mul(v) {
-        this[0] *= v[0];
-        this[1] *= v[1];
+        let x = typeof (v) === "number" ? v : v.x;
+        let y = typeof (v) === "number" ? v : v.y;
+        this[0] *= x;
+        this[1] *= y;
         return this;
     }
     div(v) {
@@ -116,6 +118,10 @@ class Vector2 extends V2Constructor {
             return false;
         return v[0] === this[0] && v[1] === this[1];
     }
+    set(v) {
+        this[0] = v[0];
+        this[1] = v[1];
+    }
 }
 exports.Vector2 = Vector2;
 function vec2(x, y = x) {
@@ -133,4 +139,5 @@ vec2.left = Vector2.left;
 vec2.right = Vector2.right;
 vec2.down = Vector2.down;
 vec2.up = Vector2.up;
+vec2.math = Vector2.math;
 //# sourceMappingURL=vec2.js.map

@@ -16,11 +16,11 @@ export declare class Vector3 extends V3Constructor implements Vector {
     constructor(x: number, y: number, z: number);
     static zero(): Vector3;
     static one(): Vector3;
-    plus(v: Vector3): this;
-    minus(v: Vector3): this;
-    mul(v: Vector3): this;
-    div(v: Vector3): this;
-    dot(v: Vector3): number;
+    plus(v: Readonly<vec3>): this;
+    minus(v: Readonly<vec3>): this;
+    mul(v: Readonly<vec3>): this;
+    div(v: Readonly<vec3>): this;
+    dot(v: Readonly<vec3>): number;
     normalize(): Vector3;
     inverse(): this;
     negate(): this;
@@ -29,12 +29,13 @@ export declare class Vector3 extends V3Constructor implements Vector {
      * @param a u
      * @param b v
      */
-    cross(b: Vector3): Vector3;
+    cross(b: Readonly<vec3>): Vector3;
     clone(): Vector3;
     toVec2(): Vector2;
     equals(v: any): boolean;
+    set(v: Readonly<vec3>): void;
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector3>) => Vector3;
-    __to(type: Function): Vector3 | Vector2 | Vector4;
+    __to(type: Function): Vector4 | Vector3 | Vector2;
 }
 export declare function vec3(x: number): Vector3;
 export declare namespace vec3 {
@@ -42,6 +43,7 @@ export declare namespace vec3 {
     var floor: (v: Vector3) => Vector3;
     var zero: typeof Vector3.zero;
     var one: typeof Vector3.one;
+    var math: typeof Vector3.math;
 }
 export declare function vec3(x: number, y: number, z: number): Vector3;
 export declare namespace vec3 {
@@ -49,5 +51,6 @@ export declare namespace vec3 {
     var floor: (v: Vector3) => Vector3;
     var zero: typeof Vector3.zero;
     var one: typeof Vector3.one;
+    var math: typeof Vector3.math;
 }
 export {};
