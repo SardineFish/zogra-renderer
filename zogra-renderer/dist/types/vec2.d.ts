@@ -21,11 +21,11 @@ export declare class Vector2 extends V2Constructor implements Vector {
     static distance(u: Vector2, v: Vector2): number;
     static distanceSquared(u: Vector2, v: Vector2): number;
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector2>) => Vector2;
-    plus(v: Vector2): this;
-    minus(v: Vector2): this;
-    mul(v: Vector2): this;
-    div(v: Vector2): this;
-    dot(v: Vector2): number;
+    plus(v: Readonly<Vector2>): this;
+    minus(v: Readonly<Vector2>): this;
+    mul(v: Readonly<Vector2> | number): this;
+    div(v: Readonly<Vector2>): this;
+    dot(v: Readonly<Vector2>): number;
     normalize(): Vector2;
     inverse(): this;
     negate(): this;
@@ -37,8 +37,9 @@ export declare class Vector2 extends V2Constructor implements Vector {
     cross(b: Vector2): number;
     clone(): Vector2;
     toVec3(z?: number): Vector3;
-    __to(type: Function): Vector3 | Vector2 | Vector4;
+    __to(type: Function): Vector4 | Vector3 | Vector2;
     equals(v: any): boolean;
+    set(v: Readonly<vec2>): void;
 }
 export declare function vec2(x: number): Vector2;
 export declare namespace vec2 {
@@ -50,6 +51,7 @@ export declare namespace vec2 {
     var right: typeof Vector2.right;
     var down: typeof Vector2.down;
     var up: typeof Vector2.up;
+    var math: typeof Vector2.math;
 }
 export declare function vec2(x: number, y: number): Vector2;
 export declare namespace vec2 {
@@ -61,5 +63,6 @@ export declare namespace vec2 {
     var right: typeof Vector2.right;
     var down: typeof Vector2.down;
     var up: typeof Vector2.up;
+    var math: typeof Vector2.math;
 }
 export {};

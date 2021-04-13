@@ -10,6 +10,7 @@ export declare function minus<U extends vec, V extends vec>(a: U, b: V): Arithme
 export declare function mul<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>;
 export declare function div<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U, V>;
 export declare function dot(a: vec3, b: vec3): number;
+export declare function dot(a: vec2, b: vec2): number;
 export declare function cross(a: vec3, b: vec3): Vector3;
 export declare function distance<V extends vec>(a: V, b: V): number;
 export declare function floor2(v: Vector2): Vector2;

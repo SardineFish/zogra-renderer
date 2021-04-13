@@ -29,7 +29,7 @@ export class Vector4 extends V4Constructor implements Vector
         return Math.hypot(...this);
     }
 
-    get normalized()
+    get normalized(): Vector4
     {
         const m = this.magnitude;
         return m == 0 ? vec4.zero() : this.clone().div(vec4(m, m, m, m));
@@ -56,7 +56,7 @@ export class Vector4 extends V4Constructor implements Vector
     {
         return new Vector4(1, 1, 1, 1);
     }
-    plus(v: Vector4)
+    plus(v: Readonly<vec4>)
     {
         this[0] += v[0];
         this[1] += v[1];
@@ -64,7 +64,7 @@ export class Vector4 extends V4Constructor implements Vector
         this[3] += v[3];
         return this;
     }
-    minus(v: Vector4)
+    minus(v: Readonly<vec4>)
     {
         this[0] -= v[0];
         this[1] -= v[1];
@@ -72,7 +72,7 @@ export class Vector4 extends V4Constructor implements Vector
         this[3] -= v[3];
         return this;
     }
-    mul(v: Vector4)
+    mul(v: Readonly<vec4>)
     {
         this[0] *= v[0];
         this[1] *= v[1];
@@ -80,7 +80,7 @@ export class Vector4 extends V4Constructor implements Vector
         this[3] *= v[3];
         return this;
     }
-    div(v: Vector4)
+    div(v: Readonly<vec4>)
     {
         this[0] /= v[0];
         this[1] /= v[1];
@@ -88,7 +88,7 @@ export class Vector4 extends V4Constructor implements Vector
         this[3] /= v[3];
         return this;
     }
-    dot(v: Vector4)
+    dot(v: Readonly<vec4>)
     {
         return this[0] * v[0]
             + this[1] * v[1]
@@ -129,6 +129,13 @@ export class Vector4 extends V4Constructor implements Vector
             && v[1] === this[1]
             && v[2] === this[2]
             && v[3] === this[3];
+    }
+    set(v: Readonly<vec4>)
+    {
+        this[0] = v[0];
+        this[1] = v[1];
+        this[2] = v[2];
+        this[3] = v[3];
     }
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector4>) => Vector4
     {
@@ -172,3 +179,4 @@ vec4.from = (src: Iterable<number>) =>
 vec4.floor = (v: vec4) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z), Math.floor(v.w));
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
+vec4.math = Vector4.math;

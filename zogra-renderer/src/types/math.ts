@@ -39,7 +39,6 @@ function arithOrder<U extends vec, V extends vec>(a: U, b: V)  : [any, any, bool
     return ((b as number[]).length > (a as number[]).length ? [b, a, true] : [a, b, false]);
 }
 
-
 export function plus<U extends vec, V extends vec>(a: U, b: V) : ArithmeticType<U, V>
 {
     const [lhs, rhs] = arithOrder(a, b);
@@ -65,10 +64,11 @@ export function div<U extends vec, V extends vec>(a: U, b: V): ArithmeticType<U,
         ? rhs.__to(lhs.constructor).div(lhs)
         : rhs.__to(lhs.constructor).div(lhs).inversed;
 }
-
 export function dot(a: vec3, b: vec3): number
+export function dot(a: vec2, b: vec2): number
+export function dot(a: vec3 | vec2, b: vec3| vec2): number
 {
-    return a.dot(b);
+    return (a as Vector3).dot(b as Vector3);
 }
 export function cross(a: vec3, b: vec3)
 {

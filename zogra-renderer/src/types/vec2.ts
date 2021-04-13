@@ -16,7 +16,7 @@ export class Vector2 extends V2Constructor implements Vector
         return Math.hypot(...this);
     }
 
-    get normalized()
+    get normalized(): Vector2
     {
         const m = this.magnitude;
         return m == 0 ? vec2.zero() : this.clone().div(vec2(m, m));
@@ -72,31 +72,33 @@ export class Vector2 extends V2Constructor implements Vector
         };
     }
     
-    plus(v: Vector2)
+    plus(v: Readonly<Vector2>)
     {
         this[0] += v[0];
         this[1] += v[1];
         return this;
     }
-    minus(v: Vector2)
+    minus(v: Readonly<Vector2>)
     {
         this[0] -= v[0];
         this[1] -= v[1];
         return this;
     }
-    mul(v: Vector2)
+    mul(v: Readonly<Vector2> | number)
     {
-        this[0] *= v[0];
-        this[1] *= v[1];
+        let x = typeof (v) === "number" ? v : v.x;
+        let y = typeof (v) === "number" ? v : v.y;
+        this[0] *= x;
+        this[1] *= y;
         return this;
     }
-    div(v: Vector2)
+    div(v: Readonly<Vector2>)
     {
         this[0] /= v[0];
         this[1] /= v[1];
         return this;
     }
-    dot(v: Vector2)
+    dot(v: Readonly<Vector2>)
     {
         return this[0] * v[0]
             + this[1] * v[1];
@@ -156,6 +158,12 @@ export class Vector2 extends V2Constructor implements Vector
         
         return v[0] === this[0] && v[1] === this[1];
     }
+
+    set(v: Readonly<vec2>)
+    {
+        this[0] = v[0];
+        this[1] = v[1];
+    }
 }
 export function vec2(x: number): Vector2
 export function vec2(x: number, y: number): Vector2
@@ -176,3 +184,4 @@ vec2.left = Vector2.left;
 vec2.right = Vector2.right;
 vec2.down = Vector2.down;
 vec2.up = Vector2.up;
+vec2.math = Vector2.math;

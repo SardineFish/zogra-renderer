@@ -9,4 +9,5 @@ export * from "./lines";
 export * from "./event"
 export * from "./buffer";
 export * from "./render-target";
+export * from "./debug";
 export { TextureFormat } from "./texture-format";
