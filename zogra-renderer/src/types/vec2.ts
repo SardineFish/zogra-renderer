@@ -74,7 +74,8 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
             );
         };
     }
-    
+
+    asMut() { return this; }
     plus(v: Readonly<Vector2>)
     {
         this[0] += v[0];

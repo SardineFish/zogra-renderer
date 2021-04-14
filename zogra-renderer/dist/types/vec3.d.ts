@@ -17,6 +17,7 @@ export declare class Vector3 extends V3Constructor implements Vector, ZograMatri
     constructor(x: number, y: number, z: number);
     static zero(): Vector3;
     static one(): Vector3;
+    asMut(): this;
     plus(v: Readonly<vec3>): this;
     minus(v: Readonly<vec3>): this;
     mul(v: Readonly<vec3>): this;

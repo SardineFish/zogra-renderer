@@ -48,6 +48,7 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
     {
         return new Vector3(1, 1, 1);
     }
+    asMut() { return this; }
     plus(v: Readonly<vec3>)
     {
         this[0] += v[0];

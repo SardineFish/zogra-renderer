@@ -22,6 +22,7 @@ export declare class Vector4 extends V4Constructor implements Vector, ZograMatri
     constructor(x: number, y: number, z?: number, w?: number);
     static zero(): Vector4;
     static one(): Vector4;
+    asMut(): this;
     plus(v: Readonly<vec4>): this;
     minus(v: Readonly<vec4>): this;
     mul(v: Readonly<vec4>): this;

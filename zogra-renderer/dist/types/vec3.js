@@ -34,6 +34,7 @@ class Vector3 extends V3Constructor {
     static one() {
         return new Vector3(1, 1, 1);
     }
+    asMut() { return this; }
     plus(v) {
         this[0] += v[0];
         this[1] += v[1];

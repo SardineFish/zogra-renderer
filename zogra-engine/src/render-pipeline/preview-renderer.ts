@@ -113,7 +113,7 @@ export class PreviewRenderer implements ZograRenderPipeline
         this.renderer.drawLines(this.grid, mat4.identity(), this.renderer.assets.materials.ColoredLine);
     }
 
-    drawWithMaterial(mesh: Mesh, transform: mat4, material: Material)
+    drawWithMaterial(mesh: Mesh, transform: Readonly<mat4>, material: Material)
     {
         if (this.materialReplaceMap.has(material.constructor))
             this.renderer.drawMesh(mesh, transform, this.materialReplaceMap.get(material.constructor) as Material);

@@ -31,7 +31,7 @@ export declare class ZograRenderer {
     use(): void;
     setSize(width: number, height: number): void;
     get canvasSize(): vec2;
-    setViewProjection(view: mat4, projection: mat4): void;
+    setViewProjection(view: Readonly<mat4>, projection: Readonly<mat4>): void;
     setRenderTarget(rt: IRenderTarget): void;
     setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture): void;
     setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture): void;
@@ -42,7 +42,7 @@ export declare class ZograRenderer {
     private setupGlobalUniforms;
     drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: RenderBuffer<T>, material: Material, count: number): void;
     drawMeshProceduralInstance(mesh: Mesh, material: Material, count: number): void;
-    drawMesh(mesh: Mesh, transform: mat4, material: Material): void;
+    drawMesh(mesh: Mesh, transform: Readonly<mat4>, material: Material): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: Readonly<UniformValueType<T>>): void;
     unsetGlobalUniform(name: string): void;

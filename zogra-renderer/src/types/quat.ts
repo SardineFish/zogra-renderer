@@ -13,6 +13,7 @@ export class Quaternion extends V4Constructor implements ZograMatrix
     {
         return new Quaternion(0, 0, 0, 0);
     }
+    asMut() { return this; }
     equals(v: any): boolean
     {
         if (!v || !(v instanceof Array))

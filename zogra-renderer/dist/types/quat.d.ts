@@ -3,6 +3,7 @@ export declare type quat = Quaternion;
 declare const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number];
 export declare class Quaternion extends V4Constructor implements ZograMatrix {
     static create(): Quaternion;
+    asMut(): this;
     equals(v: any): boolean;
     clone(out?: Quaternion): Quaternion;
     set(value: Readonly<Quaternion>): this;

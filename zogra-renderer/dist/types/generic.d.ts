@@ -14,5 +14,6 @@ interface ISet {
     setAll(value: number): ThisType<this>;
 }
 export interface ZograMatrix extends IEqual, IClone, ISet {
+    asMut(): this;
 }
 export {};

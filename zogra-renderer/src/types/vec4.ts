@@ -52,6 +52,7 @@ export class Vector4 extends V4Constructor implements Vector, ZograMatrix
     {
         return new Vector4(1, 1, 1, 1);
     }
+    asMut() { return this; }
     plus(v: Readonly<vec4>)
     {
         this[0] += v[0];
