@@ -1,7 +1,11 @@
 import "./css/base.css";
-import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul, PreviewRenderer, Projection, MaterialFromShader, Shader, Culling, DepthTest, MeshBuilder, Color, RenderTarget, Light, LightType, shaderProp, Texture } from "zogra-engine";
+import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul, PreviewRenderer, Projection, MaterialFromShader, Shader, Culling, DepthTest, MeshBuilder, Color, RenderTarget, Light, LightType, shaderProp, Texture, ZograRenderer } from "zogra-engine";
 import frag from "./shader/default-frag.glsl";
 import vert from "./shader/default-vert.glsl";
+import * as ZograRendererPackage from "zogra-renderer";
+import * as ZograEnginePackage from "zogra-engine";
+(window as any).ZograEngine = ZograEnginePackage;
+(window as any).ZograRenderer = ZograRendererPackage;
 
 class LambertMaterial extends MaterialFromShader(new Shader(vert, frag, {
 }))

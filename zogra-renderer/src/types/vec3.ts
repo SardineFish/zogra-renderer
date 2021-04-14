@@ -197,14 +197,12 @@ vec3.plus = wrapGlMatrix<vec3, [vec3, vec4 | vec3 | vec2 | number]>((out, a, b) 
         out[0] = a[0] + b;
         out[1] = a[1] + b;
         out[2] = a[2] + b;
-        out[3] = a[3] + b;
     }
     else
     {
         out[0] = a[0] + b[0];
         out[1] = a[1] + (b[1] || 0);
         out[2] = a[2] + (b[2] || 0);
-        out[3] = a[3] + (b[3] || 0);
     }
     return out;
 }, 2, vec3.zero);
