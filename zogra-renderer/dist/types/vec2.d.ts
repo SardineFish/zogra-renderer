@@ -1,8 +1,9 @@
-import { VecMathArgs, Vector, Vector4 } from "./vec4";
+import { VecMathArgs, Vector4 } from "./vec4";
 import { Vector3 } from "./vec3";
+import { Vector, ZograMatrix } from "./generic";
 export declare type vec2 = Vector2;
 declare const V2Constructor: new (...p: [number, number]) => [number, number];
-export declare class Vector2 extends V2Constructor implements Vector {
+export declare class Vector2 extends V2Constructor implements Vector, ZograMatrix {
     get x(): number;
     set x(x: number);
     get y(): number;
@@ -35,11 +36,11 @@ export declare class Vector2 extends V2Constructor implements Vector {
      * @param b v
      */
     cross(b: Vector2): number;
-    clone(): Vector2;
-    toVec3(z?: number): Vector3;
-    __to(type: Function): Vector4 | Vector3 | Vector2;
     equals(v: any): boolean;
-    set(v: Readonly<vec2>): void;
+    clone(out?: vec2): vec2;
+    set(v: Readonly<vec2>): this;
+    toVec3(z?: number): Vector3;
+    __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec2(x: number): Vector2;
 export declare namespace vec2 {

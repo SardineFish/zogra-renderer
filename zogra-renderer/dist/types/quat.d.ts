@@ -1,7 +1,8 @@
 import { quat as glQuat } from "gl-matrix";
 export declare type quat = glQuat;
-export declare function Quaternion(): glQuat;
-export declare namespace Quaternion {
+export declare function quat(): glQuat;
+export declare namespace quat {
+    var create: () => glQuat;
     var identity: () => glQuat;
     var axis: (axis: import("./vec3").Vector3, rad: number) => glQuat;
     var mul: (a: Readonly<glQuat>, b: Readonly<glQuat>) => glQuat;
@@ -12,4 +13,3 @@ export declare namespace Quaternion {
     var rotate: (q: glQuat, v: import("./vec3").Vector3) => import("./vec3").Vector3;
     var equals: (a: any, b: any) => boolean;
 }
-export declare const quat: typeof Quaternion;

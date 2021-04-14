@@ -1,5 +1,5 @@
 import { Shader } from "../core/shader";
-import { BuiltinShaderSources, compileBuiltinShaders } from "./shaders";
+import { compileBuiltinShaders } from "./shaders";
 import { MaterialFromShader, materialDefine, shaderProp, Material } from "../core/material";
 import { Color } from "../types/color";
 import { MaterialType } from "../core/material-type";

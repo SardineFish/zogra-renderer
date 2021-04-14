@@ -86,8 +86,14 @@ class Vector3 extends V3Constructor {
     cross(b) {
         return vec3(this.y * b.z - this.z * b.y, this.z * b.x - this.x * b.z, this.x * b.y - this.y * b.x);
     }
-    clone() {
-        return vec3(this[0], this[1], this[2]);
+    set(v) {
+        this[0] = v[0];
+        this[1] = v[1];
+        this[2] = v[2];
+        return this;
+    }
+    clone(out = vec3.zero()) {
+        return out.set(this);
     }
     toVec2() {
         return vec2_1.vec2(this[0], this[1]);
@@ -98,11 +104,6 @@ class Vector3 extends V3Constructor {
         return v[0] === this[0]
             && v[1] === this[1]
             && v[2] === this[2];
-    }
-    set(v) {
-        this[0] = v[0];
-        this[1] = v[1];
-        this[2] = v[2];
     }
     static math(func) {
         return (...args) => {

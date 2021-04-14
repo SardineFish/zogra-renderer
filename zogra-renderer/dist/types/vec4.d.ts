@@ -1,16 +1,12 @@
 import { Vector3 } from "./vec3";
 import { Vector2 } from "./vec2";
-export interface Vector {
-    magnitude: number;
-    normalized: ThisType<this>;
-    equals(v: any): boolean;
-}
+import { Vector, ZograMatrix } from "./generic";
 export declare type vec4 = Vector4;
 export declare type VecMathArgs<T, U> = T extends number[] ? {
     [key in keyof T]: U;
 } : never;
 declare const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number];
-export declare class Vector4 extends V4Constructor implements Vector {
+export declare class Vector4 extends V4Constructor implements Vector, ZograMatrix {
     get x(): number;
     set x(x: number);
     get y(): number;
@@ -34,11 +30,11 @@ export declare class Vector4 extends V4Constructor implements Vector {
     normalize(): Vector4;
     inverse(): this;
     negate(): this;
-    clone(): Vector4;
+    clone(out?: vec4): vec4;
     equals(v: any): boolean;
-    set(v: Readonly<vec4>): void;
+    set(v: Readonly<vec4>): this;
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector4>) => Vector4;
-    __to(type: Function): Vector4 | Vector3 | Vector2;
+    __to(type: Function): Vector3 | Vector2 | Vector4;
 }
 export declare function vec4(x: number): Vector4;
 export declare namespace vec4 {

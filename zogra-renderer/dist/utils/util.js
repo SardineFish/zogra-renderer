@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setImmediate = exports.DoubleBuffer = exports.fillArray = exports.getUniformsLocation = exports.decorator = exports.warn = exports.panic = exports.panicNull = void 0;
+exports.cloneUniformValue = exports.setImmediate = exports.DoubleBuffer = exports.fillArray = exports.getUniformsLocation = exports.decorator = exports.warn = exports.panic = exports.panicNull = void 0;
 require("reflect-metadata");
+const texture_1 = require("../core/texture");
 function panicNull(t, msg) {
     if (t === null)
         throw new Error(msg);
@@ -67,4 +68,15 @@ function setImmediate(invoker) {
     setTimeout(invoker, 0);
 }
 exports.setImmediate = setImmediate;
+function cloneUniformValue(value) {
+    if (value === null)
+        return null;
+    if (typeof (value) === "number")
+        return value;
+    else if (value instanceof texture_1.Texture)
+        return value;
+    else
+        return value.clone();
+}
+exports.cloneUniformValue = cloneUniformValue;
 //# sourceMappingURL=util.js.map

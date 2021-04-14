@@ -1,7 +1,8 @@
 import { Vector3, vec3 } from "./vec3";
-import { vec4, Vector, Vector4 } from "./vec4";
+import { vec4, Vector4 } from "./vec4";
 import { vec2, Vector2 } from "./vec2";
 import { Rect } from "./rect";
+import { Vector } from "./generic";
 
 type vec = number | vec2 | vec3 | vec4;
 

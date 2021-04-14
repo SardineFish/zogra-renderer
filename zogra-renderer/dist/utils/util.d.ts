@@ -1,4 +1,10 @@
 import "reflect-metadata";
+import { Texture } from "../core/texture";
+import { Color } from "../types/color";
+import { mat4 } from "../types/mat4";
+import { vec2 } from "../types/vec2";
+import { vec3 } from "../types/vec3";
+import { vec4 } from "../types/vec4";
 export declare function panicNull<T>(t: T | null, msg?: string): T;
 export declare function panic(msg?: string): never;
 export declare function warn(msg: string): never;
@@ -29,4 +35,5 @@ export declare class DoubleBuffer<T> {
     update(): void;
 }
 export declare function setImmediate(invoker: () => void): void;
+export declare function cloneUniformValue<T extends (number | vec2 | vec3 | vec4 | Color | mat4 | Texture | null)>(value: Readonly<T>): T;
 export {};

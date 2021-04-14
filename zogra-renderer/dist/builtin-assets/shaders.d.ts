@@ -1,4 +1,5 @@
 import { Shader } from "../core/shader";
+import { BuiltinShaderSources } from "./generated";
 export declare const BuiltinUniformNames: {
     matM: string;
     matM_IT: string;
@@ -17,3 +18,4 @@ export declare function compileBuiltinShaders(gl: WebGL2RenderingContext): {
     ColoredLine: Shader;
     ErrorShader: Shader;
 };
+export { BuiltinShaderSources };

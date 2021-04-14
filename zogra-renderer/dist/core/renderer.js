@@ -249,7 +249,7 @@ class ZograRenderer {
         this.globalUniforms.set(name, {
             name: name,
             type: type,
-            value: value,
+            value: util_1.cloneUniformValue(value),
         });
     }
     unsetGlobalUniform(name) {

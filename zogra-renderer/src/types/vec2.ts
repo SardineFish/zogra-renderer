@@ -1,10 +1,11 @@
-import { vec4, VecMathArgs, Vector, Vector4 } from "./vec4";
+import { vec4, VecMathArgs, Vector4 } from "./vec4";
 import { Vector3, vec3 } from "./vec3";
+import { IClone, ISet, Vector, ZograMatrix } from "./generic";
 
 export type vec2 = Vector2;
 
 const V2Constructor: new (...p: [number, number]) => [number, number] = Array as any;
-export class Vector2 extends V2Constructor implements Vector
+export class Vector2 extends V2Constructor implements Vector, ZograMatrix
 {
     get x() { return this[0]; }
     set x(x: number) { this[0] = x; }
@@ -130,9 +131,24 @@ export class Vector2 extends V2Constructor implements Vector
         return this.x * b.y - this.y * b.x;
     }
 
-    clone()
+    equals(v: any)
     {
-        return vec2(this[0], this[1]);
+        if (v === undefined)
+            return false;
+
+        return v[0] === this[0] && v[1] === this[1];
+    }
+
+    clone(out: vec2 = vec2.zero()): vec2
+    {
+        return out.set(this);
+    }
+
+    set(v: Readonly<vec2>)
+    {
+        this[0] = v[0];
+        this[1] = v[1];
+        return this;
     }
 
     toVec3(z = 0)
@@ -149,20 +165,6 @@ export class Vector2 extends V2Constructor implements Vector
                 return vec3(this[0], this[1], 0);
         }
         return this.clone();
-    }
-
-    equals(v: any)
-    {
-        if (v === undefined)
-            return false;
-        
-        return v[0] === this[0] && v[1] === this[1];
-    }
-
-    set(v: Readonly<vec2>)
-    {
-        this[0] = v[0];
-        this[1] = v[1];
     }
 }
 export function vec2(x: number): Vector2

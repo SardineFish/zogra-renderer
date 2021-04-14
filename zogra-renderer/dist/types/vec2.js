@@ -98,8 +98,18 @@ class Vector2 extends V2Constructor {
     cross(b) {
         return this.x * b.y - this.y * b.x;
     }
-    clone() {
-        return vec2(this[0], this[1]);
+    equals(v) {
+        if (v === undefined)
+            return false;
+        return v[0] === this[0] && v[1] === this[1];
+    }
+    clone(out = vec2.zero()) {
+        return out.set(this);
+    }
+    set(v) {
+        this[0] = v[0];
+        this[1] = v[1];
+        return this;
     }
     toVec3(z = 0) {
         return vec3_1.vec3(this[0], this[1], z);
@@ -112,15 +122,6 @@ class Vector2 extends V2Constructor {
                 return vec3_1.vec3(this[0], this[1], 0);
         }
         return this.clone();
-    }
-    equals(v) {
-        if (v === undefined)
-            return false;
-        return v[0] === this[0] && v[1] === this[1];
-    }
-    set(v) {
-        this[0] = v[0];
-        this[1] = v[1];
     }
 }
 exports.Vector2 = Vector2;

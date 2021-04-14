@@ -1,4 +1,11 @@
 import "reflect-metadata";
+import { Texture } from "../core/texture";
+import { Color } from "../types/color";
+import { ZograMatrix } from "../types/generic";
+import { mat4 } from "../types/mat4";
+import { vec2 } from "../types/vec2";
+import { vec3 } from "../types/vec3";
+import { vec4 } from "../types/vec4";
 
 export function panicNull<T>(t: T | null, msg?: string): T
 {
@@ -86,4 +93,16 @@ export class DoubleBuffer<T>
 export function setImmediate(invoker: ()=>void)
 {
     setTimeout(invoker, 0);
+}
+
+export function cloneUniformValue<T extends (number | vec2 | vec3 | vec4 | Color | mat4 | Texture | null)>(value: Readonly<T>): T
+{
+    if (value === null)
+        return null as T;
+    if (typeof (value) === "number")
+        return value;
+    else if (value instanceof Texture)
+        return value;
+    else
+        return (value as Readonly<ZograMatrix>).clone() as T;
 }

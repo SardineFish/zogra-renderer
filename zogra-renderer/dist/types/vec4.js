@@ -87,8 +87,8 @@ class Vector4 extends V4Constructor {
         this[3] = -this[3];
         return this;
     }
-    clone() {
-        return vec4(this[0], this[1], this[2], this[3]);
+    clone(out = vec4.zero()) {
+        return out.set(this);
     }
     equals(v) {
         if (v === undefined)
@@ -103,6 +103,7 @@ class Vector4 extends V4Constructor {
         this[1] = v[1];
         this[2] = v[2];
         this[3] = v[3];
+        return this;
     }
     static math(func) {
         return (...args) => {
