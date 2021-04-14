@@ -2,7 +2,6 @@ import { Vector3, vec3 } from "./vec3";
 import { vec4, Vector4 } from "./vec4";
 import { vec2, Vector2 } from "./vec2";
 import { Rect } from "./rect";
-import { ISet, Vector } from "./generic";
 import { mat4 } from "./mat4";
 
 type vec = vec2 | vec3 | vec4;

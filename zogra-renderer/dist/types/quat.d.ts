@@ -1,15 +1,86 @@
-import { quat as glQuat } from "gl-matrix";
-export declare type quat = glQuat;
-export declare function quat(): glQuat;
+import { ZograMatrix } from "./generic";
+export declare type quat = Quaternion;
+declare const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number];
+export declare class Quaternion extends V4Constructor implements ZograMatrix {
+    static create(): Quaternion;
+    equals(v: any): boolean;
+    clone(out?: Quaternion): Quaternion;
+    set(value: Readonly<Quaternion>): this;
+    set(value: Readonly<number[]>): this;
+    setAll(value: number): this;
+}
+export declare function quat(v?: number): Quaternion;
 export declare namespace quat {
-    var create: () => glQuat;
-    var identity: () => glQuat;
-    var axis: (axis: import("./vec3").Vector3, rad: number) => glQuat;
-    var mul: (a: Readonly<glQuat>, b: Readonly<glQuat>) => glQuat;
-    var invert: (q: Readonly<glQuat>) => glQuat;
-    var normalize: (q: Readonly<glQuat>) => import("gl-matrix").vec4;
-    var euler: (q: glQuat) => import("./vec3").Vector3;
-    var fromEuler: (e: import("./vec3").Vector3) => glQuat;
-    var rotate: (q: glQuat, v: import("./vec3").Vector3) => import("./vec3").Vector3;
+    var create: () => Quaternion;
+    var identity: {
+        (): Quaternion;
+        (out: Quaternion): Quaternion;
+    };
+    var axisAngle: {
+        (args_0: Readonly<import("./vec3").Vector3>, args_1: number): Quaternion;
+        (out: Quaternion, args_0: Readonly<import("./vec3").Vector3>, args_1: number): Quaternion;
+    };
+    var mul: {
+        (args_0: Readonly<Quaternion>, args_1: Readonly<Quaternion>): Quaternion;
+        (out: Quaternion, args_0: Readonly<Quaternion>, args_1: Readonly<Quaternion>): Quaternion;
+    };
+    var invert: {
+        (args_0: Readonly<Quaternion>): Quaternion;
+        (out: Quaternion, args_0: Readonly<Quaternion>): Quaternion;
+    };
+    var normalize: {
+        (args_0: Readonly<Quaternion>): Quaternion;
+        (out: Quaternion, args_0: Readonly<Quaternion>): Quaternion;
+    };
+    var euler: {
+        (args_0: Readonly<Quaternion>): import("./vec3").Vector3;
+        (out: import("./vec3").Vector3, args_0: Readonly<Quaternion>): import("./vec3").Vector3;
+    };
+    var fromEuler: {
+        (args_0: Readonly<import("./vec3").Vector3>): Quaternion;
+        (out: Quaternion, args_0: Readonly<import("./vec3").Vector3>): Quaternion;
+    };
+    var rotate: {
+        (args_0: Readonly<Quaternion>, args_1: Readonly<import("./vec3").Vector3>): import("./vec3").Vector3;
+        (out: import("./vec3").Vector3, args_0: Readonly<Quaternion>, args_1: Readonly<import("./vec3").Vector3>): import("./vec3").Vector3;
+    };
     var equals: (a: any, b: any) => boolean;
 }
+export declare function quat(x: number, y: number, z: number, w: number): Quaternion;
+export declare namespace quat {
+    var create: () => Quaternion;
+    var identity: {
+        (): Quaternion;
+        (out: Quaternion): Quaternion;
+    };
+    var axisAngle: {
+        (args_0: Readonly<import("./vec3").Vector3>, args_1: number): Quaternion;
+        (out: Quaternion, args_0: Readonly<import("./vec3").Vector3>, args_1: number): Quaternion;
+    };
+    var mul: {
+        (args_0: Readonly<Quaternion>, args_1: Readonly<Quaternion>): Quaternion;
+        (out: Quaternion, args_0: Readonly<Quaternion>, args_1: Readonly<Quaternion>): Quaternion;
+    };
+    var invert: {
+        (args_0: Readonly<Quaternion>): Quaternion;
+        (out: Quaternion, args_0: Readonly<Quaternion>): Quaternion;
+    };
+    var normalize: {
+        (args_0: Readonly<Quaternion>): Quaternion;
+        (out: Quaternion, args_0: Readonly<Quaternion>): Quaternion;
+    };
+    var euler: {
+        (args_0: Readonly<Quaternion>): import("./vec3").Vector3;
+        (out: import("./vec3").Vector3, args_0: Readonly<Quaternion>): import("./vec3").Vector3;
+    };
+    var fromEuler: {
+        (args_0: Readonly<import("./vec3").Vector3>): Quaternion;
+        (out: Quaternion, args_0: Readonly<import("./vec3").Vector3>): Quaternion;
+    };
+    var rotate: {
+        (args_0: Readonly<Quaternion>, args_1: Readonly<import("./vec3").Vector3>): import("./vec3").Vector3;
+        (out: import("./vec3").Vector3, args_0: Readonly<Quaternion>, args_1: Readonly<import("./vec3").Vector3>): import("./vec3").Vector3;
+    };
+    var equals: (a: any, b: any) => boolean;
+}
+export {};
