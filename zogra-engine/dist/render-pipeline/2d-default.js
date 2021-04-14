@@ -29,15 +29,16 @@ class Default2DRenderPipeline {
         // context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.FarToNear);
         for (const obj of objs) {
-            obj.__onRender(context, data);
-            const modelMatrix = obj.localToWorldMatrix;
-            for (let i = 0; i < obj.meshes.length; i++) {
-                if (!obj.meshes[i])
-                    continue;
-                const mat = obj.materials[i] || context.renderer.assets.materials.default;
-                mat.setProp("uCameraPos", "vec3", camera.position);
-                context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
-            }
+            obj.render(context, data);
+            // const modelMatrix = obj.localToWorldMatrix;
+            // for (let i = 0; i < obj.meshes.length; i++)
+            // {
+            //     if (!obj.meshes[i])
+            //         continue;
+            //     const mat = obj.materials[i] || context.renderer.assets.materials.default;
+            //     mat.setProp("uCameraPos", "vec3", camera.position);
+            //     context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
+            // }
         }
         this.debuglayer.render(context, data);
         camera.__postRender(context);

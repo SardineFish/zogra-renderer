@@ -11,13 +11,17 @@ class RenderObject extends entity_1.Entity {
         this.materials = [ctx.assets.materials.default];
     }
     on(event, listener) {
-        this.eventEmitter.on(event, listener);
+        this.eventEmitter.with().on(event, listener);
     }
     off(event, listener) {
-        this.eventEmitter.off(event, listener);
+        this.eventEmitter.with().off(event, listener);
     }
-    __onRender(context, data) {
-        this.eventEmitter.emit("render", this, context, data);
+    /** @internal */
+    render(context, data) {
+        this.eventEmitter.with().emit("render", this, context, data);
+        for (let i = 0; i < this.meshes.length; i++) {
+            context.renderer.drawMesh(this.meshes[i], this.localToWorldMatrix, this.materials[i]);
+        }
     }
 }
 exports.RenderObject = RenderObject;

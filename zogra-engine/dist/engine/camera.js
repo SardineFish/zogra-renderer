@@ -48,16 +48,16 @@ class Camera extends entity_1.Entity {
             : zogra_renderer_5.mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
     }
     on(event, listener) {
-        this.eventEmitter.on(event, listener);
+        this.eventEmitter.with().on(event, listener);
     }
     off(event, listener) {
-        this.eventEmitter.on(event, listener);
+        this.eventEmitter.with().on(event, listener);
     }
     __preRender(context) {
-        this.eventEmitter.emit("prerender", this, context);
+        this.eventEmitter.with().emit("prerender", this, context);
     }
     __postRender(contect) {
-        this.eventEmitter.emit("postrender", this, contect);
+        this.eventEmitter.with().emit("postrender", this, contect);
     }
     screenToRay(pos) {
         const p = this.screenToWorld(pos);

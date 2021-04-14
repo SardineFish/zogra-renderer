@@ -1,25 +1,42 @@
 import { Vector2, vec2, Mesh } from "zogra-renderer";
 import { RenderContext, RenderData, Camera } from "../..";
 import { RenderObject } from "../../engine/render-object";
-export declare class Tilemap extends RenderObject {
+import { ConstructorType } from "../../utils/util";
+import { Sprite } from "./sprite";
+export declare class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject {
     private chunks;
+    private ChunkType;
+    readonly chunkSize: number;
     constructor();
-    onRender(obj: RenderObject, context: RenderContext, data: RenderData): void;
+    constructor(chunkSize: number);
+    constructor(chunkType: ConstructorType<TChunk, [vec2, number]>);
+    constructor(chunkSize: number, chunkType: ConstructorType<TChunk, [vec2, number]>);
+    render(context: RenderContext, data: RenderData): void;
     getTile(pos: Vector2): TileData | null;
     setTile(pos: Vector2, tile: TileData | null): void;
+    getChunkAt(pos: Readonly<vec2>): TChunk;
     visibleChunkRange(camera: Camera): [vec2, vec2];
     private getOrCreateChunk;
     private getChunk;
-    calcChunkID(chunkPos: vec2): number;
+    calcChunkID(chunkPos: Readonly<vec2>): number;
+    /**
+     * floor in callee
+     * @param pos No need to floor
+     * @returns
+     */
     private chunkPos;
 }
 export declare class Chunk {
-    tiles: Array<TileData | null>;
+    readonly chunkSize: number;
+    readonly basePos: Readonly<vec2>;
     mesh: Mesh;
+    protected tiles: Array<TileData | null>;
+    private dirty;
+    constructor(basePos: vec2, chunkSize: number);
     getTile(offset: vec2): TileData | null;
     setTile(offset: vec2, tile: TileData | null): void;
 }
 export interface TileData {
     collide: boolean;
-    texture_offset: Vector2;
+    sprite: Sprite;
 }

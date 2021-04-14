@@ -1,9 +1,9 @@
 import { Transform } from "./transform";
 import { IAsset } from "zogra-renderer";
-import { EventDefinitions, IEventSource, EventEmitter, EventKeys } from "zogra-renderer";
+import { IEventSource, EventEmitter, EventKeys } from "zogra-renderer";
 import { Time } from "./zogra-engine";
 import { ICollider } from "../physics/physics-generic";
-export interface EntityEvents extends EventDefinitions {
+export interface EntityEvents {
     "update": (entity: Entity, time: Time) => void;
 }
 export interface IEntity {

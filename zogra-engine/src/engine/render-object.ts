@@ -6,7 +6,7 @@ import { Entity, EntityEvents } from "./entity";
 import { RenderContext, RenderData } from "../render-pipeline/rp";
 import { EventEmitter, IEventSource, EventKeys } from "zogra-renderer";
 
-interface RenderObjectEvents extends EntityEvents
+export interface RenderObjectEvents extends EntityEvents
 {
     "render": (obj: RenderObject, context: RenderContext, data: RenderData) => void;
 }
@@ -22,14 +22,21 @@ export class RenderObject extends Entity implements IEventSource<RenderObjectEve
     }
     on<T extends EventKeys<RenderObjectEvents>>(event: T, listener: RenderObjectEvents[T])
     {
-        this.eventEmitter.on(event, listener);
+        this.eventEmitter.with<RenderObjectEvents>().on(event, listener);
     }
     off<T extends EventKeys<RenderObjectEvents>>(event: T, listener: RenderObjectEvents[T])
     {
-        this.eventEmitter.off(event, listener);
+        this.eventEmitter.with<RenderObjectEvents>().off(event, listener);
     }
-    __onRender(context: RenderContext, data: RenderData)
+
+    /** @internal */
+    render(context: RenderContext, data: RenderData)
     {
-        this.eventEmitter.emit("render", this, context, data);
+        this.eventEmitter.with<RenderObjectEvents>().emit("render", this, context, data);
+
+        for (let i = 0; i < this.meshes.length; i++)
+        {
+            context.renderer.drawMesh(this.meshes[i], this.localToWorldMatrix, this.materials[i]);
+        }
     }
 }
