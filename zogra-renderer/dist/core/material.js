@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.materialDefine = exports.SimpleTexturedMaterial = exports.MaterialFromShader = exports.shaderProp = exports.Material = void 0;
 const color_1 = require("../types/color");
+const util_1 = require("../utils/util");
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
@@ -70,7 +71,7 @@ class Material extends asset_1.Asset {
         if (prop.key)
             this[prop.key] = value;
         else
-            prop.value = value;
+            prop.value = util_1.cloneUniformValue(value);
     }
     /**
      * Unbind all render textures from active texture slot due to avoid
