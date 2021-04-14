@@ -36,7 +36,7 @@ export declare class Vector4 extends V4Constructor implements Vector, ZograMatri
     set(v: Readonly<vec4>): this;
     set(v: Readonly<number[]>): this;
     setAll(n: number): this;
-    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector4>) => Vector4;
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Readonly<vec4>>) => vec4;
     __to(type: Function): Vector2 | Vector3 | Vector4;
 }
 export declare function vec4(x: number): Vector4;

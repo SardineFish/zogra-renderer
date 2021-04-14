@@ -152,9 +152,9 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
             && v[2] === this[2];
     }
 
-    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector3>) => Vector3
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Readonly<vec3>>) => vec3
     {
-        return (...args: vec3[]) =>
+        return (...args: Readonly<vec3>[]) =>
         {
             return vec3(
                 func(...args.map(v => v.x)),

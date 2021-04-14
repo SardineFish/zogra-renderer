@@ -142,9 +142,9 @@ export class Vector4 extends V4Constructor implements Vector, ZograMatrix
         this[0] = this[1] = this[2] = this[3] = n;
         return this;
     }
-    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector4>) => Vector4
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Readonly<vec4>>) => vec4
     {
-        return (...args: vec4[]) =>
+        return (...args: Readonly<vec4>[]) =>
         {
             return vec4(
                 func(...args.map(v => v.x)),

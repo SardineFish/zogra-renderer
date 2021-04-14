@@ -21,7 +21,7 @@ export declare class Vector2 extends V2Constructor implements Vector, ZograMatri
     static right(): Vector2;
     static distance(u: Vector2, v: Vector2): number;
     static distanceSquared(u: Vector2, v: Vector2): number;
-    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector2>) => Vector2;
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Readonly<vec2>>) => vec2;
     asMut(): this;
     plus(v: Readonly<Vector2>): this;
     minus(v: Readonly<Vector2>): this;

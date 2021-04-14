@@ -64,9 +64,9 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
         return (u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y);
     }
 
-    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector2>) => Vector2
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Readonly<vec2>>) => vec2
     {
-        return (...args: vec2[]) =>
+        return (...args: Readonly<vec2>[]) =>
         {
             return vec2(
                 func(...args.map(v => v.x)),
