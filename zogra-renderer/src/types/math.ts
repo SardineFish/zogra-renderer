@@ -122,11 +122,11 @@ export function div<U extends Operand, V extends Operand>(a: U, b: V, out?: Arit
     switch (output.length)
     {
         case 2:
-            return vec2.mul(output, output, b) as typeof output;
+            return vec2.div(output, output, b) as typeof output;
         case 3:
-            return vec3.mul(output, output, b) as typeof output;
+            return vec3.div(output, output, b) as typeof output;
         case 4:
-            return vec4.mul(output, output, b) as typeof output;
+            return vec4.div(output, output, b) as typeof output;
     }
 }
 export function dot(a: vec3, b: vec3): number
