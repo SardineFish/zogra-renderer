@@ -90,11 +90,11 @@ function div(a, b, out) {
     typeof (a) === "number" ? output.setAll(a) : output.set(a);
     switch (output.length) {
         case 2:
-            return vec2_1.vec2.mul(output, output, b);
+            return vec2_1.vec2.div(output, output, b);
         case 3:
-            return vec3_1.vec3.mul(output, output, b);
+            return vec3_1.vec3.div(output, output, b);
         case 4:
-            return vec4_1.vec4.mul(output, output, b);
+            return vec4_1.vec4.div(output, output, b);
     }
 }
 exports.div = div;
