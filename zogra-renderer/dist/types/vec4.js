@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.vec4 = exports.Vector4 = void 0;
 const vec3_1 = require("./vec3");
 const vec2_1 = require("./vec2");
+const utils_1 = require("./utils");
 const V4Constructor = Array;
 class Vector4 extends V4Constructor {
     get x() { return this[0]; }
@@ -99,10 +100,14 @@ class Vector4 extends V4Constructor {
             && v[3] === this[3];
     }
     set(v) {
-        this[0] = v[0];
-        this[1] = v[1];
-        this[2] = v[2];
-        this[3] = v[3];
+        this[0] = v[0] || 0;
+        this[1] = v[1] || 0;
+        this[2] = v[2] || 0;
+        this[3] = v[3] || 0;
+        return this;
+    }
+    setAll(n) {
+        this[0] = this[1] = this[2] = this[3] = n;
         return this;
     }
     static math(func) {
@@ -135,4 +140,68 @@ vec4.floor = (v) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z), Math
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 vec4.math = Vector4.math;
+// vec4.plus = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.add as any, 2, vec4.zero);
+// vec4.minus = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.sub as any, 2, vec4.zero);
+// vec4.mul = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.mul as any, 2, vec4.zero);
+// vec4.div = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.div as any, 2, vec4.zero);
+vec4.plus = utils_1.wrapGlMatrix((out, a, b) => {
+    if (typeof (b) === "number") {
+        out[0] = a[0] + b;
+        out[1] = a[1] + b;
+        out[2] = a[2] + b;
+        out[3] = a[3] + b;
+    }
+    else {
+        out[0] = a[0] + b[0];
+        out[1] = a[1] + (b[1] || 0);
+        out[2] = a[2] + (b[2] || 0);
+        out[3] = a[3] + (b[3] || 0);
+    }
+    return out;
+}, 2, vec4.zero);
+vec4.minus = utils_1.wrapGlMatrix((out, a, b) => {
+    if (typeof (b) === "number") {
+        out[0] = a[0] - b;
+        out[1] = a[1] - b;
+        out[2] = a[2] - b;
+        out[3] = a[3] - b;
+    }
+    else {
+        out[0] = a[0] - b[0];
+        out[1] = a[1] - (b[1] || 0);
+        out[2] = a[2] - (b[2] || 0);
+        out[3] = a[3] - (b[3] || 0);
+    }
+    return out;
+}, 2, vec4.zero);
+vec4.mul = utils_1.wrapGlMatrix((out, a, b) => {
+    if (typeof (b) === "number") {
+        out[0] = a[0] * b;
+        out[1] = a[1] * b;
+        out[2] = a[2] * b;
+        out[3] = a[3] * b;
+    }
+    else {
+        out[0] = a[0] * b[0];
+        out[1] = a[1] * (b[1] === undefined ? 1 : b[1]);
+        out[2] = a[2] * (b[2] === undefined ? 1 : b[2]);
+        out[3] = a[3] * (b[3] === undefined ? 1 : b[3]);
+    }
+    return out;
+}, 2, vec4.zero);
+vec4.div = utils_1.wrapGlMatrix((out, a, b) => {
+    if (typeof (b) === "number") {
+        out[0] = a[0] / b;
+        out[1] = a[1] / b;
+        out[2] = a[2] / b;
+        out[3] = a[3] / b;
+    }
+    else {
+        out[0] = a[0] / b[0];
+        out[1] = a[1] / (b[1] === undefined ? 1 : b[1]);
+        out[2] = a[2] / (b[2] === undefined ? 1 : b[2]);
+        out[3] = a[3] / (b[3] === undefined ? 1 : b[3]);
+    }
+    return out;
+}, 2, vec4.zero);
 //# sourceMappingURL=vec4.js.map

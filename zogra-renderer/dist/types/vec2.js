@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.vec2 = exports.Vector2 = void 0;
 const vec4_1 = require("./vec4");
 const vec3_1 = require("./vec3");
+const utils_1 = require("./utils");
 const V2Constructor = Array;
 class Vector2 extends V2Constructor {
     get x() { return this[0]; }
@@ -107,8 +108,12 @@ class Vector2 extends V2Constructor {
         return out.set(this);
     }
     set(v) {
-        this[0] = v[0];
-        this[1] = v[1];
+        this[0] = v[0] || 0;
+        this[1] = v[1] || 0;
+        return this;
+    }
+    setAll(n) {
+        this[0] = this[1] = n;
         return this;
     }
     toVec3(z = 0) {
@@ -141,4 +146,48 @@ vec2.right = Vector2.right;
 vec2.down = Vector2.down;
 vec2.up = Vector2.up;
 vec2.math = Vector2.math;
+vec2.plus = utils_1.wrapGlMatrix((out, a, b) => {
+    if (typeof (b) === "number") {
+        out[0] = a[0] + b;
+        out[1] = a[1] + b;
+    }
+    else {
+        out[0] = a[0] + b[0];
+        out[1] = a[1] + (b[1] || 0);
+    }
+    return out;
+}, 2, vec2.zero);
+vec2.minus = utils_1.wrapGlMatrix((out, a, b) => {
+    if (typeof (b) === "number") {
+        out[0] = a[0] - b;
+        out[1] = a[1] - b;
+    }
+    else {
+        out[0] = a[0] - b[0];
+        out[1] = a[1] - (b[1] || 0);
+    }
+    return out;
+}, 2, vec2.zero);
+vec2.mul = utils_1.wrapGlMatrix((out, a, b) => {
+    if (typeof (b) === "number") {
+        out[0] = a[0] * b;
+        out[1] = a[1] * b;
+    }
+    else {
+        out[0] = a[0] * b[0];
+        out[1] = a[1] * b[1];
+    }
+    return out;
+}, 2, vec2.zero);
+vec2.div = utils_1.wrapGlMatrix((out, a, b) => {
+    if (typeof (b) === "number") {
+        out[0] = a[0] / b;
+        out[1] = a[1] / b;
+    }
+    else {
+        out[0] = a[0] / b[0];
+        out[1] = a[1] / b[1];
+    }
+    return out;
+}, 2, vec2.zero);
 //# sourceMappingURL=vec2.js.map

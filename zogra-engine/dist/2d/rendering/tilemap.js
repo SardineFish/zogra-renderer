@@ -23,16 +23,16 @@ class Tilemap extends render_object_1.RenderObject {
                 const chunk = this.getChunk(zogra_renderer_1.vec2(chunkX, chunkY));
                 if (!chunk)
                     continue;
-                context.renderer.drawMesh(chunk.mesh, zogra_renderer_1.mat4.translate(zogra_renderer_1.vec3(chunkX * ChunkSize, chunkY * ChunkSize, 0)), this.materials[0]);
+                context.renderer.drawMesh(chunk.mesh, zogra_renderer_1.mat4.fromTranslation(zogra_renderer_1.vec3(chunkX * ChunkSize, chunkY * ChunkSize, 0)), this.materials[0]);
             }
     }
     getTile(pos) {
-        let [chunkPos, offset] = this.chunkPos(zogra_renderer_1.floor2(pos));
+        let [chunkPos, offset] = this.chunkPos(zogra_renderer_1.vec2.math(Math.floor)(pos));
         let chunk = this.getOrCreateChunk(chunkPos);
         return chunk.getTile(offset);
     }
     setTile(pos, tile) {
-        let [chunkPos, offset] = this.chunkPos(zogra_renderer_1.floor2(pos));
+        let [chunkPos, offset] = this.chunkPos(zogra_renderer_1.vec2.math(Math.floor)(pos));
         let chunk = this.getOrCreateChunk(chunkPos);
         return chunk.setTile(offset, tile);
     }
@@ -67,7 +67,7 @@ class Tilemap extends render_object_1.RenderObject {
     }
     chunkPos(pos) {
         const floorOffset = zogra_renderer_1.vec2(pos.x < 0 ? /*1*/ 0 : 0, pos.y < 0 ? /*1*/ 0 : 0);
-        return [zogra_renderer_1.minus(zogra_renderer_1.floor2(zogra_renderer_1.div(pos, zogra_renderer_1.vec2(ChunkSize, ChunkSize))), floorOffset), zogra_renderer_1.vec2(floorReminder(pos.x, ChunkSize), floorReminder(pos.y, ChunkSize))];
+        return [zogra_renderer_1.minus(zogra_renderer_1.vec2.math(Math.floor)(zogra_renderer_1.div(pos, zogra_renderer_1.vec2(ChunkSize, ChunkSize))), floorOffset), zogra_renderer_1.vec2(floorReminder(pos.x, ChunkSize), floorReminder(pos.y, ChunkSize))];
     }
 }
 exports.Tilemap = Tilemap;

@@ -1,6 +1,8 @@
 import { vec4, VecMathArgs, Vector4 } from "./vec4";
 import { Vector2, vec2 } from "./vec2";
 import { IClone, ISet, Vector, ZograMatrix } from "./generic";
+import { wrapGlMatrix } from "./utils";
+import { vec3 as glVec3 } from "gl-matrix";
 
 export type vec3 = Vector3;
 
@@ -113,11 +115,19 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
         );
     }
 
-    set(v: Readonly<vec3>)
+    set(v: Readonly<vec3>): this
+    set(v: Readonly<number[]>): this
+    set(v: Readonly<number[]> | Readonly<vec3>)
     {
-        this[0] = v[0];
-        this[1] = v[1];
-        this[2] = v[2];
+        this[0] = v[0] || 0;
+        this[1] = v[1] || 0;
+        this[2] = v[2] || 0;
+        return this;
+    }
+
+    setAll(n: number)
+    {
+        this[0] = this[1] = this[2] = n;
         return this;
     }
 
@@ -176,7 +186,73 @@ vec3.from = (src: Iterable<number>) =>
     const [x = 0, y = 0, z = 0] = src;
     return vec3(x, y, z);
 }
-vec3.floor = (v: vec3) => vec3(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z));
+// vec3.floor = (v: vec3) => vec3(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z));
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 vec3.math = Vector3.math;
+vec3.plus = wrapGlMatrix<vec3, [vec3, vec4 | vec3 | vec2 | number]>((out, a, b) =>
+{
+    if (typeof (b) === "number")
+    {
+        out[0] = a[0] + b;
+        out[1] = a[1] + b;
+        out[2] = a[2] + b;
+        out[3] = a[3] + b;
+    }
+    else
+    {
+        out[0] = a[0] + b[0];
+        out[1] = a[1] + (b[1] || 0);
+        out[2] = a[2] + (b[2] || 0);
+        out[3] = a[3] + (b[3] || 0);
+    }
+    return out;
+}, 2, vec3.zero);
+vec3.minus = wrapGlMatrix<vec3, [vec3, vec4 | vec3 | vec2 | number]>((out, a, b) =>
+{
+    if (typeof (b) === "number")
+    {
+        out[0] = a[0] - b;
+        out[1] = a[1] - b;
+        out[2] = a[2] - b;
+    }
+    else
+    {
+        out[0] = a[0] - b[0];
+        out[1] = a[1] - (b[1] || 0);
+        out[2] = a[2] - (b[2] || 0);
+    }
+    return out;
+}, 2, vec3.zero);
+vec3.mul = wrapGlMatrix<vec3, [vec3, vec4 | vec3 | vec2 | number]>((out, a, b) =>
+{
+    if (typeof (b) === "number")
+    {
+        out[0] = a[0] * b;
+        out[1] = a[1] * b;
+        out[2] = a[2] * b;
+    }
+    else
+    {
+        out[0] = a[0] * b[0];
+        out[1] = a[1] * (b[1] === undefined ? 1 : b[1]);
+        out[2] = a[2] * (b[2] === undefined ? 1 : b[2]);
+    }
+    return out;
+}, 2, vec3.zero);
+vec3.div = wrapGlMatrix<vec3, [vec3, vec4 | vec3 | vec2 | number]>((out, a, b) =>
+{
+    if (typeof (b) === "number")
+    {
+        out[0] = a[0] / b;
+        out[1] = a[1] / b;
+        out[2] = a[2] / b;
+    }
+    else
+    {
+        out[0] = a[0] / b[0];
+        out[1] = a[1] / (b[1] === undefined ? 1 : b[1]);
+        out[2] = a[2] / (b[2] === undefined ? 1 : b[2]);
+    }
+    return out;
+}, 2, vec3.zero);

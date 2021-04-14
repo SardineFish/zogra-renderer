@@ -18,6 +18,25 @@ class Matrix4x4 extends Mat4Constructor {
     set(m) {
         return gl_matrix_1.mat4.set(this, ...m);
     }
+    setAll(n) {
+        this[0]
+            = this[1]
+                = this[2]
+                    = this[3]
+                        = this[4]
+                            = this[5]
+                                = this[6]
+                                    = this[7]
+                                        = this[8]
+                                            = this[9]
+                                                = this[10]
+                                                    = this[11]
+                                                        = this[12]
+                                                            = this[13]
+                                                                = this[14]
+                                                                    = this[15] = n;
+        return this;
+    }
     clone(out = mat4.create()) {
         return out.set(this);
     }
@@ -43,9 +62,14 @@ mat4.perspective = utils_1.wrapGlMatrix(gl_matrix_1.mat4.perspective, 4, Matrix4
 mat4.transpose = utils_1.wrapGlMatrix(gl_matrix_1.mat4.transpose, 1, Matrix4x4.create);
 mat4.rotate = utils_1.wrapGlMatrix((out, m, axis, rad) => gl_matrix_1.mat4.rotate(out, m, rad, axis), 3, Matrix4x4.create);
 mat4.scale = utils_1.wrapGlMatrix(gl_matrix_1.mat4.scale, 2, Matrix4x4.create);
+mat4.fromTranslation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromTranslation, 1, Matrix4x4.create);
 mat4.fromRotation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromRotation, 1, Matrix4x4.create);
 mat4.fromScaling = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromScaling, 1, Matrix4x4.create);
 mat4.mul = utils_1.wrapGlMatrix(gl_matrix_1.mat4.mul, 2, Matrix4x4.create);
+mat4.add = utils_1.wrapGlMatrix(gl_matrix_1.mat4.add, 2, mat4.create);
+mat4.sub = utils_1.wrapGlMatrix(gl_matrix_1.mat4.sub, 2, mat4.create);
+mat4.plus = mat4.add;
+mat4.minus = mat4.sub;
 mat4.mulVector = utils_1.wrapGlMatrix((out, m, v) => {
     __vec4_temp[0] = v[0];
     __vec4_temp[1] = v[1];

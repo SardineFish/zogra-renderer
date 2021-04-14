@@ -83,7 +83,7 @@ export class Camera extends Entity implements IEventSource<CameraEvents>
     screenToRay(pos: vec2): ray
     {
         const p = this.screenToWorld(pos);
-        return ray(this.position, minus(vec3(p.x, p.y, p.z), this.position));
+        return ray(this.position.clone(), minus(vec3(p.x, p.y, p.z), this.position));
     }
     screenToWorld(pos: vec2): vec3
     {

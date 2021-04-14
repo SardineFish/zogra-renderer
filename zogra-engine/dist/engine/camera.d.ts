@@ -1,4 +1,3 @@
-/// <reference types="gl-matrix" />
 import { IRenderTarget, RenderTexture } from "zogra-renderer";
 import { GLContext } from "zogra-renderer";
 import { vec2 } from "zogra-renderer";
@@ -28,8 +27,8 @@ export declare class Camera extends Entity implements IEventSource<CameraEvents>
     clearDepth: boolean;
     get pixelSize(): import("zogra-renderer").Vector2;
     get aspectRatio(): number;
-    get viewProjectionMatrix(): import("gl-matrix").mat4;
-    get projectionMatrix(): import("gl-matrix").mat4;
+    get viewProjectionMatrix(): import("zogra-renderer").Matrix4x4;
+    get projectionMatrix(): import("zogra-renderer").Matrix4x4;
     constructor(ctx?: GLContext);
     on<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T]): void;
     off<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T]): void;

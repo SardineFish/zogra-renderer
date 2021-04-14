@@ -32,26 +32,58 @@ export declare class Vector3 extends V3Constructor implements Vector, ZograMatri
      */
     cross(b: Readonly<vec3>): Vector3;
     set(v: Readonly<vec3>): this;
+    set(v: Readonly<number[]>): this;
+    setAll(n: number): this;
     clone(out?: Vector3): vec3;
     toVec2(): Vector2;
     equals(v: any): boolean;
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector3>) => Vector3;
-    __to(type: Function): Vector3 | Vector2 | Vector4;
+    __to(type: Function): Vector4 | Vector3 | Vector2;
 }
 export declare function vec3(x: number): Vector3;
 export declare namespace vec3 {
     var from: (src: Iterable<number>) => Vector3;
-    var floor: (v: Vector3) => Vector3;
     var zero: typeof Vector3.zero;
     var one: typeof Vector3.one;
     var math: typeof Vector3.math;
+    var plus: {
+        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+    };
+    var minus: {
+        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+    };
+    var mul: {
+        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+    };
+    var div: {
+        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+    };
 }
 export declare function vec3(x: number, y: number, z: number): Vector3;
 export declare namespace vec3 {
     var from: (src: Iterable<number>) => Vector3;
-    var floor: (v: Vector3) => Vector3;
     var zero: typeof Vector3.zero;
     var one: typeof Vector3.one;
     var math: typeof Vector3.math;
+    var plus: {
+        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+    };
+    var minus: {
+        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+    };
+    var mul: {
+        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+    };
+    var div: {
+        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector4 | Vector3 | Vector2>): Vector3;
+    };
 }
 export {};

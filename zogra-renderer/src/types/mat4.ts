@@ -23,9 +23,31 @@ export class Matrix4x4 extends Mat4Constructor implements ZograMatrix
     {
         return new Matrix4x4();
     }
-    set(m: Readonly<Matrix4x4>)
+    set(v: Readonly<mat4>): this
+    set(v: Readonly<number[]>): this
+    set(m: Readonly<number[]> | Readonly<mat4>)
     {
         return glMat4.set(this, ...m as unknown as Mat4Tuple);
+    }
+    setAll(n: number)
+    {
+        this[0]
+            = this[1]
+            = this[2]
+            = this[3]
+            = this[4]
+            = this[5]
+            = this[6]
+            = this[7]
+            = this[8]
+            = this[9]
+            = this[10]
+            = this[11]
+            = this[12]
+            = this[13]
+            = this[14]
+            = this[15] = n;
+        return this;
     }
     clone(out: mat4 = mat4.create())
     {
@@ -55,9 +77,14 @@ mat4.perspective = wrapGlMatrix<mat4, [number, number, number, number]>(glMat4.p
 mat4.transpose = wrapGlMatrix<mat4, [mat4]>(glMat4.transpose as any, 1, Matrix4x4.create);
 mat4.rotate = wrapGlMatrix<mat4, [mat4, vec3, number]>((out, m, axis, rad) => glMat4.rotate(out, m, rad, axis) as mat4, 3, Matrix4x4.create);
 mat4.scale = wrapGlMatrix<mat4, [mat4, vec3]>(glMat4.scale as any, 2, Matrix4x4.create);
+mat4.fromTranslation = wrapGlMatrix<mat4, [vec3]>(glMat4.fromTranslation as any, 1, Matrix4x4.create);
 mat4.fromRotation = wrapGlMatrix<mat4, [quat]>(glMat4.fromRotation as any, 1, Matrix4x4.create);
 mat4.fromScaling = wrapGlMatrix<mat4, [vec3]>(glMat4.fromScaling as any, 1, Matrix4x4.create);
 mat4.mul = wrapGlMatrix<mat4, [mat4, mat4]>(glMat4.mul as any, 2, Matrix4x4.create);
+mat4.add = wrapGlMatrix<mat4, [mat4, mat4]>(glMat4.add as any, 2, mat4.create);
+mat4.sub = wrapGlMatrix<mat4, [mat4, mat4]>(glMat4.sub as any, 2, mat4.create);
+mat4.plus = mat4.add;
+mat4.minus = mat4.sub;
 mat4.mulVector = wrapGlMatrix<vec3, [mat4, vec3]>((out, m, v) =>
 {
     __vec4_temp[0] = v[0];
