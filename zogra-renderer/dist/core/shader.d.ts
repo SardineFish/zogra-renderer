@@ -86,11 +86,11 @@ export declare class Shader extends Asset {
     use(): void;
     setupPipelineStates(): void;
     setupBuiltinUniform(params: {
-        matM: mat4;
-        matVP: mat4;
-        matMVP: mat4;
-        matM_IT: mat4;
-        matMV_IT: mat4;
+        matM: Readonly<mat4>;
+        matVP: Readonly<mat4>;
+        matMVP: Readonly<mat4>;
+        matM_IT: Readonly<mat4>;
+        matMV_IT: Readonly<mat4>;
     }): void;
     setPipelineStates(settings: ShaderPipelineStateSettinsOptional): void;
     private setPipelineStateInternal;

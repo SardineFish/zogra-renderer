@@ -10,6 +10,7 @@ class Quaternion extends V4Constructor {
     static create() {
         return new Quaternion(0, 0, 0, 0);
     }
+    asMut() { return this; }
     equals(v) {
         if (!v || !(v instanceof Array))
             return false;

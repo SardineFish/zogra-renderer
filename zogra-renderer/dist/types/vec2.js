@@ -51,6 +51,7 @@ class Vector2 extends V2Constructor {
             return vec2(func(...args.map(v => v.x)), func(...args.map(v => v.y)));
         };
     }
+    asMut() { return this; }
     plus(v) {
         this[0] += v[0];
         this[1] += v[1];

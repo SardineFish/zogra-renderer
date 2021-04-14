@@ -6,28 +6,29 @@ const zogra_renderer_2 = require("zogra-renderer");
 const zogra_renderer_3 = require("zogra-renderer");
 class Transform {
     constructor() {
-        // private mLoc2World = mat4.identity();
-        // private mWorld2Loc = mat4.identity();
-        // private mat = mat4.identity();
-        // private matInv = mat4.identity();
-        // get localPosition() { return mat4.getTranslation(this.mat); }
-        // get localRotation() { return mat4.getRotation(this.mat); }
-        // get localScaling() { return mat4.getScaling(this.mat); }
-        // get position()
-        // {
-        //     return mat4.getTranslation(this.mLoc2World);
-        // }
-        // get rotation() { return mat4.getRotation(this.mWorld2Loc); }
-        // get scale() { return mat4.getScaling(this.mLoc2World); }
-        // set localPosition()
-        // {
-        // }
         this._parent = null;
         this.children = new Set();
-        this.localPosition = zogra_renderer_2.vec3.zero();
-        this.localRotation = zogra_renderer_3.quat.identity();
-        this.localScaling = zogra_renderer_2.vec3.one();
+        this._localPosition = zogra_renderer_2.vec3.zero();
+        this._localRotation = zogra_renderer_3.quat.identity();
+        this._localScaling = zogra_renderer_2.vec3.one();
+        this._localToWorld = zogra_renderer_1.mat4.identity();
+        this._worldToLocal = zogra_renderer_1.mat4.identity();
         this._scene = null;
+    }
+    get localPosition() { return this._localPosition; }
+    get localRotation() { return this._localRotation; }
+    get localScaling() { return this._localScaling; }
+    set localPosition(position) {
+        this._localPosition.set(position);
+        this.updateTransformRecursive();
+    }
+    set localRotation(rotation) {
+        this._localRotation.set(rotation);
+        this.updateTransformRecursive();
+    }
+    set localScaling(scaling) {
+        this._localScaling.set(scaling);
+        this.updateTransformRecursive();
     }
     get scene() { return this._scene; }
     get position() {
@@ -63,21 +64,15 @@ class Transform {
         else
             this.localScaling = zogra_renderer_1.mat4.getScaling(this._parent.worldToLocalMatrix).mul(scaling);
     }
-    get localToWorldMatrix() {
-        if (!this._parent)
-            return zogra_renderer_1.mat4.rts(this.localRotation, this.localPosition, this.localScaling);
-        const mat = zogra_renderer_1.mat4.rts(this.localRotation, this.localPosition, this.localScaling);
-        return zogra_renderer_1.mat4.mul(mat, this._parent.localToWorldMatrix, mat);
-    }
-    get worldToLocalMatrix() {
-        return zogra_renderer_1.mat4.invert(this.localToWorldMatrix);
-    }
+    get localToWorldMatrix() { return this._localToWorld; }
+    get worldToLocalMatrix() { return this._worldToLocal; }
     get parent() { return this._parent; }
     set parent(p) {
         this._parent = p;
         if (p) {
             p.children.add(this);
         }
+        this.updateTransformRecursive();
     }
     translate(motion) {
         if (!this._parent)
@@ -92,6 +87,14 @@ class Transform {
     /** @internal */
     __removeFromScene(scene) {
         this._scene = null;
+    }
+    updateTransformRecursive() {
+        zogra_renderer_1.mat4.rts(this._localToWorld, this._localRotation, this._localPosition, this._localScaling);
+        if (this._parent)
+            zogra_renderer_1.mat4.mul(this._localToWorld, this._parent._localToWorld, this._localToWorld);
+        zogra_renderer_1.mat4.invert(this._worldToLocal, this._localToWorld);
+        for (const child of this.children)
+            child.updateTransformRecursive();
     }
 }
 exports.Transform = Transform;

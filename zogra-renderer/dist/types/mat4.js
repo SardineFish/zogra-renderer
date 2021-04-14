@@ -15,6 +15,7 @@ class Matrix4x4 extends Mat4Constructor {
     static create() {
         return new Matrix4x4();
     }
+    asMut() { return this; }
     set(m) {
         return gl_matrix_1.mat4.set(this, ...m);
     }

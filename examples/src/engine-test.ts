@@ -72,14 +72,14 @@ function initCamera()
             input.releasePointer();
         
         let look = input.pointerDelta;
-        let rotate = quat.normalize(quat.mul(quat.axis(right, -sensity * look.y), quat.axis(up, -sensity * look.x)));
+        let rotate = quat.normalize(quat.mul(quat.axisAngle(right, -sensity * look.y), quat.axisAngle(up, -sensity * look.x)));
 
         /*if (input.getKey(Keys.Space))
             rotate = quat.axis(right, -sensity * look.y);
         else
             rotate = quat.normalize(quat.axis(up, -sensity * look.x));*/
-        wrapper.rotation = quat.mul(wrapper.rotation, quat.axis(up, -sensity * look.x));
-        camera.localRotation = quat.mul(camera.localRotation, quat.axis(vec3(1, 0, 0), -sensity * look.y));
+        wrapper.rotation = quat.mul(wrapper.rotation, quat.axisAngle(up, -sensity * look.x));
+        camera.localRotation = quat.mul(camera.localRotation, quat.axisAngle(vec3(1, 0, 0), -sensity * look.y));
         wrapper.position = plus(wrapper.position, mul(v, 5));
         //input.pointerDelta.magnitude > 0 &&  console.log(input.pointerDelta);
     });
@@ -95,7 +95,7 @@ function initObjects()
 
     engine.on("update", (time) =>
     {
-        cube.rotation = quat.normalize(quat.mul(cube.rotation, quat.axis(vec3(1, 1, 1), time.deltaTime * 0.5)));
+        cube.rotation = quat.normalize(quat.mul(cube.rotation, quat.axisAngle(vec3(1, 1, 1), time.deltaTime * 0.5)));
     });
 
 }

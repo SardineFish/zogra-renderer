@@ -57,7 +57,7 @@ class ZograRenderer {
     }
     get canvasSize() { return vec2_1.vec2(this.width, this.height); }
     setViewProjection(view, projection) {
-        this.viewProjectionMatrix = mat4_1.mat4.mul(projection, view);
+        mat4_1.mat4.mul(this.viewProjectionMatrix, projection, view);
     }
     setRenderTarget(colorAttachments, depthAttachment) {
         if (colorAttachments === render_target_1.RenderTarget.CanvasTarget) {

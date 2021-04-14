@@ -23,6 +23,7 @@ export class Matrix4x4 extends Mat4Constructor implements ZograMatrix
     {
         return new Matrix4x4();
     }
+    asMut() { return this; }
     set(v: Readonly<mat4>): this
     set(v: Readonly<number[]>): this
     set(m: Readonly<number[]> | Readonly<mat4>)

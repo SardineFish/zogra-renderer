@@ -22,5 +22,5 @@ interface ISet
 }
 export interface ZograMatrix extends IEqual, IClone, ISet
 {
-
+    asMut(): this
 }

@@ -5,6 +5,7 @@ declare const Mat4Constructor: new (...p: Mat4Tuple) => Mat4Tuple;
 export declare class Matrix4x4 extends Mat4Constructor implements ZograMatrix {
     constructor(p_0?: number, p_1?: number, p_2?: number, p_3?: number, p_4?: number, p_5?: number, p_6?: number, p_7?: number, p_8?: number, p_9?: number, p_10?: number, p_11?: number, p_12?: number, p_13?: number, p_14?: number, p_15?: number);
     static create(): Matrix4x4;
+    asMut(): this;
     set(v: Readonly<mat4>): this;
     set(v: Readonly<number[]>): this;
     setAll(n: number): this;

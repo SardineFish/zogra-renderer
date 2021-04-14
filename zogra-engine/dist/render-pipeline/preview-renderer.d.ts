@@ -16,6 +16,6 @@ export declare class PreviewRenderer implements ZograRenderPipeline {
     setupLight(context: RenderContext, data: RenderData): void;
     renderCamera(context: RenderContext, data: RenderData): void;
     renderGrid(context: RenderContext, data: RenderData): void;
-    drawWithMaterial(mesh: Mesh, transform: mat4, material: Material): void;
+    drawWithMaterial(mesh: Mesh, transform: Readonly<mat4>, material: Material): void;
     replaceMaterial<T extends Material>(MaterialType: ConstructorType<T>, material: Material): void;
 }

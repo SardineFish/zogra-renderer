@@ -94,9 +94,9 @@ export class ZograRenderer
     get canvasSize(): vec2 { return vec2(this.width, this.height) }
     
 
-    setViewProjection(view: mat4, projection: mat4)
+    setViewProjection(view: Readonly<mat4>, projection: Readonly<mat4>)
     {
-        this.viewProjectionMatrix = mat4.mul(projection, view);
+        mat4.mul(this.viewProjectionMatrix, projection, view);
     }
 
     setRenderTarget(rt: IRenderTarget) : void
@@ -232,7 +232,7 @@ export class ZograRenderer
         
     }
 
-    private setupTransforms(shader: Shader, transformModel: mat4)
+    private setupTransforms(shader: Shader, transformModel: Readonly<mat4>)
     {
         const gl = this.gl;
         
@@ -310,7 +310,7 @@ export class ZograRenderer
         material.unbindRenderTextures();
     }
 
-    drawMesh(mesh: Mesh, transform: mat4, material: Material)
+    drawMesh(mesh: Mesh, transform: Readonly<mat4>, material: Material)
     {
         if (!material)
             material = this.assets.materials.error;
