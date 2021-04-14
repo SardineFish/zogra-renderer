@@ -42,7 +42,7 @@ export declare class Vector2 extends V2Constructor implements Vector, ZograMatri
     set(v: Readonly<number[]>): this;
     setAll(n: number): this;
     toVec3(z?: number): Vector3;
-    __to(type: Function): Vector3 | Vector2 | Vector4;
+    __to(type: Function): Vector2 | Vector3 | Vector4;
 }
 export declare function vec2(x: number): Vector2;
 export declare namespace vec2 {
@@ -56,20 +56,20 @@ export declare namespace vec2 {
     var up: typeof Vector2.up;
     var math: typeof Vector2.math;
     var plus: {
-        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
-        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
+        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
     };
     var minus: {
-        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
-        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
+        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
     };
     var mul: {
-        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
-        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
+        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
     };
     var div: {
-        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
-        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
+        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
     };
 }
 export declare function vec2(x: number, y: number): Vector2;
@@ -84,20 +84,20 @@ export declare namespace vec2 {
     var up: typeof Vector2.up;
     var math: typeof Vector2.math;
     var plus: {
-        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
-        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
+        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
     };
     var minus: {
-        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
-        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
+        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
     };
     var mul: {
-        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
-        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
+        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
     };
     var div: {
-        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
-        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector3 | Vector2 | Vector4>): Vector2;
+        (args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>, args_1: Readonly<number | Vector2 | Vector3 | Vector4>): Vector2;
     };
 }
 export {};

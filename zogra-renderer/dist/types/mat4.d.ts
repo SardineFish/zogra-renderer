@@ -1,4 +1,3 @@
-import { quat as glQuat } from "gl-matrix";
 import { ZograMatrix } from "./generic";
 export declare type mat4 = Matrix4x4;
 declare type Mat4Tuple = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
@@ -20,8 +19,8 @@ export declare namespace mat4 {
         (out: Matrix4x4): Matrix4x4;
     };
     var rts: {
-        (args_0: Readonly<glQuat>, args_1: Readonly<import("./vec3").Vector3>, args_2: Readonly<import("./vec3").Vector3>): Matrix4x4;
-        (out: Matrix4x4, args_0: Readonly<glQuat>, args_1: Readonly<import("./vec3").Vector3>, args_2: Readonly<import("./vec3").Vector3>): Matrix4x4;
+        (args_0: Readonly<import("./quat").Quaternion>, args_1: Readonly<import("./vec3").Vector3>, args_2: Readonly<import("./vec3").Vector3>): Matrix4x4;
+        (out: Matrix4x4, args_0: Readonly<import("./quat").Quaternion>, args_1: Readonly<import("./vec3").Vector3>, args_2: Readonly<import("./vec3").Vector3>): Matrix4x4;
     };
     var translate: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): Matrix4x4;
@@ -36,8 +35,8 @@ export declare namespace mat4 {
         (out: import("./vec3").Vector3, args_0: Readonly<Matrix4x4>): import("./vec3").Vector3;
     };
     var getRotation: {
-        (args_0: Readonly<Matrix4x4>): glQuat;
-        (out: glQuat, args_0: Readonly<Matrix4x4>): glQuat;
+        (args_0: Readonly<Matrix4x4>): import("./quat").Quaternion;
+        (out: import("./quat").Quaternion, args_0: Readonly<Matrix4x4>): import("./quat").Quaternion;
     };
     var getScaling: {
         (args_0: Readonly<Matrix4x4>): import("./vec3").Vector3;
@@ -68,8 +67,8 @@ export declare namespace mat4 {
         (out: Matrix4x4, args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;
     };
     var fromRotation: {
-        (args_0: Readonly<glQuat>): Matrix4x4;
-        (out: Matrix4x4, args_0: Readonly<glQuat>): Matrix4x4;
+        (args_0: Readonly<import("./quat").Quaternion>): Matrix4x4;
+        (out: Matrix4x4, args_0: Readonly<import("./quat").Quaternion>): Matrix4x4;
     };
     var fromScaling: {
         (args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;

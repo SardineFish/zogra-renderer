@@ -1,6 +1,6 @@
 import { vec4, VecMathArgs, Vector4 } from "./vec4";
 import { Vector2, vec2 } from "./vec2";
-import { IClone, ISet, Vector, ZograMatrix } from "./generic";
+import { Vector, ZograMatrix } from "./generic";
 import { wrapGlMatrix } from "./utils";
 import { vec3 as glVec3 } from "gl-matrix";
 
