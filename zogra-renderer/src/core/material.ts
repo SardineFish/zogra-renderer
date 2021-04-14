@@ -1,6 +1,6 @@
 import { Shader } from "./shader";
 import { Color } from "../types/color";
-import { decorator, panic } from "../utils/util";
+import { cloneUniformValue, decorator, panic } from "../utils/util";
 import "reflect-metadata";
 import { GL, GLContext, GlobalContext } from "./global";
 import { MaterialType, SimpleTexturedMaterialClass } from "./material-type";
@@ -111,7 +111,7 @@ export class Material extends Asset
 
     // setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void
     // setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void
-    setProp<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>): void
+    setProp<T extends UniformType>(uniformName: string, type: T, value: Readonly<UniformValueType<T>>): void
     {
         this.tryInit(true);
 
@@ -126,7 +126,7 @@ export class Material extends Asset
         if (prop.key)
             this[prop.key] = value;
         else
-            prop.value = value;
+            prop.value = cloneUniformValue(value);
     }
 
     /**

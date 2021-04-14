@@ -40,7 +40,7 @@ export declare class Material extends Asset {
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
     get shader(): Shader;
     upload(data: BindingData): void;
-    setProp<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>): void;
+    setProp<T extends UniformType>(uniformName: string, type: T, value: Readonly<UniformValueType<T>>): void;
     /**
      * Unbind all render textures from active texture slot due to avoid
      * 'Feedback loop formed between Framebuffer and active Texture' in chrome since version 83
