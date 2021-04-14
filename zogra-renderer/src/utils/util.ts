@@ -101,8 +101,7 @@ export function cloneUniformValue<T extends (number | vec2 | vec3 | vec4 | Color
         return null as T;
     if (typeof (value) === "number")
         return value;
-    else if (value instanceof Texture)
-        return value;
-    else
-        return (value as Readonly<ZograMatrix>).clone() as T;
+    else if (value instanceof Array)
+        return (value as unknown as Readonly<ZograMatrix>).clone() as T;
+    return value;
 }
