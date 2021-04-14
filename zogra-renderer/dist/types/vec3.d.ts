@@ -38,7 +38,7 @@ export declare class Vector3 extends V3Constructor implements Vector, ZograMatri
     clone(out?: Vector3): vec3;
     toVec2(): Vector2;
     equals(v: any): boolean;
-    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector3>) => Vector3;
+    static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Readonly<vec3>>) => vec3;
     __to(type: Function): Vector2 | Vector3 | Vector4;
 }
 export declare function vec3(x: number): Vector3;
