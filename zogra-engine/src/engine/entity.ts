@@ -6,7 +6,7 @@ import { RenderContext } from "../render-pipeline/rp";
 import { ICollider } from "../physics/physics-generic";
 import { Scene } from "./scene";
 
-export interface EntityEvents extends EventDefinitions
+export interface EntityEvents
 {
     "update": (entity: Entity, time: Time) => void;
 }

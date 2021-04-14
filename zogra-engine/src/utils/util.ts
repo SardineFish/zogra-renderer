@@ -3,7 +3,7 @@ export interface Into<T>
     into<T>(): T;
 }
 
-export type ConstructorType<T> = new (...args: any[]) => T;
+export type ConstructorType<T, TArgs extends any[] = any[]> = new (...args: TArgs) => T;
 
 export class DoubleBuffer<T>
 {

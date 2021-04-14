@@ -66,19 +66,19 @@ export class Camera extends Entity implements IEventSource<CameraEvents>
 
     on<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T])
     {
-        this.eventEmitter.on(event, listener);
+        this.eventEmitter.with<CameraEvents>().on(event, listener);
     }
     off<T extends EventKeys<CameraEvents>>(event: T, listener: CameraEvents[T])
     {
-        this.eventEmitter.on(event, listener);
+        this.eventEmitter.with<CameraEvents>().on(event, listener);
     }
     __preRender(context: RenderContext)
     {
-        this.eventEmitter.emit("prerender", this, context);
+        this.eventEmitter.with<CameraEvents>().emit("prerender", this, context);
     }
     __postRender(contect: RenderContext)
     {
-        this.eventEmitter.emit("postrender", this, contect);
+        this.eventEmitter.with<CameraEvents>().emit("postrender", this, contect);
     }
     screenToRay(pos: vec2): ray
     {

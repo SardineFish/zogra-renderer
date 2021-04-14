@@ -90,16 +90,16 @@ export class PreviewRenderer implements ZograRenderPipeline
         const objs = data.getVisibleObjects(RenderOrder.NearToFar);
         for (const obj of objs)
         {
-            obj.__onRender(context, data);
-            const modelMatrix = obj.localToWorldMatrix;
+            obj.render(context, data);
+            // const modelMatrix = obj.localToWorldMatrix;
 
-            for (let i = 0; i < obj.meshes.length; i++)
-            {
-                if (!obj.meshes[i])
-                    continue;
-                const mat = obj.materials[i] || context.renderer.assets.materials.default;
-                this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
-            }
+            // for (let i = 0; i < obj.meshes.length; i++)
+            // {
+            //     if (!obj.meshes[i])
+            //         continue;
+            //     const mat = obj.materials[i] || context.renderer.assets.materials.default;
+            //     this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
+            // }
         }
         
         // this.debugLayer.render(context, data);
