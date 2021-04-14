@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cloneUniformValue = exports.setImmediate = exports.DoubleBuffer = exports.fillArray = exports.getUniformsLocation = exports.decorator = exports.warn = exports.panic = exports.panicNull = void 0;
 require("reflect-metadata");
-const texture_1 = require("../core/texture");
 function panicNull(t, msg) {
     if (t === null)
         throw new Error(msg);
@@ -73,10 +72,9 @@ function cloneUniformValue(value) {
         return null;
     if (typeof (value) === "number")
         return value;
-    else if (value instanceof texture_1.Texture)
-        return value;
-    else
+    else if (value instanceof Array)
         return value.clone();
+    return value;
 }
 exports.cloneUniformValue = cloneUniformValue;
 //# sourceMappingURL=util.js.map
