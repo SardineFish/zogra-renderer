@@ -1,6 +1,8 @@
 import { vec4, VecMathArgs, Vector4 } from "./vec4";
 import { Vector3, vec3 } from "./vec3";
 import { IClone, ISet, Vector, ZograMatrix } from "./generic";
+import { wrapGlMatrix } from "./utils";
+import { vec2 as glVec2 } from "gl-matrix";
 
 export type vec2 = Vector2;
 
@@ -144,10 +146,18 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
         return out.set(this);
     }
 
-    set(v: Readonly<vec2>)
+    set(v: Readonly<vec2>): this
+    set(v: Readonly<number[]>): this
+    set(v: Readonly<number[]> | Readonly<vec2>)
     {
-        this[0] = v[0];
-        this[1] = v[1];
+        this[0] = v[0] || 0;
+        this[1] = v[1] || 0;
+        return this;
+    }
+
+    setAll(n: number)
+    {
+        this[0] = this[1] = n;
         return this;
     }
 
@@ -187,3 +197,60 @@ vec2.right = Vector2.right;
 vec2.down = Vector2.down;
 vec2.up = Vector2.up;
 vec2.math = Vector2.math;
+
+vec2.plus = wrapGlMatrix<vec2, [vec2, vec4 | vec3 | vec2 | number]>((out, a, b) =>
+{
+    if (typeof (b) === "number")
+    {
+        out[0] = a[0] + b;
+        out[1] = a[1] + b;
+    }
+    else
+    {
+        out[0] = a[0] + b[0];
+        out[1] = a[1] + (b[1] || 0);
+    }
+    return out;
+}, 2, vec2.zero);
+vec2.minus = wrapGlMatrix<vec2, [vec2, vec4 | vec3 | vec2 | number]>((out, a, b) =>
+{
+    if (typeof (b) === "number")
+    {
+        out[0] = a[0] - b;
+        out[1] = a[1] - b;
+    }
+    else
+    {
+        out[0] = a[0] - b[0];
+        out[1] = a[1] - (b[1] || 0);
+    }
+    return out;
+}, 2, vec2.zero);
+vec2.mul = wrapGlMatrix<vec2, [vec2, vec4 | vec3 | vec2 | number]>((out, a, b) =>
+{
+    if (typeof (b) === "number")
+    {
+        out[0] = a[0] * b;
+        out[1] = a[1] * b;
+    }
+    else
+    {
+        out[0] = a[0] * b[0];
+        out[1] = a[1] * b[1];
+    }
+    return out;
+}, 2, vec2.zero);
+vec2.div = wrapGlMatrix<vec2, [vec2, vec4 | vec3 | vec2 | number]>((out, a, b) =>
+{
+    if (typeof (b) === "number")
+    {
+        out[0] = a[0] / b;
+        out[1] = a[1] / b;
+    }
+    else
+    {
+        out[0] = a[0] / b[0];
+        out[1] = a[1] / b[1];
+    }
+    return out;
+}, 2, vec2.zero);

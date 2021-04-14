@@ -1,4 +1,4 @@
-import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, floor2, mat4 } from "zogra-renderer";
+import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4 } from "zogra-renderer";
 import { RenderContext, RenderData, Camera } from "../..";
 import { RenderObject } from "../../engine/render-object";
 import { Default2DMaterial } from "./materials";
@@ -31,20 +31,20 @@ export class Tilemap extends RenderObject
                 const chunk = this.getChunk(vec2(chunkX, chunkY));
                 if (!chunk)
                     continue;
-                context.renderer.drawMesh(chunk.mesh, mat4.translate(vec3(chunkX * ChunkSize, chunkY * ChunkSize, 0)), this.materials[0]);
+                context.renderer.drawMesh(chunk.mesh, mat4.fromTranslation(vec3(chunkX * ChunkSize, chunkY * ChunkSize, 0)), this.materials[0]);
             }
     }
 
     getTile(pos: Vector2): TileData | null
     {
-        let [chunkPos, offset] = this.chunkPos(floor2(pos));
+        let [chunkPos, offset] = this.chunkPos(vec2.math(Math.floor)(pos));
         let chunk = this.getOrCreateChunk(chunkPos);
         return chunk.getTile(offset);
     }
 
     setTile(pos: Vector2, tile: TileData | null)
     {
-        let [chunkPos, offset] = this.chunkPos(floor2(pos));
+        let [chunkPos, offset] = this.chunkPos(vec2.math(Math.floor)(pos));
         let chunk = this.getOrCreateChunk(chunkPos);
         return chunk.setTile(offset, tile);
     }
@@ -93,7 +93,7 @@ export class Tilemap extends RenderObject
             pos.x < 0 ? /*1*/ 0 : 0,
             pos.y < 0 ? /*1*/ 0 : 0,
         );
-        return [minus(floor2(div(pos, vec2(ChunkSize, ChunkSize))), floorOffset), vec2(
+        return [minus(vec2.math(Math.floor)(div(pos, vec2(ChunkSize, ChunkSize))), floorOffset), vec2(
             floorReminder(pos.x, ChunkSize),
             floorReminder(pos.y, ChunkSize),
         )];

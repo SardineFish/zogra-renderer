@@ -61,7 +61,7 @@ class Camera extends entity_1.Entity {
     }
     screenToRay(pos) {
         const p = this.screenToWorld(pos);
-        return zogra_renderer_9.ray(this.position, zogra_renderer_6.minus(zogra_renderer_8.vec3(p.x, p.y, p.z), this.position));
+        return zogra_renderer_9.ray(this.position.clone(), zogra_renderer_6.minus(zogra_renderer_8.vec3(p.x, p.y, p.z), this.position));
     }
     screenToWorld(pos) {
         const w = this.projection == Projection.Perspective

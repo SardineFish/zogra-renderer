@@ -1,4 +1,4 @@
-import { mat4 as glMat4, quat as glQuat } from "gl-matrix";
+import { quat as glQuat } from "gl-matrix";
 import { ZograMatrix } from "./generic";
 export declare type mat4 = Matrix4x4;
 declare type Mat4Tuple = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
@@ -6,8 +6,10 @@ declare const Mat4Constructor: new (...p: Mat4Tuple) => Mat4Tuple;
 export declare class Matrix4x4 extends Mat4Constructor implements ZograMatrix {
     constructor(p_0?: number, p_1?: number, p_2?: number, p_3?: number, p_4?: number, p_5?: number, p_6?: number, p_7?: number, p_8?: number, p_9?: number, p_10?: number, p_11?: number, p_12?: number, p_13?: number, p_14?: number, p_15?: number);
     static create(): Matrix4x4;
-    set(m: Readonly<Matrix4x4>): glMat4;
-    clone(out?: mat4): glMat4;
+    set(v: Readonly<mat4>): this;
+    set(v: Readonly<number[]>): this;
+    setAll(n: number): this;
+    clone(out?: mat4): Matrix4x4;
     equals(other: any): boolean;
 }
 export declare function mat4(p_0?: number, p_1?: number, p_2?: number, p_3?: number, p_4?: number, p_5?: number, p_6?: number, p_7?: number, p_8?: number, p_9?: number, p_10?: number, p_11?: number, p_12?: number, p_13?: number, p_14?: number, p_15?: number): Matrix4x4;
@@ -61,6 +63,10 @@ export declare namespace mat4 {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): Matrix4x4;
     };
+    var fromTranslation: {
+        (args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;
+        (out: Matrix4x4, args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;
+    };
     var fromRotation: {
         (args_0: Readonly<glQuat>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<glQuat>): Matrix4x4;
@@ -70,6 +76,22 @@ export declare namespace mat4 {
         (out: Matrix4x4, args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;
     };
     var mul: {
+        (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
+        (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
+    };
+    var add: {
+        (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
+        (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
+    };
+    var sub: {
+        (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
+        (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
+    };
+    var plus: {
+        (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
+        (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
+    };
+    var minus: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
     };

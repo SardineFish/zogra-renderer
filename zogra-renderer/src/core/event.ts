@@ -4,19 +4,29 @@ export interface EventDefinitions
     [key: string]: EventListener;
 }
 
-export type EventKeys<T> = (keyof T) & ({
-    [key in keyof T]: string extends key ? never : number extends key ? never : key;
-} extends { [_ in keyof T]: infer U } ? U : never);
+// export type EventKeys<T> = keyof T;
+// export type EventKeys<T> = (keyof T) & ({
+//     [key in keyof T]: string extends key ? never : number extends key ? never : key;
+// } extends { [_ in keyof T]: infer U } ? U : never);
+export type EventKeys<T> = keyof T;// { [key in keyof T]: T[key] extends (...args: any[]) => any ? T[key] : never };
+
+interface Foo
+{
+    update(n: number): void;
+    start(n: string): void;
+}
+type t = EventKeys<Foo>;
+type s = Foo[EventKeys<Foo>];
 
 export type EventListener = (...args: any[]) => void;
 
-export interface IEventSource<TEvents extends EventDefinitions>
+export interface IEventSource<TEvents>
 {
     on<T extends EventKeys<TEvents>>(event: T, listener: TEvents[T]): void;
     off<T extends EventKeys<TEvents>>(event: T, listener: TEvents[T]): void;
 }
 
-export class EventEmitter<TEvents extends EventDefinitions = EventDefinitions> implements IEventSource<TEvents>
+export class EventEmitter<TEvents extends EventDefinitions> implements IEventSource<TEvents>
 {
     listeners = new Map<keyof TEvents, TEvents[keyof TEvents][]>();
     on<T extends EventKeys<TEvents>>(event: T, listener: TEvents[T])

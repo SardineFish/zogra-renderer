@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Rad2Deg = exports.Deg2Rad = exports.boxRaycast = exports.floor2 = exports.distance = exports.cross = exports.dot = exports.div = exports.mul = exports.minus = exports.plus = void 0;
+exports.Rad2Deg = exports.Deg2Rad = exports.boxRaycast = exports.distance = exports.cross = exports.dot = exports.div = exports.mul = exports.minus = exports.plus = void 0;
 const vec3_1 = require("./vec3");
 const vec4_1 = require("./vec4");
 const vec2_1 = require("./vec2");
+const mat4_1 = require("./mat4");
 Number.prototype.__to = function (type) {
     switch (type) {
         case vec4_1.Vector4:
@@ -22,28 +23,79 @@ function arithOrder(a, b) {
         return [a, b, false];
     return (b.length > a.length ? [b, a, true] : [a, b, false]);
 }
-function plus(a, b) {
-    const [lhs, rhs] = arithOrder(a, b);
-    return rhs.__to(lhs.constructor).plus(lhs);
+function allocateOutput(a, b) {
+    let length = Math.max(a.length || 0, b.length || 0);
+    switch (length) {
+        case 2:
+            return vec2_1.vec2.zero();
+        case 3:
+            return vec3_1.vec3.zero();
+        case 4:
+            return vec4_1.vec4.zero();
+        case 16:
+            return mat4_1.mat4.create();
+    }
+    console.warn(`Unsupported vector length '${length}'`);
+    return new Array();
+}
+function plus(a, b, out) {
+    if (typeof (a) === "number" && typeof (b) === "number")
+        return (a + b);
+    let output = (out || allocateOutput(a, b));
+    typeof (a) === "number" ? output.setAll(a) : output.set(a);
+    switch (output.length) {
+        case 2:
+            return vec2_1.vec2.plus(output, output, b);
+        case 3:
+            return vec3_1.vec3.plus(output, output, b);
+        case 4:
+            return vec4_1.vec4.plus(output, output, b);
+    }
 }
 exports.plus = plus;
-function minus(a, b) {
-    const [lhs, rhs, invert] = arithOrder(a, b);
-    return invert
-        ? rhs.__to(lhs.constructor).minus(lhs)
-        : rhs.__to(lhs.constructor).minus(lhs).negate();
+function minus(a, b, out) {
+    if (typeof (a) === "number" && typeof (b) === "number")
+        return (a + b);
+    let output = (out || allocateOutput(a, b));
+    typeof (a) === "number" ? output.setAll(a) : output.set(a);
+    switch (output.length) {
+        case 2:
+            return vec2_1.vec2.minus(output, output, b);
+        case 3:
+            return vec3_1.vec3.minus(output, output, b);
+        case 4:
+            return vec4_1.vec4.minus(output, output, b);
+    }
 }
 exports.minus = minus;
-function mul(a, b) {
-    const [lhs, rhs] = arithOrder(a, b);
-    return rhs.__to(lhs.constructor).mul(lhs);
+function mul(a, b, out) {
+    if (typeof (a) === "number" && typeof (b) === "number")
+        return (a + b);
+    let output = (out || allocateOutput(a, b));
+    typeof (a) === "number" ? output.setAll(a) : output.set(a);
+    switch (output.length) {
+        case 2:
+            return vec2_1.vec2.mul(output, output, b);
+        case 3:
+            return vec3_1.vec3.mul(output, output, b);
+        case 4:
+            return vec4_1.vec4.mul(output, output, b);
+    }
 }
 exports.mul = mul;
-function div(a, b) {
-    const [lhs, rhs, invert] = arithOrder(a, b);
-    return invert
-        ? rhs.__to(lhs.constructor).div(lhs)
-        : rhs.__to(lhs.constructor).div(lhs).inversed;
+function div(a, b, out) {
+    if (typeof (a) === "number" && typeof (b) === "number")
+        return (a + b);
+    let output = (out || allocateOutput(a, b));
+    typeof (a) === "number" ? output.setAll(a) : output.set(a);
+    switch (output.length) {
+        case 2:
+            return vec2_1.vec2.mul(output, output, b);
+        case 3:
+            return vec3_1.vec3.mul(output, output, b);
+        case 4:
+            return vec4_1.vec4.mul(output, output, b);
+    }
 }
 exports.div = div;
 function dot(a, b) {
@@ -55,13 +107,9 @@ function cross(a, b) {
 }
 exports.cross = cross;
 function distance(a, b) {
-    return minus(b, a).magnitude;
+    return Math.hypot((b[0] - a[0]) || 0, (b[1] - a[1]) || 0, (b[2] - a[2]) || 0, (b[3] - a[3]) || 0);
 }
 exports.distance = distance;
-function floor2(v) {
-    return vec2_1.vec2(Math.floor(v.x), Math.floor(v.y));
-}
-exports.floor2 = floor2;
 function boxRaycast(box, center, direction) {
     direction = direction.normalized;
     if (direction.x == 0 && direction.y == 0)
