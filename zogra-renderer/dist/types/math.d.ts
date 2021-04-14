@@ -1,7 +1,8 @@
 import { Vector3, vec3 } from "./vec3";
-import { vec4, Vector } from "./vec4";
+import { vec4 } from "./vec4";
 import { vec2, Vector2 } from "./vec2";
 import { Rect } from "./rect";
+import { Vector } from "./generic";
 declare type vec = number | vec2 | vec3 | vec4;
 declare type Larger<U extends vec, V extends vec> = U extends vec4 ? vec4 : V extends vec4 ? vec4 : U extends vec3 ? vec3 : V extends vec3 ? vec3 : U extends vec2 ? vec2 : V extends vec2 ? vec2 : number;
 declare type ArithmeticType<U extends vec, V extends vec> = Larger<U, V> & Vector;

@@ -1,19 +1,13 @@
 import { Vector3, vec3 } from "./vec3";
 import { Vector2, vec2 } from "./vec2";
-
-export interface Vector
-{
-    magnitude: number;
-    normalized: ThisType<this>;
-    equals(v: any): boolean;
-}
+import { Vector, ZograMatrix } from "./generic";
 
 export type vec4 = Vector4;
 
 export type VecMathArgs<T, U> = T extends number[] ? { [key in keyof T]: U } : never;
 
 const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number] = Array as any;
-export class Vector4 extends V4Constructor implements Vector
+export class Vector4 extends V4Constructor implements Vector, ZograMatrix
 {
     get x() { return this[0]; }
     set x(x: number) { this[0] = x; }
@@ -116,9 +110,9 @@ export class Vector4 extends V4Constructor implements Vector
         this[3] = -this[3];
         return this;
     }
-    clone()
+    clone(out: vec4 = vec4.zero()): vec4
     {
-        return vec4(this[0], this[1], this[2], this[3]);
+        return out.set(this);
     }
     equals(v: any)
     {
@@ -136,6 +130,7 @@ export class Vector4 extends V4Constructor implements Vector
         this[1] = v[1];
         this[2] = v[2];
         this[3] = v[3];
+        return this;
     }
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector4>) => Vector4
     {

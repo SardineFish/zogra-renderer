@@ -1,6 +1,6 @@
 import { panic, panicNull } from "../utils/util";
 import { GL, GlobalContext } from "./global";
-import { BuiltinShaderSources, BuiltinUniformNames } from "../builtin-assets/shaders";
+import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { getUniformsLocation } from "../utils/util";
 import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";

@@ -1,92 +1,93 @@
-import { mat4 as glMat4, vec3 as glVec3, quat as glQuat, vec4 as glVec4 } from "gl-matrix";
+import { mat4 as glMat4, vec3 as glVec3, quat as glQuat, vec4 as glVec4, vec2 as glVec2, ReadonlyVec2, ReadonlyVec3, ReadonlyVec4, ReadonlyMat4, mat3 } from "gl-matrix";
 import { quat } from "./quat";
 import { vec3 } from "./vec3";
 import { vec4 } from "./vec4";
 import { vec2 } from "./vec2";
+import { wrapGlMatrix } from "./utils";
+import { ZograMatrix } from "./generic";
 
-export type mat4 = glMat4;
+export type mat4 = Matrix4x4;
 
 
-export function Matrix4x4(values: number[])
+type Mat4Tuple = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+const Mat4Constructor: new (...p: Mat4Tuple) => Mat4Tuple = Array as any;
+const __vec4_temp = vec4.zero();
+export class Matrix4x4 extends Mat4Constructor implements ZograMatrix
 {
-    const mat = glMat4.clone(values as any as glMat4);
-    return mat;
-}
-Matrix4x4.identity = () =>
-{
-    const mat = glMat4.create();
-    return glMat4.identity(mat);
+    constructor(p_0 = 0, p_1 = 0, p_2 = 0, p_3 = 0, p_4 = 0, p_5 = 0, p_6 = 0, p_7 = 0, p_8 = 0, p_9 = 0, p_10 = 0, p_11 = 0, p_12 = 0, p_13 = 0, p_14 = 0, p_15 = 0)
+    {
+        super(p_0, p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10, p_11, p_12, p_13, p_14, p_15);
+
+    }
+    static create()
+    {
+        return new Matrix4x4();
+    }
+    set(m: Readonly<Matrix4x4>)
+    {
+        return glMat4.set(this, ...m as unknown as Mat4Tuple);
+    }
+    clone(out: mat4 = mat4.create())
+    {
+        return out.set(this);
+    }
+    equals(other: any)
+    {
+        return mat4.equal(this, other);
+    }
 }
 
-Matrix4x4.rts = (rotation: quat, translation: vec3, scale: vec3) =>
+export function mat4(p_0 = 0, p_1 = 0, p_2 = 0, p_3 = 0, p_4 = 0, p_5 = 0, p_6 = 0, p_7 = 0, p_8 = 0, p_9 = 0, p_10 = 0, p_11 = 0, p_12 = 0, p_13 = 0, p_14 = 0, p_15 = 0)
 {
-    const m = mat4.identity();
-    glMat4.fromRotationTranslationScale(m, rotation, translation, scale);
-    return m;
+    return new Matrix4x4(p_0, p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10, p_11, p_12, p_13, p_14, p_15);
 }
-Matrix4x4.translate = (translate: vec3) =>
+
+mat4.create = Matrix4x4.create;
+mat4.identity = wrapGlMatrix<mat4, []>(glMat4.identity as any, 0, mat4.create);
+mat4.rts = wrapGlMatrix<mat4, [quat, vec3, vec3]>(glMat4.fromRotationTranslationScale as any, 3, mat4.create);
+mat4.translate = wrapGlMatrix<mat4, [mat4, vec3]>(glMat4.translate as any, 2, Matrix4x4.create);
+mat4.invert = wrapGlMatrix<Matrix4x4, [Matrix4x4]>(glMat4.invert as any, 1, Matrix4x4.create);
+mat4.getTranslation = wrapGlMatrix<vec3, [Matrix4x4]>(glMat4.getTranslation as any, 1, vec3.zero);
+mat4.getRotation = wrapGlMatrix<quat, [mat4]>(glMat4.getRotation as any, 1, quat.create);
+mat4.getScaling = wrapGlMatrix<vec3, [mat4]>(glMat4.getScaling as any, 1, vec3.zero);
+mat4.mulVec4 = wrapGlMatrix<vec4, [mat4, vec4]>((out, m, v) => glVec4.transformMat4(out, v, m) as any, 2, vec4.zero);
+mat4.perspective = wrapGlMatrix<mat4, [number, number, number, number]>(glMat4.perspective as any, 4, Matrix4x4.create);
+mat4.transpose = wrapGlMatrix<mat4, [mat4]>(glMat4.transpose as any, 1, Matrix4x4.create);
+mat4.rotate = wrapGlMatrix<mat4, [mat4, vec3, number]>((out, m, axis, rad) => glMat4.rotate(out, m, rad, axis) as mat4, 3, Matrix4x4.create);
+mat4.scale = wrapGlMatrix<mat4, [mat4, vec3]>(glMat4.scale as any, 2, Matrix4x4.create);
+mat4.fromRotation = wrapGlMatrix<mat4, [quat]>(glMat4.fromRotation as any, 1, Matrix4x4.create);
+mat4.fromScaling = wrapGlMatrix<mat4, [vec3]>(glMat4.fromScaling as any, 1, Matrix4x4.create);
+mat4.mul = wrapGlMatrix<mat4, [mat4, mat4]>(glMat4.mul as any, 2, Matrix4x4.create);
+mat4.mulVector = wrapGlMatrix<vec3, [mat4, vec3]>((out, m, v) =>
 {
-    const m = mat4.identity();
-    return glMat4.translate(m, glMat4.identity(m), translate);
-}
-Matrix4x4.invert = (m: mat4) =>
-{
-    const out = glMat4.create();
-    glMat4.invert(out, m);
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = v[2];
+    __vec4_temp[3] = 0;
+    glVec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    out[2] = __vec4_temp[2];
     return out;
-}
-Matrix4x4.getTranslation = (m: mat4) =>
+}, 2, vec3.zero);
+mat4.mulPoint = wrapGlMatrix<vec3, [mat4, vec3]>((out, m, v) =>
 {
-    let out = vec3(0, 0, 0);
-    glMat4.getTranslation(out as any as glVec3, m);
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = v[2];
+    __vec4_temp[3] = 1;
+    glVec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    out[2] = __vec4_temp[2];
     return out;
-}
-Matrix4x4.getRotation = (m: mat4) =>
-{
-    let out = glQuat.create();
-    glMat4.getRotation(out, m);
-    return out;
-}
-Matrix4x4.getScaling = (m: mat4) =>
-{
-    let out = vec3(0, 0, 0);
-    glMat4.getScaling(out as any as glVec3, m);
-    return out;
-};
-Matrix4x4.mulPoint = (m: mat4, p: Readonly<vec3>) =>
-{
-    let v = vec4(p.x, p.y, p.z, 1);
-    let out = vec4.zero();
-    glVec4.transformMat4(out as any as glVec4, v, m);
-    return vec3(out.x, out.y, out.z);
-}
-Matrix4x4.mulVector = (m: mat4, v: Readonly<vec3>) =>
-{
-    let v4 = vec4(v.x, v.y, v.z, 0);
-    let out = vec4.zero();
-    glVec4.transformMat4(out as any as glVec4, v4, m);
-    return vec3(out.x, out.y, out.z);
-};
-Matrix4x4.mulVec4 = (m: mat4, v: vec4) =>
-{
-    let out = vec4.zero();
-    glVec4.transformMat4(out as any as glVec4, v, m);
-    return out;
-}
-Matrix4x4.perspective = (fov: number, aspect: number, near: number, far: number) =>
-{
-    const out = glMat4.create();
-    return glMat4.perspective(out, fov, aspect, near, far);
-};
-Matrix4x4.transpose = (m: mat4)=>
-{
-    return glMat4.transpose(glMat4.create(), m);
-}
-function simpleOrthogonal(height: number, aspect: number, near: number, far: number)
+}, 2, vec3.zero);
+
+function simpleOrthogonal(height: number, aspect: number, near: number, far: number): mat4
 {
     const out = glMat4.create();
     glMat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);
-    return out;
+    return out as mat4;
 }
 
 function orthogonal(height: number, aspect: number, near: number, far: number): mat4
@@ -98,10 +99,10 @@ function orthogonal(...args: number[]): mat4
 
     const out = glMat4.create();
     glMat4.ortho(...([out, ...args] as Parameters<typeof glMat4.ortho>));
-    return out;
+    return out as mat4;
     
 }
-Matrix4x4.ortho = orthogonal;
+mat4.ortho = orthogonal;
 // (height: number, aspect: number, near: number, far: number) =>
 // {
 //     const out = glMat4.create();
@@ -125,24 +126,7 @@ Matrix4x4.ortho = orthogonal;
 //     out[15] = 1;
 //     return out;
 // }
-Matrix4x4.rotate = (m: mat4, axis: vec3, rad: number) =>
-{
-    return glMat4.rotate(glMat4.create(), m, rad, axis);
-}
-Matrix4x4.scale = (m: mat4, scaling: vec3) =>
-{
-    return glMat4.scale(glMat4.create(), m, scaling);
-};
-Matrix4x4.fromRotation = (axis: vec3, rad: number) =>
-{
-    return glMat4.fromRotation(glMat4.create(), rad, axis);
-}
-Matrix4x4.fromScaling = (scaling: vec3) =>
-{
-    return glMat4.fromScaling(glMat4.create(), scaling);
-}
-
-Matrix4x4.equal = (a: any, b: any) =>
+mat4.equal = (a: any, b: any) =>
 {
     if (a === undefined || b === undefined)
         return false;
@@ -151,20 +135,4 @@ Matrix4x4.equal = (a: any, b: any) =>
     return glMat4.exactEquals(a as glMat4, b as glMat4);
 }
 
-type ArithmetricFunction<T> = {
-    (out: T, a: T, b: T): T;
-    (a: T, b: T): T;
-};
-
-Matrix4x4.mul = ((out: mat4, a: mat4, b: mat4) =>
-{
-    if (!b)
-    {
-        b = a;
-        a = out;
-        out = glMat4.create();
-    }
-    return glMat4.mul(out, a, b);
-}) as ArithmetricFunction<mat4>;
-
-export const mat4 = Matrix4x4;
+// export const mat4 = Matrix4x4;

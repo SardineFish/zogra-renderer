@@ -2,70 +2,72 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mat4 = exports.Matrix4x4 = void 0;
 const gl_matrix_1 = require("gl-matrix");
+const quat_1 = require("./quat");
 const vec3_1 = require("./vec3");
 const vec4_1 = require("./vec4");
-function Matrix4x4(values) {
-    const mat = gl_matrix_1.mat4.clone(values);
-    return mat;
+const utils_1 = require("./utils");
+const Mat4Constructor = Array;
+const __vec4_temp = vec4_1.vec4.zero();
+class Matrix4x4 extends Mat4Constructor {
+    constructor(p_0 = 0, p_1 = 0, p_2 = 0, p_3 = 0, p_4 = 0, p_5 = 0, p_6 = 0, p_7 = 0, p_8 = 0, p_9 = 0, p_10 = 0, p_11 = 0, p_12 = 0, p_13 = 0, p_14 = 0, p_15 = 0) {
+        super(p_0, p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10, p_11, p_12, p_13, p_14, p_15);
+    }
+    static create() {
+        return new Matrix4x4();
+    }
+    set(m) {
+        return gl_matrix_1.mat4.set(this, ...m);
+    }
+    clone(out = mat4.create()) {
+        return out.set(this);
+    }
+    equals(other) {
+        return mat4.equal(this, other);
+    }
 }
 exports.Matrix4x4 = Matrix4x4;
-Matrix4x4.identity = () => {
-    const mat = gl_matrix_1.mat4.create();
-    return gl_matrix_1.mat4.identity(mat);
-};
-Matrix4x4.rts = (rotation, translation, scale) => {
-    const m = exports.mat4.identity();
-    gl_matrix_1.mat4.fromRotationTranslationScale(m, rotation, translation, scale);
-    return m;
-};
-Matrix4x4.translate = (translate) => {
-    const m = exports.mat4.identity();
-    return gl_matrix_1.mat4.translate(m, gl_matrix_1.mat4.identity(m), translate);
-};
-Matrix4x4.invert = (m) => {
-    const out = gl_matrix_1.mat4.create();
-    gl_matrix_1.mat4.invert(out, m);
+function mat4(p_0 = 0, p_1 = 0, p_2 = 0, p_3 = 0, p_4 = 0, p_5 = 0, p_6 = 0, p_7 = 0, p_8 = 0, p_9 = 0, p_10 = 0, p_11 = 0, p_12 = 0, p_13 = 0, p_14 = 0, p_15 = 0) {
+    return new Matrix4x4(p_0, p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10, p_11, p_12, p_13, p_14, p_15);
+}
+exports.mat4 = mat4;
+mat4.create = Matrix4x4.create;
+mat4.identity = utils_1.wrapGlMatrix(gl_matrix_1.mat4.identity, 0, mat4.create);
+mat4.rts = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromRotationTranslationScale, 3, mat4.create);
+mat4.translate = utils_1.wrapGlMatrix(gl_matrix_1.mat4.translate, 2, Matrix4x4.create);
+mat4.invert = utils_1.wrapGlMatrix(gl_matrix_1.mat4.invert, 1, Matrix4x4.create);
+mat4.getTranslation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.getTranslation, 1, vec3_1.vec3.zero);
+mat4.getRotation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.getRotation, 1, quat_1.quat.create);
+mat4.getScaling = utils_1.wrapGlMatrix(gl_matrix_1.mat4.getScaling, 1, vec3_1.vec3.zero);
+mat4.mulVec4 = utils_1.wrapGlMatrix((out, m, v) => gl_matrix_1.vec4.transformMat4(out, v, m), 2, vec4_1.vec4.zero);
+mat4.perspective = utils_1.wrapGlMatrix(gl_matrix_1.mat4.perspective, 4, Matrix4x4.create);
+mat4.transpose = utils_1.wrapGlMatrix(gl_matrix_1.mat4.transpose, 1, Matrix4x4.create);
+mat4.rotate = utils_1.wrapGlMatrix((out, m, axis, rad) => gl_matrix_1.mat4.rotate(out, m, rad, axis), 3, Matrix4x4.create);
+mat4.scale = utils_1.wrapGlMatrix(gl_matrix_1.mat4.scale, 2, Matrix4x4.create);
+mat4.fromRotation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromRotation, 1, Matrix4x4.create);
+mat4.fromScaling = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromScaling, 1, Matrix4x4.create);
+mat4.mul = utils_1.wrapGlMatrix(gl_matrix_1.mat4.mul, 2, Matrix4x4.create);
+mat4.mulVector = utils_1.wrapGlMatrix((out, m, v) => {
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = v[2];
+    __vec4_temp[3] = 0;
+    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    out[2] = __vec4_temp[2];
     return out;
-};
-Matrix4x4.getTranslation = (m) => {
-    let out = vec3_1.vec3(0, 0, 0);
-    gl_matrix_1.mat4.getTranslation(out, m);
+}, 2, vec3_1.vec3.zero);
+mat4.mulPoint = utils_1.wrapGlMatrix((out, m, v) => {
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = v[2];
+    __vec4_temp[3] = 1;
+    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    out[2] = __vec4_temp[2];
     return out;
-};
-Matrix4x4.getRotation = (m) => {
-    let out = gl_matrix_1.quat.create();
-    gl_matrix_1.mat4.getRotation(out, m);
-    return out;
-};
-Matrix4x4.getScaling = (m) => {
-    let out = vec3_1.vec3(0, 0, 0);
-    gl_matrix_1.mat4.getScaling(out, m);
-    return out;
-};
-Matrix4x4.mulPoint = (m, p) => {
-    let v = vec4_1.vec4(p.x, p.y, p.z, 1);
-    let out = vec4_1.vec4.zero();
-    gl_matrix_1.vec4.transformMat4(out, v, m);
-    return vec3_1.vec3(out.x, out.y, out.z);
-};
-Matrix4x4.mulVector = (m, v) => {
-    let v4 = vec4_1.vec4(v.x, v.y, v.z, 0);
-    let out = vec4_1.vec4.zero();
-    gl_matrix_1.vec4.transformMat4(out, v4, m);
-    return vec3_1.vec3(out.x, out.y, out.z);
-};
-Matrix4x4.mulVec4 = (m, v) => {
-    let out = vec4_1.vec4.zero();
-    gl_matrix_1.vec4.transformMat4(out, v, m);
-    return out;
-};
-Matrix4x4.perspective = (fov, aspect, near, far) => {
-    const out = gl_matrix_1.mat4.create();
-    return gl_matrix_1.mat4.perspective(out, fov, aspect, near, far);
-};
-Matrix4x4.transpose = (m) => {
-    return gl_matrix_1.mat4.transpose(gl_matrix_1.mat4.create(), m);
-};
+}, 2, vec3_1.vec3.zero);
 function simpleOrthogonal(height, aspect, near, far) {
     const out = gl_matrix_1.mat4.create();
     gl_matrix_1.mat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);
@@ -78,7 +80,7 @@ function orthogonal(...args) {
     gl_matrix_1.mat4.ortho(...[out, ...args]);
     return out;
 }
-Matrix4x4.ortho = orthogonal;
+mat4.ortho = orthogonal;
 // (height: number, aspect: number, near: number, far: number) =>
 // {
 //     const out = glMat4.create();
@@ -102,32 +104,12 @@ Matrix4x4.ortho = orthogonal;
 //     out[15] = 1;
 //     return out;
 // }
-Matrix4x4.rotate = (m, axis, rad) => {
-    return gl_matrix_1.mat4.rotate(gl_matrix_1.mat4.create(), m, rad, axis);
-};
-Matrix4x4.scale = (m, scaling) => {
-    return gl_matrix_1.mat4.scale(gl_matrix_1.mat4.create(), m, scaling);
-};
-Matrix4x4.fromRotation = (axis, rad) => {
-    return gl_matrix_1.mat4.fromRotation(gl_matrix_1.mat4.create(), rad, axis);
-};
-Matrix4x4.fromScaling = (scaling) => {
-    return gl_matrix_1.mat4.fromScaling(gl_matrix_1.mat4.create(), scaling);
-};
-Matrix4x4.equal = (a, b) => {
+mat4.equal = (a, b) => {
     if (a === undefined || b === undefined)
         return false;
     if (!(a instanceof Array || a instanceof Float32Array) || !(b instanceof Array || b instanceof Float32Array))
         return false;
     return gl_matrix_1.mat4.exactEquals(a, b);
 };
-Matrix4x4.mul = ((out, a, b) => {
-    if (!b) {
-        b = a;
-        a = out;
-        out = gl_matrix_1.mat4.create();
-    }
-    return gl_matrix_1.mat4.mul(out, a, b);
-});
-exports.mat4 = Matrix4x4;
+// export const mat4 = Matrix4x4;
 //# sourceMappingURL=mat4.js.map

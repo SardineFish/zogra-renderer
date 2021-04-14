@@ -1,4 +1,4 @@
-import { panicNull, getUniformsLocation } from "../utils/util";
+import { panicNull, getUniformsLocation, cloneUniformValue } from "../utils/util";
 import { DefaultMaterialType } from "./material-type";
 import { GL, setGlobalContext, GLContext, GlobalContext } from "./global";
 import { Mesh } from "./mesh";
@@ -361,12 +361,12 @@ export class ZograRenderer
 
     }
 
-    setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
+    setGlobalUniform<T extends UniformType>(name: string, type: T, value: Readonly<UniformValueType<T>>)
     {
         this.globalUniforms.set(name, {
             name: name,
             type: type,
-            value: value,
+            value: cloneUniformValue(value),
         });
     }
     unsetGlobalUniform(name: string)

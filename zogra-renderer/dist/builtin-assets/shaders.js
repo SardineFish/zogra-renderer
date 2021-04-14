@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compileBuiltinShaders = exports.BuiltinUniformNames = void 0;
+exports.BuiltinShaderSources = exports.compileBuiltinShaders = exports.BuiltinUniformNames = void 0;
 const shader_1 = require("../core/shader");
 const generated_1 = require("./generated");
+Object.defineProperty(exports, "BuiltinShaderSources", { enumerable: true, get: function () { return generated_1.BuiltinShaderSources; } });
 exports.BuiltinUniformNames = {
     matM: "uTransformM",
     matM_IT: "uTransformM_IT",

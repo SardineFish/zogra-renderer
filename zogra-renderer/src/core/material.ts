@@ -12,7 +12,7 @@ import { BindingData, NumericUnifromTypes, TextureUniformTypes, UniformValueType
 import { UniformType } from "./types"
 import { Asset } from "./asset";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
-import { vec4, Vector } from "../types/vec4";
+import { vec4 } from "../types/vec4";
 import { mat4 } from "../types/mat4";
 
 /**

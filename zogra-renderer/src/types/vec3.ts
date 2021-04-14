@@ -1,10 +1,11 @@
-import { vec4, VecMathArgs, Vector, Vector4 } from "./vec4";
+import { vec4, VecMathArgs, Vector4 } from "./vec4";
 import { Vector2, vec2 } from "./vec2";
+import { IClone, ISet, Vector, ZograMatrix } from "./generic";
 
 export type vec3 = Vector3;
 
 const V3Constructor: new (...p: [number, number, number]) => [number, number, number] = Array as any;
-export class Vector3 extends V3Constructor implements Vector
+export class Vector3 extends V3Constructor implements Vector, ZograMatrix
 {
     get x() { return this[0]; }
     set x(x: number) { this[0] = x; }
@@ -37,7 +38,6 @@ export class Vector3 extends V3Constructor implements Vector
     {
         super(x, y, z);
     }
-
     static zero()
     {
         return new Vector3(0, 0, 0);
@@ -113,9 +113,17 @@ export class Vector3 extends V3Constructor implements Vector
         );
     }
 
-    clone()
+    set(v: Readonly<vec3>)
     {
-        return vec3(this[0], this[1], this[2]);
+        this[0] = v[0];
+        this[1] = v[1];
+        this[2] = v[2];
+        return this;
+    }
+
+    clone(out = vec3.zero()): vec3
+    {
+        return out.set(this);
     }
 
     toVec2()
@@ -131,13 +139,6 @@ export class Vector3 extends V3Constructor implements Vector
         return v[0] === this[0]
             && v[1] === this[1]
             && v[2] === this[2];
-    }
-
-    set(v: Readonly<vec3>)
-    {
-        this[0] = v[0];
-        this[1] = v[1];
-        this[2] = v[2];
     }
 
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Vector3>) => Vector3

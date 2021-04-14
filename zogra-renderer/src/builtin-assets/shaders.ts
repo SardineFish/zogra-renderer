@@ -34,3 +34,5 @@ export function compileBuiltinShaders(gl: WebGL2RenderingContext)
         }, gl)
     };
 }
+
+export { BuiltinShaderSources };
