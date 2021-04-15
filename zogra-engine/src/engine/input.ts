@@ -1,4 +1,4 @@
-import { vec2 } from "zogra-renderer";
+import { GlobalContext, vec2, ZograRenderer } from "zogra-renderer";
 import { minus, plus } from "zogra-renderer";
 import { EventDefinitions } from "zogra-renderer";
 import { DoubleBuffer } from "../utils/util";
@@ -32,9 +32,14 @@ interface PointerBoundingElement
 
 interface InputManagerOptions
 {
+    /** Input event srouce */
     target?: InputEventTarget;
+    /** Input boundary, use to calculate screen position */
     bound?: PointerBoundingElement;
+    /** Lock input by a HTML elemnt */
     pointerLockElement?: Element;
+    /** Specific a renderer to perform screen position convertion */
+    renderer?: ZograRenderer;
 }
 
 // interface InputManagerEvents extends EventDefinitions
@@ -44,6 +49,22 @@ interface InputManagerOptions
 //     keypressed: (key: Keys) => void;
 //     mousemove: ()
 // }
+
+const windowBound: PointerBoundingElement = {
+    getBoundingClientRect()
+    {
+        return <DOMRect>{
+            x: 0,
+            y: 0,
+            left: 0,
+            top: 0,
+            right: document.documentElement.clientWidth || window.innerWidth,
+            bottom: document.documentElement.clientHeight || window.innerHeight,
+            width: document.documentElement.clientWidth || window.innerWidth,
+            height: document.documentElement.clientHeight || window.innerHeight,
+        }
+    }
+}
 
 class InputStates
 {
@@ -58,19 +79,23 @@ export class InputManager
 {
     public preventBrowserShortcut = true;
     private eventTarget: InputEventTarget;
-    private bound?: PointerBoundingElement;
+    private bound: PointerBoundingElement | null = null;
     private states = new DoubleBuffer(() => new InputStates);
     private pointerLockElement: Element;
+    private renderer: ZograRenderer | null = null;
     
     constructor(options: InputManagerOptions = {})
     {
         this.eventTarget = options.target || window;
+        this.pointerLockElement = options.pointerLockElement ?? document.body;
+        this.renderer = options.renderer || GlobalContext().renderer;
+
         if (options.bound)
             this.bound = options.bound;
         else if (options.target?.getBoundingClientRect)
             this.bound = options.target as PointerBoundingElement;
-        
-        this.pointerLockElement = options.pointerLockElement ?? document.body;
+        else
+            this.bound = this.renderer?.canvas;
         
         this.eventTarget.addEventListener("keydown", (e: KeyboardEvent) =>
         {
@@ -115,9 +140,15 @@ export class InputManager
         });
         this.eventTarget.addEventListener("mousemove", e =>
         {
-            const rect = this.bound?.getBoundingClientRect();
-            const offset = vec2(rect?.left ?? 0, rect?.top ?? 0);
-            const pos = minus(vec2(e.clientX, e.clientY), offset);
+            if (!this.renderer)
+                this.renderer = GlobalContext().renderer;
+            const bound = this.bound || this.renderer?.canvas || windowBound;
+            const rect = bound.getBoundingClientRect();
+            const pos = minus(vec2(e.clientX, e.clientY), vec2(rect.left, rect.top));
+            if (this.renderer)
+            {
+                pos.mul(this.renderer.canvasSize).div(vec2(rect.width, rect.height));
+            }
             this.states.back.mouseDelta.plus(vec2(e.movementX, e.movementY));
             // if (this.mouseDelta.magnitude > 100)
             //     console.log(e);
