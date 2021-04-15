@@ -5,15 +5,12 @@ const materials_1 = require("./materials");
 const shaders_1 = require("./shaders");
 const textures_1 = require("./textures");
 const mesh_1 = require("./mesh");
+const global_1 = require("../core/global");
 class BuiltinAssets {
     constructor(gl) {
-        let ctx = {
-            assets: this,
-            gl: gl,
-            width: 0,
-            height: 0,
-            renderer: null,
-        };
+        let ctx = new global_1.GLContext();
+        ctx.assets = this;
+        ctx.gl = gl;
         this.gl = gl;
         this.BuiltinUniforms = shaders_1.BuiltinUniformNames;
         this.shaderSources = shaders_1.BuiltinShaderSources;

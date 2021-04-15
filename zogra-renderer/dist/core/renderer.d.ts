@@ -1,5 +1,5 @@
 import { GLContext } from "./global";
-import { Mesh } from "./mesh";
+import { Mesh, MeshEx } from "./mesh";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
@@ -42,7 +42,7 @@ export declare class ZograRenderer {
     private setupGlobalUniforms;
     drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: RenderBuffer<T>, material: Material, count: number): void;
     drawMeshProceduralInstance(mesh: Mesh, material: Material, count: number): void;
-    drawMesh(mesh: Mesh, transform: Readonly<mat4>, material: Material): void;
+    drawMesh<T extends BufferStructure>(mesh: Mesh | MeshEx<T>, transform: Readonly<mat4>, material: Material): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: Readonly<UniformValueType<T>>): void;
     unsetGlobalUniform(name: string): void;

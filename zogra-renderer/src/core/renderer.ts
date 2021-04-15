@@ -1,7 +1,7 @@
 import { panicNull, getUniformsLocation, cloneUniformValue } from "../utils/util";
 import { DefaultMaterialType } from "./material-type";
 import { GL, setGlobalContext, GLContext, GlobalContext } from "./global";
-import { Mesh } from "./mesh";
+import { Mesh, MeshEx } from "./mesh";
 import { vec3, Vector3 } from "../types/vec3";
 import { Material } from "./material";
 import { Color } from "../types/color";
@@ -58,14 +58,15 @@ export class ZograRenderer
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
 
         this.assets = new BuiltinAssets(this.gl);
-        
-        this.ctx = {
+
+        this.ctx = new GLContext();
+        Object.assign(this.ctx, {
             gl: this.gl,
             width: this.width,
             height: this.height,
             assets: this.assets,
             renderer: this,
-        };
+        });
 
         if (!GlobalContext())
             this.use();
@@ -277,11 +278,11 @@ export class ZograRenderer
         this.setupTransforms(material.shader, mat4.identity());
         mesh.bind(material.shader);
         buffer.bind();
-        buffer.bindVertexArray(material.shader.attributes as AttributeLocations<T>);
+        buffer.bindVertexArray(true, material.shader.attributes as AttributeLocations<T>);
 
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
 
-        buffer.unbindVertexArray(material.shader.attributes as AttributeLocations<T>);
+        buffer.unbindVertexArray(true, material.shader.attributes as AttributeLocations<T>);
         material.unbindRenderTextures();
     }
 
@@ -311,7 +312,7 @@ export class ZograRenderer
         material.unbindRenderTextures();
     }
 
-    drawMesh(mesh: Mesh, transform: Readonly<mat4>, material: Material)
+    drawMesh<T extends BufferStructure>(mesh: Mesh | MeshEx<T>, transform: Readonly<mat4>, material: Material)
     {
         if (!material)
             material = this.assets.materials.error;
@@ -335,6 +336,7 @@ export class ZograRenderer
 
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
 
+        mesh.unbind();
         material.unbindRenderTextures();
     }
 

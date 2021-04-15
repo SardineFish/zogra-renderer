@@ -5,13 +5,13 @@ import { DebugProvider } from "./debug";
 import { ZograRenderer } from "./renderer";
 
 
-export interface GLContext
+export class GLContext
 {
-    gl: WebGL2RenderingContext;
-    width: number;
-    height: number;
-    assets: BuiltinAssets;
-    renderer: ZograRenderer;
+    gl: WebGL2RenderingContext = null as any;
+    width: number = 0 as any;
+    height: number = 0 as any;
+    assets: BuiltinAssets = null as any;
+    renderer: ZograRenderer = null as any;
 }
 
 let ctx: GLContext;

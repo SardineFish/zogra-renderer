@@ -1,7 +1,7 @@
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { DebugProvider } from "./debug";
 import { ZograRenderer } from "./renderer";
-export interface GLContext {
+export declare class GLContext {
     gl: WebGL2RenderingContext;
     width: number;
     height: number;

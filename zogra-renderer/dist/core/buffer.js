@@ -39,8 +39,7 @@ exports.BufferStructureInfo = {
 class RenderBuffer extends Array {
     constructor(structure, items, ctx = global_1.GlobalContext()) {
         super(items);
-        this.static = false;
-        this.instancing = false;
+        this.static = true;
         this.dirty = false;
         this.initialized = false;
         this.glBuf = null;
@@ -101,9 +100,10 @@ class RenderBuffer extends Array {
     bind() {
         this.tryInit(true);
         const gl = this.ctx.gl;
-        this.upload() || gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
+        this.upload();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
     }
-    bindVertexArray(attributes) {
+    bindVertexArray(instancing = false, attributes) {
         this.tryInit(true);
         const gl = this.ctx.gl;
         gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
@@ -122,7 +122,7 @@ class RenderBuffer extends Array {
                 gl.vertexAttribPointer(element.location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
                 gl.vertexAttribPointer(element.location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
                 gl.vertexAttribPointer(element.location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
-                if (this.instancing) {
+                if (instancing) {
                     gl.vertexAttribDivisor(element.location + 0, 1);
                     gl.vertexAttribDivisor(element.location + 1, 1);
                     gl.vertexAttribDivisor(element.location + 2, 1);
@@ -132,11 +132,11 @@ class RenderBuffer extends Array {
             else {
                 gl.enableVertexAttribArray(element.location);
                 gl.vertexAttribPointer(element.location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
-                this.instancing && gl.vertexAttribDivisor(element.location, 1);
+                instancing && gl.vertexAttribDivisor(element.location, 1);
             }
         }
     }
-    unbindVertexArray(attributes) {
+    unbindVertexArray(instancing = false, attributes) {
         this.tryInit(true);
         const gl = this.ctx.gl;
         for (const element of this.structure.elements) {
@@ -150,7 +150,7 @@ class RenderBuffer extends Array {
                 gl.disableVertexAttribArray(element.location + 1);
                 gl.disableVertexAttribArray(element.location + 2);
                 gl.disableVertexAttribArray(element.location + 3);
-                if (this.instancing) {
+                if (instancing) {
                     gl.vertexAttribDivisor(element.location + 0, 0);
                     gl.vertexAttribDivisor(element.location + 1, 0);
                     gl.vertexAttribDivisor(element.location + 2, 0);
@@ -159,7 +159,7 @@ class RenderBuffer extends Array {
             }
             else {
                 gl.disableVertexAttribArray(element.location);
-                this.instancing && gl.vertexAttribDivisor(element.location, 0);
+                instancing && gl.vertexAttribDivisor(element.location, 0);
             }
         }
     }

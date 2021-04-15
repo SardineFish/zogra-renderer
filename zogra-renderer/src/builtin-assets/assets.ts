@@ -18,13 +18,9 @@ export class BuiltinAssets
     BuiltinUniforms: typeof BuiltinUniformNames;
     constructor(gl: WebGL2RenderingContext)
     {
-        let ctx: GLContext = {
-            assets: this,
-            gl: gl,
-            width: 0,
-            height: 0,
-            renderer: null as any,
-        }
+        let ctx = new GLContext();
+        ctx.assets = this;
+        ctx.gl = gl;
         this.gl = gl;
 
         this.BuiltinUniforms = BuiltinUniformNames;

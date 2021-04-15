@@ -1,11 +1,19 @@
 import { vec3 } from "../types/vec3";
 import { vec2 } from "../types/vec2";
 import { Color } from "../types/color";
+import { GLContext } from "./global";
 import { Shader } from "./shader";
 import { Asset } from "./asset";
-import { BufferStructure, BufferStructureInfo } from "./buffer";
-export declare const DefaultVertexData: BufferStructure;
-export declare const DefaultVertexStructInfo: BufferStructureInfo<BufferStructure>;
+import { BufferStructure, BufferStructureInfo, RenderBuffer } from "./buffer";
+export interface DefaultVertexStruct extends BufferStructure {
+    vert: "vec3";
+    color: "vec4";
+    normal: "vec3";
+    uv: "vec2";
+    uv2: "vec2";
+}
+export declare const DefaultVertexData: DefaultVertexStruct;
+export declare const DefaultVertexStructInfo: BufferStructureInfo<DefaultVertexStruct>;
 export declare class Mesh extends Asset {
     private _verts;
     private _triangles;
@@ -41,7 +49,27 @@ export declare class Mesh extends Asset {
     update(): void;
     setup(): WebGLBuffer[];
     bind(shader: Shader): void;
+    unbind(): void;
     destroy(): void;
     private tryInit;
     private initVAO;
+}
+export declare class MeshEx<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset {
+    vertices: RenderBuffer<VertexStruct>;
+    triangles: Uint32Array;
+    private ctx;
+    private initialized;
+    private vertexArray;
+    private elementBuffer;
+    private dirty;
+    constructor();
+    constructor(ctx: GLContext);
+    constructor(structure: VertexStruct);
+    constructor(structure: VertexStruct, ctx: GLContext);
+    resize(vertices: number, indices: number, keepData?: boolean): void;
+    update(upload?: boolean): void;
+    upload(): boolean;
+    bind(): void;
+    unbind(): void;
+    private tryInit;
 }

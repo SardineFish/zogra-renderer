@@ -1,3 +1,7 @@
+import { mat4 } from "../types/mat4";
+import { vec2 } from "../types/vec2";
+import { vec3 } from "../types/vec3";
+import { vec4 } from "../types/vec4";
 import { panic } from "../utils/util";
 import { GLContext, GlobalContext } from "./global";
 import { AttributeLocations, Shader } from "./shader";
@@ -6,6 +10,13 @@ export type BufferElementView<T extends BufferStructure> = {
     [key in keyof T]: Float32Array;
 };
 type BufferElementType = "float" | "vec2" | "vec3" | "vec4" | "mat4";
+export type BufferElementValue<T extends BufferElementType> =
+    T extends "float" ? [number]
+    : T extends "vec2" ? vec2
+    : T extends "vec3" ? vec3
+    : T extends "vec4" ? vec4
+    : T extends "mat4" ? mat4
+    : never;
 export interface BufferStructure
 {
     [key: string]: BufferElementType;
@@ -69,8 +80,7 @@ export const BufferStructureInfo = {
 
 export class RenderBuffer<T extends BufferStructure> extends Array<BufferElementView<T>>
 {
-    public static = false;
-    public instancing = false;
+    public static = true;
 
     private structure: BufferStructureInfo<T>;
     private buffer: Float32Array;
@@ -165,10 +175,11 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
         this.tryInit(true);
 
         const gl = this.ctx.gl;
-        this.upload() || gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
+        this.upload();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
     }
 
-    bindVertexArray(attributes?: AttributeLocations<T>)
+    bindVertexArray(instancing = false, attributes?: AttributeLocations<T>)
     {
         this.tryInit(true);
         const gl = this.ctx.gl;
@@ -193,7 +204,7 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
                 gl.vertexAttribPointer(element.location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
                 gl.vertexAttribPointer(element.location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
                 gl.vertexAttribPointer(element.location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
-                if (this.instancing)
+                if (instancing)
                 {
                     gl.vertexAttribDivisor(element.location + 0, 1);
                     gl.vertexAttribDivisor(element.location + 1, 1);
@@ -205,12 +216,12 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
             {
                 gl.enableVertexAttribArray(element.location);
                 gl.vertexAttribPointer(element.location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
-                this.instancing && gl.vertexAttribDivisor(element.location, 1);
+                instancing && gl.vertexAttribDivisor(element.location, 1);
             }
         }
     }
 
-    unbindVertexArray(attributes?: AttributeLocations<T>)
+    unbindVertexArray(instancing = false, attributes?: AttributeLocations<T>)
     {
         this.tryInit(true);
         const gl = this.ctx.gl;
@@ -229,7 +240,7 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
                 gl.disableVertexAttribArray(element.location + 1);
                 gl.disableVertexAttribArray(element.location + 2);
                 gl.disableVertexAttribArray(element.location + 3);
-                if (this.instancing)
+                if (instancing)
                 {
                     gl.vertexAttribDivisor(element.location + 0, 0);
                     gl.vertexAttribDivisor(element.location + 1, 0);
@@ -240,7 +251,7 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
             else
             {
                 gl.disableVertexAttribArray(element.location);
-                this.instancing && gl.vertexAttribDivisor(element.location, 0);
+                instancing && gl.vertexAttribDivisor(element.location, 0);
             }
         }
     }

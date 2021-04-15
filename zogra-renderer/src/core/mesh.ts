@@ -1,16 +1,24 @@
 import { vec3 } from "../types/vec3";
 import { vec2 } from "../types/vec2";
 import { Color } from "../types/color";
-import { GL } from "./global";
+import { GL, GLContext, GlobalContext } from "./global";
 import { panicNull, panic, fillArray } from "../utils/util";
 import { Shader } from "./shader";
 import { minus, cross } from "../types/math";
 import { Asset } from "./asset";
-import { BufferStructure, BufferStructureInfo } from "./buffer";
+import { BufferStructure, BufferStructureInfo, RenderBuffer } from "./buffer";
 
 const VertDataFloatCount = 14;
 
-export const DefaultVertexData: BufferStructure =
+export interface DefaultVertexStruct extends BufferStructure {
+    vert: "vec3",
+    color: "vec4",
+    normal: "vec3",
+    uv: "vec2",
+    uv2: "vec2",
+}
+
+export const DefaultVertexData: DefaultVertexStruct =
 {
     vert: "vec3",
     color: "vec4",
@@ -221,10 +229,18 @@ export class Mesh extends Asset
         //     gl.enableVertexAttribArray(attributes.normal);
         // }
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        // gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        gl.bindVertexArray(this.VAO);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
         // gl.bindVertexArray(shader.vertexArray);
-        gl.bindVertexArray(this.VAO);
+    }
+
+    unbind()
+    {
+        const gl = this.gl;
+        // gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+        gl.bindVertexArray(null);
     }
 
     destroy()
@@ -281,4 +297,141 @@ export class Mesh extends Asset
         gl.bindVertexArray(null);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
+}
+
+
+export class MeshEx<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset
+{
+    vertices: RenderBuffer<VertexStruct>;
+    triangles: Uint32Array;
+    private ctx: GLContext = null as any;
+    private initialized = false;
+    private vertexArray: WebGLVertexArrayObject = null as any;
+    private elementBuffer: WebGLBuffer = null as any;
+    private dirty = true;
+
+    constructor()
+    constructor(ctx: GLContext)
+    constructor(structure: VertexStruct)
+    constructor(structure: VertexStruct, ctx: GLContext)
+    constructor(...args: [VertexStruct?, GLContext?])
+    {
+        super("Mesh");
+
+        this.triangles = new Uint32Array();
+        if (args.length === 0)
+        {
+            this.ctx = GlobalContext();
+            this.vertices = new RenderBuffer(DefaultVertexData as unknown as VertexStruct, 0);
+        }
+        else if (args.length === 1)
+        {
+            if (args[0] instanceof GLContext)
+            {
+                this.ctx = args[0];
+                this.vertices = new RenderBuffer(DefaultVertexData as unknown as VertexStruct, 0);
+            }
+            else
+            {
+                this.ctx = GlobalContext();
+                this.vertices = new RenderBuffer(args[0] as VertexStruct, 0);
+            }
+        }
+        else
+        {
+            this.ctx = args[1] as GLContext || GlobalContext();
+            this.vertices = new RenderBuffer(args[0] as VertexStruct, 0);
+        }
+
+        this.tryInit(false);
+    }
+
+    resize(vertices: number, indices: number, keepData = false)
+    {
+        this.vertices.resize(vertices, keepData);
+        let oldTriangles = this.triangles;
+        this.triangles = new Uint32Array(indices);
+        
+        if (keepData)
+        {
+            if (indices < oldTriangles.length)
+            {
+                oldTriangles = new Uint32Array(oldTriangles.buffer, 0, indices);
+            }
+            this.triangles.set(oldTriangles, 0);
+        }
+
+        this.dirty = true;
+    }
+
+    update(upload = false)
+    {
+        this.dirty = true;
+        this.vertices.markDirty();
+        if (upload)
+            this.upload();
+    }
+
+    upload()
+    {
+        this.tryInit(true);
+        if (!this.dirty)
+            return false;
+        const gl = this.ctx.gl;
+        
+        this.vertices.upload();
+        
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.elementBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.triangles, gl.STATIC_DRAW);
+
+        this.dirty = false;
+        return true;
+    }
+
+    bind()
+    {
+        this.upload();
+        const gl = this.ctx.gl;
+
+        gl.bindVertexArray(this.vertexArray);
+        // this.vertices.bind();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.elementBuffer);
+        // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.triangles, gl.STATIC_DRAW);
+    }
+
+    unbind()
+    {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+        gl.bindVertexArray(null);
+    }
+
+    private tryInit(required = false)
+    {
+        if (this.initialized)
+            return true;
+        
+        this.ctx = this.ctx || GlobalContext;
+        if (!this.ctx)
+        {
+            if (required)
+                throw new Error("Failed to init mesh without global GL context");
+            return false;
+        }
+        const gl = this.ctx.gl;
+
+        this.elementBuffer = gl.createBuffer() ?? panic("Failed to create element buffer object.");
+        this.vertexArray = gl.createVertexArray() ?? panic("Failed to create vertex array object.");
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.elementBuffer);
+
+        gl.bindVertexArray(this.vertexArray);
+        this.vertices.bindVertexArray();
+        gl.bindVertexArray(null);
+
+        this.initialized = true;
+        return true;
+    }
+
 }
