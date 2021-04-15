@@ -1,99 +1,87 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderBuffer = void 0;
+exports.RenderBuffer = exports.BufferStructureInfo = void 0;
 const util_1 = require("../utils/util");
 const global_1 = require("./global");
+exports.BufferStructureInfo = {
+    from(structure) {
+        const valueLength = {
+            float: 1,
+            vec2: 2,
+            vec3: 3,
+            vec4: 4,
+            mat4: 16,
+        };
+        const structInfo = {
+            elements: [],
+            byteSize: 0,
+            totalSize: 0,
+        };
+        let location = 0;
+        for (const key in structure) {
+            const element = {
+                key,
+                type: structure[key],
+                location: location,
+                length: valueLength[structure[key]],
+            };
+            element.byteLength = element.length * 4;
+            element.offset = structInfo.totalSize;
+            element.byteOffset = structInfo.byteSize;
+            structInfo.totalSize += element.length;
+            structInfo.byteSize += element.byteLength;
+            structInfo.elements.push(element);
+            location += structure[key] === "mat4" ? 4 : 1;
+        }
+        return structInfo;
+    }
+};
 class RenderBuffer extends Array {
     constructor(structure, items, ctx = global_1.GlobalContext()) {
         super(items);
         this.static = false;
+        this.instancing = false;
         this.dirty = false;
         this.initialized = false;
         this.glBuf = null;
-        this.structure = structure;
+        this.structure = exports.BufferStructureInfo.from(structure);
+        // this.structure = structure;
         this.ctx = ctx;
-        let elementSize = 0;
-        for (const key in structure) {
-            switch (structure[key]) {
-                case "float":
-                    elementSize += 1;
-                    break;
-                case "vec2":
-                    elementSize += 2;
-                    break;
-                case "vec3":
-                    elementSize += 3;
-                    break;
-                case "vec4":
-                    elementSize += 4;
-                    break;
-                case "mat4":
-                    elementSize += 16;
-                    break;
-            }
-        }
-        const elementBytes = elementSize * 4;
         this.buffer = null;
-        this.byteSize = elementBytes * items;
-        this.elementSize = elementSize;
-        this.elementByteSize = elementBytes;
         this.resize(items);
         this.tryInit(false);
     }
-    tryInit(required = false) {
-        var _a;
-        if (this.initialized)
-            return true;
-        const ctx = this.ctx || global_1.GlobalContext();
-        if (!ctx) {
-            if (required)
-                throw new Error("Failed to init render buffer without a global GL context.");
-            return false;
-        }
-        this.ctx = ctx;
-        const gl = ctx.gl;
-        this.glBuf = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer");
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
-        gl.bufferData(gl.ARRAY_BUFFER, this.byteSize, this.static ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
-        this.initialized = true;
-        return true;
-    }
+    get byteLength() { return this.length * this.structure.byteSize; }
     resize(length, keepContent = true) {
         const oldBuffer = this.buffer;
-        this.buffer = new Float32Array(this.elementSize * length);
+        this.buffer = new Float32Array(this.structure.totalSize * length);
         if (keepContent && oldBuffer) {
             this.buffer.set(oldBuffer, 0);
         }
         this.length = length;
-        const elementBytes = this.elementByteSize;
         for (let i = 0; i < this.length; i++) {
-            const element = {};
-            let offset = 0;
-            for (const key in this.structure) {
-                switch (this.structure[key]) {
+            const elementView = {};
+            for (const element of this.structure.elements) {
+                const bufferOffset = i * this.structure.byteSize + element.byteOffset;
+                switch (element.type) {
                     case "float":
-                        element[key] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 1);
-                        offset += 1;
+                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 1);
                         break;
                     case "vec2":
-                        element[key] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 2);
-                        offset += 2;
+                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 2);
                         break;
                     case "vec3":
-                        element[key] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 3);
-                        offset += 3;
+                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 3);
                         break;
                     case "vec4":
-                        element[key] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 4);
-                        offset += 4;
+                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 4);
                         break;
                     case "mat4":
-                        element[key] = new Float32Array(this.buffer.buffer, i * elementBytes + offset * 4, 16);
-                        offset += 16;
+                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 16);
                         break;
                 }
             }
-            this[i] = element;
+            this[i] = elementView;
         }
         this.dirty = true;
     }
@@ -110,82 +98,95 @@ class RenderBuffer extends Array {
         this.dirty = false;
         return true;
     }
-    bindInstanceDraw(shader) {
+    bind() {
         this.tryInit(true);
         const gl = this.ctx.gl;
         this.upload() || gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
-        const locations = shader._internal().attributes;
-        let floatOffset = 0;
-        for (const key in this.structure) {
-            const loc = locations[key];
-            loc >= 0 && gl.enableVertexAttribArray(loc);
-            switch (this.structure[key]) {
-                case "float":
-                    loc >= 0 && gl.vertexAttribPointer(loc, 1, gl.FLOAT, false, this.elementByteSize, floatOffset * 4);
-                    floatOffset += 1;
-                    break;
-                case "vec2":
-                    loc >= 0 && gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, this.elementByteSize, floatOffset * 4);
-                    floatOffset += 2;
-                    break;
-                case "vec3":
-                    loc >= 0 && gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, this.elementByteSize, floatOffset * 4);
-                    floatOffset += 3;
-                    break;
-                case "vec4":
-                    loc >= 0 && gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, this.elementByteSize, floatOffset * 4);
-                    floatOffset += 4;
-                    break;
-                case "mat4":
-                    if (loc >= 0) {
-                        // Matrix 4x4 takes 4 attribute slots
-                        gl.enableVertexAttribArray(loc + 0);
-                        gl.enableVertexAttribArray(loc + 1);
-                        gl.enableVertexAttribArray(loc + 2);
-                        gl.enableVertexAttribArray(loc + 3);
-                        gl.vertexAttribPointer(loc + 0, 4, gl.FLOAT, false, this.elementByteSize, (floatOffset + 0) * 4);
-                        gl.vertexAttribPointer(loc + 1, 4, gl.FLOAT, false, this.elementByteSize, (floatOffset + 4) * 4);
-                        gl.vertexAttribPointer(loc + 2, 4, gl.FLOAT, false, this.elementByteSize, (floatOffset + 8) * 4);
-                        gl.vertexAttribPointer(loc + 3, 4, gl.FLOAT, false, this.elementByteSize, (floatOffset + 12) * 4);
-                        gl.vertexAttribDivisor(loc + 0, 1);
-                        gl.vertexAttribDivisor(loc + 1, 1);
-                        gl.vertexAttribDivisor(loc + 2, 1);
-                        gl.vertexAttribDivisor(loc + 3, 1);
-                    }
-                    floatOffset += 16;
-                    break;
-            }
-            loc >= 0 && gl.vertexAttribDivisor(loc, 1);
-        }
     }
-    cleanupInstanceDraw(shader) {
+    bindVertexArray(attributes) {
         this.tryInit(true);
         const gl = this.ctx.gl;
-        const locations = shader._internal().attributes;
-        for (const key in this.structure) {
-            const loc = locations[key];
-            switch (this.structure[key]) {
-                case "float":
-                case "vec2":
-                case "vec3":
-                case "vec4":
-                    loc >= 0 && gl.vertexAttribDivisor(loc, 0);
-                    loc >= 0 && gl.disableVertexAttribArray(loc);
-                    break;
-                case "mat4":
-                    if (loc >= 0) {
-                        gl.vertexAttribDivisor(loc + 0, 0);
-                        gl.vertexAttribDivisor(loc + 1, 0);
-                        gl.vertexAttribDivisor(loc + 2, 0);
-                        gl.vertexAttribDivisor(loc + 3, 0);
-                        gl.disableVertexAttribArray(loc + 0);
-                        gl.disableVertexAttribArray(loc + 1);
-                        gl.disableVertexAttribArray(loc + 2);
-                        gl.disableVertexAttribArray(loc + 3);
-                    }
-                    break;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
+        for (const element of this.structure.elements) {
+            const location = attributes
+                ? attributes[element.key] || -1
+                : element.location;
+            if (location < 0)
+                continue;
+            if (element.type === "mat4") {
+                gl.enableVertexAttribArray(element.location + 0);
+                gl.enableVertexAttribArray(element.location + 1);
+                gl.enableVertexAttribArray(element.location + 2);
+                gl.enableVertexAttribArray(element.location + 3);
+                gl.vertexAttribPointer(element.location + 0, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 0);
+                gl.vertexAttribPointer(element.location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
+                gl.vertexAttribPointer(element.location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
+                gl.vertexAttribPointer(element.location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
+                if (this.instancing) {
+                    gl.vertexAttribDivisor(element.location + 0, 1);
+                    gl.vertexAttribDivisor(element.location + 1, 1);
+                    gl.vertexAttribDivisor(element.location + 2, 1);
+                    gl.vertexAttribDivisor(element.location + 3, 1);
+                }
+            }
+            else {
+                gl.enableVertexAttribArray(element.location);
+                gl.vertexAttribPointer(element.location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
+                this.instancing && gl.vertexAttribDivisor(element.location, 1);
             }
         }
+    }
+    unbindVertexArray(attributes) {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        for (const element of this.structure.elements) {
+            const location = attributes
+                ? attributes[element.key] || -1
+                : element.location;
+            if (location < 0)
+                continue;
+            if (element.type === "mat4") {
+                gl.disableVertexAttribArray(element.location + 0);
+                gl.disableVertexAttribArray(element.location + 1);
+                gl.disableVertexAttribArray(element.location + 2);
+                gl.disableVertexAttribArray(element.location + 3);
+                if (this.instancing) {
+                    gl.vertexAttribDivisor(element.location + 0, 0);
+                    gl.vertexAttribDivisor(element.location + 1, 0);
+                    gl.vertexAttribDivisor(element.location + 2, 0);
+                    gl.vertexAttribDivisor(element.location + 3, 0);
+                }
+            }
+            else {
+                gl.disableVertexAttribArray(element.location);
+                this.instancing && gl.vertexAttribDivisor(element.location, 0);
+            }
+        }
+    }
+    unbind() {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindVertexArray(null);
+    }
+    tryInit(required = false) {
+        var _a;
+        if (this.initialized)
+            return true;
+        const ctx = this.ctx || global_1.GlobalContext();
+        if (!ctx) {
+            if (required)
+                throw new Error("Failed to init render buffer without a global GL context.");
+            return false;
+        }
+        this.ctx = ctx;
+        const gl = ctx.gl;
+        this.glBuf = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer");
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, this.byteLength, this.static ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        this.initialized = true;
+        return true;
     }
 }
 exports.RenderBuffer = RenderBuffer;

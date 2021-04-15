@@ -88,7 +88,7 @@ export class Lines extends Asset
         const gl = this.gl;
         this.update();
 
-        const attributes = shader._internal().attributes;
+        const attributes = shader.attributes;
 
         // Setup VAO
         const stride = 7 * 4;

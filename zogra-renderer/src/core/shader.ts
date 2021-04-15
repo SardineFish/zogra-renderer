@@ -4,26 +4,18 @@ import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { getUniformsLocation } from "../utils/util";
 import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";
+import { BufferStructure, BufferStructureInfo } from "./buffer";
+import { DefaultVertexData } from "./mesh";
 
-export interface AttributeLocations
-{
-    [key: string]: number;
-    vert: number;
-    color: number;
-    uv: number;
-    uv2: number;
-    normal: number;
-}
+export type AttributeLocations<VertexStruct extends BufferStructure> =
+    {
+        [key in keyof VertexStruct]: number
+    };
 
-export interface ShaderAttributeNames
-{
-    [key: string]: string;
-    vert: string;
-    color: string;
-    uv: string;
-    uv2: string;
-    normal: string;
-}
+export type ShaderAttributeNames<VertexStruct extends BufferStructure> =
+    {
+        [key in keyof VertexStruct]: string;
+    };
 
 export enum DepthTest
 {
@@ -82,13 +74,14 @@ interface ShaderPipelineStateSettinsOptional
     zWrite?: boolean;
 }
 
-interface ShaderSettingsOptional extends ShaderPipelineStateSettinsOptional
+interface ShaderSettingsOptional<VertexData extends BufferStructure> extends ShaderPipelineStateSettinsOptional
 {
     name?: string;
-    attributes?: Partial<ShaderAttributeNames>;
+    vertexStructure?: VertexData,
+    attributes?: Partial<ShaderAttributeNames<VertexData>>;
 }
 
-export const DefaultShaderAttributeNames: ShaderAttributeNames =
+export const DefaultShaderAttributeNames: ShaderAttributeNames<typeof DefaultVertexData> =
 {
     vert: "aPos",
     color: "aColor",
@@ -97,14 +90,19 @@ export const DefaultShaderAttributeNames: ShaderAttributeNames =
     normal: "aNormal",
 };
 
-export class Shader extends Asset
+export class Shader<VertexData extends BufferStructure = typeof DefaultVertexData> extends Asset
 {
     vertexShaderSource: string;
     fragmentShaderSouce: string;
 
-    private attributes: AttributeLocations = null as any;
+    // private attributes: AttributeLocations<VertexData> = null as any;
+    private vertexStruct: BufferStructureInfo<VertexData>;
+    private attributeNames: ShaderAttributeNames<VertexData>;
+    
+    /** @internal */
+    attributes: AttributeLocations<VertexData> = {} as any;
 
-    private options: ShaderSettingsOptional;
+    private options: ShaderSettingsOptional<VertexData>;
     
     private initialized = false;
 
@@ -122,7 +120,7 @@ export class Shader extends Asset
 
     get compiled() { return this._compiled; }
     
-    constructor(vertexShader: string, fragmentShader: string, options: ShaderSettingsOptional = {}, gl = GL())
+    constructor(vertexShader: string, fragmentShader: string, options: ShaderSettingsOptional<VertexData> = {}, gl = GL())
     {
         super(options.name);
         if (!options.name)
@@ -131,6 +129,8 @@ export class Shader extends Asset
         this.fragmentShaderSouce = fragmentShader;
         this.options = options;
         this.gl = gl;
+        this.vertexStruct = BufferStructureInfo.from(this.options.vertexStructure || DefaultVertexData);
+        this.attributeNames = { ...DefaultShaderAttributeNames, ...options.attributes } as ShaderAttributeNames<VertexData>;
 
         this.tryInit();
     }
@@ -253,7 +253,6 @@ export class Shader extends Asset
         this.tryInit(true);
 
         return {
-            attributes: this.attributes,
             options: this.options,
         };
     }
@@ -283,11 +282,11 @@ export class Shader extends Asset
         // const attributes = this.options.attributes || DefaultShaderAttributes;
         const attributeNames = { ...DefaultShaderAttributeNames, ...this.options.attributes };
 
-        this.attributes = {} as AttributeLocations;
+        this.attributes = {} as AttributeLocations<VertexData>;
 
         for (const key in attributeNames)
         {
-            this.attributes[key] = gl.getAttribLocation(this.program, attributeNames[key] as string);
+            this.attributes[key as keyof AttributeLocations<VertexData>] = gl.getAttribLocation(this.program, attributeNames[key] as string);
         }
 
         this.setPipelineStateInternal(this.options);
@@ -317,6 +316,13 @@ export class Shader extends Asset
 
         this.gl.attachShader(this.program, this.vertexShader);
         this.gl.attachShader(this.program, this.fragmentShader);
+
+        for (const element of this.vertexStruct.elements)
+        {
+            if (this.attributeNames[element.key])
+                this.gl.bindAttribLocation(this.program, element.location, this.attributeNames[element.key]);
+        }
+
         this.gl.linkProgram(this.program);
 
         if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS))

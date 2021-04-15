@@ -1,21 +1,13 @@
 import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";
-export interface AttributeLocations {
-    [key: string]: number;
-    vert: number;
-    color: number;
-    uv: number;
-    uv2: number;
-    normal: number;
-}
-export interface ShaderAttributeNames {
-    [key: string]: string;
-    vert: string;
-    color: string;
-    uv: string;
-    uv2: string;
-    normal: string;
-}
+import { BufferStructure } from "./buffer";
+import { DefaultVertexData } from "./mesh";
+export declare type AttributeLocations<VertexStruct extends BufferStructure> = {
+    [key in keyof VertexStruct]: number;
+};
+export declare type ShaderAttributeNames<VertexStruct extends BufferStructure> = {
+    [key in keyof VertexStruct]: string;
+};
 export declare enum DepthTest {
     Disable = -1,
     Always,
@@ -62,15 +54,17 @@ interface ShaderPipelineStateSettinsOptional {
     cull?: Culling;
     zWrite?: boolean;
 }
-interface ShaderSettingsOptional extends ShaderPipelineStateSettinsOptional {
+interface ShaderSettingsOptional<VertexData extends BufferStructure> extends ShaderPipelineStateSettinsOptional {
     name?: string;
-    attributes?: Partial<ShaderAttributeNames>;
+    vertexStructure?: VertexData;
+    attributes?: Partial<ShaderAttributeNames<VertexData>>;
 }
-export declare const DefaultShaderAttributeNames: ShaderAttributeNames;
-export declare class Shader extends Asset {
+export declare const DefaultShaderAttributeNames: ShaderAttributeNames<typeof DefaultVertexData>;
+export declare class Shader<VertexData extends BufferStructure = typeof DefaultVertexData> extends Asset {
     vertexShaderSource: string;
     fragmentShaderSouce: string;
-    private attributes;
+    private vertexStruct;
+    private attributeNames;
     private options;
     private initialized;
     private gl;
@@ -81,7 +75,7 @@ export declare class Shader extends Asset {
     private builtinUniformLocations;
     private _compiled;
     get compiled(): boolean;
-    constructor(vertexShader: string, fragmentShader: string, options?: ShaderSettingsOptional, gl?: WebGL2RenderingContext);
+    constructor(vertexShader: string, fragmentShader: string, options?: ShaderSettingsOptional<VertexData>, gl?: WebGL2RenderingContext);
     uniformLocation(name: string): WebGLUniformLocation | null;
     use(): void;
     setupPipelineStates(): void;
@@ -95,8 +89,7 @@ export declare class Shader extends Asset {
     setPipelineStates(settings: ShaderPipelineStateSettinsOptional): void;
     private setPipelineStateInternal;
     _internal(): {
-        attributes: AttributeLocations;
-        options: ShaderSettingsOptional;
+        options: ShaderSettingsOptional<VertexData>;
     };
     private tryInit;
     private compile;
