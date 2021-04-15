@@ -33,10 +33,20 @@ export declare class Chunk {
     protected tiles: Array<TileData | null>;
     private dirty;
     constructor(basePos: vec2, chunkSize: number);
+    /**
+     *
+     * @param offset Tile offset relative to chunk base position
+     * @returns
+     */
     getTile(offset: vec2): TileData | null;
+    /**
+     *
+     * @param offset Tile offset relative to chunk base position
+     * @param tile
+     */
     setTile(offset: vec2, tile: TileData | null): void;
 }
 export interface TileData {
     collide: boolean;
-    sprite: Sprite;
+    sprite: Sprite | null;
 }

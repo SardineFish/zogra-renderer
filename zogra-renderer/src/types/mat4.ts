@@ -113,7 +113,7 @@ mat4.mulPoint = wrapGlMatrix<vec3, [mat4, vec3]>((out, m, v) =>
 
 function simpleOrthogonal(height: number, aspect: number, near: number, far: number): mat4
 {
-    const out = glMat4.create();
+    const out = mat4.create();
     glMat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);
     return out as mat4;
 }
@@ -125,9 +125,9 @@ function orthogonal(...args: number[]): mat4
     if (args.length === 4)
         return simpleOrthogonal(...(args as [number, number, number, number]));
 
-    const out = glMat4.create();
-    glMat4.ortho(...([out, ...args] as Parameters<typeof glMat4.ortho>));
-    return out as mat4;
+    const out = mat4.create();
+    glMat4.ortho(...([out as glMat4, ...args] as Parameters<typeof glMat4.ortho>));
+    return out;
     
 }
 mat4.ortho = orthogonal;

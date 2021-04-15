@@ -2,12 +2,13 @@ import { Scene } from "./scene";
 import { ZograRenderPipeline, ZograRenderPipelineConstructor } from "../render-pipeline/rp";
 import { Camera } from "./camera";
 import { ZograRenderer } from "zogra-renderer";
-import { EventEmitter, EventDefinitions, IEventSource, EventKeys } from "zogra-renderer";
-export interface Time {
+import { EventEmitter, IEventSource, EventKeys } from "zogra-renderer";
+interface GameTime {
     time: Readonly<number>;
     deltaTime: Readonly<number>;
 }
-interface ZograEngineEvents extends EventDefinitions {
+export declare type Time = Readonly<GameTime>;
+interface ZograEngineEvents {
     update: (t: Time) => void;
     render: (cameras: Camera[]) => void;
     start: () => void;
@@ -20,7 +21,7 @@ export declare class ZograEngine implements IEventSource<ZograEngineEvents> {
     renderPipeline: ZograRenderPipeline;
     eventEmitter: EventEmitter<ZograEngineEvents>;
     private _time;
-    get time(): Readonly<Time>;
+    get time(): Time;
     get scene(): Scene<import("../physics/physics-generic").IPhysicsSystem>;
     set scene(value: Scene<import("../physics/physics-generic").IPhysicsSystem>);
     constructor(canvas: HTMLCanvasElement, RenderPipeline?: ZograRenderPipelineConstructor);

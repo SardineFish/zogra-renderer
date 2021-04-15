@@ -8,6 +8,8 @@ export declare class Transform {
     private _localPosition;
     private _localRotation;
     private _localScaling;
+    private _rotation;
+    private _inv_rotation;
     private _localToWorld;
     private _worldToLocal;
     get localPosition(): Readonly<vec3>;
@@ -22,8 +24,6 @@ export declare class Transform {
     set position(position: Readonly<vec3>);
     get rotation(): Readonly<quat>;
     set rotation(rotation: Readonly<quat>);
-    get scaling(): Readonly<vec3>;
-    set scaling(scaling: Readonly<vec3>);
     get localToWorldMatrix(): Readonly<mat4>;
     get worldToLocalMatrix(): Readonly<mat4>;
     get parent(): Transform | null;

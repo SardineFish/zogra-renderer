@@ -55,10 +55,9 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
         for (let chunkY = minCorner.y; chunkY <= maxCorner.y; chunkY++)
             for (let chunkX = minCorner.x; chunkX <= maxCorner.x; chunkX++)
             {
-                const chunk = this.getChunk(vec2(chunkX, chunkY));
-                if (!chunk)
-                    continue;
-                context.renderer.drawMesh(chunk.mesh, mat4.fromTranslation(vec3(chunkX * this.chunkSize, chunkY * this.chunkSize, 0)), this.materials[0]);
+                const chunk = this.getOrCreateChunk(vec2(chunkX, chunkY));
+                chunk.mesh.update();
+                context.renderer.drawMesh(chunk.mesh, this.localToWorldMatrix, this.materials[0]);
             }
     }
 
@@ -154,15 +153,25 @@ export class Chunk
         this.chunkSize = chunkSize;
         this.basePos = basePos;
         this.tiles = new Array(chunkSize * chunkSize);
-        this.mesh = createChunkMesh(chunkSize);
+        this.mesh = createChunkMesh(basePos, chunkSize);
     }
 
+    /**
+     * 
+     * @param offset Tile offset relative to chunk base position
+     * @returns 
+     */
     getTile(offset: vec2): TileData | null
     {
         const idx = offset.y * this.chunkSize + offset.x;
         return this.tiles[idx];
     }
 
+    /**
+     * 
+     * @param offset Tile offset relative to chunk base position
+     * @param tile 
+     */
     setTile(offset: vec2, tile: TileData | null)
     {
         // if (tile)
@@ -190,7 +199,7 @@ export class Chunk
 export interface TileData
 {
     collide: boolean;
-    sprite: Sprite;
+    sprite: Sprite | null;
 }
 
 function floorReminder(x: number, m: number)
@@ -200,19 +209,18 @@ function floorReminder(x: number, m: number)
         : (m + x % m) % m;
 }
 
-function createChunkMesh(chunkSize: number)
+function createChunkMesh(basePos: Readonly<vec2>, chunkSize: number)
 {
     const builder = new MeshBuilder();
-    const epsilon = 0;
     for (let y = 0; y < chunkSize; y++)
         for (let x = 0; x < chunkSize; x++)
         {
             builder.addPolygon(
                 [
-                    vec3(x - epsilon, y - epsilon, 0),
-                    vec3(x + 1 + epsilon, y - epsilon, 0),
-                    vec3(x + 1 + epsilon, y + 1 + epsilon, 0),
-                    vec3(x - epsilon, y + 1 + epsilon, 0),
+                    vec3(x + basePos.x, y + basePos.y, 0),
+                    vec3(x + 1 + basePos.x, y + basePos.y, 0),
+                    vec3(x + 1 + basePos.x, y + 1 + basePos.y, 0),
+                    vec3(x + basePos.x, y + 1 + basePos.y, 0),
                 ],
                 [
                     vec2(0, 0),

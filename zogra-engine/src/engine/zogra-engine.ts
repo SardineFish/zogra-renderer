@@ -5,13 +5,15 @@ import { ZograRenderer } from "zogra-renderer";
 import { EventEmitter, EventDefinitions, IEventSource, EventKeys } from "zogra-renderer";
 import { UnknownPhysics } from "../physics/physics-generic";
 
-export interface Time
+interface GameTime
 {
     time: Readonly<number>,
     deltaTime: Readonly<number>,
 }
 
-interface ZograEngineEvents extends EventDefinitions
+export type Time = Readonly<GameTime>;
+
+interface ZograEngineEvents
 {
     update: (t: Time) => void;
     render: (cameras: Camera[]) => void;
@@ -27,7 +29,7 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
     renderPipeline: ZograRenderPipeline;
     eventEmitter: EventEmitter<ZograEngineEvents>;
     private _time: Time = { deltaTime: 0, time: 0 };
-    get time(): Readonly<Time> { return this._time; }
+    get time(): Time { return this._time; }
     get scene() { return this._scene }
     set scene(value)
     {

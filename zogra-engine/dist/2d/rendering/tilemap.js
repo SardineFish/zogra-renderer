@@ -36,10 +36,9 @@ class Tilemap extends render_object_1.RenderObject {
         // return;
         for (let chunkY = minCorner.y; chunkY <= maxCorner.y; chunkY++)
             for (let chunkX = minCorner.x; chunkX <= maxCorner.x; chunkX++) {
-                const chunk = this.getChunk(zogra_renderer_1.vec2(chunkX, chunkY));
-                if (!chunk)
-                    continue;
-                context.renderer.drawMesh(chunk.mesh, zogra_renderer_1.mat4.fromTranslation(zogra_renderer_1.vec3(chunkX * this.chunkSize, chunkY * this.chunkSize, 0)), this.materials[0]);
+                const chunk = this.getOrCreateChunk(zogra_renderer_1.vec2(chunkX, chunkY));
+                chunk.mesh.update();
+                context.renderer.drawMesh(chunk.mesh, this.localToWorldMatrix, this.materials[0]);
             }
     }
     getTile(pos) {
@@ -109,12 +108,22 @@ class Chunk {
         this.chunkSize = chunkSize;
         this.basePos = basePos;
         this.tiles = new Array(chunkSize * chunkSize);
-        this.mesh = createChunkMesh(chunkSize);
+        this.mesh = createChunkMesh(basePos, chunkSize);
     }
+    /**
+     *
+     * @param offset Tile offset relative to chunk base position
+     * @returns
+     */
     getTile(offset) {
         const idx = offset.y * this.chunkSize + offset.x;
         return this.tiles[idx];
     }
+    /**
+     *
+     * @param offset Tile offset relative to chunk base position
+     * @param tile
+     */
     setTile(offset, tile) {
         // if (tile)
         //     tile = {
@@ -140,16 +149,15 @@ function floorReminder(x, m) {
         ? x % m
         : (m + x % m) % m;
 }
-function createChunkMesh(chunkSize) {
+function createChunkMesh(basePos, chunkSize) {
     const builder = new zogra_renderer_1.MeshBuilder();
-    const epsilon = 0;
     for (let y = 0; y < chunkSize; y++)
         for (let x = 0; x < chunkSize; x++) {
             builder.addPolygon([
-                zogra_renderer_1.vec3(x - epsilon, y - epsilon, 0),
-                zogra_renderer_1.vec3(x + 1 + epsilon, y - epsilon, 0),
-                zogra_renderer_1.vec3(x + 1 + epsilon, y + 1 + epsilon, 0),
-                zogra_renderer_1.vec3(x - epsilon, y + 1 + epsilon, 0),
+                zogra_renderer_1.vec3(x + basePos.x, y + basePos.y, 0),
+                zogra_renderer_1.vec3(x + 1 + basePos.x, y + basePos.y, 0),
+                zogra_renderer_1.vec3(x + 1 + basePos.x, y + 1 + basePos.y, 0),
+                zogra_renderer_1.vec3(x + basePos.x, y + 1 + basePos.y, 0),
             ], [
                 zogra_renderer_1.vec2(0, 0),
                 zogra_renderer_1.vec2(1, 0),
