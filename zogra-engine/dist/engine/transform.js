@@ -11,6 +11,8 @@ class Transform {
         this._localPosition = zogra_renderer_2.vec3.zero();
         this._localRotation = zogra_renderer_3.quat.identity();
         this._localScaling = zogra_renderer_2.vec3.one();
+        this._rotation = zogra_renderer_3.quat.identity();
+        this._inv_rotation = zogra_renderer_3.quat.identity();
         this._localToWorld = zogra_renderer_1.mat4.identity();
         this._worldToLocal = zogra_renderer_1.mat4.identity();
         this._scene = null;
@@ -40,30 +42,34 @@ class Transform {
         if (!this._parent)
             this.localPosition.set(position);
         else
-            this.localPosition = zogra_renderer_1.mat4.mulPoint(this._parent.worldToLocalMatrix, position);
+            zogra_renderer_1.mat4.mulPoint(this._localPosition, this._parent.worldToLocalMatrix, position);
+        this.updateTransformRecursive();
     }
     get rotation() {
-        if (!this._parent)
-            return this.localRotation;
-        return zogra_renderer_3.quat.mul(this._parent.rotation, this.localRotation);
+        return this._rotation;
     }
     set rotation(rotation) {
         if (!this._parent)
-            this.localRotation = zogra_renderer_3.quat.normalize(rotation);
-        else
-            this.localRotation = zogra_renderer_3.quat.normalize(zogra_renderer_3.quat.mul(zogra_renderer_3.quat.invert(this._parent.rotation), rotation));
+            zogra_renderer_3.quat.normalize(this._localRotation, rotation);
+        else {
+            zogra_renderer_3.quat.mul(this._localRotation, this._parent._inv_rotation, rotation);
+            zogra_renderer_3.quat.normalize(this._localRotation, this._localRotation);
+        }
+        this.updateTransformRecursive();
     }
-    get scaling() {
-        if (!this._parent)
-            return this.localScaling;
-        return zogra_renderer_1.mat4.mulVector(this.localToWorldMatrix, zogra_renderer_2.vec3.one());
-    }
-    set scaling(scaling) {
-        if (!this._parent)
-            this.localScaling.set(scaling);
-        else
-            this.localScaling = zogra_renderer_1.mat4.getScaling(this._parent.worldToLocalMatrix).mul(scaling);
-    }
+    // get scaling(): Readonly<vec3>
+    // {
+    //     if (!this._parent)
+    //         return this.localScaling;
+    //     return mat4.mulVector(this.localToWorldMatrix, vec3.one());
+    // }
+    // set scaling(scaling)
+    // {
+    //     if (!this._parent)
+    //         this.localScaling.set(scaling);
+    //     else
+    //         this.localScaling = mat4.getScaling(this._parent.worldToLocalMatrix).mul(scaling);
+    // }
     get localToWorldMatrix() { return this._localToWorld; }
     get worldToLocalMatrix() { return this._worldToLocal; }
     get parent() { return this._parent; }
@@ -79,6 +85,7 @@ class Transform {
             this.localPosition.plus(motion);
         else
             this.localPosition.plus(zogra_renderer_1.mat4.mulVector(this._parent.worldToLocalMatrix, motion));
+        this.updateTransformRecursive();
     }
     /** @internal */
     __addToScene(scene) {
@@ -89,10 +96,14 @@ class Transform {
         this._scene = null;
     }
     updateTransformRecursive() {
+        this._rotation.set(this._localRotation);
         zogra_renderer_1.mat4.rts(this._localToWorld, this._localRotation, this._localPosition, this._localScaling);
-        if (this._parent)
+        if (this._parent) {
             zogra_renderer_1.mat4.mul(this._localToWorld, this._parent._localToWorld, this._localToWorld);
+            zogra_renderer_3.quat.mul(this._rotation, this._parent._rotation, this._rotation);
+        }
         zogra_renderer_1.mat4.invert(this._worldToLocal, this._localToWorld);
+        zogra_renderer_3.quat.invert(this._inv_rotation, this._rotation);
         for (const child of this.children)
             child.updateTransformRecursive();
     }

@@ -9,7 +9,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Default2DMaterial = void 0;
 const zogra_renderer_1 = require("zogra-renderer");
 const assets_1 = require("../../assets");
-class Default2DMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.default2D)) {
+class Default2DMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.default2D, {
+    cull: zogra_renderer_1.Culling.Disable,
+    depth: zogra_renderer_1.DepthTest.Disable,
+    zWrite: false,
+})) {
     constructor() {
         super(...arguments);
         this.texture = null;
