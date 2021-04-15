@@ -1,5 +1,6 @@
 import { vec3, vec2, Color } from "../types/types";
-import { Mesh } from "../core/mesh";
+import { DefaultVertexData, Mesh, MeshEx } from "../core/mesh";
+import { BufferElementValue, BufferStructure } from "../core/buffer";
 export declare class MeshBuilder {
     private verts;
     private triangles;
@@ -14,3 +15,15 @@ export declare class MeshBuilder {
     static ndcQuad(): Mesh;
     static ndcTriangle(): Mesh;
 }
+declare type VertexData<T extends BufferStructure> = {
+    [key in keyof T]: BufferElementValue<T[key]>;
+};
+export declare class MeshBuilderEx<VertexStruct extends BufferStructure = typeof DefaultVertexData> {
+    private mesh;
+    private verticesCount;
+    private indicesCount;
+    constructor(verticesCapacity?: number, trianglesCapacity?: number, structure?: VertexStruct);
+    addPolygon<T extends Partial<VertexData<VertexStruct>>>(...verts: T[]): void;
+    getMesh(): MeshEx<VertexStruct>;
+}
+export {};

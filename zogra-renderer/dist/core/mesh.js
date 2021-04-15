@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Mesh = exports.DefaultVertexStructInfo = exports.DefaultVertexData = void 0;
+exports.MeshEx = exports.Mesh = exports.DefaultVertexStructInfo = exports.DefaultVertexData = void 0;
 const vec3_1 = require("../types/vec3");
 const vec2_1 = require("../types/vec2");
 const color_1 = require("../types/color");
@@ -173,10 +173,16 @@ class Mesh extends asset_1.Asset {
         //     gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 11 * 4);
         //     gl.enableVertexAttribArray(attributes.normal);
         // }
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        // gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        gl.bindVertexArray(this.VAO);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
         // gl.bindVertexArray(shader.vertexArray);
-        gl.bindVertexArray(this.VAO);
+    }
+    unbind() {
+        const gl = this.gl;
+        // gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+        gl.bindVertexArray(null);
     }
     destroy() {
         if (!this.initialized)
@@ -219,4 +225,98 @@ class Mesh extends asset_1.Asset {
     }
 }
 exports.Mesh = Mesh;
+class MeshEx extends asset_1.Asset {
+    constructor(...args) {
+        super("Mesh");
+        this.ctx = null;
+        this.initialized = false;
+        this.vertexArray = null;
+        this.elementBuffer = null;
+        this.dirty = true;
+        this.triangles = new Uint32Array();
+        if (args.length === 0) {
+            this.ctx = global_1.GlobalContext();
+            this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0);
+        }
+        else if (args.length === 1) {
+            if (args[0] instanceof global_1.GLContext) {
+                this.ctx = args[0];
+                this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0);
+            }
+            else {
+                this.ctx = global_1.GlobalContext();
+                this.vertices = new buffer_1.RenderBuffer(args[0], 0);
+            }
+        }
+        else {
+            this.ctx = args[1] || global_1.GlobalContext();
+            this.vertices = new buffer_1.RenderBuffer(args[0], 0);
+        }
+        this.tryInit(false);
+    }
+    resize(vertices, indices, keepData = false) {
+        this.vertices.resize(vertices, keepData);
+        let oldTriangles = this.triangles;
+        this.triangles = new Uint32Array(indices);
+        if (keepData) {
+            if (indices < oldTriangles.length) {
+                oldTriangles = new Uint32Array(oldTriangles.buffer, 0, indices);
+            }
+            this.triangles.set(oldTriangles, 0);
+        }
+        this.dirty = true;
+    }
+    update(upload = false) {
+        this.dirty = true;
+        this.vertices.markDirty();
+        if (upload)
+            this.upload();
+    }
+    upload() {
+        this.tryInit(true);
+        if (!this.dirty)
+            return false;
+        const gl = this.ctx.gl;
+        this.vertices.upload();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.elementBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.triangles, gl.STATIC_DRAW);
+        this.dirty = false;
+        return true;
+    }
+    bind() {
+        this.upload();
+        const gl = this.ctx.gl;
+        gl.bindVertexArray(this.vertexArray);
+        // this.vertices.bind();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.elementBuffer);
+        // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.triangles, gl.STATIC_DRAW);
+    }
+    unbind() {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+        gl.bindVertexArray(null);
+    }
+    tryInit(required = false) {
+        var _a, _b;
+        if (this.initialized)
+            return true;
+        this.ctx = this.ctx || global_1.GlobalContext;
+        if (!this.ctx) {
+            if (required)
+                throw new Error("Failed to init mesh without global GL context");
+            return false;
+        }
+        const gl = this.ctx.gl;
+        this.elementBuffer = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create element buffer object.");
+        this.vertexArray = (_b = gl.createVertexArray()) !== null && _b !== void 0 ? _b : util_1.panic("Failed to create vertex array object.");
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.elementBuffer);
+        gl.bindVertexArray(this.vertexArray);
+        this.vertices.bindVertexArray();
+        gl.bindVertexArray(null);
+        this.initialized = true;
+        return true;
+    }
+}
+exports.MeshEx = MeshEx;
 //# sourceMappingURL=mesh.js.map

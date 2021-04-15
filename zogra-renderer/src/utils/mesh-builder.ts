@@ -1,6 +1,8 @@
 import { vec3, vec2, Color, Vector3, mul } from "../types/types";
 import { GlobalContext } from "../core/global";
-import { Mesh } from "../core/mesh";
+import { DefaultVertexData, DefaultVertexStruct, Mesh, MeshEx } from "../core/mesh";
+import { BufferElementValue, BufferElementView, BufferStructure } from "../core/buffer";
+import { UniformValueType } from "../core/types";
 
 export class MeshBuilder 
 {
@@ -117,5 +119,60 @@ export class MeshBuilder
         ];
         mesh.name = "mesh_ndc_triangle";
         return mesh;
+    }
+}
+
+type VertexData<T extends BufferStructure> = {
+    [key in keyof T]: BufferElementValue<T[key]>
+}
+
+export class MeshBuilderEx<VertexStruct extends BufferStructure = typeof DefaultVertexData>
+{
+    private mesh: MeshEx<VertexStruct>;
+    private verticesCount = 0;
+    private indicesCount = 0;
+    constructor(verticesCapacity: number = 16, trianglesCapacity: number = verticesCapacity * 3, structure: VertexStruct = DefaultVertexData as unknown as VertexStruct)
+    {
+        this.mesh = new MeshEx(structure);
+
+        this.mesh.resize(verticesCapacity, trianglesCapacity);
+    }
+
+    addPolygon<T extends Partial<VertexData<VertexStruct>>>(...verts: T[])
+    {
+        if (verts.length <= 0)
+            return;
+        if (this.verticesCount + verts.length > this.mesh.vertices.length)
+        {
+            this.mesh.resize(this.mesh.vertices.length * 2, this.mesh.triangles.length * 2, true);
+        }
+        
+        const base = this.verticesCount;
+        for (const key in verts[0])
+        {
+            for (let i = 0; i < verts.length; i++)
+            {
+                this.mesh.vertices[base + i][key].set(verts[i][key] as unknown as number[]);
+            }
+        }
+        for (let i = 0; i < verts.length - 2; i++)
+        {
+            this.mesh.triangles[this.indicesCount + i * 3 + 0] = base + 0;
+            this.mesh.triangles[this.indicesCount + i * 3 + 1] = base + i + 1;
+            this.mesh.triangles[this.indicesCount + i * 3 + 2] = base + i + 2;
+        }
+        this.verticesCount += verts.length;
+        this.indicesCount += (verts.length - 2) * 3;
+    }
+
+    getMesh()
+    {
+        if (this.mesh.triangles.length != this.indicesCount)
+            this.mesh.resize(this.verticesCount, this.indicesCount, true);
+        else if (this.mesh.vertices.length != this.verticesCount)
+            this.mesh.vertices.resize(this.verticesCount, true);
+        
+        
+        return this.mesh;
     }
 }

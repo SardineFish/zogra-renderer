@@ -30,13 +30,14 @@ class ZograRenderer {
         this.scissor = new rect_1.Rect(vec2_1.vec2.zero(), vec2_1.vec2(this.width, this.height));
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         this.assets = new assets_1.BuiltinAssets(this.gl);
-        this.ctx = {
+        this.ctx = new global_1.GLContext();
+        Object.assign(this.ctx, {
             gl: this.gl,
             width: this.width,
             height: this.height,
             assets: this.assets,
             renderer: this,
-        };
+        });
         if (!global_1.GlobalContext())
             this.use();
         this.helperAssets = {
@@ -185,9 +186,9 @@ class ZograRenderer {
         this.setupTransforms(material.shader, mat4_1.mat4.identity());
         mesh.bind(material.shader);
         buffer.bind();
-        buffer.bindVertexArray(material.shader.attributes);
+        buffer.bindVertexArray(true, material.shader.attributes);
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
-        buffer.unbindVertexArray(material.shader.attributes);
+        buffer.unbindVertexArray(true, material.shader.attributes);
         material.unbindRenderTextures();
     }
     drawMeshProceduralInstance(mesh, material, count) {
@@ -227,6 +228,7 @@ class ZograRenderer {
         this.setupGlobalUniforms(material);
         mesh.bind(material.shader);
         gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        mesh.unbind();
         material.unbindRenderTextures();
     }
     drawLines(lines, transform, material) {
