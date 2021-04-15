@@ -1,3 +1,4 @@
+import { ZograRenderer } from "zogra-renderer";
 export declare enum KeyState {
     Pressed = 1,
     Released = 0
@@ -18,16 +19,22 @@ interface PointerBoundingElement {
     getBoundingClientRect(): DOMRect;
 }
 interface InputManagerOptions {
+    /** Input event srouce */
     target?: InputEventTarget;
+    /** Input boundary, use to calculate screen position */
     bound?: PointerBoundingElement;
+    /** Lock input by a HTML elemnt */
     pointerLockElement?: Element;
+    /** Specific a renderer to perform screen position convertion */
+    renderer?: ZograRenderer;
 }
 export declare class InputManager {
     preventBrowserShortcut: boolean;
     private eventTarget;
-    private bound?;
+    private bound;
     private states;
     private pointerLockElement;
+    private renderer;
     constructor(options?: InputManagerOptions);
     get pointerPosition(): import("zogra-renderer").Vector2;
     get pointerDelta(): import("zogra-renderer").Vector2;
