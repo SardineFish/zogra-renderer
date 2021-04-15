@@ -9,6 +9,7 @@ module.exports = {
         "life-game": "./src/life-game.ts",
         "engine-test": "./src/engine-test.ts",
         "fbx-loader": "./src/fbx-loader.ts",
+        "tilemap": "./src/tilemap.ts",
     },
     output: {
         path: path.resolve("./dist"),
@@ -106,6 +107,13 @@ module.exports = {
             inject: true,
             minify: false,
             chunks: ["fbx-loader"],
+        }),
+        new HtmlWebpackPlugin({
+            filename: "tilemap.html",
+            template: "html/base.html",
+            inject: true,
+            minify: false,
+            chunks: ["tilemap"],
         }),
     ]
 };
