@@ -37,7 +37,7 @@ class Tilemap extends render_object_1.RenderObject {
         for (let chunkY = minCorner.y; chunkY <= maxCorner.y; chunkY++)
             for (let chunkX = minCorner.x; chunkX <= maxCorner.x; chunkX++) {
                 const chunk = this.getOrCreateChunk(zogra_renderer_1.vec2(chunkX, chunkY));
-                chunk.mesh.update();
+                // chunk.mesh.update();
                 context.renderer.drawMesh(chunk.mesh, this.localToWorldMatrix, this.materials[0]);
             }
     }
@@ -132,15 +132,16 @@ class Chunk {
         //     };
         let idx = offset.y * this.chunkSize + offset.x;
         this.tiles[idx] = tile;
-        let uv = this.mesh.uvs;
+        // let uv = this.mesh.uvs;
         idx *= 4;
         if (tile === null || tile === void 0 ? void 0 : tile.sprite) {
-            uv[idx + 0] = zogra_renderer_1.vec2(tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMin);
-            uv[idx + 1] = zogra_renderer_1.vec2(tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMin);
-            uv[idx + 2] = zogra_renderer_1.vec2(tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMax);
-            uv[idx + 3] = zogra_renderer_1.vec2(tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMax);
+            this.mesh.vertices[idx + 0].uv.set([tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMin]);
+            this.mesh.vertices[idx + 1].uv.set([tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMin]);
+            this.mesh.vertices[idx + 2].uv.set([tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMax]);
+            this.mesh.vertices[idx + 3].uv.set([tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMax]);
+            this.mesh.update();
         }
-        this.mesh.uvs = uv;
+        // this.mesh.uvs = uv;
     }
 }
 exports.Chunk = Chunk;
@@ -150,29 +151,33 @@ function floorReminder(x, m) {
         : (m + x % m) % m;
 }
 function createChunkMesh(basePos, chunkSize) {
-    const builder = new zogra_renderer_1.MeshBuilder();
+    const builder = new zogra_renderer_1.MeshBuilderEx(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
+    const quad = [
+        {
+            vert: zogra_renderer_1.vec3(0),
+            uv: zogra_renderer_1.vec2(0, 0),
+        },
+        {
+            vert: zogra_renderer_1.vec3(0),
+            uv: zogra_renderer_1.vec2(1, 0),
+        },
+        {
+            vert: zogra_renderer_1.vec3(0),
+            uv: zogra_renderer_1.vec2(1, 1),
+        },
+        {
+            vert: zogra_renderer_1.vec3(0),
+            uv: zogra_renderer_1.vec2(0, 1),
+        }
+    ];
     for (let y = 0; y < chunkSize; y++)
         for (let x = 0; x < chunkSize; x++) {
-            builder.addPolygon([
-                zogra_renderer_1.vec3(x + basePos.x, y + basePos.y, 0),
-                zogra_renderer_1.vec3(x + 1 + basePos.x, y + basePos.y, 0),
-                zogra_renderer_1.vec3(x + 1 + basePos.x, y + 1 + basePos.y, 0),
-                zogra_renderer_1.vec3(x + basePos.x, y + 1 + basePos.y, 0),
-            ], [
-                zogra_renderer_1.vec2(0, 0),
-                zogra_renderer_1.vec2(1, 0),
-                zogra_renderer_1.vec2(1, 1),
-                zogra_renderer_1.vec2(0, 1),
-            ]);
+            quad[0].vert.set([x + basePos.x, y + basePos.y, 0]);
+            quad[1].vert.set([x + 1 + basePos.x, y + basePos.y, 0]);
+            quad[2].vert.set([x + 1 + basePos.x, y + 1 + basePos.y, 0]);
+            quad[3].vert.set([x + basePos.x, y + 1 + basePos.y, 0]);
+            builder.addPolygon(...quad);
         }
-    const mesh = builder.toMesh();
-    mesh.update();
-    const uv2 = mesh.uv2;
-    for (let i = 0; i < uv2.length; i++) {
-        uv2[i] = zogra_renderer_1.vec2(-1, -1);
-    }
-    mesh.uv2 = uv2;
-    mesh.update();
-    return mesh;
+    return builder.getMesh();
 }
 //# sourceMappingURL=tilemap.js.map

@@ -40,7 +40,7 @@ class Default2DRenderPipeline {
             //     context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
             // }
         }
-        this.debuglayer.render(context, data);
+        // this.debuglayer.render(context, data);
         camera.__postRender(context);
     }
 }

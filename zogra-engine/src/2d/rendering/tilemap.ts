@@ -1,4 +1,4 @@
-import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4 } from "zogra-renderer";
+import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4, MeshEx, MeshBuilderEx } from "zogra-renderer";
 import { RenderContext, RenderData, Camera } from "../..";
 import { RenderObject, RenderObjectEvents } from "../../engine/render-object";
 import { ConstructorType } from "../../utils/util";
@@ -56,7 +56,7 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
             for (let chunkX = minCorner.x; chunkX <= maxCorner.x; chunkX++)
             {
                 const chunk = this.getOrCreateChunk(vec2(chunkX, chunkY));
-                chunk.mesh.update();
+                // chunk.mesh.update();
                 context.renderer.drawMesh(chunk.mesh, this.localToWorldMatrix, this.materials[0]);
             }
     }
@@ -142,7 +142,7 @@ export class Chunk
 {
     readonly chunkSize;
     readonly basePos: Readonly<vec2>;
-    mesh: Mesh;
+    mesh: MeshEx;
     
     protected tiles: Array<TileData | null>;
 
@@ -183,16 +183,19 @@ export class Chunk
         let idx = offset.y * this.chunkSize + offset.x;
         this.tiles[idx] = tile;
 
-        let uv = this.mesh.uvs;
+
+
+        // let uv = this.mesh.uvs;
         idx *= 4;
         if (tile?.sprite)
         {
-            uv[idx + 0] = vec2(tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMin);
-            uv[idx + 1] = vec2(tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMin);
-            uv[idx + 2] = vec2(tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMax);
-            uv[idx + 3] = vec2(tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMax);
+            this.mesh.vertices[idx + 0].uv.set([tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMin]);
+            this.mesh.vertices[idx + 1].uv.set([tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMin]);
+            this.mesh.vertices[idx + 2].uv.set([tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMax]);
+            this.mesh.vertices[idx + 3].uv.set([tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMax]);
+            this.mesh.update();
         }
-        this.mesh.uvs = uv;
+        // this.mesh.uvs = uv;
     }
 }
 
@@ -211,32 +214,33 @@ function floorReminder(x: number, m: number)
 
 function createChunkMesh(basePos: Readonly<vec2>, chunkSize: number)
 {
-    const builder = new MeshBuilder();
+    const builder = new MeshBuilderEx(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
+    const quad = [
+        {
+            vert: vec3(0),
+            uv: vec2(0, 0),
+        },
+        {
+            vert: vec3(0),
+            uv: vec2(1, 0),
+        },
+        {
+            vert: vec3(0),
+            uv: vec2(1, 1),
+        },
+        {
+            vert: vec3(0),
+            uv: vec2(0, 1),
+        }];
     for (let y = 0; y < chunkSize; y++)
         for (let x = 0; x < chunkSize; x++)
         {
-            builder.addPolygon(
-                [
-                    vec3(x + basePos.x, y + basePos.y, 0),
-                    vec3(x + 1 + basePos.x, y + basePos.y, 0),
-                    vec3(x + 1 + basePos.x, y + 1 + basePos.y, 0),
-                    vec3(x + basePos.x, y + 1 + basePos.y, 0),
-                ],
-                [
-                    vec2(0, 0),
-                    vec2(1, 0),
-                    vec2(1, 1),
-                    vec2(0, 1),
-                ]);
+            quad[0].vert.set([x + basePos.x, y + basePos.y, 0]);
+            quad[1].vert.set([x + 1 + basePos.x, y + basePos.y, 0]);
+            quad[2].vert.set([x + 1 + basePos.x, y + 1 + basePos.y, 0]);
+            quad[3].vert.set([x + basePos.x, y + 1 + basePos.y, 0]);
+            builder.addPolygon(...quad);
         }
-    const mesh = builder.toMesh();
-    mesh.update();
-    const uv2 = mesh.uv2;
-    for (let i = 0; i < uv2.length; i++)
-    {
-        uv2[i] = vec2(-1, -1);
-    }
-    mesh.uv2 = uv2;
-    mesh.update();
-    return mesh;
+    
+    return builder.getMesh();
 }
