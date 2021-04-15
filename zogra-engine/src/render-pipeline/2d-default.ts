@@ -64,7 +64,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
             // }
         }
 
-        this.debuglayer.render(context, data);
+        // this.debuglayer.render(context, data);
         camera.__postRender(context);
     }
 
