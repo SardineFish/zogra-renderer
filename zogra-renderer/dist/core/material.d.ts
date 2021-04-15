@@ -38,7 +38,7 @@ export declare class Material extends Asset {
     private textureCount;
     protected initialized: boolean;
     constructor(shader: Shader, gl?: WebGL2RenderingContext);
-    get shader(): Shader;
+    get shader(): Shader<import("./buffer").BufferStructure>;
     upload(data: BindingData): void;
     setProp<T extends UniformType>(uniformName: string, type: T, value: Readonly<UniformValueType<T>>): void;
     /**

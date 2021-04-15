@@ -6,6 +6,8 @@ const global_1 = require("./global");
 const shaders_1 = require("../builtin-assets/shaders");
 const util_2 = require("../utils/util");
 const asset_1 = require("./asset");
+const buffer_1 = require("./buffer");
+const mesh_1 = require("./mesh");
 var DepthTest;
 (function (DepthTest) {
     DepthTest[DepthTest["Disable"] = -1] = "Disable";
@@ -49,7 +51,8 @@ exports.DefaultShaderAttributeNames = {
 class Shader extends asset_1.Asset {
     constructor(vertexShader, fragmentShader, options = {}, gl = global_1.GL()) {
         super(options.name);
-        this.attributes = null;
+        /** @internal */
+        this.attributes = {};
         this.initialized = false;
         this.gl = null;
         this.program = null;
@@ -64,6 +67,8 @@ class Shader extends asset_1.Asset {
         this.fragmentShaderSouce = fragmentShader;
         this.options = options;
         this.gl = gl;
+        this.vertexStruct = buffer_1.BufferStructureInfo.from(this.options.vertexStructure || mesh_1.DefaultVertexData);
+        this.attributeNames = Object.assign(Object.assign({}, exports.DefaultShaderAttributeNames), options.attributes);
         this.tryInit();
     }
     get compiled() { return this._compiled; }
@@ -149,7 +154,6 @@ class Shader extends asset_1.Asset {
     _internal() {
         this.tryInit(true);
         return {
-            attributes: this.attributes,
             options: this.options,
         };
     }
@@ -194,6 +198,10 @@ class Shader extends asset_1.Asset {
         }
         this.gl.attachShader(this.program, this.vertexShader);
         this.gl.attachShader(this.program, this.fragmentShader);
+        for (const element of this.vertexStruct.elements) {
+            if (this.attributeNames[element.key])
+                this.gl.bindAttribLocation(this.program, element.location, this.attributeNames[element.key]);
+        }
         this.gl.linkProgram(this.program);
         if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
             throw new Error("Failed to link shader program:\r\n" + this.gl.getProgramInfoLog(this.program));

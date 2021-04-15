@@ -13,7 +13,7 @@ import { vec2, Vector2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { quat } from "../types/quat";
 import { BindingData, UniformType, UniformValueType } from "./types";
-import { Shader, DepthTest, Blending, Culling } from "./shader";
+import { Shader, DepthTest, Blending, Culling, ShaderAttributeNames, AttributeLocations } from "./shader";
 import { Lines } from "./lines";
 import { Rect } from "../types/rect";
 import { MeshBuilder } from "../utils/mesh-builder";
@@ -276,11 +276,12 @@ export class ZograRenderer
         material.upload(data);
         this.setupTransforms(material.shader, mat4.identity());
         mesh.bind(material.shader);
-        buffer.bindInstanceDraw(material.shader);
+        buffer.bind();
+        buffer.bindVertexArray(material.shader.attributes as AttributeLocations<T>);
 
         gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
 
-        buffer.cleanupInstanceDraw(material.shader);
+        buffer.unbindVertexArray(material.shader.attributes as AttributeLocations<T>);
         material.unbindRenderTextures();
     }
 

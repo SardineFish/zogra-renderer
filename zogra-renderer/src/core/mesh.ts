@@ -6,8 +6,20 @@ import { panicNull, panic, fillArray } from "../utils/util";
 import { Shader } from "./shader";
 import { minus, cross } from "../types/math";
 import { Asset } from "./asset";
+import { BufferStructure, BufferStructureInfo } from "./buffer";
 
 const VertDataFloatCount = 14;
+
+export const DefaultVertexData: BufferStructure =
+{
+    vert: "vec3",
+    color: "vec4",
+    normal: "vec3",
+    uv: "vec2",
+    uv2: "vec2",
+};
+
+export const DefaultVertexStructInfo = BufferStructureInfo.from(DefaultVertexData);
 
 export class Mesh extends Asset
 {
@@ -24,7 +36,9 @@ export class Mesh extends Asset
     private vertices = new Float32Array(0);
     private indices = new Uint32Array(0);
 
+    private vertexStruct: BufferStructureInfo<typeof DefaultVertexData>;
 
+    VAO: WebGLVertexArrayObject = null as any;
     VBO: WebGLBuffer = null as any;
     EBO: WebGLBuffer = null as any;
 
@@ -36,6 +50,7 @@ export class Mesh extends Asset
     {
         super();
         this.name = `Mesh_${this.assetID}`;
+        this.vertexStruct = DefaultVertexStructInfo;
         this.gl = gl;
 
         this.tryInit(false);
@@ -129,9 +144,10 @@ export class Mesh extends Asset
             this.vertices = new Float32Array(this.verts.flatMap((vert, idx) => [
                 ...vert,
                 ...this.colors[idx],
+                ...this.normals[idx],
                 ...this.uvs[idx],
                 ...this.uv2[idx],
-                ...this.normals[idx]]));
+                ]));
             if (this.vertices.length != this.verts.length * VertDataFloatCount)
                 throw new Error("Buffer with invalid length.");
             this.indices = new Uint32Array(this.triangles.flat());
@@ -168,45 +184,47 @@ export class Mesh extends Asset
 
         const gl = this.gl;
 
-        const attributes = shader._internal().attributes;
+        // const attributes = shader._internal().attributes;
 
-        // Setup VAO
-        const stride = VertDataFloatCount * 4;
+        // // Setup VAO
+        // const stride = VertDataFloatCount * 4;
+        // gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        // // vert: vec3
+        // if (attributes.vert >= 0)
+        // {
+        //     gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
+        //     gl.enableVertexAttribArray(attributes.vert);
+        // }
+        // // color: vec4
+        // if (attributes.color >= 0)
+        // {
+        //     gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
+        //     gl.enableVertexAttribArray(attributes.color);
+        // }
+        // // uv: vec2
+        // if (attributes.uv >= 0)
+        // {
+        //     gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
+        //     gl.enableVertexAttribArray(attributes.uv);
+        // }
+        // // uv2: vec2
+        // if (attributes.uv2 >= 0)
+        // {
+        //     gl.vertexAttribPointer(attributes.uv2, 2, gl.FLOAT, false, stride, 9 * 4);
+        //     gl.enableVertexAttribArray(attributes.uv2);
+        // }
+        // if (attributes.uv)
+        // // normal: vec3
+        // if (attributes.normal >= 0)
+        // {
+        //     gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 11 * 4);
+        //     gl.enableVertexAttribArray(attributes.normal);
+        // }
+
         gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
-        // vert: vec3
-        if (attributes.vert >= 0)
-        {
-            gl.vertexAttribPointer(attributes.vert, 3, gl.FLOAT, false, stride, 0);
-            gl.enableVertexAttribArray(attributes.vert);
-        }
-        // color: vec4
-        if (attributes.color >= 0)
-        {
-            gl.vertexAttribPointer(attributes.color, 4, gl.FLOAT, false, stride, 3 * 4);
-            gl.enableVertexAttribArray(attributes.color);
-        }
-        // uv: vec2
-        if (attributes.uv >= 0)
-        {
-            gl.vertexAttribPointer(attributes.uv, 2, gl.FLOAT, false, stride, 7 * 4);
-            gl.enableVertexAttribArray(attributes.uv);
-        }
-        // uv2: vec2
-        if (attributes.uv2 >= 0)
-        {
-            gl.vertexAttribPointer(attributes.uv2, 2, gl.FLOAT, false, stride, 9 * 4);
-            gl.enableVertexAttribArray(attributes.uv2);
-        }
-        if (attributes.uv)
-        // normal: vec3
-        if (attributes.normal >= 0)
-        {
-            gl.vertexAttribPointer(attributes.normal, 3, gl.FLOAT, true, stride, 11 * 4);
-            gl.enableVertexAttribArray(attributes.normal);
-        }
-
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
-
+        // gl.bindVertexArray(shader.vertexArray);
+        gl.bindVertexArray(this.VAO);
     }
 
     destroy()
@@ -238,9 +256,29 @@ export class Mesh extends Asset
         this.gl = gl;
         this.VBO = gl.createBuffer() ?? panic("Failed to create vertex buffer.");
         this.EBO = gl.createBuffer() ?? panic("Failed to create element buffer.");
+        this.initVAO();
+
 
         this.initialized = true;
 
         return true;
+    }
+
+
+    private initVAO()
+    {
+        const gl = this.gl;
+        this.VAO = gl.createVertexArray() ?? panic("Failed to create vertex array object.");
+
+        gl.bindVertexArray(this.VAO);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        for (const element of this.vertexStruct.elements)
+        {
+            gl.enableVertexAttribArray(element.location);
+            gl.vertexAttribPointer(element.location, element.length, gl.FLOAT, false, this.vertexStruct.byteSize, element.byteOffset);
+        }
+
+        gl.bindVertexArray(null);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 }

@@ -3,6 +3,9 @@ import { vec2 } from "../types/vec2";
 import { Color } from "../types/color";
 import { Shader } from "./shader";
 import { Asset } from "./asset";
+import { BufferStructure, BufferStructureInfo } from "./buffer";
+export declare const DefaultVertexData: BufferStructure;
+export declare const DefaultVertexStructInfo: BufferStructureInfo<BufferStructure>;
 export declare class Mesh extends Asset {
     private _verts;
     private _triangles;
@@ -14,6 +17,8 @@ export declare class Mesh extends Asset {
     private uploaded;
     private vertices;
     private indices;
+    private vertexStruct;
+    VAO: WebGLVertexArrayObject;
     VBO: WebGLBuffer;
     EBO: WebGLBuffer;
     private gl;
@@ -38,4 +43,5 @@ export declare class Mesh extends Asset {
     bind(shader: Shader): void;
     destroy(): void;
     private tryInit;
+    private initVAO;
 }
