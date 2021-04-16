@@ -58,7 +58,8 @@ class InputManager {
             this.bound = (_c = this.renderer) === null || _c === void 0 ? void 0 : _c.canvas;
         this.eventTarget.addEventListener("keydown", (e) => {
             this.states.back.keyStates.set(e.keyCode, KeyState.Pressed);
-            this.states.back.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
+            if (this.states.current.keyStates.get(e.keyCode) !== KeyState.Pressed)
+                this.states.back.keyStatesThisFrame.set(e.keyCode, KeyState.Pressed);
             if (this.preventBrowserShortcut && e.ctrlKey && (e.keyCode == Keys.S || e.keyCode == Keys.W)) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -78,7 +79,8 @@ class InputManager {
                     return;
             }
             this.states.back.keyStates.set(Keys.Mouse0 + e.button, KeyState.Pressed);
-            this.states.back.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Pressed);
+            if (this.states.current.keyStates.get(Keys.Mouse0 + e.button) !== KeyState.Pressed)
+                this.states.back.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Pressed);
         });
         this.eventTarget.addEventListener("mouseup", e => {
             var _a;
