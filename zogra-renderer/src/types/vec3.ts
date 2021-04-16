@@ -85,8 +85,7 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
     }
     normalize()
     {
-        const m = this.magnitude;
-        return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
+        return vec3.normalize(this, this);
     }
     inverse()
     {
