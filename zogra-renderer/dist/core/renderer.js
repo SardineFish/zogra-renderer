@@ -29,15 +29,16 @@ class ZograRenderer {
         this.canvas.height = this.height;
         this.scissor = new rect_1.Rect(vec2_1.vec2.zero(), vec2_1.vec2(this.width, this.height));
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
-        this.assets = new assets_1.BuiltinAssets(this.gl);
         this.ctx = new global_1.GLContext();
         Object.assign(this.ctx, {
             gl: this.gl,
             width: this.width,
             height: this.height,
-            assets: this.assets,
+            assets: {},
             renderer: this,
         });
+        this.assets = new assets_1.BuiltinAssets(this.ctx);
+        this.ctx.assets = this.assets;
         if (!global_1.GlobalContext())
             this.use();
         this.helperAssets = {
@@ -184,10 +185,10 @@ class ZograRenderer {
         this.useShader(material.shader);
         material.upload(data);
         this.setupTransforms(material.shader, mat4_1.mat4.identity());
-        mesh.bind(material.shader);
+        const elementCount = mesh.bind();
         buffer.bind();
         buffer.bindVertexArray(true, material.shader.attributes);
-        gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
+        gl.drawElementsInstanced(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0, count);
         buffer.unbindVertexArray(true, material.shader.attributes);
         material.unbindRenderTextures();
     }
@@ -206,8 +207,8 @@ class ZograRenderer {
         this.useShader(material.shader);
         material.upload(data);
         this.setupTransforms(material.shader, mat4_1.mat4.identity());
-        mesh.bind(material.shader);
-        gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
+        const elementCount = mesh.bind();
+        gl.drawElementsInstanced(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0, count);
         material.unbindRenderTextures();
     }
     drawMesh(mesh, transform, material) {
@@ -226,8 +227,8 @@ class ZograRenderer {
         material.upload(data);
         this.setupTransforms(material.shader, transform);
         this.setupGlobalUniforms(material);
-        mesh.bind(material.shader);
-        gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        let elementCount = mesh.bind();
+        gl.drawElements(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0);
         mesh.unbind();
         material.unbindRenderTextures();
     }

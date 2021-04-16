@@ -14,7 +14,7 @@ export interface DefaultVertexStruct extends BufferStructure {
 }
 export declare const DefaultVertexData: DefaultVertexStruct;
 export declare const DefaultVertexStructInfo: BufferStructureInfo<DefaultVertexStruct>;
-export declare class Mesh extends Asset {
+export declare class MeshLegacy extends Asset {
     private _verts;
     private _triangles;
     private _uvs;
@@ -54,9 +54,9 @@ export declare class Mesh extends Asset {
     private tryInit;
     private initVAO;
 }
-export declare class MeshEx<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset {
+export declare class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset {
     vertices: RenderBuffer<VertexStruct>;
-    triangles: Uint32Array;
+    indices: Uint32Array;
     private ctx;
     private initialized;
     private vertexArray;
@@ -66,10 +66,41 @@ export declare class MeshEx<VertexStruct extends BufferStructure = typeof Defaul
     constructor(ctx: GLContext);
     constructor(structure: VertexStruct);
     constructor(structure: VertexStruct, ctx: GLContext);
+    /** @deprecated */
+    get verts(): import("../types/vec3").Vector3[];
+    /** @deprecated */
+    set verts(verts: import("../types/vec3").Vector3[]);
+    /** @deprecated */
+    get uvs(): import("../types/vec2").Vector2[];
+    /** @deprecated */
+    set uvs(uvs: import("../types/vec2").Vector2[]);
+    /** @deprecated */
+    get colors(): Color[];
+    /** @deprecated */
+    set colors(colors: Color[]);
+    /** @deprecated */
+    get normals(): import("../types/vec3").Vector3[];
+    /** @deprecated */
+    set normals(normals: import("../types/vec3").Vector3[]);
+    /** @deprecated */
+    get uv2(): import("../types/vec2").Vector2[];
+    /** @deprecated */
+    set uv2(uv2: import("../types/vec2").Vector2[]);
+    /** @deprecated */
+    get triangles(): number[];
+    /** @deprecated */
+    set triangles(triangles: number[]);
+    private getVertexDataArray;
+    private setVertexDataArray;
     resize(vertices: number, indices: number, keepData?: boolean): void;
     update(upload?: boolean): void;
     upload(): boolean;
-    bind(): void;
+    bind(): number;
     unbind(): void;
+    /**
+     * Heavy cost
+     * @param angleThreshold
+     */
+    calculateNormals(angleThreshold?: number): void;
     private tryInit;
 }

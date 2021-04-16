@@ -107,7 +107,7 @@ class Vector4 extends V4Constructor {
         this[3] = v[3] || 0;
         return this;
     }
-    setAll(n) {
+    fill(n) {
         this[0] = this[1] = this[2] = this[3] = n;
         return this;
     }
@@ -205,4 +205,15 @@ vec4.div = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec4.zero);
+vec4.set = utils_1.wrapGlMatrix((out, v) => {
+    out[0] = v[0];
+    out[1] = v[1];
+    out[2] = v[2];
+    out[3] = v[3];
+    return out;
+}, 1, vec4.zero);
+vec4.fill = utils_1.wrapGlMatrix((out, n) => {
+    out[0] = out[1] = out[2] = out[3] = n;
+    return out;
+}, 1, vec4.zero);
 //# sourceMappingURL=vec4.js.map

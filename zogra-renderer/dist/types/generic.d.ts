@@ -10,8 +10,8 @@ interface IClone {
 }
 interface ISet {
     set(value: Readonly<ThisType<this>>): ThisType<this>;
-    set(value: Readonly<number[]>): ThisType<this>;
-    setAll(value: number): ThisType<this>;
+    set(value: Readonly<ArrayLike<number>>): ThisType<this>;
+    fill(value: number): ThisType<this>;
 }
 export interface ZograMatrix extends IEqual, IClone, ISet {
     asMut(): this;

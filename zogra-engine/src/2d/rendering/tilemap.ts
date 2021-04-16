@@ -1,4 +1,4 @@
-import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4, MeshEx, MeshBuilderEx } from "zogra-renderer";
+import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4} from "zogra-renderer";
 import { RenderContext, RenderData, Camera } from "../..";
 import { RenderObject, RenderObjectEvents } from "../../engine/render-object";
 import { ConstructorType } from "../../utils/util";
@@ -142,7 +142,7 @@ export class Chunk
 {
     readonly chunkSize;
     readonly basePos: Readonly<vec2>;
-    mesh: MeshEx;
+    mesh: Mesh;
     
     protected tiles: Array<TileData | null>;
 
@@ -218,7 +218,7 @@ function floorReminder(x: number, m: number)
 
 function createChunkMesh(basePos: Readonly<vec2>, chunkSize: number)
 {
-    const builder = new MeshBuilderEx(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
+    const builder = new MeshBuilder(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
     const quad = [
         {
             vert: vec3(0),
@@ -246,5 +246,5 @@ function createChunkMesh(basePos: Readonly<vec2>, chunkSize: number)
             builder.addPolygon(...quad);
         }
     
-    return builder.getMesh();
+    return builder.toMesh();
 }

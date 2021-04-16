@@ -16,17 +16,16 @@ export class BuiltinAssets
     meshes: ReturnType<typeof createBuiltinMesh>;
     textures: ReturnType<typeof createDefaultTextures>;
     BuiltinUniforms: typeof BuiltinUniformNames;
-    constructor(gl: WebGL2RenderingContext)
+    constructor(ctx: GLContext)
     {
-        let ctx = new GLContext();
-        ctx.assets = this;
-        ctx.gl = gl;
+        const gl = ctx.gl;
         this.gl = gl;
+        ctx.assets = this;
 
         this.BuiltinUniforms = BuiltinUniformNames;
         this.shaderSources = BuiltinShaderSources;
         this.shaders = compileBuiltinShaders(gl);
-        this.meshes = createBuiltinMesh(gl);
+        this.meshes = createBuiltinMesh(ctx);
         this.textures = createDefaultTextures(ctx);
         this.types = createBuiltinMaterialTypes(gl, this.textures, this.shaders);
         this.materials = createBuiltinMaterial(gl, this.types, this.shaders, this.textures);

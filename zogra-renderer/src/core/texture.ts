@@ -349,9 +349,9 @@ function flipTexture(
     gl.uniform1i(shader.uniformLocation(BuiltinUniformNames.mainTex), 0);
 
     const mesh = ctx.assets.meshes.screenQuad;
-    mesh.bind(shader);
+    mesh.bind();
 
-    gl.drawElements(gl.TRIANGLE_STRIP, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+    gl.drawElements(gl.TRIANGLE_STRIP, mesh.indices.length, gl.UNSIGNED_INT, 0);
 
 
     gl.activeTexture(gl.TEXTURE0);

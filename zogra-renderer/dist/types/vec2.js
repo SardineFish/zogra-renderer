@@ -113,7 +113,7 @@ class Vector2 extends V2Constructor {
         this[1] = v[1] || 0;
         return this;
     }
-    setAll(n) {
+    fill(n) {
         this[0] = this[1] = n;
         return this;
     }
@@ -191,4 +191,13 @@ vec2.div = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec2.zero);
+vec2.set = utils_1.wrapGlMatrix((out, v) => {
+    out[0] = v[0];
+    out[1] = v[1];
+    return out;
+}, 1, vec2.zero);
+vec2.fill = utils_1.wrapGlMatrix((out, n) => {
+    out[0] = out[1] = n;
+    return out;
+}, 1, vec2.zero);
 //# sourceMappingURL=vec2.js.map

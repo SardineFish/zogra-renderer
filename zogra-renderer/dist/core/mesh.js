@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MeshEx = exports.Mesh = exports.DefaultVertexStructInfo = exports.DefaultVertexData = void 0;
+exports.Mesh = exports.MeshLegacy = exports.DefaultVertexStructInfo = exports.DefaultVertexData = void 0;
 const vec3_1 = require("../types/vec3");
 const vec2_1 = require("../types/vec2");
 const color_1 = require("../types/color");
@@ -18,7 +18,7 @@ exports.DefaultVertexData = {
     uv2: "vec2",
 };
 exports.DefaultVertexStructInfo = buffer_1.BufferStructureInfo.from(exports.DefaultVertexData);
-class Mesh extends asset_1.Asset {
+class MeshLegacy extends asset_1.Asset {
     constructor(gl = global_1.GL()) {
         super();
         this._verts = [];
@@ -224,8 +224,8 @@ class Mesh extends asset_1.Asset {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 }
-exports.Mesh = Mesh;
-class MeshEx extends asset_1.Asset {
+exports.MeshLegacy = MeshLegacy;
+class Mesh extends asset_1.Asset {
     constructor(...args) {
         super("Mesh");
         this.ctx = null;
@@ -233,36 +233,95 @@ class MeshEx extends asset_1.Asset {
         this.vertexArray = null;
         this.elementBuffer = null;
         this.dirty = true;
-        this.triangles = new Uint32Array();
+        this.indices = new Uint32Array();
         if (args.length === 0) {
             this.ctx = global_1.GlobalContext();
-            this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0);
+            this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0, this.ctx);
         }
         else if (args.length === 1) {
             if (args[0] instanceof global_1.GLContext) {
                 this.ctx = args[0];
-                this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0);
+                this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0, this.ctx);
             }
             else {
                 this.ctx = global_1.GlobalContext();
-                this.vertices = new buffer_1.RenderBuffer(args[0], 0);
+                this.vertices = new buffer_1.RenderBuffer(args[0], 0, this.ctx);
             }
         }
         else {
             this.ctx = args[1] || global_1.GlobalContext();
-            this.vertices = new buffer_1.RenderBuffer(args[0], 0);
+            this.vertices = new buffer_1.RenderBuffer(args[0], 0, this.ctx);
         }
         this.tryInit(false);
     }
+    /** @deprecated */
+    get verts() {
+        return this.getVertexDataArray("vert", vec3_1.vec3.zero);
+    }
+    /** @deprecated */
+    set verts(verts) {
+        this.setVertexDataArray("vert", verts);
+    }
+    /** @deprecated */
+    get uvs() {
+        return this.getVertexDataArray("uv", vec2_1.vec2.zero);
+    }
+    /** @deprecated */
+    set uvs(uvs) {
+        this.setVertexDataArray("uv", uvs);
+    }
+    /** @deprecated */
+    get colors() {
+        return this.getVertexDataArray("color", () => color_1.Color.black);
+    }
+    /** @deprecated */
+    set colors(colors) {
+        this.setVertexDataArray("color", colors);
+    }
+    /** @deprecated */
+    get normals() {
+        return this.getVertexDataArray("uv2", vec3_1.vec3.zero);
+    }
+    /** @deprecated */
+    set normals(normals) {
+        this.setVertexDataArray("normal", normals);
+    }
+    /** @deprecated */
+    get uv2() {
+        return this.getVertexDataArray("uv2", vec2_1.vec2.zero);
+    }
+    /** @deprecated */
+    set uv2(uv2) {
+        this.setVertexDataArray("uv2", uv2);
+    }
+    /** @deprecated */
+    get triangles() {
+        return Array.from(this.indices);
+    }
+    /** @deprecated */
+    set triangles(triangles) {
+        if (triangles.length > this.indices.length)
+            this.indices = new Uint32Array(triangles.length);
+        this.indices.set(triangles);
+    }
+    getVertexDataArray(key, allocator) {
+        return this.vertices.map(vert => allocator().set(vert[key]));
+    }
+    setVertexDataArray(key, values) {
+        const vertices = this.vertices;
+        if (values.length >= this.vertices.length)
+            this.vertices.resize(values.length);
+        values.forEach((value, i) => this.vertices[i][key].set(value));
+    }
     resize(vertices, indices, keepData = false) {
         this.vertices.resize(vertices, keepData);
-        let oldTriangles = this.triangles;
-        this.triangles = new Uint32Array(indices);
+        let oldTriangles = this.indices;
+        this.indices = new Uint32Array(indices);
         if (keepData) {
             if (indices < oldTriangles.length) {
                 oldTriangles = new Uint32Array(oldTriangles.buffer, 0, indices);
             }
-            this.triangles.set(oldTriangles, 0);
+            this.indices.set(oldTriangles, 0);
         }
         this.dirty = true;
     }
@@ -279,7 +338,7 @@ class MeshEx extends asset_1.Asset {
         const gl = this.ctx.gl;
         this.vertices.upload();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.elementBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.triangles, gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
         this.dirty = false;
         return true;
     }
@@ -287,9 +346,8 @@ class MeshEx extends asset_1.Asset {
         this.upload();
         const gl = this.ctx.gl;
         gl.bindVertexArray(this.vertexArray);
-        // this.vertices.bind();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.elementBuffer);
-        // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.triangles, gl.STATIC_DRAW);
+        return this.indices.length;
     }
     unbind() {
         this.tryInit(true);
@@ -297,11 +355,35 @@ class MeshEx extends asset_1.Asset {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
         gl.bindVertexArray(null);
     }
+    // https://schemingdeveloper.com/2014/10/17/better-method-recalculate-normals-unity/
+    /**
+     * Heavy cost
+     * @param angleThreshold
+     */
+    calculateNormals(angleThreshold = 0) {
+        if (this.triangles.length % 3 !== 0)
+            throw new Error("Invalid triangles.");
+        // this.normals = fillArray(() => vec3(0, 0, 0), this.verts.length);
+        for (let i = 0; i < this.triangles.length; i += 3) {
+            const a = this.vertices[this.triangles[i + 0]].vert;
+            const b = this.vertices[this.triangles[i + 1]].vert;
+            const c = this.vertices[this.triangles[i + 2]].vert;
+            const u = math_1.minus(b, a);
+            const v = math_1.minus(c, a);
+            const normal = math_1.cross(u, v).normalize();
+            vec3_1.vec3.plus(this.vertices[this.triangles[i + 0]].normal, this.vertices[this.triangles[i + 0]].normal, normal);
+            vec3_1.vec3.plus(this.vertices[this.triangles[i + 1]].normal, this.vertices[this.triangles[i + 1]].normal, normal);
+            vec3_1.vec3.plus(this.vertices[this.triangles[i + 2]].normal, this.vertices[this.triangles[i + 2]].normal, normal);
+        }
+        for (let i = 0; i < this.vertices.length; i++) {
+            vec3_1.vec3.normalize(this.vertices[i].normal, this.vertices[i].normal);
+        }
+    }
     tryInit(required = false) {
         var _a, _b;
         if (this.initialized)
             return true;
-        this.ctx = this.ctx || global_1.GlobalContext;
+        this.ctx = this.ctx || global_1.GlobalContext();
         if (!this.ctx) {
             if (required)
                 throw new Error("Failed to init mesh without global GL context");
@@ -318,5 +400,5 @@ class MeshEx extends asset_1.Asset {
         return true;
     }
 }
-exports.MeshEx = MeshEx;
+exports.Mesh = Mesh;
 //# sourceMappingURL=mesh.js.map

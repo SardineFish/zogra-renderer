@@ -155,7 +155,7 @@ function floorReminder(x, m) {
         : (m + x % m) % m;
 }
 function createChunkMesh(basePos, chunkSize) {
-    const builder = new zogra_renderer_1.MeshBuilderEx(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
+    const builder = new zogra_renderer_1.MeshBuilder(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
     const quad = [
         {
             vert: zogra_renderer_1.vec3(0),
@@ -182,6 +182,6 @@ function createChunkMesh(basePos, chunkSize) {
             quad[3].vert.set([x + basePos.x, y + 1 + basePos.y, 0]);
             builder.addPolygon(...quad);
         }
-    return builder.getMesh();
+    return builder.toMesh();
 }
 //# sourceMappingURL=tilemap.js.map

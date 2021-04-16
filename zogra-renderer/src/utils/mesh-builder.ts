@@ -1,20 +1,20 @@
 import { vec3, vec2, Color, Vector3, mul } from "../types/types";
-import { GlobalContext } from "../core/global";
-import { DefaultVertexData, DefaultVertexStruct, Mesh, MeshEx } from "../core/mesh";
+import { GLContext, GlobalContext } from "../core/global";
+import { DefaultVertexData, DefaultVertexStruct, Mesh} from "../core/mesh";
 import { BufferElementValue, BufferElementView, BufferStructure } from "../core/buffer";
 import { UniformValueType } from "../core/types";
 
-export class MeshBuilder 
+export class MeshBuilderLegacy
 {
     private verts: vec3[] = [];
     private triangles: number[] = [];
     private uvs: vec2[] = [];
     private colors: Color[] = [];
-    private gl: WebGL2RenderingContext;
+    private ctx: GLContext;
 
-    constructor(capacity: number = 0, gl = GlobalContext().gl)
+    constructor(capacity: number = 0, ctx = GlobalContext())
     {
-        this.gl = gl;
+        this.ctx = ctx;
     }
     addPolygon(verts: vec3[], uvs: vec2[])
     {
@@ -52,7 +52,7 @@ export class MeshBuilder
     }
     toMesh()
     {
-        const mesh = new Mesh(this.gl);
+        const mesh = new Mesh(this.ctx);
         mesh.verts = this.verts;
         mesh.triangles = this.triangles;
         mesh.colors = this.colors;
@@ -126,14 +126,14 @@ type VertexData<T extends BufferStructure> = {
     [key in keyof T]: BufferElementValue<T[key]>
 }
 
-export class MeshBuilderEx<VertexStruct extends BufferStructure = typeof DefaultVertexData>
+export class MeshBuilder<VertexStruct extends BufferStructure = typeof DefaultVertexData>
 {
-    private mesh: MeshEx<VertexStruct>;
+    private mesh: Mesh<VertexStruct>;
     private verticesCount = 0;
     private indicesCount = 0;
-    constructor(verticesCapacity: number = 16, trianglesCapacity: number = verticesCapacity * 3, structure: VertexStruct = DefaultVertexData as unknown as VertexStruct)
+    constructor(verticesCapacity: number = 16, trianglesCapacity: number = verticesCapacity * 3, structure: VertexStruct = DefaultVertexData as unknown as VertexStruct, ctx = GlobalContext())
     {
-        this.mesh = new MeshEx(structure);
+        this.mesh = new Mesh(structure, ctx);
 
         this.mesh.resize(verticesCapacity, trianglesCapacity);
     }
@@ -144,7 +144,7 @@ export class MeshBuilderEx<VertexStruct extends BufferStructure = typeof Default
             return;
         if (this.verticesCount + verts.length > this.mesh.vertices.length)
         {
-            this.mesh.resize(this.mesh.vertices.length * 2, this.mesh.triangles.length * 2, true);
+            this.mesh.resize(this.mesh.vertices.length * 2, this.mesh.indices.length * 2, true);
         }
         
         const base = this.verticesCount;
@@ -157,17 +157,17 @@ export class MeshBuilderEx<VertexStruct extends BufferStructure = typeof Default
         }
         for (let i = 0; i < verts.length - 2; i++)
         {
-            this.mesh.triangles[this.indicesCount + i * 3 + 0] = base + 0;
-            this.mesh.triangles[this.indicesCount + i * 3 + 1] = base + i + 1;
-            this.mesh.triangles[this.indicesCount + i * 3 + 2] = base + i + 2;
+            this.mesh.indices[this.indicesCount + i * 3 + 0] = base + 0;
+            this.mesh.indices[this.indicesCount + i * 3 + 1] = base + i + 1;
+            this.mesh.indices[this.indicesCount + i * 3 + 2] = base + i + 2;
         }
         this.verticesCount += verts.length;
         this.indicesCount += (verts.length - 2) * 3;
     }
 
-    getMesh()
+    toMesh()
     {
-        if (this.mesh.triangles.length != this.indicesCount)
+        if (this.mesh.indices.length != this.indicesCount)
             this.mesh.resize(this.verticesCount, this.indicesCount, true);
         else if (this.mesh.vertices.length != this.verticesCount)
             this.mesh.vertices.resize(this.verticesCount, true);
@@ -176,10 +176,10 @@ export class MeshBuilderEx<VertexStruct extends BufferStructure = typeof Default
         return this.mesh;
     }
 
-    static quad(center = vec2.zero(), size = vec2.one())
+    static quad(center = vec2.zero(), size = vec2.one(), ctx = GlobalContext())
     {
         const halfSize = vec2.mul(size, 0.5);
-        const mesh = new MeshEx();
+        const mesh = new Mesh(ctx);
         mesh.resize(4, 6);
         mesh.vertices[0].vert.set([center.x - halfSize.x, center.y - halfSize.y, 0]);
         mesh.vertices[1].vert.set([center.x + halfSize.x, center.y - halfSize.y, 0]);
@@ -197,6 +197,190 @@ export class MeshBuilderEx<VertexStruct extends BufferStructure = typeof Default
         mesh.vertices[1].color.fill(1);
         mesh.vertices[2].color.fill(1);
         mesh.vertices[3].color.fill(1);
-        mesh.triangles.set([0, 1, 2, 0, 2, 3]);
+        mesh.indices.set([0, 1, 2, 0, 2, 3]);
+        return mesh;
+    }
+
+    static ndcQuad(ctx = GlobalContext())
+    {
+        return this.quad(vec2.zero(), vec2(2, 2), ctx);
+    }
+    static ndcTriangle(ctx = GlobalContext())
+    {
+        const mesh = new Mesh(ctx);
+        mesh.resize(3, 3);
+        mesh.vertices[0].vert.set([-1, -1, 0]);
+        mesh.vertices[1].vert.set([3, -1, 0]);
+        mesh.vertices[2].vert.set([-1, 3, 0]);
+        mesh.vertices[0].uv.set([0, 0]);
+        mesh.vertices[1].uv.set([2, 0]);
+        mesh.vertices[2].uv.set([0, 2]);
+        mesh.vertices[0].normal.set([0, 0, 1]);
+        mesh.vertices[1].normal.set([0, 0, 1]);
+        mesh.vertices[2].normal.set([0, 0, 1]);
+        mesh.vertices[0].color.fill(1);
+        mesh.vertices[1].color.fill(1);
+        mesh.vertices[2].color.fill(1);
+
+        mesh.indices.set([0, 1, 2]);
+        mesh.name = "mesh_ndc_triangle";
+        return mesh;
+    }
+
+    static cube(center = vec3.zero(), size = vec3.one(), ctx: GLContext)
+    {
+        const verts = [
+            vec3(-.5, -.5, -.5).mul(size).plus(center),
+            vec3(.5, -.5, -.5).mul(size).plus(center),
+            vec3(.5, .5, -.5).mul(size).plus(center),
+            vec3(-.5, .5, -.5).mul(size).plus(center),
+            vec3(-.5, -.5, .5).mul(size).plus(center),
+            vec3(.5, -.5, .5).mul(size).plus(center),
+            vec3(.5, .5, .5).mul(size).plus(center),
+            vec3(-.5, .5, .5).mul(size).plus(center),
+        ];
+        const uvs = [
+            vec2(0, 0),
+            vec2(1, 0),
+            vec2(1, 1),
+            vec2(0, 1)
+        ];
+        const mb = new MeshBuilder(24, 36, DefaultVertexData, ctx);
+        mb.addPolygon(
+            {
+                vert: verts[1],
+                uv: uvs[0],
+                normal: vec3(0, 0, -1),
+            },
+            {
+                vert: verts[0],
+                uv: uvs[1],
+                normal: vec3(0, 0, -1),
+            },
+            {
+                vert: verts[3],
+                uv: uvs[2],
+                normal: vec3(0, 0, -1),
+            },
+            {
+                vert: verts[2],
+                uv: uvs[3],
+                normal: vec3(0, 0, -1),
+            }
+        );
+        mb.addPolygon(
+            {
+                vert: verts[5],
+                uv: uvs[0],
+                normal: vec3(1, 0, 0),
+            },
+            {
+                vert: verts[1],
+                uv: uvs[1],
+                normal: vec3(1, 0, 0),
+            },
+            {
+                vert: verts[2],
+                uv: uvs[2],
+                normal: vec3(1, 0, 0),
+            },
+            {
+                vert: verts[6],
+                uv: uvs[3],
+                normal: vec3(1, 0, 0),
+            },
+        );
+        mb.addPolygon(
+            {
+                vert: verts[4],
+                uv: uvs[0],
+                normal: vec3(0, 0, 1),
+            },
+            {
+                vert: verts[5],
+                uv: uvs[1],
+                normal: vec3(0, 0, 1),
+            },
+            {
+                vert: verts[6],
+                uv: uvs[2],
+                normal: vec3(0, 0, 1),
+            },
+            {
+                vert: verts[7],
+                uv: uvs[3],
+                normal: vec3(0, 0, 1),
+            },
+        );
+        mb.addPolygon(
+            {
+                vert: verts[0],
+                uv: uvs[0],
+                normal: vec3(-1, 0, 0),
+            },
+            {
+                vert: verts[4],
+                uv: uvs[1],
+                normal: vec3(-1, 0, 0),
+            },
+            {
+                vert: verts[7],
+                uv: uvs[2],
+                normal: vec3(-1, 0, 0),
+            },
+            {
+                vert: verts[3],
+                uv: uvs[3],
+                normal: vec3(-1, 0, 0),
+            },
+        );
+        mb.addPolygon(
+            {
+                vert: verts[7],
+                uv: uvs[0],
+                normal: vec3(0, 1, 0),
+            },
+            {
+                vert: verts[6],
+                uv: uvs[1],
+                normal: vec3(0, 1, 0),
+            },
+            {
+                vert: verts[2],
+                uv: uvs[2],
+                normal: vec3(0, 1, 0),
+            },
+            {
+                vert: verts[3],
+                uv: uvs[3],
+                normal: vec3(0, 1, 0),
+            },
+        );
+        mb.addPolygon(
+            {
+                vert: verts[0],
+                uv: uvs[0],
+                normal: vec3(0, -1, 0),
+            },
+            {
+                vert: verts[1],
+                uv: uvs[1],
+                normal: vec3(0, -1, 0),
+            },
+            {
+                vert: verts[5],
+                uv: uvs[2],
+                normal: vec3(0, -1, 0),
+            },
+            {
+                vert: verts[4],
+                uv: uvs[3],
+                normal: vec3(0, -1, 0),
+            },
+        );
+        const mesh = mb.toMesh();
+        mesh.vertices.forEach(vert => vert.color.fill(1));
+        mesh.name = "mesh_cube";
+        return mesh;
     }
 }
