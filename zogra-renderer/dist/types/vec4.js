@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.vec4 = exports.Vector4 = void 0;
 const vec3_1 = require("./vec3");
 const vec2_1 = require("./vec2");
+const gl_matrix_1 = require("gl-matrix");
 const utils_1 = require("./utils");
 const V4Constructor = Array;
 class Vector4 extends V4Constructor {
@@ -72,8 +73,7 @@ class Vector4 extends V4Constructor {
             + this[3] * v[3];
     }
     normalize() {
-        const m = this.magnitude;
-        return m == 0 ? vec4.zero() : this.clone().div(vec4(m, m, m, m));
+        return vec4.normalize(this, this);
     }
     inverse() {
         this[0] = 1 / this[0];
@@ -141,10 +141,7 @@ vec4.floor = (v) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z), Math
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 vec4.math = Vector4.math;
-// vec4.plus = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.add as any, 2, vec4.zero);
-// vec4.minus = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.sub as any, 2, vec4.zero);
-// vec4.mul = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.mul as any, 2, vec4.zero);
-// vec4.div = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.div as any, 2, vec4.zero);
+vec4.normalize = utils_1.wrapGlMatrix(gl_matrix_1.vec4.normalize, 1, vec4.zero);
 vec4.plus = utils_1.wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
         out[0] = a[0] + b;

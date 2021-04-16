@@ -7,3 +7,4 @@ export * from "./rendering/sprite";
 export * from "./rendering/sprite-object";
 export * from "./rendering/tilemap";
 export * from "./rendering/materials";
+export * from "./rendering/line-renderer";

@@ -4,6 +4,7 @@ exports.vec2 = exports.Vector2 = void 0;
 const vec4_1 = require("./vec4");
 const vec3_1 = require("./vec3");
 const utils_1 = require("./utils");
+const gl_matrix_1 = require("gl-matrix");
 const V2Constructor = Array;
 class Vector2 extends V2Constructor {
     get x() { return this[0]; }
@@ -22,6 +23,9 @@ class Vector2 extends V2Constructor {
     }
     get inversed() {
         return this.clone().inverse();
+    }
+    get isZero() {
+        return this.x === 0 && this.y === 0;
     }
     constructor(x, y) {
         super(x, y);
@@ -53,34 +57,23 @@ class Vector2 extends V2Constructor {
     }
     asMut() { return this; }
     plus(v) {
-        this[0] += v[0];
-        this[1] += v[1];
-        return this;
+        return vec2.plus(this, this, v);
     }
     minus(v) {
-        this[0] -= v[0];
-        this[1] -= v[1];
-        return this;
+        return vec2.minus(this, this, v);
     }
     mul(v) {
-        let x = typeof (v) === "number" ? v : v.x;
-        let y = typeof (v) === "number" ? v : v.y;
-        this[0] *= x;
-        this[1] *= y;
-        return this;
+        return vec2.mul(this, this, v);
     }
     div(v) {
-        this[0] /= v[0];
-        this[1] /= v[1];
-        return this;
+        return vec2.div(this, this, v);
     }
     dot(v) {
         return this[0] * v[0]
             + this[1] * v[1];
     }
     normalize() {
-        const m = this.magnitude;
-        return m == 0 ? vec2.zero() : this.clone().div(vec2(m, m));
+        return vec2.normalize(this, this);
     }
     inverse() {
         this[0] = 1 / this[0];
@@ -91,14 +84,6 @@ class Vector2 extends V2Constructor {
         this[0] = -this[0];
         this[1] = -this[1];
         return this;
-    }
-    /**
-     * cross product with vec3
-     * @param a u
-     * @param b v
-     */
-    cross(b) {
-        return this.x * b.y - this.y * b.x;
     }
     equals(v) {
         if (v === undefined)
@@ -191,6 +176,18 @@ vec2.div = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec2.zero);
+vec2.dot = (a, b) => {
+    return a[0] * b[0] + a[1] * b[1];
+};
+vec2.cross = (a, b) => {
+    return a[0] * b[1] - a[1] * b[0];
+};
+vec2.normalize = utils_1.wrapGlMatrix(gl_matrix_1.vec2.normalize, 1, vec2.zero);
+vec2.perpendicular = utils_1.wrapGlMatrix((out, v) => {
+    out[0] = -v[1];
+    out[1] = v[0];
+    return out;
+}, 1, vec2.zero);
 vec2.set = utils_1.wrapGlMatrix((out, v) => {
     out[0] = v[0];
     out[1] = v[1];

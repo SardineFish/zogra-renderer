@@ -66,8 +66,7 @@ class Vector3 extends V3Constructor {
             + this[2] * v[2];
     }
     normalize() {
-        const m = this.magnitude;
-        return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));
+        return vec3.normalize(this, this);
     }
     inverse() {
         this[0] = 1 / this[0];

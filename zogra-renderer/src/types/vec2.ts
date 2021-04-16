@@ -32,6 +32,10 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
     {
         return this.clone().inverse();
     }
+    get isZero()
+    {
+        return this.x === 0 && this.y === 0;
+    }
 
     constructor(x: number, y: number)
     {
@@ -76,31 +80,22 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
     }
 
     asMut() { return this; }
-    plus(v: Readonly<Vector2>)
+
+    plus(v: Readonly<Vector2> | number)
     {
-        this[0] += v[0];
-        this[1] += v[1];
-        return this;
+        return vec2.plus(this, this, v);
     }
-    minus(v: Readonly<Vector2>)
+    minus(v: Readonly<Vector2> | number)
     {
-        this[0] -= v[0];
-        this[1] -= v[1];
-        return this;
+        return vec2.minus(this, this, v);
     }
     mul(v: Readonly<Vector2> | number)
     {
-        let x = typeof (v) === "number" ? v : v.x;
-        let y = typeof (v) === "number" ? v : v.y;
-        this[0] *= x;
-        this[1] *= y;
-        return this;
+        return vec2.mul(this, this, v);
     }
-    div(v: Readonly<Vector2>)
+    div(v: Readonly<Vector2> | number)
     {
-        this[0] /= v[0];
-        this[1] /= v[1];
-        return this;
+        return vec2.div(this, this, v);
     }
     dot(v: Readonly<Vector2>)
     {
@@ -109,8 +104,7 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
     }
     normalize()
     {
-        const m = this.magnitude;
-        return m == 0 ? vec2.zero() : this.clone().div(vec2(m, m));
+        return vec2.normalize(this, this);
     }
     inverse()
     {
@@ -123,15 +117,6 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
         this[0] = -this[0];
         this[1] = -this[1];
         return this;
-    }
-    /**
-     * cross product with vec3
-     * @param a u
-     * @param b v
-     */
-    cross(b: Vector2)
-    {
-        return this.x * b.y - this.y * b.x;
     }
 
     equals(v: any)
@@ -255,6 +240,21 @@ vec2.div = wrapGlMatrix<vec2, [vec2, vec4 | vec3 | vec2 | number]>((out, a, b) =
     }
     return out;
 }, 2, vec2.zero);
+vec2.dot = (a: vec2 | ArrayLike<number>, b: vec2 | ArrayLike<number>) =>
+{
+    return a[0] * b[0] + a[1] * b[1];
+};
+vec2.cross = (a: vec2 | ArrayLike<number>, b: vec2 | ArrayLike<number>) =>
+{
+    return a[0] * b[1] - a[1] * b[0];
+};
+vec2.normalize = wrapGlMatrix<vec2, [vec2]>(glVec2.normalize as any, 1, vec2.zero);
+vec2.perpendicular = wrapGlMatrix<vec2, [vec2]>((out, v) =>
+{
+    out[0] = -v[1];
+    out[1] = v[0];
+    return out;
+}, 1, vec2.zero);
 vec2.set = wrapGlMatrix<vec2, [vec2]>((out, v) =>
 {
     out[0] = v[0];

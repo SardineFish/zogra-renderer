@@ -94,8 +94,7 @@ export class Vector4 extends V4Constructor implements Vector, ZograMatrix
     }
     normalize()
     {
-        const m = this.magnitude;
-        return m == 0 ? vec4.zero() : this.clone().div(vec4(m, m, m, m));
+        return vec4.normalize(this, this);
     }
     inverse()
     {
@@ -169,7 +168,6 @@ export class Vector4 extends V4Constructor implements Vector, ZograMatrix
         return this.clone();
     }
 }
-
 export function vec4(x: number): Vector4
 export function vec4(x:number, y: number, z: number, w: number): Vector4
 export function vec4(x: number, y: number = x, z: number = x, w: number = x): Vector4
@@ -185,11 +183,7 @@ vec4.floor = (v: vec4) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z)
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 vec4.math = Vector4.math;
-
-// vec4.plus = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.add as any, 2, vec4.zero);
-// vec4.minus = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.sub as any, 2, vec4.zero);
-// vec4.mul = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.mul as any, 2, vec4.zero);
-// vec4.div = wrapGlMatrix<vec4, [vec4, vec4]>(glVec4.div as any, 2, vec4.zero);
+vec4.normalize = wrapGlMatrix<vec4, [vec4]>(glVec4.normalize as any, 1, vec4.zero);
 vec4.plus = wrapGlMatrix<vec4, [vec4, vec4 | vec3 | vec2 | number]>((out, a, b) =>
 {
     if (typeof (b) === "number")
