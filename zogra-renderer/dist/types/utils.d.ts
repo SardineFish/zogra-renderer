@@ -15,4 +15,7 @@ declare type WrappedFunction<TOut, TArgs extends any[]> = {
     }): ArrayLike<number>;
 };
 export declare function wrapGlMatrix<TOut, TArgs extends any[]>(func: (out: TOut, ...args: TArgs) => TOut, argCount: TArgs["length"], allocator: () => TOut): WrappedFunction<TOut, TArgs>;
+export declare const MathUtils: {
+    lerp(a: number, b: number, t: number): number;
+};
 export {};

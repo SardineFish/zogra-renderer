@@ -34,3 +34,11 @@ export function wrapGlMatrix<TOut, TArgs extends any[]>(func: (out: TOut, ...arg
         }
     }) as any;
 }
+
+export const MathUtils = {
+    lerp(a: number, b: number, t: number)
+    {
+        return (b - a) * t + a;
+    },
+    
+}

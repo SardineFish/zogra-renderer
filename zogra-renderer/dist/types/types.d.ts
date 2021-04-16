@@ -7,3 +7,4 @@ export * from "./mat4";
 export * from "./quat";
 export * from "./ray";
 export * from "./rect";
+export { MathUtils } from "./utils";

@@ -13,6 +13,7 @@
   "author": "SardineFish",
   "license": "MIT",
   "devDependencies": {
+    "@types/noisejs": "^0.0.28",
     "css-loader": "^3.4.1",
     "file-loader": "^5.0.2",
     "html-loader": "^0.5.5",
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "fbx-importer": "file:///../fbx-importer",
+    "noisejs": "^2.1.0",
     "zogra-engine": "file:///../zogra-engine",
     "zogra-renderer": "file:///../zogra-renderer"
   }

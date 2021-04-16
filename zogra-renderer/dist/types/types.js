@@ -10,6 +10,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MathUtils = void 0;
 const gl_matrix_1 = require("gl-matrix");
 gl_matrix_1.glMatrix.setMatrixArrayType(Array);
 __exportStar(require("./vec2"), exports);
@@ -21,4 +22,6 @@ __exportStar(require("./mat4"), exports);
 __exportStar(require("./quat"), exports);
 __exportStar(require("./ray"), exports);
 __exportStar(require("./rect"), exports);
+var utils_1 = require("./utils");
+Object.defineProperty(exports, "MathUtils", { enumerable: true, get: function () { return utils_1.MathUtils; } });
 //# sourceMappingURL=types.js.map
