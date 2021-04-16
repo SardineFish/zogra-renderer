@@ -14,46 +14,6 @@ export interface DefaultVertexStruct extends BufferStructure {
 }
 export declare const DefaultVertexData: DefaultVertexStruct;
 export declare const DefaultVertexStructInfo: BufferStructureInfo<DefaultVertexStruct>;
-export declare class MeshLegacy extends Asset {
-    private _verts;
-    private _triangles;
-    private _uvs;
-    private _uv2;
-    private _colors;
-    private _normals;
-    private dirty;
-    private uploaded;
-    private vertices;
-    private indices;
-    private vertexStruct;
-    VAO: WebGLVertexArrayObject;
-    VBO: WebGLBuffer;
-    EBO: WebGLBuffer;
-    private gl;
-    private initialized;
-    constructor(gl?: WebGL2RenderingContext);
-    get verts(): vec3[];
-    set verts(verts: vec3[]);
-    get triangles(): number[];
-    set triangles(triangles: number[]);
-    get uvs(): vec2[];
-    set uvs(uvs: vec2[]);
-    get uv2(): vec2[];
-    set uv2(uv: vec2[]);
-    get colors(): Color[];
-    set colors(colors: Color[]);
-    get normals(): vec3[];
-    set normals(normals: vec3[]);
-    clear(): void;
-    calculateNormals(angleThreshold?: number): void;
-    update(): void;
-    setup(): WebGLBuffer[];
-    bind(shader: Shader): void;
-    unbind(): void;
-    destroy(): void;
-    private tryInit;
-    private initVAO;
-}
 export declare class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset {
     vertices: RenderBuffer<VertexStruct>;
     indices: Uint32Array;
@@ -103,4 +63,45 @@ export declare class Mesh<VertexStruct extends BufferStructure = typeof DefaultV
      */
     calculateNormals(angleThreshold?: number): void;
     private tryInit;
+}
+/** @deprecated */
+export declare class MeshLegacy extends Asset {
+    private _verts;
+    private _triangles;
+    private _uvs;
+    private _uv2;
+    private _colors;
+    private _normals;
+    private dirty;
+    private uploaded;
+    private vertices;
+    private indices;
+    private vertexStruct;
+    VAO: WebGLVertexArrayObject;
+    VBO: WebGLBuffer;
+    EBO: WebGLBuffer;
+    private gl;
+    private initialized;
+    constructor(gl?: WebGL2RenderingContext);
+    get verts(): vec3[];
+    set verts(verts: vec3[]);
+    get triangles(): number[];
+    set triangles(triangles: number[]);
+    get uvs(): vec2[];
+    set uvs(uvs: vec2[]);
+    get uv2(): vec2[];
+    set uv2(uv: vec2[]);
+    get colors(): Color[];
+    set colors(colors: Color[]);
+    get normals(): vec3[];
+    set normals(normals: vec3[]);
+    clear(): void;
+    calculateNormals(angleThreshold?: number): void;
+    update(): void;
+    setup(): WebGLBuffer[];
+    bind(shader: Shader): void;
+    unbind(): void;
+    destroy(): void;
+    private tryInit;
+    private initVAO;
 }
