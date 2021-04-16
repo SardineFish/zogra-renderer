@@ -26,7 +26,7 @@ class Quaternion extends V4Constructor {
         this[3] = value[3] || 0;
         return this;
     }
-    setAll(value) {
+    fill(value) {
         this[0] = value;
         this[1] = value;
         this[2] = value;

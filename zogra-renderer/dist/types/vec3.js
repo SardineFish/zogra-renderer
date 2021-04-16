@@ -4,6 +4,7 @@ exports.vec3 = exports.Vector3 = void 0;
 const vec4_1 = require("./vec4");
 const vec2_1 = require("./vec2");
 const utils_1 = require("./utils");
+const gl_matrix_1 = require("gl-matrix");
 const V3Constructor = Array;
 class Vector3 extends V3Constructor {
     get x() { return this[0]; }
@@ -94,7 +95,7 @@ class Vector3 extends V3Constructor {
         this[2] = v[2] || 0;
         return this;
     }
-    setAll(n) {
+    fill(n) {
         this[0] = this[1] = this[2] = n;
         return this;
     }
@@ -139,6 +140,7 @@ vec3.from = (src) => {
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 vec3.math = Vector3.math;
+vec3.normalize = utils_1.wrapGlMatrix(gl_matrix_1.vec3.normalize, 1, vec3.zero);
 vec3.plus = utils_1.wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
         out[0] = a[0] + b;
@@ -191,4 +193,14 @@ vec3.div = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec3.zero);
+vec3.set = utils_1.wrapGlMatrix((out, v) => {
+    out[0] = v[0];
+    out[1] = v[1];
+    out[2] = v[2];
+    return out;
+}, 1, vec3.zero);
+vec3.fill = utils_1.wrapGlMatrix((out, n) => {
+    out[0] = out[1] = out[2] = n;
+    return out;
+}, 1, vec3.zero);
 //# sourceMappingURL=vec3.js.map

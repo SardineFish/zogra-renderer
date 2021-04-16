@@ -27,13 +27,13 @@ function allocateOutput(a, b) {
     let length = Math.max(a.length || 0, b.length || 0);
     switch (length) {
         case 2:
-            return vec2_1.vec2.zero();
+            return typeof (a) === "number" ? vec2_1.vec2.fill(a) : vec2_1.vec2.set(a);
         case 3:
-            return vec3_1.vec3.zero();
+            return typeof (a) === "number" ? vec2_1.vec2.fill(a) : vec3_1.vec3.set(a);
         case 4:
-            return vec4_1.vec4.zero();
+            return typeof (a) === "number" ? vec2_1.vec2.fill(a) : vec4_1.vec4.set(a);
         case 16:
-            return mat4_1.mat4.create();
+            return typeof (a) === "number" ? vec2_1.vec2.fill(a) : mat4_1.mat4.set(a);
     }
     console.warn(`Unsupported vector length '${length}'`);
     return new Array();
@@ -42,7 +42,6 @@ function plus(a, b, out) {
     if (typeof (a) === "number" && typeof (b) === "number")
         return (a + b);
     let output = (out || allocateOutput(a, b));
-    typeof (a) === "number" ? output.setAll(a) : output.set(a);
     switch (output.length) {
         case 2:
             return vec2_1.vec2.plus(output, output, b);
@@ -51,13 +50,14 @@ function plus(a, b, out) {
         case 4:
             return vec4_1.vec4.plus(output, output, b);
     }
+    console.warn(`Unsupported vector length '${output.length}'`);
+    return vec4_1.vec4.plus(output, output, b);
 }
 exports.plus = plus;
 function minus(a, b, out) {
     if (typeof (a) === "number" && typeof (b) === "number")
         return (a + b);
     let output = (out || allocateOutput(a, b));
-    typeof (a) === "number" ? output.setAll(a) : output.set(a);
     switch (output.length) {
         case 2:
             return vec2_1.vec2.minus(output, output, b);
@@ -66,13 +66,14 @@ function minus(a, b, out) {
         case 4:
             return vec4_1.vec4.minus(output, output, b);
     }
+    console.warn(`Unsupported vector length '${output.length}'`);
+    return vec4_1.vec4.minus(output, output, b);
 }
 exports.minus = minus;
 function mul(a, b, out) {
     if (typeof (a) === "number" && typeof (b) === "number")
         return (a + b);
     let output = (out || allocateOutput(a, b));
-    typeof (a) === "number" ? output.setAll(a) : output.set(a);
     switch (output.length) {
         case 2:
             return vec2_1.vec2.mul(output, output, b);
@@ -81,13 +82,14 @@ function mul(a, b, out) {
         case 4:
             return vec4_1.vec4.mul(output, output, b);
     }
+    console.warn(`Unsupported vector length '${output.length}'`);
+    return vec4_1.vec4.mul(output, output, b);
 }
 exports.mul = mul;
 function div(a, b, out) {
     if (typeof (a) === "number" && typeof (b) === "number")
         return (a + b);
     let output = (out || allocateOutput(a, b));
-    typeof (a) === "number" ? output.setAll(a) : output.set(a);
     switch (output.length) {
         case 2:
             return vec2_1.vec2.div(output, output, b);
@@ -96,14 +98,26 @@ function div(a, b, out) {
         case 4:
             return vec4_1.vec4.div(output, output, b);
     }
+    console.warn(`Unsupported vector length '${output.length}'`);
+    return vec4_1.vec4.div(output, output, b);
 }
 exports.div = div;
 function dot(a, b) {
-    return a.dot(b);
+    switch (a.length) {
+        case 2:
+            return a[0] * b[0] + a[1] * b[1];
+        case 3:
+            return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+        case 4:
+            return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+    }
 }
 exports.dot = dot;
-function cross(a, b) {
-    return a.cross(b);
+function cross(a, b, out = vec3_1.vec3.zero()) {
+    out[0] = a[1] * b[2] - a[2] * b[1];
+    out[1] = a[2] * b[0] - a[0] * b[2];
+    out[2] = a[0] * b[1] - a[1] * b[0];
+    return out;
 }
 exports.cross = cross;
 function distance(a, b) {

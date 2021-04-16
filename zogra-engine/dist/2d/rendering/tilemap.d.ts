@@ -1,4 +1,4 @@
-import { Vector2, vec2, MeshEx } from "zogra-renderer";
+import { Vector2, vec2, Mesh } from "zogra-renderer";
 import { RenderContext, RenderData, Camera } from "../..";
 import { RenderObject } from "../../engine/render-object";
 import { ConstructorType } from "../../utils/util";
@@ -29,7 +29,7 @@ export declare class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject 
 export declare class Chunk {
     readonly chunkSize: number;
     readonly basePos: Readonly<vec2>;
-    mesh: MeshEx;
+    mesh: Mesh;
     protected tiles: Array<TileData | null>;
     private dirty;
     constructor(basePos: vec2, chunkSize: number);

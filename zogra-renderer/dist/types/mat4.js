@@ -19,24 +19,8 @@ class Matrix4x4 extends Mat4Constructor {
     set(m) {
         return gl_matrix_1.mat4.set(this, ...m);
     }
-    setAll(n) {
-        this[0]
-            = this[1]
-                = this[2]
-                    = this[3]
-                        = this[4]
-                            = this[5]
-                                = this[6]
-                                    = this[7]
-                                        = this[8]
-                                            = this[9]
-                                                = this[10]
-                                                    = this[11]
-                                                        = this[12]
-                                                            = this[13]
-                                                                = this[14]
-                                                                    = this[15] = n;
-        return this;
+    fill(n) {
+        return mat4.fill(this, n);
     }
     clone(out = mat4.create()) {
         return out.set(this);
@@ -136,5 +120,25 @@ mat4.equal = (a, b) => {
         return false;
     return gl_matrix_1.mat4.exactEquals(a, b);
 };
+mat4.set = utils_1.wrapGlMatrix(gl_matrix_1.mat4.set, 1, mat4.create);
+mat4.fill = utils_1.wrapGlMatrix((out, n) => {
+    out[0]
+        = out[1]
+            = out[2]
+                = out[3]
+                    = out[4]
+                        = out[5]
+                            = out[6]
+                                = out[7]
+                                    = out[8]
+                                        = out[9]
+                                            = out[10]
+                                                = out[11]
+                                                    = out[12]
+                                                        = out[13]
+                                                            = out[14]
+                                                                = out[15] = n;
+    return out;
+}, 1, mat4.create);
 // export const mat4 = Matrix4x4;
 //# sourceMappingURL=mat4.js.map

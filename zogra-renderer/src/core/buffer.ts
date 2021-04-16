@@ -114,7 +114,12 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
         this.buffer = new Float32Array(this.structure.totalSize * length);
         if (keepContent && oldBuffer)
         {
-            this.buffer.set(oldBuffer, 0);
+            if (oldBuffer.length > this.buffer.length)
+            {
+                this.buffer.set(new Float32Array(oldBuffer.buffer, 0, this.buffer.length));
+            }
+            else
+                this.buffer.set(oldBuffer, 0);
         }
 
         this.length = length;

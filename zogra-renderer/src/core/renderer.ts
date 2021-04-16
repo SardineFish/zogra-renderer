@@ -1,7 +1,7 @@
 import { panicNull, getUniformsLocation, cloneUniformValue } from "../utils/util";
 import { DefaultMaterialType } from "./material-type";
 import { GL, setGlobalContext, GLContext, GlobalContext } from "./global";
-import { Mesh, MeshEx } from "./mesh";
+import { Mesh } from "./mesh";
 import { vec3, Vector3 } from "../types/vec3";
 import { Material } from "./material";
 import { Color } from "../types/color";
@@ -57,16 +57,18 @@ export class ZograRenderer
 
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
 
-        this.assets = new BuiltinAssets(this.gl);
 
         this.ctx = new GLContext();
         Object.assign(this.ctx, {
             gl: this.gl,
             width: this.width,
             height: this.height,
-            assets: this.assets,
+            assets: {} as any,
             renderer: this,
         });
+
+        this.assets = new BuiltinAssets(this.ctx);
+        this.ctx.assets = this.assets;
 
         if (!GlobalContext())
             this.use();
@@ -276,17 +278,17 @@ export class ZograRenderer
 
         material.upload(data);
         this.setupTransforms(material.shader, mat4.identity());
-        mesh.bind(material.shader);
+        const elementCount = mesh.bind();
         buffer.bind();
         buffer.bindVertexArray(true, material.shader.attributes as AttributeLocations<T>);
 
-        gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
+        gl.drawElementsInstanced(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0, count);
 
         buffer.unbindVertexArray(true, material.shader.attributes as AttributeLocations<T>);
         material.unbindRenderTextures();
     }
 
-    drawMeshProceduralInstance(mesh: Mesh, material: Material, count: number)
+    drawMeshProceduralInstance<T extends BufferStructure>(mesh: Mesh<T>, material: Material, count: number)
     {
         if (!material)
             material = this.assets.materials.error;
@@ -305,14 +307,14 @@ export class ZograRenderer
 
         material.upload(data);
         this.setupTransforms(material.shader, mat4.identity());
-        mesh.bind(material.shader);
+        const elementCount = mesh.bind();
 
-        gl.drawElementsInstanced(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0, count);
+        gl.drawElementsInstanced(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0, count);
 
         material.unbindRenderTextures();
     }
 
-    drawMesh<T extends BufferStructure>(mesh: Mesh | MeshEx<T>, transform: Readonly<mat4>, material: Material)
+    drawMesh<T extends BufferStructure>(mesh: Mesh<T>, transform: Readonly<mat4>, material: Material)
     {
         if (!material)
             material = this.assets.materials.error;
@@ -332,9 +334,9 @@ export class ZograRenderer
         material.upload(data);
         this.setupTransforms(material.shader, transform);
         this.setupGlobalUniforms(material);
-        mesh.bind(material.shader);
+        let elementCount = mesh.bind();
 
-        gl.drawElements(gl.TRIANGLES, mesh.triangles.length, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0);
 
         mesh.unbind();
         material.unbindRenderTextures();
