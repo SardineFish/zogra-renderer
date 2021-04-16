@@ -28,7 +28,7 @@ function toManagedAssets(resource, ctx = zogra_engine_2.GlobalContext()) {
         const obj = new zogra_engine_5.RenderObject(ctx);
         obj.name = model.name;
         obj.localPosition = zogra_engine_6.vec3.from(model.transform.localPosition);
-        obj.localRotation = model.transform.localRotation;
+        obj.localRotation = zogra_engine_1.quat(...model.transform.localRotation);
         obj.localScaling = zogra_engine_6.vec3.from(model.transform.localScaling);
         obj.meshes = model.meshes.map(meshConverter);
         obj.meshes.forEach((m, i) => pack.add(`${obj.name}_${i}`, m));
@@ -72,11 +72,13 @@ function getFloat(fbxMat, name, defaultValue = 0) {
 }
 function convertMesh(ctx) {
     return (fbxMesh) => {
-        const mesh = new zogra_engine_7.Mesh(ctx.gl);
+        const mesh = new zogra_engine_7.Mesh(ctx);
         mesh.verts = fbxMesh.verts.map(v => zogra_engine_6.vec3.from(v));
         mesh.normals = fbxMesh.normals.map(v => zogra_engine_6.vec3.from(v));
         mesh.uvs = fbxMesh.uv0.map(v => zogra_engine_8.vec2.from(v));
         mesh.triangles = fbxMesh.triangles;
+        mesh.vertices.forEach(v => v.color.fill(1));
+        mesh.colors = fbxMesh.colors.map(v => new zogra_engine_3.Color(...v));
         /*if (fbxMesh.type === "quad")
         {
             mesh.triangles = new Array(fbxMesh.polygons.length / 4 * 6);
