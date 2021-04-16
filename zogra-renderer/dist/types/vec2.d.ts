@@ -75,8 +75,8 @@ export declare namespace vec2 {
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
-    var dot: (a: Vector2 | ArrayLike<number>, b: Vector2 | ArrayLike<number>) => number;
-    var cross: (a: Vector2 | ArrayLike<number>, b: Vector2 | ArrayLike<number>) => number;
+    var dot: (a: ArrayLike<number> | Vector2, b: ArrayLike<number> | Vector2) => number;
+    var cross: (a: ArrayLike<number> | Vector2, b: ArrayLike<number> | Vector2) => number;
     var normalize: {
         (args_0: Readonly<Vector2>): Vector2;
         (out: Vector2, args_0: Readonly<Vector2>): Vector2;
@@ -137,8 +137,8 @@ export declare namespace vec2 {
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
-    var dot: (a: Vector2 | ArrayLike<number>, b: Vector2 | ArrayLike<number>) => number;
-    var cross: (a: Vector2 | ArrayLike<number>, b: Vector2 | ArrayLike<number>) => number;
+    var dot: (a: ArrayLike<number> | Vector2, b: ArrayLike<number> | Vector2) => number;
+    var cross: (a: ArrayLike<number> | Vector2, b: ArrayLike<number> | Vector2) => number;
     var normalize: {
         (args_0: Readonly<Vector2>): Vector2;
         (out: Vector2, args_0: Readonly<Vector2>): Vector2;

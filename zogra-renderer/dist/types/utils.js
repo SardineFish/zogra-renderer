@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.wrapGlMatrix = void 0;
+exports.MathUtils = exports.wrapGlMatrix = void 0;
 function wrapGlMatrix(func, argCount, allocator) {
     return ((...args) => {
         if (args.length <= argCount) {
@@ -14,4 +14,9 @@ function wrapGlMatrix(func, argCount, allocator) {
     });
 }
 exports.wrapGlMatrix = wrapGlMatrix;
+exports.MathUtils = {
+    lerp(a, b, t) {
+        return (b - a) * t + a;
+    },
+};
 //# sourceMappingURL=utils.js.map
