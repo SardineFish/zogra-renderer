@@ -20,6 +20,29 @@ export declare class Color extends Vector4 {
     static get magenta(): Color;
     static get gray(): Color;
     transparent(): Color;
+    /**
+     *
+     * @param h hue in [0..360]
+     * @param s saturation in [0..1]
+     * @param l lightness in [0..1]
+     * @returns
+     */
+    setHSL(h: number, s: number, l: number): this;
+    get hue(): number;
+    get saturation(): number;
+    get lightness(): number;
+    toHSL(): [number, number, number];
+    /**
+     *
+     * @param h hue in [0..360]
+     * @param s saturation in [0..1]
+     * @param l lightness in [0..1]
+     * @param alpha
+     * @returns
+     */
+    static fromHSL(h: number, s: number, l: number, alpha?: number): Color;
+    static fromString(str: string, alpha?: number): Color;
 }
 export declare const rgba: (r: number, g: number, b: number, a?: number) => Color;
 export declare const rgb: (r: number, g: number, b: number) => Color;
+export declare const hsl: typeof Color.fromHSL;

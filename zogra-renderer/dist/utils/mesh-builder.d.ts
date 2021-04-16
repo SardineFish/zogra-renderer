@@ -25,5 +25,6 @@ export declare class MeshBuilderEx<VertexStruct extends BufferStructure = typeof
     constructor(verticesCapacity?: number, trianglesCapacity?: number, structure?: VertexStruct);
     addPolygon<T extends Partial<VertexData<VertexStruct>>>(...verts: T[]): void;
     getMesh(): MeshEx<VertexStruct>;
+    static quad(center?: import("../types/vec2").Vector2, size?: import("../types/vec2").Vector2): void;
 }
 export {};
