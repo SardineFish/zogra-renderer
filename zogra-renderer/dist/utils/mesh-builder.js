@@ -134,6 +134,28 @@ class MeshBuilderEx {
             this.mesh.vertices.resize(this.verticesCount, true);
         return this.mesh;
     }
+    static quad(center = types_1.vec2.zero(), size = types_1.vec2.one()) {
+        const halfSize = types_1.vec2.mul(size, 0.5);
+        const mesh = new mesh_1.MeshEx();
+        mesh.resize(4, 6);
+        mesh.vertices[0].vert.set([center.x - halfSize.x, center.y - halfSize.y, 0]);
+        mesh.vertices[1].vert.set([center.x + halfSize.x, center.y - halfSize.y, 0]);
+        mesh.vertices[2].vert.set([center.x + halfSize.x, center.y + halfSize.y, 0]);
+        mesh.vertices[3].vert.set([center.x - halfSize.x, center.y + halfSize.y, 0]);
+        mesh.vertices[0].uv.set([0, 0]);
+        mesh.vertices[1].uv.set([1, 0]);
+        mesh.vertices[2].uv.set([1, 1]);
+        mesh.vertices[3].uv.set([0, 1]);
+        mesh.vertices[0].normal.set([0, 0, 1]);
+        mesh.vertices[1].normal.set([0, 0, 1]);
+        mesh.vertices[2].normal.set([0, 0, 1]);
+        mesh.vertices[3].normal.set([0, 0, 1]);
+        mesh.vertices[0].color.fill(1);
+        mesh.vertices[1].color.fill(1);
+        mesh.vertices[2].color.fill(1);
+        mesh.vertices[3].color.fill(1);
+        mesh.triangles.set([0, 1, 2, 0, 2, 3]);
+    }
 }
 exports.MeshBuilderEx = MeshBuilderEx;
 //# sourceMappingURL=mesh-builder.js.map
