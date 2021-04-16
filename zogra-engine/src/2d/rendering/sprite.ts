@@ -1,7 +1,8 @@
-import { div, Rect, Texture, vec2 } from "zogra-renderer";
+import { Color, div, Rect, Texture, vec2 } from "zogra-renderer";
 
 export class Sprite
 {
+    color: Color = Color.white;
     texture: Texture;
     uvRect: Rect;
 

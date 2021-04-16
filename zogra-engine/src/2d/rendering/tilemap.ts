@@ -193,6 +193,10 @@ export class Chunk
             this.mesh.vertices[idx + 1].uv.set([tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMin]);
             this.mesh.vertices[idx + 2].uv.set([tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMax]);
             this.mesh.vertices[idx + 3].uv.set([tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMax]);
+            this.mesh.vertices[idx + 0].color.set(tile.sprite.color);
+            this.mesh.vertices[idx + 1].color.set(tile.sprite.color);
+            this.mesh.vertices[idx + 2].color.set(tile.sprite.color);
+            this.mesh.vertices[idx + 3].color.set(tile.sprite.color);
             this.mesh.update();
         }
         // this.mesh.uvs = uv;
