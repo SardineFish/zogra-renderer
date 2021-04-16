@@ -25,8 +25,8 @@ export class Quaternion extends V4Constructor implements ZograMatrix
         return out.set(this);
     }
     set(value: Readonly<Quaternion>): this
-    set(value: Readonly<number[]>): this
-    set(value: Readonly<number[]> | Readonly<Quaternion>): this
+    set(value: Readonly<ArrayLike<number>>): this
+    set(value: Readonly<ArrayLike<number>> | Readonly<Quaternion>): this
     {
         this[0] = value[0] || 0;
         this[1] = value[1] || 0;
@@ -34,7 +34,7 @@ export class Quaternion extends V4Constructor implements ZograMatrix
         this[3] = value[3] || 0;
         return this;
     }
-    setAll(value: number): this
+    fill(value: number): this
     {
         this[0] = value;
         this[1] = value;

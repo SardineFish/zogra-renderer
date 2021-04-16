@@ -128,8 +128,8 @@ export class Vector4 extends V4Constructor implements Vector, ZograMatrix
             && v[3] === this[3];
     }
     set(v: Readonly<vec4>): this
-    set(v: Readonly<number[]>): this
-    set(v: Readonly<number[]> | Readonly<vec4>)
+    set(v: Readonly<ArrayLike<number>>): this
+    set(v: Readonly<ArrayLike<number>> | Readonly<vec4>)
     {
         this[0] = v[0] || 0;
         this[1] = v[1] || 0;
@@ -137,7 +137,7 @@ export class Vector4 extends V4Constructor implements Vector, ZograMatrix
         this[3] = v[3] || 0;
         return this;
     }
-    setAll(n: number)
+    fill(n: number)
     {
         this[0] = this[1] = this[2] = this[3] = n;
         return this;
@@ -262,3 +262,16 @@ vec4.div = wrapGlMatrix<vec4, [vec4, vec4 | vec3 | vec2 | number]>((out, a, b) =
     }
     return out;
 }, 2, vec4.zero);
+vec4.set = wrapGlMatrix<vec4, [vec4]>((out, v) =>
+{
+    out[0] = v[0];
+    out[1] = v[1];
+    out[2] = v[2];
+    out[3] = v[3];
+    return out;
+}, 1, vec4.zero);
+vec4.fill = wrapGlMatrix<vec4, [number]>((out, n) =>
+{
+    out[0] = out[1] = out[2] = out[3] = n;
+    return out;
+}, 1, vec4.zero);

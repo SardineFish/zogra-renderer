@@ -117,8 +117,8 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
     }
 
     set(v: Readonly<vec3>): this
-    set(v: Readonly<number[]>): this
-    set(v: Readonly<number[]> | Readonly<vec3>)
+    set(v: Readonly<ArrayLike<number>>): this
+    set(v: Readonly<ArrayLike<number>> | Readonly<vec3>)
     {
         this[0] = v[0] || 0;
         this[1] = v[1] || 0;
@@ -126,7 +126,7 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
         return this;
     }
 
-    setAll(n: number)
+    fill(n: number)
     {
         this[0] = this[1] = this[2] = n;
         return this;
@@ -191,6 +191,7 @@ vec3.from = (src: Iterable<number>) =>
 vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 vec3.math = Vector3.math;
+vec3.normalize = wrapGlMatrix<vec3, [vec3]>(glVec3.normalize as any, 1, vec3.zero);
 vec3.plus = wrapGlMatrix<vec3, [vec3, vec4 | vec3 | vec2 | number]>((out, a, b) =>
 {
     if (typeof (b) === "number")
@@ -255,3 +256,15 @@ vec3.div = wrapGlMatrix<vec3, [vec3, vec4 | vec3 | vec2 | number]>((out, a, b) =
     }
     return out;
 }, 2, vec3.zero);
+vec3.set = wrapGlMatrix<vec3, [vec3]>((out, v) =>
+{
+    out[0] = v[0];
+    out[1] = v[1];
+    out[2] = v[2];
+    return out;
+}, 1, vec3.zero);
+vec3.fill = wrapGlMatrix<vec3, [number]>((out, n) =>
+{
+    out[0] = out[1] = out[2] = n;
+    return out;
+}, 1, vec3.zero);

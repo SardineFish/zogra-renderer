@@ -25,30 +25,14 @@ export class Matrix4x4 extends Mat4Constructor implements ZograMatrix
     }
     asMut() { return this; }
     set(v: Readonly<mat4>): this
-    set(v: Readonly<number[]>): this
-    set(m: Readonly<number[]> | Readonly<mat4>)
+    set(v: Readonly<ArrayLike<number>>): this
+    set(m: Readonly<ArrayLike<number>> | Readonly<mat4>)
     {
         return glMat4.set(this, ...m as unknown as Mat4Tuple);
     }
-    setAll(n: number)
+    fill(n: number)
     {
-        this[0]
-            = this[1]
-            = this[2]
-            = this[3]
-            = this[4]
-            = this[5]
-            = this[6]
-            = this[7]
-            = this[8]
-            = this[9]
-            = this[10]
-            = this[11]
-            = this[12]
-            = this[13]
-            = this[14]
-            = this[15] = n;
-        return this;
+        return mat4.fill(this, n) as this;
     }
     clone(out: mat4 = mat4.create())
     {
@@ -162,5 +146,26 @@ mat4.equal = (a: any, b: any) =>
         return false;
     return glMat4.exactEquals(a as glMat4, b as glMat4);
 }
+mat4.set = wrapGlMatrix<mat4, [mat4]>(glMat4.set as any, 1, mat4.create);
+mat4.fill = wrapGlMatrix<mat4, [number]>((out, n) =>
+{
+    out[0]
+        = out[1]
+        = out[2]
+        = out[3]
+        = out[4]
+        = out[5]
+        = out[6]
+        = out[7]
+        = out[8]
+        = out[9]
+        = out[10]
+        = out[11]
+        = out[12]
+        = out[13]
+        = out[14]
+        = out[15] = n;
+    return out;
+}, 1, mat4.create);
 
 // export const mat4 = Matrix4x4;
