@@ -148,15 +148,15 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
     }
 
     set(v: Readonly<vec2>): this
-    set(v: Readonly<number[]>): this
-    set(v: Readonly<number[]> | Readonly<vec2>)
+    set(v: Readonly<ArrayLike<number>>): this
+    set(v: Readonly<ArrayLike<number>> | Readonly<vec2>)
     {
         this[0] = v[0] || 0;
         this[1] = v[1] || 0;
         return this;
     }
 
-    setAll(n: number)
+    fill(n: number)
     {
         this[0] = this[1] = n;
         return this;
@@ -255,3 +255,14 @@ vec2.div = wrapGlMatrix<vec2, [vec2, vec4 | vec3 | vec2 | number]>((out, a, b) =
     }
     return out;
 }, 2, vec2.zero);
+vec2.set = wrapGlMatrix<vec2, [vec2]>((out, v) =>
+{
+    out[0] = v[0];
+    out[1] = v[1];
+    return out;
+}, 1, vec2.zero);
+vec2.fill = wrapGlMatrix<vec2, [number]>((out, n) =>
+{
+    out[0] = out[1] = n;
+    return out;
+}, 1, vec2.zero);

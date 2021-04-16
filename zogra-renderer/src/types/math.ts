@@ -3,10 +3,11 @@ import { vec4, Vector4 } from "./vec4";
 import { vec2, Vector2 } from "./vec2";
 import { Rect } from "./rect";
 import { mat4 } from "./mat4";
+import { ZograMatrix } from "./generic";
 
 type vec = vec2 | vec3 | vec4;
 
-type Operand = vec2 | vec3 | vec4 | Readonly<vec2> | Readonly<vec3> | Readonly<vec4> | number;
+type Operand = vec2 | vec3 | vec4 | Readonly<vec2> | Readonly<vec3> | Readonly<vec4> | number | ArrayLike<number>;
 
 type Larger<U extends Operand, V extends Operand> =
     U extends vec4 | Readonly<vec4> ? vec4 :
@@ -15,6 +16,7 @@ type Larger<U extends Operand, V extends Operand> =
     V extends vec3 | Readonly<vec3> ? vec3 :
     U extends vec2 | Readonly<vec2> ? vec2 :
     V extends vec2 | Readonly<vec2> ? vec2 :
+    V extends ArrayLike<number> ? ArrayLike<number> :
     number;
 
 type ArithmeticType<U extends Operand, V extends Operand> = Larger<U, V>;
@@ -42,31 +44,30 @@ function arithOrder<U extends vec, V extends vec>(a: U, b: V)  : [any, any, bool
     return ((b as number[]).length > (a as number[]).length ? [b, a, true] : [a, b, false]);
 }
 
-function allocateOutput<U extends Operand, V extends Operand>(a: U, b: V): ArithmeticType<U, V> & vec
+function allocateOutput<U extends Operand, V extends Operand>(a: U, b: V): ArithmeticType<U, V> & (vec | ArrayLike<number>)
 {
     let length = Math.max((a as unknown as number[]).length || 0, (b as unknown as number[]).length || 0);
     switch (length)
     {
         case 2:
-            return vec2.zero() as any;
+            return typeof (a) === "number" ? vec2.fill(a) : vec2.set(a as ArrayLike<number>) as any;
         case 3:
-            return vec3.zero() as any;
+            return typeof (a) === "number" ? vec2.fill(a) : vec3.set(a as ArrayLike<number>) as any;
         case 4:
-            return vec4.zero() as any;
+            return typeof (a) === "number" ? vec2.fill(a) : vec4.set(a as ArrayLike<number>) as any;
         case 16:
-            return mat4.create() as any;
+            return typeof (a) === "number" ? vec2.fill(a) : mat4.set(a as ArrayLike<number>) as any;
     }
     console.warn(`Unsupported vector length '${length}'`);
     return new Array() as any;
 }
 
-export function plus<U extends Operand, V extends Operand>(a: U, b: V, out?: ArithmeticType<U, V> & vec) : ArithmeticType<U, V>
+export function plus<U extends Operand, V extends Operand>(a: U, b: V, out?: ArithmeticType<U, V> & (vec | ArrayLike<number>)) : ArithmeticType<U, V>
 {
     if (typeof (a) === "number" && typeof (b) === "number")
         return (a + b) as any;
     
     let output = (out || allocateOutput(a, b));
-    typeof (a) === "number" ? output.setAll(a) : output.set(a as unknown as number[]);
     switch (output.length)
     {
         case 2:
@@ -76,6 +77,9 @@ export function plus<U extends Operand, V extends Operand>(a: U, b: V, out?: Ari
         case 4:
             return vec4.plus(output, output, b) as typeof output;
     }
+
+    console.warn(`Unsupported vector length '${output.length}'`);
+    return vec4.plus(output, output, b) as typeof output;
 }
 export function minus<U extends Operand, V extends Operand>(a: U, b: V, out?: ArithmeticType<U, V> & vec): ArithmeticType<U, V>
 {
@@ -83,7 +87,6 @@ export function minus<U extends Operand, V extends Operand>(a: U, b: V, out?: Ar
         return (a + b) as any;
 
     let output = (out || allocateOutput(a, b));
-    typeof (a) === "number" ? output.setAll(a) : output.set(a as unknown as vec);
     switch (output.length)
     {
         case 2:
@@ -93,6 +96,8 @@ export function minus<U extends Operand, V extends Operand>(a: U, b: V, out?: Ar
         case 4:
             return vec4.minus(output, output, b) as typeof output;
     }
+    console.warn(`Unsupported vector length '${output.length}'`);
+    return vec4.minus(output, output, b) as typeof output;
 }
 
 export function mul<U extends Operand, V extends Operand>(a: U, b: V, out?: ArithmeticType<U, V> & vec): ArithmeticType<U, V>
@@ -101,7 +106,6 @@ export function mul<U extends Operand, V extends Operand>(a: U, b: V, out?: Arit
         return (a + b) as any;
 
     let output = (out || allocateOutput(a, b));
-    typeof (a) === "number" ? output.setAll(a) : output.set(a as unknown as vec);
     switch (output.length)
     {
         case 2:
@@ -111,6 +115,8 @@ export function mul<U extends Operand, V extends Operand>(a: U, b: V, out?: Arit
         case 4:
             return vec4.mul(output, output, b) as typeof output;
     }
+    console.warn(`Unsupported vector length '${output.length}'`);
+    return vec4.mul(output, output, b) as typeof output;
 }
 export function div<U extends Operand, V extends Operand>(a: U, b: V, out?: ArithmeticType<U, V> & vec): ArithmeticType<U, V>
 {
@@ -118,7 +124,6 @@ export function div<U extends Operand, V extends Operand>(a: U, b: V, out?: Arit
         return (a + b) as any;
 
     let output = (out || allocateOutput(a, b));
-    typeof (a) === "number" ? output.setAll(a) : output.set(a as unknown as vec);
     switch (output.length)
     {
         case 2:
@@ -128,16 +133,34 @@ export function div<U extends Operand, V extends Operand>(a: U, b: V, out?: Arit
         case 4:
             return vec4.div(output, output, b) as typeof output;
     }
+    console.warn(`Unsupported vector length '${output.length}'`);
+    return vec4.div(output, output, b) as typeof output;
 }
 export function dot(a: vec3, b: vec3): number
 export function dot(a: vec2, b: vec2): number
-export function dot(a: vec3 | vec2, b: vec3| vec2): number
+export function dot(a: vec4, b: vec4): number
+export function dot(a: vec3 | vec2 | vec4, b: vec3| vec2 | vec4): number
 {
-    return (a as Vector3).dot(b as Vector3);
+    switch (a.length)
+    {
+        case 2:
+            return a[0] * b[0] + a[1] * b[1];
+        case 3:
+            return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+        case 4:
+            return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+    }
 }
-export function cross(a: vec3, b: vec3)
+export function cross(a: vec3, b: vec3): vec3
+export function cross(a: vec3, b: vec3, out: vec3): vec3
+export function cross(a: ArrayLike<number>, b: ArrayLike<number>): vec3
+export function cross(a: ArrayLike<number>, b: ArrayLike<number>, out: ArrayLike<number>): ArrayLike<number>
+export function cross(a: vec3 | ArrayLike<number>, b: vec3 | ArrayLike<number>, out: vec3 | ArrayLike<number> = vec3.zero())
 {
-    return a.cross(b);
+    (out as vec3)[0] = a[1] * b[2] - a[2] * b[1];
+    (out as vec3)[1] = a[2] * b[0] - a[0] * b[2];
+    (out as vec3)[2] = a[0] * b[1] - a[1] * b[0];
+    return out;
 }
 
 export function distance<V extends vec>(a: V, b: V): number
