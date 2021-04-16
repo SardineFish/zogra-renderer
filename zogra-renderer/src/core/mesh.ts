@@ -99,7 +99,7 @@ export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexDat
     /** @deprecated */
     get colors()
     {
-        return this.getVertexDataArray<Color>("color", () => Color.black);
+        return this.getVertexDataArray<"color", Color>("color", () => Color.black);
     }
     /** @deprecated */
     set colors(colors)
@@ -139,11 +139,11 @@ export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexDat
         this.indices.set(triangles);
     }
 
-    private getVertexDataArray<T extends ZograMatrix>(key: string, allocator: () => T): T[]
+    private getVertexDataArray<K extends keyof typeof DefaultVertexData, T extends ZograMatrix>(key: K, allocator: () => T): T[]
     {
         return this.vertices.map(vert => allocator().set(vert[key]) as T);
     }
-    private setVertexDataArray<T extends number[]>(key: string, values: T[])
+    private setVertexDataArray<K extends keyof DefaultVertexStruct, T extends number[]>(key: K, values: T[])
     {
         const vertices = this.vertices as unknown as RenderBuffer<typeof DefaultVertexData>;
         if (values.length >= this.vertices.length)

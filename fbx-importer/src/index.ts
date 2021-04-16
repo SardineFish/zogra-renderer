@@ -1,5 +1,5 @@
 import { FBXAssets, FBXMaterial, FBXID, FBXMesh } from "./fbx-types";
-import { AssetsPack, AssetImportOptions, AssetImporterPlugin, AssetsImporter } from "zogra-engine";
+import { AssetsPack, AssetImportOptions, AssetImporterPlugin, AssetsImporter, quat } from "zogra-engine";
 import { GlobalContext, GLContext } from "zogra-engine";
 import { Material } from "zogra-engine";
 import { Color } from "zogra-engine";
@@ -34,7 +34,7 @@ function toManagedAssets(resource: FBXAssets, ctx = GlobalContext()): AssetsPack
         const obj = new RenderObject(ctx);
         obj.name = model.name;
         obj.localPosition = vec3.from(model.transform.localPosition);
-        obj.localRotation = model.transform.localRotation;
+        obj.localRotation = quat(...model.transform.localRotation);
         obj.localScaling = vec3.from(model.transform.localScaling);
         obj.meshes = model.meshes.map(meshConverter);
         obj.meshes.forEach((m, i) => pack.add(`${obj.name}_${i}`, m));
@@ -91,11 +91,13 @@ function convertMesh(ctx: GLContext)
 {
     return (fbxMesh: FBXMesh): Mesh =>
     {
-        const mesh = new Mesh(ctx.gl);
+        const mesh = new Mesh(ctx);
         mesh.verts = fbxMesh.verts.map(v => vec3.from(v));
         mesh.normals = fbxMesh.normals.map(v => vec3.from(v));
         mesh.uvs = fbxMesh.uv0.map(v => vec2.from(v));
         mesh.triangles = fbxMesh.triangles;
+        mesh.vertices.forEach(v => v.color.fill(1));
+        mesh.colors = fbxMesh.colors.map(v => new Color(...(v as [number, number, number, number])));
         /*if (fbxMesh.type === "quad")
         {
             mesh.triangles = new Array(fbxMesh.polygons.length / 4 * 6);
