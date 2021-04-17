@@ -6,3 +6,4 @@ export * from "./scene";
 export * from "./transform";
 export * from "./zogra-engine";
 export * from "./input";
+export * from "./animation";

@@ -10,7 +10,7 @@ class Entity extends transform_1.Transform {
         this.assetID = zogra_renderer_1.AssetManager.newAssetID(this);
         this.name = `Entity_${this.assetID}`;
         this.eventEmitter = new zogra_renderer_2.EventEmitter();
-        this.destroyed = false;
+        this._destroyed = false;
         this._collider = null;
     }
     get collider() { return this._collider; }
@@ -21,6 +21,8 @@ class Entity extends transform_1.Transform {
             this._collider.__unbind();
         this._collider = value;
     }
+    get destroyed() { return this._destroyed; }
+    ;
     on(event, listener) {
         return this.eventEmitter.on(event, listener);
     }
@@ -28,8 +30,11 @@ class Entity extends transform_1.Transform {
         this.eventEmitter.off(event, listener);
     }
     destroy() {
-        this.destroyed = true;
-        zogra_renderer_1.AssetManager.destroy(this.assetID);
+        this._destroyed = true;
+        if (this.scene)
+            this.scene.remove(this);
+        else
+            zogra_renderer_1.AssetManager.destroy(this.assetID);
     }
     start(time) { }
     update(time) { }
@@ -62,6 +67,8 @@ class Entity extends transform_1.Transform {
     __exit(time) {
         this.exit(time);
         this.eventEmitter.with().emit("exit", this, time);
+        if (this._destroyed)
+            zogra_renderer_1.AssetManager.destroy(this.assetID);
     }
 }
 exports.Entity = Entity;

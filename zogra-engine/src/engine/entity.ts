@@ -25,7 +25,7 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     assetID: number = AssetManager.newAssetID(this);
     name: string = `Entity_${this.assetID}`;
     protected eventEmitter = new EventEmitter<EntityEvents>();
-    protected destroyed: boolean = false;
+    protected _destroyed: boolean = false;
 
     private _collider: ICollider | null = null;
 
@@ -38,6 +38,7 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
             this._collider.__unbind();
         this._collider = value;
     }
+    get destroyed(): boolean { return this._destroyed };
 
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void
     {
@@ -49,8 +50,11 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     }
     destroy()
     {
-        this.destroyed = true;
-        AssetManager.destroy(this.assetID);
+        this._destroyed = true;
+        if (this.scene)
+            this.scene.remove(this);
+        else
+            AssetManager.destroy(this.assetID);
     }
 
     protected start(time: Time) { }
@@ -88,6 +92,8 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     {
         this.exit(time);
         this.eventEmitter.with<EntityEvents>().emit("exit", this, time);
+        if (this._destroyed)
+            AssetManager.destroy(this.assetID);
     }
 }
 
