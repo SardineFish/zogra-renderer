@@ -4,9 +4,11 @@ exports.Default2DRenderPipeline = void 0;
 const render_data_1 = require("./render-data");
 const zogra_renderer_1 = require("zogra-renderer");
 const debug_layer_1 = require("./debug-layer");
+const global_1 = require("zogra-renderer/dist/core/global");
 class Default2DRenderPipeline {
     constructor() {
         this.debuglayer = new debug_layer_1.DebugLayerRenderer();
+        global_1.Debug(this.debuglayer);
     }
     render(renderer, cameras) {
         for (const camera of cameras) {
@@ -40,7 +42,7 @@ class Default2DRenderPipeline {
             //     context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
             // }
         }
-        // this.debuglayer.render(context, data);
+        this.debuglayer.render(context, data);
         camera.__postRender(context);
     }
 }

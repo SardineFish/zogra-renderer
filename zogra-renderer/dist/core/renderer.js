@@ -194,10 +194,10 @@ class ZograRenderer {
         material.upload(data);
         this.setupTransforms(material.shader, mat4_1.mat4.identity());
         const elementCount = mesh.bind();
-        buffer.bind();
         buffer.bindVertexArray(true, material.shader.attributes);
         gl.drawElementsInstanced(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0, count);
         buffer.unbindVertexArray(true, material.shader.attributes);
+        mesh.unbind();
         material.unbindRenderTextures();
     }
     drawMeshProceduralInstance(mesh, material, count) {

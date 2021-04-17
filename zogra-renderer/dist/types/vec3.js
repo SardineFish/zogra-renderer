@@ -37,28 +37,16 @@ class Vector3 extends V3Constructor {
     }
     asMut() { return this; }
     plus(v) {
-        this[0] += v[0];
-        this[1] += v[1];
-        this[2] += v[2];
-        return this;
+        return vec3.plus(this, this, v);
     }
     minus(v) {
-        this[0] -= v[0];
-        this[1] -= v[1];
-        this[2] -= v[2];
-        return this;
+        return vec3.minus(this, this, v);
     }
     mul(v) {
-        this[0] *= v[0];
-        this[1] *= v[1];
-        this[2] *= v[2];
-        return this;
+        return vec3.mul(this, this, v);
     }
     div(v) {
-        this[0] /= v[0];
-        this[1] /= v[1];
-        this[2] /= v[2];
-        return this;
+        return vec3.div(this, this, v);
     }
     dot(v) {
         return this[0] * v[0]
@@ -115,6 +103,12 @@ class Vector3 extends V3Constructor {
         return (...args) => {
             return vec3(func(...args.map(v => v.x)), func(...args.map(v => v.y)), func(...args.map(v => v.z)));
         };
+    }
+    static mathNonAlloc(func, out, ...args) {
+        out[0] = func(...args.map(v => v[0]));
+        out[1] = func(...args.map(v => v[1]));
+        out[2] = func(...args.map(v => v[2]));
+        return out;
     }
     __to(type) {
         switch (type) {

@@ -1,3 +1,6 @@
+declare type ShaderPair = [string, string];
 export declare const ShaderSource: {
-    [key: string]: [string, string];
+    default2D: ShaderPair;
+    particle2D: ShaderPair;
 };
+export {};

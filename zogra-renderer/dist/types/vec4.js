@@ -39,32 +39,16 @@ class Vector4 extends V4Constructor {
     }
     asMut() { return this; }
     plus(v) {
-        this[0] += v[0];
-        this[1] += v[1];
-        this[2] += v[2];
-        this[3] += v[3];
-        return this;
+        return vec4.plus(this, this, v);
     }
     minus(v) {
-        this[0] -= v[0];
-        this[1] -= v[1];
-        this[2] -= v[2];
-        this[3] -= v[3];
-        return this;
+        return vec4.minus(this, this, v);
     }
     mul(v) {
-        this[0] *= v[0];
-        this[1] *= v[1];
-        this[2] *= v[2];
-        this[3] *= v[3];
-        return this;
+        return vec4.mul(this, this, v);
     }
     div(v) {
-        this[0] /= v[0];
-        this[1] /= v[1];
-        this[2] /= v[2];
-        this[3] /= v[3];
-        return this;
+        return vec4.div(this, this, v);
     }
     dot(v) {
         return this[0] * v[0]

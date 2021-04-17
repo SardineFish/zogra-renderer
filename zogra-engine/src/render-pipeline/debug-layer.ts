@@ -1,4 +1,4 @@
-import { Lines } from "zogra-renderer";
+import { DebugProvider, Lines } from "zogra-renderer";
 import { Color } from "zogra-renderer";
 import { mat4 } from "zogra-renderer";
 import { minus } from "zogra-renderer";
@@ -7,7 +7,7 @@ import { vec3 } from "zogra-renderer";
 import { RenderData } from "./render-data";
 import { RenderContext } from "./render-pipeline";
 
-export class DebugLayerRenderer
+export class DebugLayerRenderer extends DebugProvider
 {
     lines: Lines = new Lines();
 
@@ -23,14 +23,6 @@ export class DebugLayerRenderer
         this.lines.verts = verts;
         this.lines.colors = colors;
         this.lines.lines = lines;
-    }
-
-    drawRect(min: vec2, max: vec2, color = Color.white)
-    {
-        this.drawLine(vec2(min.x, min.y).toVec3(), vec2(max.x, min.y).toVec3(), color);
-        this.drawLine(vec2(max.x, min.y).toVec3(), vec2(max.x, max.y).toVec3(), color);
-        this.drawLine(vec2(max.x, max.y).toVec3(), vec2(min.x, max.y).toVec3(), color);
-        this.drawLine(vec2(min.x, max.y).toVec3(), vec2(min.x, min.y).toVec3(), color);
     }
 
     render(context: RenderContext, data: RenderData)
