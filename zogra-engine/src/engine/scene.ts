@@ -7,6 +7,7 @@ import { ConstructorType } from "../utils/util";
 import { IAsset, AssetManager } from "zogra-renderer";
 import { IPhysicsSystem, IPhysicsSystemClass, UnknownPhysics } from "../physics/physics-generic";
 import { Physics2D } from "../2d/physics/physics-2d";
+import { Time } from "./zogra-engine";
 
 interface SceneEvents extends EventDefinitions
 {
@@ -23,6 +24,8 @@ export class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> extends Enti
     //private managers = new Map<Function, EntityManager>();
 
     private eventEmitter = new EventEmitter<SceneEvents>();
+    private addsNextFrame: Map<Entity, Entity | null> = new Map();
+    private removesNextFrame: Set<Entity> = new Set();
 
     constructor(PhysicsSystem: ConstructorType<Physics>)
     {
@@ -32,29 +35,17 @@ export class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> extends Enti
         this.physics = new PhysicsSystem();
     }
 
-    add(entity: Entity, parent?: Entity)
+    add(entity: Entity, parent: Entity | null = null)
     {
-        super.add(entity);
-        entity.__addToScene(this);
+        this.addsNextFrame.set(entity, parent);
 
-        const type = entity.constructor;
-        // if (!this.managers.has(type))
-        //     this.managers.set(type, new EntityManager());
-        // this.managers.get(type)?.add(entity);
-        
-        
-        if (parent)
-            entity.parent = parent;
         for (const child of entity.children)
             this.add(child as Entity, entity);
         
-        this.eventEmitter.emit("entity-add", entity, parent ? parent : null);
     }
     remove(entity: Entity)
     {
-        super.remove(entity);
-
-        this.eventEmitter.emit("entity-remove", entity, entity.parent as Entity);
+        this.removesNextFrame.add(entity);
     }
     rootEntities()
     {
@@ -83,5 +74,55 @@ export class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> extends Enti
         this._entities = [];
         this.entityMap.clear();
         throw new Error("Method not implemented.");
+    }
+    /** @internal */
+    __update(time: Time)
+    {
+        this.addPendingEntities(time);
+        this.removePendingEntites(time);
+
+        const entities = this.rootEntities();
+        for (const entity of entities)
+            entity.__updateRecursive(time);
+        
+        this.physics?.update(time);
+    }
+
+    private addPendingEntities(time: Time)
+    {
+        const adds = this.addsNextFrame;
+        this.addsNextFrame = new Map();
+        for (const [entity, parent] of adds)
+        {
+            super.add(entity);
+            entity.__addToScene(this);
+
+            const type = entity.constructor;
+            // if (!this.managers.has(type))
+            //     this.managers.set(type, new EntityManager());
+            // this.managers.get(type)?.add(entity);
+
+
+            if (parent)
+                entity.parent = parent;
+
+            this.eventEmitter.emit("entity-add", entity, parent ? parent : null);
+        }
+        for (const [entity, _] of adds)
+            entity.__start(time);
+    }
+    private removePendingEntites(time: Time)
+    {
+        const removes = this.removesNextFrame;
+        this.removesNextFrame = new Set();
+        for (const entity of removes)
+        {
+            super.remove(entity);
+            entity.__removeFromScene(this);
+
+            this.eventEmitter.emit("entity-remove", entity, entity.parent as Entity);
+        }
+        for (const entity of removes)
+            entity.__exit(time);
     }
 }

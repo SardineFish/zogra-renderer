@@ -12,8 +12,10 @@ export declare class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> exte
     name: string;
     physics: Physics;
     private eventEmitter;
+    private addsNextFrame;
+    private removesNextFrame;
     constructor(PhysicsSystem: ConstructorType<Physics>);
-    add(entity: Entity, parent?: Entity): void;
+    add(entity: Entity, parent?: Entity | null): void;
     remove(entity: Entity): void;
     rootEntities(): Entity[];
     getEntities(): Entity[];
@@ -21,5 +23,7 @@ export declare class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> exte
     on<T extends EventKeys<SceneEvents>>(event: T, listener: SceneEvents[T]): void;
     off<T extends EventKeys<SceneEvents>>(event: T, listener: SceneEvents[T]): void;
     destroy(): void;
+    private addPendingEntities;
+    private removePendingEntites;
 }
 export {};

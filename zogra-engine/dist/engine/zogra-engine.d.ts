@@ -26,8 +26,6 @@ export declare class ZograEngine implements IEventSource<ZograEngineEvents> {
     set scene(value: Scene<import("../physics/physics-generic").IPhysicsSystem>);
     constructor(canvas: HTMLCanvasElement, RenderPipeline?: ZograRenderPipelineConstructor);
     renderScene(): void;
-    private updateEntities;
-    private updatePhysics;
     start(): void;
     on<T extends EventKeys<ZograEngineEvents>>(event: T, listener: ZograEngineEvents[T]): void;
     off<T extends EventKeys<ZograEngineEvents>>(event: T, listener: ZograEngineEvents[T]): void;

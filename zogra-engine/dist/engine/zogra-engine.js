@@ -29,14 +29,6 @@ class ZograEngine {
             scene: this.scene
         }, cameras);
     }
-    updateEntities(time) {
-        const entities = this.scene.rootEntities();
-        for (const entity of entities)
-            entity.__updateRecursive(time);
-    }
-    updatePhysics(time) {
-        this.scene.physics.update(time);
-    }
     start() {
         let previousDelay = 0;
         let startDelay = 0;
@@ -55,8 +47,7 @@ class ZograEngine {
             };
             this._time = t;
             this.eventEmitter.emit("update", t);
-            this.updateEntities(t);
-            this.updatePhysics(t);
+            this.scene.__update(t);
             this.eventEmitter.emit("render", this.scene.getEntitiesOfType(camera_1.Camera));
             this.renderScene();
             requestAnimationFrame(update);

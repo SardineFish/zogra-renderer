@@ -8,7 +8,9 @@ import { Scene } from "./scene";
 
 export interface EntityEvents
 {
-    "update": (entity: Entity, time: Time) => void;
+    update(entity: Entity, time: Time): void,
+    start(entity: Entity, time: Time): void,
+    exit(entity: Entity, time: Time): void,
 }
 
 export interface IEntity
@@ -51,10 +53,14 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
         AssetManager.destroy(this.assetID);
     }
 
+    protected start(time: Time) { }
+    protected update(time: Time) { }
+    protected exit(time: Time) { }
+
     /** @internal */
     __updateRecursive(time: Time)
     {
-        type t = Parameters<EntityEvents["update"]>;
+        this.update(time);
         this.eventEmitter.emit("update", this, time);
         for (const entity of this.children)
             (entity as Entity).__updateRecursive(time);
@@ -70,6 +76,18 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     {
         super.__removeFromScene(scene);
         this._collider?.__unbindPhysics();
+    }
+    /** @internal */
+    __start(time: Time)
+    {
+        this.start(time);
+        this.eventEmitter.with<EntityEvents>().emit("start", this, time);
+    }
+    /** @internal */
+    __exit(time: Time)
+    {
+        this.exit(time);
+        this.eventEmitter.with<EntityEvents>().emit("exit", this, time);
     }
 }
 

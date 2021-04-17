@@ -31,8 +31,12 @@ class Entity extends transform_1.Transform {
         this.destroyed = true;
         zogra_renderer_1.AssetManager.destroy(this.assetID);
     }
+    start(time) { }
+    update(time) { }
+    exit(time) { }
     /** @internal */
     __updateRecursive(time) {
+        this.update(time);
         this.eventEmitter.emit("update", this, time);
         for (const entity of this.children)
             entity.__updateRecursive(time);
@@ -48,6 +52,16 @@ class Entity extends transform_1.Transform {
         var _a;
         super.__removeFromScene(scene);
         (_a = this._collider) === null || _a === void 0 ? void 0 : _a.__unbindPhysics();
+    }
+    /** @internal */
+    __start(time) {
+        this.start(time);
+        this.eventEmitter.with().emit("start", this, time);
+    }
+    /** @internal */
+    __exit(time) {
+        this.exit(time);
+        this.eventEmitter.with().emit("exit", this, time);
     }
 }
 exports.Entity = Entity;
