@@ -11,14 +11,17 @@ type MapArrayArgs<T> =
     : T extends number | ZograMatrix ? ArrayLike<number> | number
     : never;
 
-type WrappedFunction<TOut, TArgs extends any[]> = {
-    (...args: { [key in keyof TArgs]: Readonly<TArgs[key]> }): TOut,
-    (out: TOut, ...args: { [key in keyof TArgs]: Readonly<TArgs[key]> }): TOut,
-    (out: ArrayLike<number>, ...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): ArrayLike<number>,
-    (...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): ArrayLike<number>,
+type WrappedFunction<TOut, TReturn, TArgs extends any[]> = {
+    (...args: { [key in keyof TArgs]: Readonly<TArgs[key]> }): TReturn,
+    (out: TOut, ...args: { [key in keyof TArgs]: Readonly<TArgs[key]> }): TReturn,
+    (out: ArrayLike<number>, ...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): null extends TReturn ? ArrayLike<number> | null : ArrayLike<number>,
+    (...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): null extends TReturn ? ArrayLike<number> | null : ArrayLike<number>,
 };
 
-export function wrapGlMatrix<TOut, TArgs extends any[]>(func: (out: TOut, ...args: TArgs) => TOut, argCount: TArgs["length"], allocator: () => TOut): WrappedFunction<TOut, TArgs>
+
+export function wrapGlMatrix<TOut, TReturn, TArgs extends any[]>(func: (out: TOut, ...args: TArgs) => TOut, argCount: TArgs["length"], allocator: () => TOut): WrappedFunction<TOut, TReturn, TArgs>
+export function wrapGlMatrix<TOut, TArgs extends any[]>(func: (out: TOut, ...args: TArgs) => TOut, argCount: TArgs["length"], allocator: () => TOut): WrappedFunction<TOut, TOut, TArgs>
+export function wrapGlMatrix<TOut, TArgs extends any[]>(func: (out: TOut, ...args: TArgs) => TOut, argCount: TArgs["length"], allocator: () => TOut): WrappedFunction<TOut, TOut, TArgs>
 {
     return ((...args: [TOut, ...TArgs] | TArgs) =>
     {
@@ -40,5 +43,5 @@ export const MathUtils = {
     {
         return (b - a) * t + a;
     },
-    
+
 }

@@ -34,10 +34,10 @@ export declare namespace mat4 {
         (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
     };
     var invert: {
-        (args_0: Readonly<Matrix4x4>): Matrix4x4;
-        (out: Matrix4x4, args_0: Readonly<Matrix4x4>): Matrix4x4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Matrix4x4>): Matrix4x4 | null;
+        (out: Matrix4x4, args_0: Readonly<Matrix4x4>): Matrix4x4 | null;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number> | null;
+        (args_0: ArrayLike<number>): ArrayLike<number> | null;
     };
     var getTranslation: {
         (args_0: Readonly<Matrix4x4>): import("./vec3").Vector3;
