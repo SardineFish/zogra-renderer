@@ -24,12 +24,14 @@ export class SpriteObject extends RenderObject
         if (sprite)
         {
             this.material.texture = sprite.texture;
-            this.mesh.uvs = [
-                vec2(sprite.uvRect.xMin, sprite.uvRect.yMin),
-                vec2(sprite.uvRect.xMax, sprite.uvRect.yMin),
-                vec2(sprite.uvRect.xMax, sprite.uvRect.yMax),
-                vec2(sprite.uvRect.xMin, sprite.uvRect.yMax),
-            ];
+            this.mesh.vertices[0].uv.set([sprite.uvRect.xMin, sprite.uvRect.yMin]);
+            this.mesh.vertices[1].uv.set([sprite.uvRect.xMax, sprite.uvRect.yMin]);
+            this.mesh.vertices[2].uv.set([sprite.uvRect.xMax, sprite.uvRect.yMax]);
+            this.mesh.vertices[3].uv.set([sprite.uvRect.xMin, sprite.uvRect.yMax]);
+            this.mesh.vertices[0].color.set(sprite.color);
+            this.mesh.vertices[1].color.set(sprite.color);
+            this.mesh.vertices[2].color.set(sprite.color);
+            this.mesh.vertices[3].color.set(sprite.color);
             this.mesh.update();
         }
         else

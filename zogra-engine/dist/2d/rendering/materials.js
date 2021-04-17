@@ -13,6 +13,7 @@ class Default2DMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_re
     cull: zogra_renderer_1.Culling.Disable,
     depth: zogra_renderer_1.DepthTest.Disable,
     zWrite: false,
+    blend: [zogra_renderer_1.Blending.SrcAlpha, zogra_renderer_1.Blending.OneMinusSrcAlpha],
 })) {
     constructor() {
         super(...arguments);
