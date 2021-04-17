@@ -1,4 +1,4 @@
-import { Camera, Chunk, Color, Default2DMaterial, Default2DRenderPipeline, dot, Entity, InputManager, Keys, LineRenderer, MathUtils, minus, mul, plus, Projection, RenderObject, Sprite, Texture2D, TextureImporter, TileData, Tilemap, Time, vec2, vec3, ZograEngine } from "zogra-engine";
+import { Camera, Chunk, Color, Default2DMaterial, Default2DRenderPipeline, dot, Entity, InputManager, Keys, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Projection, RenderObject, Sprite, Texture2D, TextureImporter, TileData, Tilemap, Time, vec2, vec3, ZograEngine } from "zogra-engine";
 import "./css/base.css";
 import imgCheckBoard from "./asset/img/checkboard.png";
 import * as ZograRendererPackage from "zogra-renderer";

@@ -1,4 +1,4 @@
-import { Timeline, SpriteObject, Sprite, Animator, Default2DMaterial, Time, Entity } from "zogra-engine";
+import { Timeline, SpriteObject, Sprite, Animator, Default2DMaterial, Time, Entity, BoxCollider } from "zogra-engine";
 import { vec2, MathUtils, vec3, TextureImporter, Vector2 } from "zogra-renderer";
 import imgFood from "../asset/img/snake-food.png";
 import { GameMap } from "./map";
@@ -129,6 +129,10 @@ export class Food extends SpriteObject
         this.sprite = Food.foodSprite;
         this.position = pos.toVec3(1);
         this.localScaling = vec3(this.foodSize);
+        const collider = new BoxCollider();
+        collider.size = vec2(this.foodSize);
+        this.collider = collider;
+
         this.animator = new Animator(15, foodTimeline);
         this.animator.callback = (state) =>
         {
