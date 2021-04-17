@@ -10,6 +10,7 @@ module.exports = {
         "engine-test": "./src/engine-test.ts",
         "fbx-loader": "./src/fbx-loader.ts",
         "tilemap": "./src/tilemap.ts",
+        "snake": "./src/snake/index.ts",
     },
     output: {
         path: path.resolve("./dist"),
@@ -115,6 +116,13 @@ module.exports = {
             inject: true,
             minify: false,
             chunks: ["tilemap"],
+        }),
+        new HtmlWebpackPlugin({
+            filename: "snake.html",
+            template: "html/base.html",
+            inject: true,
+            minify: false,
+            chunks: ["snake"],
         }),
     ]
 };
