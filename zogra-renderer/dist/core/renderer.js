@@ -155,8 +155,16 @@ class ZograRenderer {
     setupTransforms(shader, transformModel) {
         const gl = this.gl;
         const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transformModel);
-        const mit = mat4_1.mat4.transpose(mat4_1.mat4.invert(transformModel));
-        const mvit = mat4_1.mat4.transpose(mat4_1.mat4.invert(mat4_1.mat4.mul(this.viewMatrix, transformModel)));
+        const mit = mat4_1.mat4.create();
+        if (mat4_1.mat4.invert(mit, transformModel))
+            mat4_1.mat4.transpose(mit, mit);
+        else
+            mit.fill(0);
+        const mvit = mat4_1.mat4.mul(this.viewMatrix, transformModel);
+        if (mat4_1.mat4.invert(mvit, mvit))
+            mat4_1.mat4.transpose(mvit, mvit);
+        else
+            mvit.fill(0);
         shader.setupBuiltinUniform({
             matM: transformModel,
             matVP: this.viewProjectionMatrix,
