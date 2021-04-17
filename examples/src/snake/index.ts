@@ -1,4 +1,4 @@
-import { Camera, Default2DRenderPipeline, InputManager, Projection, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
+import { Camera, Default2DRenderPipeline, InputManager, Physics2D, Projection, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
 import "../css/base.css";
 import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";
@@ -14,6 +14,7 @@ import { loadSnakeAssets } from "./food";
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
+engine.fixedDeltaTime = true;
 const input = new InputManager();
 
 engine.on("update", (time) =>
@@ -24,6 +25,7 @@ engine.start();
 
 const scene = engine.scene;
 (window as any).scene = scene;
+scene.physics = new Physics2D();
 
 async function init()
 {

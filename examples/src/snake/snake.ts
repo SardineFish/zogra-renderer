@@ -1,6 +1,13 @@
-import { Camera, Color, dot, InputManager, Keys, LineRenderer, MathUtils, minus, mul, plus, Time, vec2 } from "zogra-engine";
-import { FoodGenerator } from "./food";
+import { BoxCollider, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, LineRenderer, MathUtils, minus, mul, plus, Time, vec2 } from "zogra-engine";
+import { Food, FoodGenerator } from "./food";
 import { GameMap } from "./map";
+
+interface TailGrowing
+{
+    time: number,
+    speed: number,
+    duration: number,
+}
 
 export class Snake extends LineRenderer
 {
@@ -19,6 +26,7 @@ export class Snake extends LineRenderer
     camera: Camera;
     input: InputManager;
     foodGenerator: FoodGenerator;
+    growingTail: TailGrowing[] = [];
 
     constructor(bodies: vec2[], headDir: vec2, camera: Camera, input: InputManager)
     {
@@ -29,6 +37,10 @@ export class Snake extends LineRenderer
         camera.position = this.head.toVec3(camera.position.z);
         this.input = input;
         this.foodGenerator = new FoodGenerator(this);
+        const collider = new BoxCollider();
+        collider.size = vec2(this.width);
+        this.collider = collider;
+        collider.on("onContact", this.onContact.bind(this));
 
         for (const body of this.bodies)
         {
@@ -45,16 +57,29 @@ export class Snake extends LineRenderer
         });
         this.points[0].position = mul(this.tailDir, -this.width / 2).plus(this.tail);
     }
+    onContact(other: Collider2D)
+    {
+        // console.log(other);
+        if (other.entity instanceof GameMap)
+        {
+            this.headSpeed = 0;
+        }
+        else if (other.entity instanceof Food)
+        {
+            this.growTail(1, 3);
+            other.entity.destroy();
+        }
+    }
     start()
     {
         this.scene?.add(this.foodGenerator);
     }
     update(time: Time)
     {
-        time = {
-            deltaTime: 0.016,
-            time: 0,
-        };
+        console.log(this.bodies.length);
+        const collider = this.collider as BoxCollider;
+        collider.offset = mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position);
+        
         if (this.input.getKeyDown(Keys.A) || this.input.getKeyDown(Keys.Left))
         {
             this.inputQueue.push(vec2.left());
@@ -116,7 +141,19 @@ export class Snake extends LineRenderer
     }
     moveTail(time: Time)
     {
-        this.tailMoveDistance += this.tailSpeed * time.deltaTime;
+        let moveDistance = this.tailSpeed * time.deltaTime;
+        if (this.growingTail.length > 0)
+        {
+            const state = this.growingTail[0];
+            moveDistance = (this.tailSpeed * state.speed) * time.deltaTime;
+            state.time += time.deltaTime;
+            if (state.time>= state.duration)
+            {
+                this.growingTail = this.growingTail.slice(1);
+            }
+        }
+
+        this.tailMoveDistance += moveDistance;
         if (this.tailMoveDistance >= this.step)
         {
             GameMap.instance.setTile(this.tail, GameMap.tileGround);
@@ -130,6 +167,14 @@ export class Snake extends LineRenderer
         const tailPoint = this.points[0];
         const startPos = mul(this.tailDir, -this.width / 2).plus(this.tail);
         tailPoint.position.set(this.tailDir).mul(this.tailMoveDistance).plus(startPos);
+    }
+    growTail(length: number, steps: number)
+    {
+        this.growingTail.push({
+            speed: (steps - length) / steps,
+            time: 0,
+            duration: steps / this.tailSpeed
+        })
     }
     get head() { return this.bodies[this.bodies.length - 1] }
     get tail() { return this.bodies[0] }

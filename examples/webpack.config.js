@@ -11,6 +11,7 @@ module.exports = {
         "fbx-loader": "./src/fbx-loader.ts",
         "tilemap": "./src/tilemap.ts",
         "snake": "./src/snake/index.ts",
+        "particle": "./src/particle.ts",
     },
     output: {
         path: path.resolve("./dist"),
@@ -81,48 +82,11 @@ module.exports = {
             },
         ]
     },
-    plugins: [
-        new HtmlWebpackPlugin({
-            filename: "generic.html",
-            template: "html/base.html",
-            inject: true,
-            minify: false,
-            chunks: ["generic"],
-        }),
-        new HtmlWebpackPlugin({
-            filename: "life-game.html",
-            template: "html/base.html",
-            inject: true,
-            minify: false,
-            chunks: ["life-game"],
-        }),
-        new HtmlWebpackPlugin({
-            filename: "engine-test.html",
-            template: "html/base.html",
-            inject: true,
-            minify: false,
-            chunks: ["engine-test"],
-        }),
-        new HtmlWebpackPlugin({
-            filename: "fbx-loader.html",
-            template: "html/base.html",
-            inject: true,
-            minify: false,
-            chunks: ["fbx-loader"],
-        }),
-        new HtmlWebpackPlugin({
-            filename: "tilemap.html",
-            template: "html/base.html",
-            inject: true,
-            minify: false,
-            chunks: ["tilemap"],
-        }),
-        new HtmlWebpackPlugin({
-            filename: "snake.html",
-            template: "html/base.html",
-            inject: true,
-            minify: false,
-            chunks: ["snake"],
-        }),
-    ]
+    plugins: ["generic", "life-game", "engine-test", "fbx-loader", "tilemap", "snake", "particle"].map(chunk => new HtmlWebpackPlugin({
+        filename: `${chunk}.html`,
+        template: "html/base.html",
+        inject: true,
+        minify: false,
+        chunks: [chunk],
+    }))
 };

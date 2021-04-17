@@ -1,4 +1,4 @@
-import { Chunk, Color, Sprite, TextureImporter, TileData, Tilemap, vec2 } from "zogra-engine";
+import { Chunk, Color, Sprite, TextureImporter, TileData, Tilemap, TilemapCollider, vec2 } from "zogra-engine";
 import imgCheckBoard from "../asset/img/checkboard.png";
 import noisejs = require("noisejs");
 
@@ -53,7 +53,7 @@ export class GameMap extends Tilemap<NoiseChunk>
     };
     static tileWall: GameTile = {
         sprite: null,
-        collide: false,
+        collide: true,
         name: "wall",
     };
     static tileSnake: GameTile = {
@@ -72,6 +72,7 @@ export class GameMap extends Tilemap<NoiseChunk>
     {
         super(NoiseChunk);
         GameMap.instance = this;
+        this.collider = new TilemapCollider();
     }
 
     static async loadMapAssets()
