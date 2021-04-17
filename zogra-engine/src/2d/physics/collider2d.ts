@@ -3,9 +3,10 @@ import { ColliderBase } from "../../physics/physics-generic";
 import { Physics2D } from "./physics-2d";
 import { Rigidbody2D } from "./rigidbody2d";
 
-interface Collider2DEvents extends EventDefinitions
+interface Collider2DEvents
 {
     onCollide(collision: Readonly<CollisionInfo2D>): void;
+    onContact(other: Collider2D): void;
 }
 
 export interface CollisionInfo2D
@@ -35,4 +36,6 @@ export abstract class Collider2D extends ColliderBase<Physics2D> implements IEve
 
     /** @internal */
     abstract checkCollision(other: Collider2D, otherMotoin: vec2): CollisionInfo2D | null;
+
+    abstract checkContact(other: Collider2D): boolean
 }

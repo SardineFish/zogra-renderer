@@ -54,6 +54,7 @@ export class ColliderBase<PhysicsSystem extends IPhysicsSystem> implements IColl
             throw new Error("Collider should only be bound to single entity.");
         this._entity = entity;
         this._physicsSystem = scene.physics as PhysicsSystem;
+        this._physicsSystem.__addCollider(this);
     }
     /** @internal */
     __unbind()
@@ -64,6 +65,7 @@ export class ColliderBase<PhysicsSystem extends IPhysicsSystem> implements IColl
     /** @internal */
     __unbindPhysics()
     {
+        this._physicsSystem?.__removeCollider(this);
         this._physicsSystem = null;
     }
 }

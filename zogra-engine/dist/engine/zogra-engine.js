@@ -9,6 +9,7 @@ const zogra_renderer_2 = require("zogra-renderer");
 const physics_generic_1 = require("../physics/physics-generic");
 class ZograEngine {
     constructor(canvas, RenderPipeline = rp_1.PreviewRenderer) {
+        this.fixedDeltaTime = false;
         this._time = { deltaTime: 0, time: 0 };
         this.renderer = new zogra_renderer_1.ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);
@@ -32,15 +33,20 @@ class ZograEngine {
     start() {
         let previousDelay = 0;
         let startDelay = 0;
+        let currentTime = 0;
         const update = (delay) => {
             if (previousDelay === 0) {
                 startDelay = previousDelay = delay;
                 requestAnimationFrame(update);
                 return;
             }
-            const time = (delay - startDelay) / 1000;
-            const dt = (delay - previousDelay) / 1000;
-            previousDelay = delay;
+            if (this.fixedDeltaTime)
+                currentTime += 16;
+            else
+                currentTime = delay;
+            const time = (currentTime - startDelay) / 1000;
+            const dt = (currentTime - previousDelay) / 1000;
+            previousDelay = currentTime;
             const t = {
                 time: time,
                 deltaTime: dt

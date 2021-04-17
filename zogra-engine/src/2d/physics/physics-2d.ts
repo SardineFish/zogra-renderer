@@ -40,11 +40,20 @@ export class Physics2D<Collider extends Collider2D = Collider2D> implements IPhy
         for (let i = 0; i < this.colliderList.length; i++)
         {
             const colliderA = this.colliderList[i];
-            for (let j = 0; j < this.colliderList.length; j++)
+            for (let j = i + 1; j < this.colliderList.length; j++)
             {
                 if (i === j)
                     continue;
                 const colliderB = this.colliderList[j];
+
+                if (colliderA.checkContact(colliderB))
+                {
+                    colliderA.__eventEmitter.emit("onContact", colliderB);
+                    colliderB.__eventEmitter.emit("onContact", colliderA);
+                }
+                else
+                    continue;
+                
                 if (!colliderA.rigidbody && !colliderB.rigidbody)
                     continue;
                 

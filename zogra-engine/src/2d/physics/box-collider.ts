@@ -1,6 +1,7 @@
 import { vec2 } from "zogra-renderer";
 import { Collider2D, CollisionInfo2D } from "./collider2d";
-import { checkCollisionTilemapBox } from "./collision/tilemap-box";
+import { checkContactBoxBox } from "./collision/box-box";
+import { checkCollisionTilemapBox, checkContactTilemapBox } from "./collision/tilemap-box";
 import { TilemapCollider } from "./tilemap-collider";
 
 export class BoxCollider extends Collider2D
@@ -16,5 +17,17 @@ export class BoxCollider extends Collider2D
         
         console.warn("Unimplemented collision check");
         return null;
+    }
+
+    /** @internal */
+    checkContact(other: Collider2D): boolean
+    {
+        if (other instanceof TilemapCollider)
+            return checkContactTilemapBox(other, this);
+        else if (other instanceof BoxCollider)
+            return checkContactBoxBox(this, other);
+        
+        console.warn("Unimplemented collision check");
+        return false;
     }
 }

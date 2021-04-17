@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BoxCollider = void 0;
 const zogra_renderer_1 = require("zogra-renderer");
 const collider2d_1 = require("./collider2d");
+const box_box_1 = require("./collision/box-box");
 const tilemap_box_1 = require("./collision/tilemap-box");
 const tilemap_collider_1 = require("./tilemap-collider");
 class BoxCollider extends collider2d_1.Collider2D {
@@ -17,6 +18,15 @@ class BoxCollider extends collider2d_1.Collider2D {
             return tilemap_box_1.checkCollisionTilemapBox(other, this, otherMotion.negative);
         console.warn("Unimplemented collision check");
         return null;
+    }
+    /** @internal */
+    checkContact(other) {
+        if (other instanceof tilemap_collider_1.TilemapCollider)
+            return tilemap_box_1.checkContactTilemapBox(other, this);
+        else if (other instanceof BoxCollider)
+            return box_box_1.checkContactBoxBox(this, other);
+        console.warn("Unimplemented collision check");
+        return false;
     }
 }
 exports.BoxCollider = BoxCollider;

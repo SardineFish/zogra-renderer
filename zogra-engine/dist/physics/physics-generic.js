@@ -22,6 +22,7 @@ class ColliderBase {
             throw new Error("Collider should only be bound to single entity.");
         this._entity = entity;
         this._physicsSystem = scene.physics;
+        this._physicsSystem.__addCollider(this);
     }
     /** @internal */
     __unbind() {
@@ -30,6 +31,8 @@ class ColliderBase {
     }
     /** @internal */
     __unbindPhysics() {
+        var _a;
+        (_a = this._physicsSystem) === null || _a === void 0 ? void 0 : _a.__removeCollider(this);
         this._physicsSystem = null;
     }
 }
