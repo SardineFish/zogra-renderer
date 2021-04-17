@@ -14,11 +14,17 @@ import { ConstructorType } from "../utils/util";
 import { mul } from "zogra-renderer";
 import { vec4 } from "zogra-renderer";
 import { DebugLayerRenderer } from "./debug-layer";
+import { Debug } from "zogra-renderer/dist/core/global";
 
 
 export class Default2DRenderPipeline implements ZograRenderPipeline
 {
     debuglayer = new DebugLayerRenderer();
+
+    constructor()
+    {
+        Debug(this.debuglayer);
+    }
 
     render(renderer: RenderContext, cameras: Camera[]): void
     {
@@ -64,7 +70,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
             // }
         }
 
-        // this.debuglayer.render(context, data);
+        this.debuglayer.render(context, data);
         camera.__postRender(context);
     }
 

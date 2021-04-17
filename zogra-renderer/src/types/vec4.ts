@@ -53,37 +53,21 @@ export class Vector4 extends V4Constructor implements Vector, ZograMatrix
         return new Vector4(1, 1, 1, 1);
     }
     asMut() { return this; }
-    plus(v: Readonly<vec4>)
+    plus(v: Readonly<vec4> | number)
     {
-        this[0] += v[0];
-        this[1] += v[1];
-        this[2] += v[2];
-        this[3] += v[3];
-        return this;
+        return vec4.plus(this, this, v);
     }
-    minus(v: Readonly<vec4>)
+    minus(v: Readonly<vec4> | number)
     {
-        this[0] -= v[0];
-        this[1] -= v[1];
-        this[2] -= v[2];
-        this[3] -= v[3];
-        return this;
+        return vec4.minus(this, this, v);
     }
-    mul(v: Readonly<vec4>)
+    mul(v: Readonly<vec4> | number)
     {
-        this[0] *= v[0];
-        this[1] *= v[1];
-        this[2] *= v[2];
-        this[3] *= v[3];
-        return this;
+        return vec4.mul(this, this, v);
     }
-    div(v: Readonly<vec4>)
+    div(v: Readonly<vec4> | number)
     {
-        this[0] /= v[0];
-        this[1] /= v[1];
-        this[2] /= v[2];
-        this[3] /= v[3];
-        return this;
+        return vec4.div(this, this, v);
     }
     dot(v: Readonly<vec4>)
     {

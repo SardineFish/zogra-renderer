@@ -49,33 +49,21 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
         return new Vector3(1, 1, 1);
     }
     asMut() { return this; }
-    plus(v: Readonly<vec3>)
+    plus(v: Readonly<vec3> | number)
     {
-        this[0] += v[0];
-        this[1] += v[1];
-        this[2] += v[2];
-        return this;
+        return vec3.plus(this, this, v);
     }
-    minus(v: Readonly<vec3>)
+    minus(v: Readonly<vec3> | number)
     {
-        this[0] -= v[0];
-        this[1] -= v[1];
-        this[2] -= v[2];
-        return this;
+        return vec3.minus(this, this, v);
     }
-    mul(v: Readonly<vec3>)
+    mul(v: Readonly<vec3> | number)
     {
-        this[0] *= v[0];
-        this[1] *= v[1];
-        this[2] *= v[2];
-        return this;
+        return vec3.mul(this, this, v);
     }
-    div(v: Readonly<vec3>)
+    div(v: Readonly<vec3> | number)
     {
-        this[0] /= v[0];
-        this[1] /= v[1];
-        this[2] /= v[2];
-        return this;
+        return vec3.div(this, this, v);
     }
     dot(v: Readonly<vec3>)
     {
@@ -161,6 +149,13 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
                 func(...args.map(v => v.z)),
             );
         };
+    }
+    static mathNonAlloc<F extends (...args: number[]) => number>(func: F, out: vec3, ...args: VecMathArgs<Parameters<F>, Readonly<vec3>>): vec3
+    {
+        out[0] = func(...args.map(v => v[0]));
+        out[1] = func(...args.map(v => v[1]));
+        out[2] = func(...args.map(v => v[2]));
+        return out;
     }
 
     __to(type: Function)

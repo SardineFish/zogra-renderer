@@ -33,6 +33,7 @@ export declare const BufferStructureInfo: {
 };
 export declare class RenderBuffer<T extends BufferStructure> extends Array<BufferElementView<T>> {
     static: boolean;
+    Data: BufferElementView<T>;
     private structure;
     private buffer;
     private dirty;
@@ -42,6 +43,8 @@ export declare class RenderBuffer<T extends BufferStructure> extends Array<Buffe
     get byteLength(): number;
     constructor(structure: T & BufferStructure, items: number, ctx?: GLContext);
     resize(length: number, keepContent?: boolean): void;
+    private swapBuffer;
+    swapVertices(a: number, b: number): void;
     markDirty(): void;
     upload(force?: boolean): boolean;
     bind(): void;

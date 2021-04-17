@@ -15,4 +15,5 @@ void main()
     vec4 color = texture(uMainTex, vUV.xy).rgba;
     // color = color * vec3(uColor);
     fragColor = color.rgba * vColor.rgba * uColor.rgba;
+    // fragColor = vec4(vUV.xy, 0, 1);
 }

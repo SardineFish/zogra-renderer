@@ -4,9 +4,9 @@ exports.DebugLayerRenderer = void 0;
 const zogra_renderer_1 = require("zogra-renderer");
 const zogra_renderer_2 = require("zogra-renderer");
 const zogra_renderer_3 = require("zogra-renderer");
-const zogra_renderer_4 = require("zogra-renderer");
-class DebugLayerRenderer {
+class DebugLayerRenderer extends zogra_renderer_1.DebugProvider {
     constructor() {
+        super(...arguments);
         this.lines = new zogra_renderer_1.Lines();
     }
     drawLine(from, to, color = zogra_renderer_2.Color.white) {
@@ -20,12 +20,6 @@ class DebugLayerRenderer {
         this.lines.verts = verts;
         this.lines.colors = colors;
         this.lines.lines = lines;
-    }
-    drawRect(min, max, color = zogra_renderer_2.Color.white) {
-        this.drawLine(zogra_renderer_4.vec2(min.x, min.y).toVec3(), zogra_renderer_4.vec2(max.x, min.y).toVec3(), color);
-        this.drawLine(zogra_renderer_4.vec2(max.x, min.y).toVec3(), zogra_renderer_4.vec2(max.x, max.y).toVec3(), color);
-        this.drawLine(zogra_renderer_4.vec2(max.x, max.y).toVec3(), zogra_renderer_4.vec2(min.x, max.y).toVec3(), color);
-        this.drawLine(zogra_renderer_4.vec2(min.x, max.y).toVec3(), zogra_renderer_4.vec2(min.x, min.y).toVec3(), color);
     }
     render(context, data) {
         context.renderer.drawLines(this.lines, zogra_renderer_3.mat4.identity(), context.renderer.assets.materials.ColoredLine);

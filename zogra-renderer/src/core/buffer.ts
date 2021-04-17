@@ -81,6 +81,7 @@ export const BufferStructureInfo = {
 export class RenderBuffer<T extends BufferStructure> extends Array<BufferElementView<T>>
 {
     public static = true;
+    public Data: BufferElementView<T> = null as any;
 
     private structure: BufferStructureInfo<T>;
     private buffer: Float32Array;
@@ -155,6 +156,21 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
         this.dirty = true;
     }
 
+    private swapBuffer: Float32Array | null = null;
+    swapVertices(a: number, b: number)
+    {
+        if (!this.swapBuffer)
+            this.swapBuffer = new Float32Array(this.structure.totalSize);
+        const offsetI = a * this.structure.byteSize;
+        const offsetJ = b * this.structure.byteSize;
+        let temp = this.swapBuffer;
+        let viewA = new Float32Array(this.buffer.buffer, offsetI, this.structure.totalSize);
+        temp.set(viewA);
+        const viewB = new Float32Array(this.buffer.buffer, offsetJ, this.structure.totalSize);
+        this.buffer.set(viewB, a * this.structure.totalSize);
+        this.buffer.set(temp, b * this.structure.totalSize);
+    }
+
     markDirty()
     {
         this.dirty = true;
@@ -189,6 +205,7 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
         this.tryInit(true);
         const gl = this.ctx.gl;
 
+        this.upload();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
 
         for (const element of this.structure.elements)
@@ -201,27 +218,27 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
                 continue;
             if (element.type === "mat4")
             {
-                gl.enableVertexAttribArray(element.location + 0);
-                gl.enableVertexAttribArray(element.location + 1);
-                gl.enableVertexAttribArray(element.location + 2);
-                gl.enableVertexAttribArray(element.location + 3);
-                gl.vertexAttribPointer(element.location + 0, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 0);
-                gl.vertexAttribPointer(element.location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
-                gl.vertexAttribPointer(element.location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
-                gl.vertexAttribPointer(element.location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
+                gl.enableVertexAttribArray(location + 0);
+                gl.enableVertexAttribArray(location + 1);
+                gl.enableVertexAttribArray(location + 2);
+                gl.enableVertexAttribArray(location + 3);
+                gl.vertexAttribPointer(location + 0, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 0);
+                gl.vertexAttribPointer(location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
+                gl.vertexAttribPointer(location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
+                gl.vertexAttribPointer(location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
                 if (instancing)
                 {
-                    gl.vertexAttribDivisor(element.location + 0, 1);
-                    gl.vertexAttribDivisor(element.location + 1, 1);
-                    gl.vertexAttribDivisor(element.location + 2, 1);
-                    gl.vertexAttribDivisor(element.location + 3, 1);
+                    gl.vertexAttribDivisor(location + 0, 1);
+                    gl.vertexAttribDivisor(location + 1, 1);
+                    gl.vertexAttribDivisor(location + 2, 1);
+                    gl.vertexAttribDivisor(location + 3, 1);
                 }
             }
             else
             {
-                gl.enableVertexAttribArray(element.location);
-                gl.vertexAttribPointer(element.location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
-                instancing && gl.vertexAttribDivisor(element.location, 1);
+                gl.enableVertexAttribArray(location);
+                gl.vertexAttribPointer(location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
+                instancing && gl.vertexAttribDivisor(location, 1);
             }
         }
     }
@@ -241,22 +258,22 @@ export class RenderBuffer<T extends BufferStructure> extends Array<BufferElement
                 continue;
             if (element.type === "mat4")
             {
-                gl.disableVertexAttribArray(element.location + 0);
-                gl.disableVertexAttribArray(element.location + 1);
-                gl.disableVertexAttribArray(element.location + 2);
-                gl.disableVertexAttribArray(element.location + 3);
+                gl.disableVertexAttribArray(location + 0);
+                gl.disableVertexAttribArray(location + 1);
+                gl.disableVertexAttribArray(location + 2);
+                gl.disableVertexAttribArray(location + 3);
                 if (instancing)
                 {
-                    gl.vertexAttribDivisor(element.location + 0, 0);
-                    gl.vertexAttribDivisor(element.location + 1, 0);
-                    gl.vertexAttribDivisor(element.location + 2, 0);
-                    gl.vertexAttribDivisor(element.location + 3, 0);
+                    gl.vertexAttribDivisor(location + 0, 0);
+                    gl.vertexAttribDivisor(location + 1, 0);
+                    gl.vertexAttribDivisor(location + 2, 0);
+                    gl.vertexAttribDivisor(location + 3, 0);
                 }
             }
             else
             {
-                gl.disableVertexAttribArray(element.location);
-                instancing && gl.vertexAttribDivisor(element.location, 0);
+                gl.disableVertexAttribArray(location);
+                instancing && gl.vertexAttribDivisor(location, 0);
             }
         }
     }

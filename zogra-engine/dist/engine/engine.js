@@ -19,4 +19,5 @@ __exportStar(require("./transform"), exports);
 __exportStar(require("./zogra-engine"), exports);
 __exportStar(require("./input"), exports);
 __exportStar(require("./animation"), exports);
+__exportStar(require("./particle-system"), exports);
 //# sourceMappingURL=engine.js.map
