@@ -11,13 +11,11 @@ class TilemapCollider extends collider2d_1.Collider2D {
         this._tilemap = null;
     }
     get tilemap() { return this._tilemap; }
-    set tilemap(value) {
-    }
     /** @internal */
     __bind(entity, scene) {
         super.__bind(entity, scene);
         if (entity instanceof tilemap_1.Tilemap)
-            this.tilemap = entity;
+            this._tilemap = entity;
     }
     /** @internal */
     checkCollision(other, otherMotion) {
@@ -25,6 +23,13 @@ class TilemapCollider extends collider2d_1.Collider2D {
             return tilemap_box_1.checkCollisionTilemapBox(this, other, otherMotion);
         console.warn("Unimplemented collision check");
         return null;
+    }
+    /** @internal */
+    checkContact(other) {
+        if (other instanceof box_collider_1.BoxCollider)
+            return tilemap_box_1.checkContactTilemapBox(this, other);
+        console.warn("Unimplemented contact check");
+        return false;
     }
 }
 exports.TilemapCollider = TilemapCollider;

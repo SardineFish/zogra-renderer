@@ -20,6 +20,7 @@ export declare class ZograEngine implements IEventSource<ZograEngineEvents> {
     renderer: ZograRenderer;
     renderPipeline: ZograRenderPipeline;
     eventEmitter: EventEmitter<ZograEngineEvents>;
+    fixedDeltaTime: boolean;
     private _time;
     get time(): Time;
     get scene(): Scene<import("../physics/physics-generic").IPhysicsSystem>;

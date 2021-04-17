@@ -5,6 +5,29 @@ import { BoxCollider } from "../box-collider";
 import { CollisionInfo2D } from "../collider2d";
 import { TilemapCollider } from "../tilemap-collider";
 
+export function checkContactTilemapBox(tilemap: TilemapCollider, box: BoxCollider): boolean
+{
+    if (!tilemap.entity || !box.entity)
+        return false;
+    
+    const center = box.entity.position.toVec2().plus(box.offset);
+    const centerTile = vec2.math(Math.floor)(center).plus(0.5);
+    const tileDistance = vec2.math(Math.ceil)(vec2.mul(box.size, 0.5));
+
+    for (var y = -tileDistance.y; y <= tileDistance.y; y++)
+        for (var x = -tileDistance.x; x <= tileDistance.x; x++)
+        {
+            const tileCenter = vec2(x, y).plus(centerTile);
+            const tile = tilemap.tilemap?.getTile(tileCenter);
+            if (tile?.collide)
+            {
+                if (Math.abs(center.x - tileCenter.x) <= box.size.x / 2 + 0.5 && Math.abs(center.y - tileCenter.y) <= box.size.y / 2 + 0.5)
+                    return true;
+            }
+        }
+    return false;
+}
+
 export function checkCollisionTilemapBox(tilemap: TilemapCollider, box: BoxCollider, boxMotion: vec2): CollisionInfo2D | null
 {
     if (!box.entity || !tilemap.tilemap)

@@ -28,6 +28,7 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
     renderer: ZograRenderer;
     renderPipeline: ZograRenderPipeline;
     eventEmitter: EventEmitter<ZograEngineEvents>;
+    fixedDeltaTime = false;
     private _time: Time = { deltaTime: 0, time: 0 };
     get time(): Time { return this._time; }
     get scene() { return this._scene }
@@ -56,6 +57,7 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
     {
         let previousDelay = 0;
         let startDelay = 0;
+        let currentTime = 0;
         const update = (delay: number) =>
         {
             if (previousDelay === 0)
@@ -65,9 +67,13 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
                 return;
             }
 
-            const time = (delay - startDelay) / 1000;
-            const dt = (delay - previousDelay) / 1000;
-            previousDelay = delay;
+            if (this.fixedDeltaTime)
+                currentTime += 16;
+            else
+                currentTime = delay;
+            const time = (currentTime - startDelay) / 1000;
+            const dt = (currentTime - previousDelay) / 1000;
+            previousDelay = currentTime;
             const t: Time = {
                 time: time,
                 deltaTime: dt
