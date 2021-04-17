@@ -52,16 +52,6 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
             scene: this.scene
         }, cameras);
     }
-    private updateEntities(time: Time)
-    {
-        const entities = this.scene.rootEntities();
-        for (const entity of entities)
-            entity.__updateRecursive(time);
-    }
-    private updatePhysics(time: Readonly<Time>)
-    {
-        this.scene.physics.update(time);
-    }
     start()
     {
         let previousDelay = 0;
@@ -84,8 +74,7 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
             };
             this._time = t;
             this.eventEmitter.emit("update", t);
-            this.updateEntities(t);
-            this.updatePhysics(t);
+            this.scene.__update(t);
             this.eventEmitter.emit("render", this.scene.getEntitiesOfType(Camera));
 
             this.renderScene();

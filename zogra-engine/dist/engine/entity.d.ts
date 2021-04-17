@@ -4,7 +4,9 @@ import { IEventSource, EventEmitter, EventKeys } from "zogra-renderer";
 import { Time } from "./zogra-engine";
 import { ICollider } from "../physics/physics-generic";
 export interface EntityEvents {
-    "update": (entity: Entity, time: Time) => void;
+    update(entity: Entity, time: Time): void;
+    start(entity: Entity, time: Time): void;
+    exit(entity: Entity, time: Time): void;
 }
 export interface IEntity {
     assetID: number;
@@ -22,6 +24,9 @@ export declare class Entity extends Transform implements IAsset, IEventSource<En
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void;
     off<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void;
     destroy(): void;
+    protected start(time: Time): void;
+    protected update(time: Time): void;
+    protected exit(time: Time): void;
 }
 export declare class EntityManager<T extends Entity = Entity> {
     protected entityMap: Map<number, T>;
