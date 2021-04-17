@@ -92,7 +92,7 @@ export class Camera extends Entity implements IEventSource<CameraEvents>
             : 1;
         const ndcXY = this.screenToViewport(pos).mul(vec2(2, -2)).minus(vec2(1, -1));
         const clip = mul(vec4(ndcXY.x, ndcXY.y, -1, 1), w);
-        const matVPInv = mat4.invert(this.viewProjectionMatrix);
+        const matVPInv = mat4.invert(this.viewProjectionMatrix) as mat4;
         const p = mat4.mulVec4(matVPInv, clip);
         return vec3(p[0], p[1], p[2]);
     }

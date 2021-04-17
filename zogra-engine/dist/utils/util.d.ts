@@ -12,17 +12,3 @@ export declare class DoubleBuffer<T> {
     constructor(init: () => T);
     update(): void;
 }
-export declare class Animator {
-    time: number;
-    duration: number;
-    timeScale: number;
-    callback: (progress: number, animator: Animator) => void;
-    state: "pending" | "playing" | "stopped";
-    constructor(callback: (progress: number, animator: Animator) => void, duration: number, time?: number);
-    get playing(): boolean;
-    get finished(): boolean;
-    play(time?: number): void;
-    stop(): void;
-    update(dt: number): void;
-    private checkEnd;
-}

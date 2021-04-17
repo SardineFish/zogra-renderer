@@ -18,4 +18,5 @@ __exportStar(require("./scene"), exports);
 __exportStar(require("./transform"), exports);
 __exportStar(require("./zogra-engine"), exports);
 __exportStar(require("./input"), exports);
+__exportStar(require("./animation"), exports);
 //# sourceMappingURL=engine.js.map

@@ -14,4 +14,5 @@ __exportStar(require("zogra-renderer"), exports);
 __exportStar(require("./engine/engine"), exports);
 __exportStar(require("./render-pipeline/rp"), exports);
 __exportStar(require("./2d"), exports);
+__exportStar(require("./utils"), exports);
 //# sourceMappingURL=index.js.map
