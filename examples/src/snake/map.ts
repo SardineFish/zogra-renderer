@@ -1,4 +1,4 @@
-import { Chunk, Color, Sprite, TextureImporter, TileData, vec2 } from "zogra-engine";
+import { Chunk, Color, Sprite, TextureImporter, TileData, Tilemap, vec2 } from "zogra-engine";
 import imgCheckBoard from "../asset/img/checkboard.png";
 import noisejs = require("noisejs");
 
@@ -6,14 +6,6 @@ const Noise = new noisejs.Noise();
 
 export class NoiseChunk extends Chunk
 {
-    static tileGround: TileData = {
-        sprite: null,
-        collide: false,
-    };
-    static tileWall: TileData = {
-        sprite: null,
-        collide: false,
-    }
     constructor(basePos: vec2, chunkSize: number)
     {
         super(basePos, chunkSize);
@@ -40,17 +32,58 @@ export class NoiseChunk extends Chunk
         }
 
         if (n > threshold)
-            this.setTile(vec2(x, y), NoiseChunk.tileWall);
+            this.setTile(vec2(x, y), GameMap.tileWall);
         else
-            this.setTile(vec2(x, y), NoiseChunk.tileGround);
+            this.setTile(vec2(x, y), GameMap.tileGround);
     }
 }
 
-export async function loadMapAssets()
+interface GameTile extends TileData
 {
-    const checkboard = await TextureImporter.url(imgCheckBoard).then(r => r.tex2d());
-    NoiseChunk.tileGround.sprite = new Sprite(checkboard, vec2(4), vec2(0, 0));
-    NoiseChunk.tileGround.sprite.color = Color.fromString("#cccccc");
-    NoiseChunk.tileWall.sprite = new Sprite(checkboard, vec2(4), vec2(0, 1));
-    NoiseChunk.tileWall.sprite.color = Color.fromString("#eeeeee");
+    name: string,
+}
+
+export class GameMap extends Tilemap<NoiseChunk>
+{
+    static instance: GameMap = null as any;
+    static tileGround: GameTile = {
+        sprite: null,
+        collide: false,
+        name: "ground",
+    };
+    static tileWall: GameTile = {
+        sprite: null,
+        collide: false,
+        name: "wall",
+    };
+    static tileSnake: GameTile = {
+        sprite: null,
+        collide: false,
+        name: "snake",
+    };
+    static tileFood: GameTile = {
+        sprite: null,
+        collide: false,
+        name: "food",
+    }
+
+
+    constructor()
+    {
+        super(NoiseChunk);
+        GameMap.instance = this;
+    }
+
+    static async loadMapAssets()
+    {
+        const checkboard = await TextureImporter.url(imgCheckBoard).then(r => r.tex2d());
+        GameMap.tileGround.sprite = new Sprite(checkboard, vec2(4), vec2(0, 0));
+        GameMap.tileGround.sprite.color = Color.fromString("#cccccc");
+        GameMap.tileWall.sprite = new Sprite(checkboard, vec2(4), vec2(0, 1));
+        GameMap.tileWall.sprite.color = Color.fromString("#eeeeee");
+        GameMap.tileSnake.sprite = new Sprite(checkboard, vec2(4), vec2(0, 2));
+        GameMap.tileSnake.sprite.color = Color.fromString("#cccccc");
+        GameMap.tileFood.sprite = new Sprite(checkboard, vec2(4), vec2(0, 3));
+        GameMap.tileFood.sprite.color = Color.fromString("#cccccc");
+    }
 }

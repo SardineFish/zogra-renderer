@@ -1,9 +1,11 @@
-import { Camera, Color, dot, Entity, InputManager, Keys, LineRenderer, MathUtils, minus, mul, Time, vec2 } from "zogra-engine";
+import { Camera, Color, dot, InputManager, Keys, LineRenderer, MathUtils, minus, mul, plus, Time, vec2 } from "zogra-engine";
+import { FoodGenerator } from "./food";
+import { GameMap } from "./map";
 
 export class Snake extends LineRenderer
 {
     headSpeed = 3;
-    tailSpeed = 1;
+    tailSpeed = 3;
     width = 0.6;
     inputCacheSize = 3;
     step = 1;
@@ -16,16 +18,17 @@ export class Snake extends LineRenderer
     tailMoveDistance = 0;
     camera: Camera;
     input: InputManager;
+    foodGenerator: FoodGenerator;
 
     constructor(bodies: vec2[], headDir: vec2, camera: Camera, input: InputManager)
     {
         super();
-        this.on("update", this.update.bind(this));
         this.bodies = bodies;
         this.headDir = headDir;
         this.camera = camera;
         camera.position = this.head.toVec3(camera.position.z);
         this.input = input;
+        this.foodGenerator = new FoodGenerator(this);
 
         for (const body of this.bodies)
         {
@@ -42,12 +45,16 @@ export class Snake extends LineRenderer
         });
         this.points[0].position = mul(this.tailDir, -this.width / 2).plus(this.tail);
     }
-    update(_: Entity, time: Time)
+    start()
     {
-        // time = {
-        //     deltaTime: 0.016,
-        //     time: 0,
-        // };
+        this.scene?.add(this.foodGenerator);
+    }
+    update(time: Time)
+    {
+        time = {
+            deltaTime: 0.016,
+            time: 0,
+        };
         if (this.input.getKeyDown(Keys.A) || this.input.getKeyDown(Keys.Left))
         {
             this.inputQueue.push(vec2.left());
@@ -90,6 +97,9 @@ export class Snake extends LineRenderer
                 }
                 this.inputQueue = this.inputQueue.slice(1);
             }
+            let nextPos = plus(this.head, this.headDir);
+            if (GameMap.instance.getTile(nextPos) === GameMap.tileGround)
+                GameMap.instance.setTile(plus(this.head, this.headDir), GameMap.tileSnake);
 
             this.points[this.points.length - 1].position = this.head.clone();
             this.points.push({
@@ -109,6 +119,7 @@ export class Snake extends LineRenderer
         this.tailMoveDistance += this.tailSpeed * time.deltaTime;
         if (this.tailMoveDistance >= this.step)
         {
+            GameMap.instance.setTile(this.tail, GameMap.tileGround);
             this.bodies = this.bodies.slice(1);
             this.points = this.points.slice(1);
 

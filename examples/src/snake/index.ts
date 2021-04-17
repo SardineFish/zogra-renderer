@@ -4,7 +4,8 @@ import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";
 import noisejs = require("noisejs");
 import { Snake } from "./snake";
-import { loadMapAssets, NoiseChunk } from "./map";
+import { GameMap } from "./map";
+import { loadSnakeAssets } from "./food";
 
 (window as any).Noise = noisejs.Noise;
 (window as any).ZograEngine = ZograEnginePackage;
@@ -26,9 +27,10 @@ const scene = engine.scene;
 
 async function init()
 {
-    await loadMapAssets();
+    await GameMap.loadMapAssets();
+    await loadSnakeAssets();
 
-    const tilemap = new Tilemap(NoiseChunk);
+    const tilemap = new GameMap();
     scene.add(tilemap);
 
     const camera = new Camera();
@@ -45,7 +47,7 @@ async function init()
         let bodies: vec2[] = [];
         for (let i = 0; i < 4; i++)
         {
-            if (tilemap.getTile(pos.plus(vec2.right())) === NoiseChunk.tileGround)
+            if (tilemap.getTile(pos.plus(vec2.right())) === GameMap.tileGround)
                 bodies.push(pos.clone());
             else
                 break;
