@@ -18,12 +18,14 @@ class SpriteObject extends render_object_1.RenderObject {
         this._sprite = sprite;
         if (sprite) {
             this.material.texture = sprite.texture;
-            this.mesh.uvs = [
-                zogra_renderer_1.vec2(sprite.uvRect.xMin, sprite.uvRect.yMin),
-                zogra_renderer_1.vec2(sprite.uvRect.xMax, sprite.uvRect.yMin),
-                zogra_renderer_1.vec2(sprite.uvRect.xMax, sprite.uvRect.yMax),
-                zogra_renderer_1.vec2(sprite.uvRect.xMin, sprite.uvRect.yMax),
-            ];
+            this.mesh.vertices[0].uv.set([sprite.uvRect.xMin, sprite.uvRect.yMin]);
+            this.mesh.vertices[1].uv.set([sprite.uvRect.xMax, sprite.uvRect.yMin]);
+            this.mesh.vertices[2].uv.set([sprite.uvRect.xMax, sprite.uvRect.yMax]);
+            this.mesh.vertices[3].uv.set([sprite.uvRect.xMin, sprite.uvRect.yMax]);
+            this.mesh.vertices[0].color.set(sprite.color);
+            this.mesh.vertices[1].color.set(sprite.color);
+            this.mesh.vertices[2].color.set(sprite.color);
+            this.mesh.vertices[3].color.set(sprite.color);
             this.mesh.update();
         }
         else {
