@@ -1,4 +1,4 @@
-import { BoxCollider, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, LineRenderer, MathUtils, minus, mul, plus, Time, vec2 } from "zogra-engine";
+import { BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Time, vec2 } from "zogra-engine";
 import { Food, FoodGenerator } from "./food";
 import { GameMap } from "./map";
 
@@ -27,6 +27,7 @@ export class Snake extends LineRenderer
     input: InputManager;
     foodGenerator: FoodGenerator;
     growingTail: TailGrowing[] = [];
+    foodParticle = new ParticleSystem();
 
     constructor(bodies: vec2[], headDir: vec2, camera: Camera, input: InputManager)
     {
@@ -41,6 +42,11 @@ export class Snake extends LineRenderer
         collider.size = vec2(this.width);
         this.collider = collider;
         collider.on("onContact", this.onContact.bind(this));
+        this.foodParticle.maxCount = 256;
+        this.foodParticle.startAcceleration = { x: 0, y: 0, z: 0 };
+        this.foodParticle.lifeSpeed = [10, 0];
+        this.foodParticle.lifetime = [0.3, 0.4];
+        this.foodParticle.lifeSize = [0.3, 0];
 
         for (const body of this.bodies)
         {
@@ -62,17 +68,19 @@ export class Snake extends LineRenderer
         // console.log(other);
         if (other.entity instanceof GameMap)
         {
-            this.headSpeed = 0;
+            this.dead();
         }
         else if (other.entity instanceof Food)
         {
             this.growTail(1, 3);
+            this.foodParticle.emit(9, other.entity.position);
             other.entity.destroy();
         }
     }
     start()
     {
         this.scene?.add(this.foodGenerator);
+        this.scene?.add(this.foodParticle);
     }
     update(time: Time)
     {
@@ -175,6 +183,15 @@ export class Snake extends LineRenderer
             time: 0,
             duration: steps / this.tailSpeed
         })
+    }
+    dead()
+    {
+        this.headSpeed = 0;
+        for (const body of this.bodies)
+        {
+            this.foodParticle.emit(10, body.toVec3());
+        }
+        this.destroy();
     }
     get head() { return this.bodies[this.bodies.length - 1] }
     get tail() { return this.bodies[0] }

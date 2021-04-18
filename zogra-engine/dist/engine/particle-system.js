@@ -81,16 +81,17 @@ class ParticleSystem extends render_object_1.RenderObject {
     update(time) {
         switch (this.state) {
             case "stopped":
-                return;
+                break;
             case "pending":
                 this.state = "running";
                 this.spawnedTime = time.time;
+            case "running":
+                const spawnInterval = 1 / this.getScalarValue(this.spawnRate);
+                while (this.spawnedTime + spawnInterval <= time.time) {
+                    this.spawnedTime += spawnInterval;
+                    this.emitOne(this.position);
+                }
                 break;
-        }
-        const spawnInterval = 1 / this.getScalarValue(this.spawnRate);
-        while (this.spawnedTime + spawnInterval <= time.time) {
-            this.spawnedTime += spawnInterval;
-            this.emitOne(this.position);
         }
         this.updateParticles(time);
     }
@@ -103,7 +104,6 @@ class ParticleSystem extends render_object_1.RenderObject {
             this.emitOne(position);
     }
     updateParticles(time) {
-        let buffer = this.particlesBuffer;
         for (let i = 0; i < this.particleCount; i++) {
             const particle = this.particlesBuffer[i];
             const lifetime = particle.lifetime[0] / particle.lifetime[1];
