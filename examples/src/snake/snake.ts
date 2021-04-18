@@ -1,4 +1,4 @@
-import { BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Time, vec2 } from "zogra-engine";
+import { BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Time, vec2, Vector2 } from "zogra-engine";
 import { Food, FoodGenerator } from "./food";
 import { GameMap } from "./map";
 
@@ -110,8 +110,13 @@ export class Snake extends LineRenderer
         this.moveHead(time);
         this.moveTail(time);
         this.updateMesh();
+        this.checkHitSelf();
 
-        this.camera.position = vec2.math(MathUtils.lerp)(this.camera.position.toVec2(), this.head, vec2(0.5 * time.deltaTime, 0.7 * time.deltaTime)).toVec3(this.camera.position.z);
+        this.camera.position = vec2.math(MathUtils.lerp)(
+            this.camera.position.toVec2(),
+            this.head,
+            vec2(0.5 * time.deltaTime, 0.7 * time.deltaTime)
+        ).toVec3(this.camera.position.z);
     }
     moveHead(time: Time)
     {
@@ -175,6 +180,17 @@ export class Snake extends LineRenderer
         const tailPoint = this.points[0];
         const startPos = mul(this.tailDir, -this.width / 2).plus(this.tail);
         tailPoint.position.set(this.tailDir).mul(this.tailMoveDistance).plus(startPos);
+    }
+    checkHitSelf()
+    {
+        for (let i = 0; i < this.bodies.length - 1; i++)
+        {
+            if (Vector2.distance(this.points[this.points.length - 1].position, this.bodies[i]) < this.width / 2)
+            {
+                this.dead();
+                return;
+            }
+        }
     }
     growTail(length: number, steps: number)
     {

@@ -7,8 +7,8 @@ import { Snake } from "./snake";
 
 export class FoodGenerator extends Entity
 {
-    spawnInterval: [number, number] = [2, 4];
-    spawnRadius = 5;
+    spawnInterval: [number, number] = [1, 2];
+    spawnRadius = 15;
     foodLifetime = 5;
     foodSize = 0.5;
     foodDistance = 5;
@@ -38,6 +38,8 @@ export class FoodGenerator extends Entity
         {
             pos = vec2.math(Math.floor)(
                 vec2.math(Math.random)()
+                    .minus(0.5)
+                    .mul(2)
                     .mul(this.spawnRadius)
                     .plus(this.snake.head))
                 .plus(.5);
@@ -72,7 +74,7 @@ const foodTimeline: Timeline<{ state: "spawn" | "idle" | "leaving" }> = [
         }
     },
     {
-        time: 3,
+        time: 10,
         keyframe: {
             state: "leaving",
         }
