@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/generic.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/particle.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -16690,32 +16690,6 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
-/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl":
-/*!****************************************************************************!*\
-  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl ***!
-  \****************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uColor;\r\nuniform vec3 uLightDir;\r\nuniform vec3 uLightColor;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    float lambertian = dot(vNormal, uLightDir);\r\n    color = color * vec3(lambertian);\r\n\r\n    fragColor = vec4(color, 1);\r\n}");
-
-/***/ }),
-
-/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl":
-/*!****************************************************************************!*\
-  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl ***!
-  \****************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\nout vec3 vWorldPos;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vWorldPos = (uTransformM * vec4(aPos, 1)).xyz;\r\n    \r\n}");
-
-/***/ }),
-
 /***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
 /*!****************************************************************************!*\
   !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
@@ -17056,81 +17030,59 @@ module.exports = content.locals || {};
 
 /***/ }),
 
-/***/ "./src/generic.ts":
-/*!************************!*\
-  !*** ./src/generic.ts ***!
-  \************************/
+/***/ "./src/particle.ts":
+/*!*************************!*\
+  !*** ./src/particle.ts ***!
+  \*************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const default_frag_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-frag.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl"));
-const default_vert_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-vert.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl"));
-const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
-__webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
 const zogra_engine_1 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
-const zogra_engine_2 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
+__webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
 const canvas = document.querySelector("#canvas");
-const renderer = new zogra_renderer_1.ZograRenderer(canvas, 1280, 720);
-let TestMaterial = class TestMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, default_frag_glsl_1.default)) {
-    constructor() {
-        super(...arguments);
-        this.color = zogra_renderer_1.Color.white;
-        this.texture = null;
-    }
-};
-__decorate([
-    zogra_renderer_1.shaderProp("uColor", "color")
-], TestMaterial.prototype, "color", void 0);
-__decorate([
-    zogra_renderer_1.shaderProp("uMainTex", "tex2d")
-], TestMaterial.prototype, "texture", void 0);
-TestMaterial = __decorate([
-    zogra_renderer_1.materialDefine
-], TestMaterial);
-const material = new TestMaterial();
-material.color = zogra_renderer_1.rgb(1, .5, .25);
-const mesh = new zogra_renderer_1.Mesh();
-mesh.verts = [
-    zogra_renderer_1.vec3(0, 0, 0),
-    zogra_renderer_1.vec3(1, 0, 0),
-    zogra_renderer_1.vec3(1, 1, 0),
-    zogra_renderer_1.vec3(0, 1, 0)
-];
-mesh.uvs = [
-    zogra_renderer_1.vec2(0, 0),
-    zogra_renderer_1.vec2(1, 0),
-    zogra_renderer_1.vec2(1, 1),
-    zogra_renderer_1.vec2(0, 1)
-];
-mesh.triangles = [
-    0, 1, 2,
-    2, 3, 0
-];
-mesh.calculateNormals(0);
-const rt = new zogra_engine_1.RenderTexture(canvas.width, canvas.height, false);
-renderer.setRenderTarget(rt);
-renderer.setGlobalUniform("uColor", "color", zogra_renderer_1.Color.green);
-renderer.clear();
-renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
-renderer.setRenderTarget(zogra_engine_2.RenderTarget.CanvasTarget);
-material.texture = rt;
-renderer.clear();
-renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
+const engine = new zogra_engine_1.ZograEngine(canvas, zogra_engine_1.Default2DRenderPipeline);
+engine.fixedDeltaTime = true;
+const input = new zogra_engine_1.InputManager({});
+engine.start();
+const scene = engine.scene;
+window.scene = scene;
+async function init() {
+    const camera = new zogra_engine_1.Camera();
+    camera.position = zogra_engine_1.vec3(0, 0, 20);
+    camera.projection = zogra_engine_1.Projection.Orthographic;
+    camera.viewHeight = 10;
+    scene.add(camera);
+    window.camera = camera;
+    const particleSystem = new zogra_engine_1.ParticleSystem();
+    particleSystem.maxCount = 512;
+    particleSystem.duration = 5;
+    particleSystem.spawnRate = 0;
+    particleSystem.startSpeed = [3, 16];
+    particleSystem.startRotation = { x: 0, y: 0, z: () => Math.random() * 360 };
+    particleSystem.startColor = () => zogra_engine_1.Color.fromHSL(Math.random() * 360, 0.8, 0.7).mul(zogra_engine_1.MathUtils.lerp(0.3, 0.8, Math.random()));
+    particleSystem.material.shader.setPipelineStates({
+        blend: [zogra_engine_1.Blending.SrcAlpha, zogra_engine_1.Blending.OneMinusSrcAlpha],
+        depth: zogra_engine_1.DepthTest.Disable,
+    });
+    scene.add(particleSystem);
+    particleSystem.play();
+    window.particleSystem = particleSystem;
+    engine.on("update", () => {
+        input.update();
+        if (input.getKeyDown(zogra_engine_1.Keys.Mouse0)) {
+            const pos = camera.screenToWorld(input.pointerPosition);
+            pos.z = 0;
+            particleSystem.emit(100, pos);
+        }
+    });
+}
+init();
 
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=generic.js.map
+//# sourceMappingURL=particle.js.map

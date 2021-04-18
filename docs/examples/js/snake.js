@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/generic.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/snake/index.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -16495,6 +16495,344 @@ function toComment(sourceMap) {
 
 /***/ }),
 
+/***/ "./node_modules/noisejs/index.js":
+/*!***************************************!*\
+  !*** ./node_modules/noisejs/index.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+ * A speed-improved perlin and simplex noise algorithms for 2D.
+ *
+ * Based on example code by Stefan Gustavson (stegu@itn.liu.se).
+ * Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
+ * Better rank ordering method by Stefan Gustavson in 2012.
+ * Converted to Javascript by Joseph Gentle.
+ *
+ * Version 2012-03-09
+ *
+ * This code was placed in the public domain by its original author,
+ * Stefan Gustavson. You may use it as you see fit, but
+ * attribution is appreciated.
+ *
+ */
+
+(function(global){
+
+  // Passing in seed will seed this Noise instance
+  function Noise(seed) {
+    function Grad(x, y, z) {
+      this.x = x; this.y = y; this.z = z;
+    }
+
+    Grad.prototype.dot2 = function(x, y) {
+      return this.x*x + this.y*y;
+    };
+
+    Grad.prototype.dot3 = function(x, y, z) {
+      return this.x*x + this.y*y + this.z*z;
+    };
+
+    this.grad3 = [new Grad(1,1,0),new Grad(-1,1,0),new Grad(1,-1,0),new Grad(-1,-1,0),
+                 new Grad(1,0,1),new Grad(-1,0,1),new Grad(1,0,-1),new Grad(-1,0,-1),
+                 new Grad(0,1,1),new Grad(0,-1,1),new Grad(0,1,-1),new Grad(0,-1,-1)];
+
+    this.p = [151,160,137,91,90,15,
+    131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+    190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
+    88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
+    77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
+    102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208, 89,18,169,200,196,
+    135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
+    5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,
+    223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172,9,
+    129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
+    251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
+    49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
+    138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+    // To remove the need for index wrapping, double the permutation table length
+    this.perm = new Array(512);
+    this.gradP = new Array(512);
+
+    this.seed(seed || 0);
+  }
+
+  // This isn't a very good seeding function, but it works ok. It supports 2^16
+  // different seed values. Write something better if you need more seeds.
+  Noise.prototype.seed = function(seed) {
+    if(seed > 0 && seed < 1) {
+      // Scale the seed out
+      seed *= 65536;
+    }
+
+    seed = Math.floor(seed);
+    if(seed < 256) {
+      seed |= seed << 8;
+    }
+
+    var p = this.p;
+    for(var i = 0; i < 256; i++) {
+      var v;
+      if (i & 1) {
+        v = p[i] ^ (seed & 255);
+      } else {
+        v = p[i] ^ ((seed>>8) & 255);
+      }
+
+      var perm = this.perm;
+      var gradP = this.gradP;
+      perm[i] = perm[i + 256] = v;
+      gradP[i] = gradP[i + 256] = this.grad3[v % 12];
+    }
+  };
+
+  /*
+  for(var i=0; i<256; i++) {
+    perm[i] = perm[i + 256] = p[i];
+    gradP[i] = gradP[i + 256] = grad3[perm[i] % 12];
+  }*/
+
+  // Skewing and unskewing factors for 2, 3, and 4 dimensions
+  var F2 = 0.5*(Math.sqrt(3)-1);
+  var G2 = (3-Math.sqrt(3))/6;
+
+  var F3 = 1/3;
+  var G3 = 1/6;
+
+  // 2D simplex noise
+  Noise.prototype.simplex2 = function(xin, yin) {
+    var n0, n1, n2; // Noise contributions from the three corners
+    // Skew the input space to determine which simplex cell we're in
+    var s = (xin+yin)*F2; // Hairy factor for 2D
+    var i = Math.floor(xin+s);
+    var j = Math.floor(yin+s);
+    var t = (i+j)*G2;
+    var x0 = xin-i+t; // The x,y distances from the cell origin, unskewed.
+    var y0 = yin-j+t;
+    // For the 2D case, the simplex shape is an equilateral triangle.
+    // Determine which simplex we are in.
+    var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
+    if(x0>y0) { // lower triangle, XY order: (0,0)->(1,0)->(1,1)
+      i1=1; j1=0;
+    } else {    // upper triangle, YX order: (0,0)->(0,1)->(1,1)
+      i1=0; j1=1;
+    }
+    // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
+    // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
+    // c = (3-sqrt(3))/6
+    var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+    var y1 = y0 - j1 + G2;
+    var x2 = x0 - 1 + 2 * G2; // Offsets for last corner in (x,y) unskewed coords
+    var y2 = y0 - 1 + 2 * G2;
+    // Work out the hashed gradient indices of the three simplex corners
+    i &= 255;
+    j &= 255;
+
+    var perm = this.perm;
+    var gradP = this.gradP;
+    var gi0 = gradP[i+perm[j]];
+    var gi1 = gradP[i+i1+perm[j+j1]];
+    var gi2 = gradP[i+1+perm[j+1]];
+    // Calculate the contribution from the three corners
+    var t0 = 0.5 - x0*x0-y0*y0;
+    if(t0<0) {
+      n0 = 0;
+    } else {
+      t0 *= t0;
+      n0 = t0 * t0 * gi0.dot2(x0, y0);  // (x,y) of grad3 used for 2D gradient
+    }
+    var t1 = 0.5 - x1*x1-y1*y1;
+    if(t1<0) {
+      n1 = 0;
+    } else {
+      t1 *= t1;
+      n1 = t1 * t1 * gi1.dot2(x1, y1);
+    }
+    var t2 = 0.5 - x2*x2-y2*y2;
+    if(t2<0) {
+      n2 = 0;
+    } else {
+      t2 *= t2;
+      n2 = t2 * t2 * gi2.dot2(x2, y2);
+    }
+    // Add contributions from each corner to get the final noise value.
+    // The result is scaled to return values in the interval [-1,1].
+    return 70 * (n0 + n1 + n2);
+  };
+
+  // 3D simplex noise
+  Noise.prototype.simplex3 = function(xin, yin, zin) {
+    var n0, n1, n2, n3; // Noise contributions from the four corners
+
+    // Skew the input space to determine which simplex cell we're in
+    var s = (xin+yin+zin)*F3; // Hairy factor for 2D
+    var i = Math.floor(xin+s);
+    var j = Math.floor(yin+s);
+    var k = Math.floor(zin+s);
+
+    var t = (i+j+k)*G3;
+    var x0 = xin-i+t; // The x,y distances from the cell origin, unskewed.
+    var y0 = yin-j+t;
+    var z0 = zin-k+t;
+
+    // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
+    // Determine which simplex we are in.
+    var i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
+    var i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
+    if(x0 >= y0) {
+      if(y0 >= z0)      { i1=1; j1=0; k1=0; i2=1; j2=1; k2=0; }
+      else if(x0 >= z0) { i1=1; j1=0; k1=0; i2=1; j2=0; k2=1; }
+      else              { i1=0; j1=0; k1=1; i2=1; j2=0; k2=1; }
+    } else {
+      if(y0 < z0)      { i1=0; j1=0; k1=1; i2=0; j2=1; k2=1; }
+      else if(x0 < z0) { i1=0; j1=1; k1=0; i2=0; j2=1; k2=1; }
+      else             { i1=0; j1=1; k1=0; i2=1; j2=1; k2=0; }
+    }
+    // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
+    // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
+    // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
+    // c = 1/6.
+    var x1 = x0 - i1 + G3; // Offsets for second corner
+    var y1 = y0 - j1 + G3;
+    var z1 = z0 - k1 + G3;
+
+    var x2 = x0 - i2 + 2 * G3; // Offsets for third corner
+    var y2 = y0 - j2 + 2 * G3;
+    var z2 = z0 - k2 + 2 * G3;
+
+    var x3 = x0 - 1 + 3 * G3; // Offsets for fourth corner
+    var y3 = y0 - 1 + 3 * G3;
+    var z3 = z0 - 1 + 3 * G3;
+
+    // Work out the hashed gradient indices of the four simplex corners
+    i &= 255;
+    j &= 255;
+    k &= 255;
+
+    var perm = this.perm;
+    var gradP = this.gradP;
+    var gi0 = gradP[i+   perm[j+   perm[k   ]]];
+    var gi1 = gradP[i+i1+perm[j+j1+perm[k+k1]]];
+    var gi2 = gradP[i+i2+perm[j+j2+perm[k+k2]]];
+    var gi3 = gradP[i+ 1+perm[j+ 1+perm[k+ 1]]];
+
+    // Calculate the contribution from the four corners
+    var t0 = 0.5 - x0*x0-y0*y0-z0*z0;
+    if(t0<0) {
+      n0 = 0;
+    } else {
+      t0 *= t0;
+      n0 = t0 * t0 * gi0.dot3(x0, y0, z0);  // (x,y) of grad3 used for 2D gradient
+    }
+    var t1 = 0.5 - x1*x1-y1*y1-z1*z1;
+    if(t1<0) {
+      n1 = 0;
+    } else {
+      t1 *= t1;
+      n1 = t1 * t1 * gi1.dot3(x1, y1, z1);
+    }
+    var t2 = 0.5 - x2*x2-y2*y2-z2*z2;
+    if(t2<0) {
+      n2 = 0;
+    } else {
+      t2 *= t2;
+      n2 = t2 * t2 * gi2.dot3(x2, y2, z2);
+    }
+    var t3 = 0.5 - x3*x3-y3*y3-z3*z3;
+    if(t3<0) {
+      n3 = 0;
+    } else {
+      t3 *= t3;
+      n3 = t3 * t3 * gi3.dot3(x3, y3, z3);
+    }
+    // Add contributions from each corner to get the final noise value.
+    // The result is scaled to return values in the interval [-1,1].
+    return 32 * (n0 + n1 + n2 + n3);
+
+  };
+
+  // ##### Perlin noise stuff
+
+  function fade(t) {
+    return t*t*t*(t*(t*6-15)+10);
+  }
+
+  function lerp(a, b, t) {
+    return (1-t)*a + t*b;
+  }
+
+  // 2D Perlin Noise
+  Noise.prototype.perlin2 = function(x, y) {
+    // Find unit grid cell containing point
+    var X = Math.floor(x), Y = Math.floor(y);
+    // Get relative xy coordinates of point within that cell
+    x = x - X; y = y - Y;
+    // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+    X = X & 255; Y = Y & 255;
+
+    // Calculate noise contributions from each of the four corners
+    var perm = this.perm;
+    var gradP = this.gradP;
+    var n00 = gradP[X+perm[Y]].dot2(x, y);
+    var n01 = gradP[X+perm[Y+1]].dot2(x, y-1);
+    var n10 = gradP[X+1+perm[Y]].dot2(x-1, y);
+    var n11 = gradP[X+1+perm[Y+1]].dot2(x-1, y-1);
+
+    // Compute the fade curve value for x
+    var u = fade(x);
+
+    // Interpolate the four results
+    return lerp(
+        lerp(n00, n10, u),
+        lerp(n01, n11, u),
+       fade(y));
+  };
+
+  // 3D Perlin Noise
+  Noise.prototype.perlin3 = function(x, y, z) {
+    // Find unit grid cell containing point
+    var X = Math.floor(x), Y = Math.floor(y), Z = Math.floor(z);
+    // Get relative xyz coordinates of point within that cell
+    x = x - X; y = y - Y; z = z - Z;
+    // Wrap the integer cells at 255 (smaller integer period can be introduced here)
+    X = X & 255; Y = Y & 255; Z = Z & 255;
+
+    // Calculate noise contributions from each of the eight corners
+    var perm = this.perm;
+    var gradP = this.gradP;
+    var n000 = gradP[X+  perm[Y+  perm[Z  ]]].dot3(x,   y,     z);
+    var n001 = gradP[X+  perm[Y+  perm[Z+1]]].dot3(x,   y,   z-1);
+    var n010 = gradP[X+  perm[Y+1+perm[Z  ]]].dot3(x,   y-1,   z);
+    var n011 = gradP[X+  perm[Y+1+perm[Z+1]]].dot3(x,   y-1, z-1);
+    var n100 = gradP[X+1+perm[Y+  perm[Z  ]]].dot3(x-1,   y,   z);
+    var n101 = gradP[X+1+perm[Y+  perm[Z+1]]].dot3(x-1,   y, z-1);
+    var n110 = gradP[X+1+perm[Y+1+perm[Z  ]]].dot3(x-1, y-1,   z);
+    var n111 = gradP[X+1+perm[Y+1+perm[Z+1]]].dot3(x-1, y-1, z-1);
+
+    // Compute the fade curve value for x, y, z
+    var u = fade(x);
+    var v = fade(y);
+    var w = fade(z);
+
+    // Interpolate
+    return lerp(
+        lerp(
+          lerp(n000, n100, u),
+          lerp(n001, n101, u), w),
+        lerp(
+          lerp(n010, n110, u),
+          lerp(n011, n111, u), w),
+       v);
+  };
+
+  global.Noise = Noise;
+
+})( false ? undefined : module.exports);
+
+
+/***/ }),
+
 /***/ "./node_modules/process/browser.js":
 /*!*****************************************!*\
   !*** ./node_modules/process/browser.js ***!
@@ -16687,32 +17025,6 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-
-/***/ }),
-
-/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl":
-/*!****************************************************************************!*\
-  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl ***!
-  \****************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uColor;\r\nuniform vec3 uLightDir;\r\nuniform vec3 uLightColor;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    float lambertian = dot(vNormal, uLightDir);\r\n    color = color * vec3(lambertian);\r\n\r\n    fragColor = vec4(color, 1);\r\n}");
-
-/***/ }),
-
-/***/ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl":
-/*!****************************************************************************!*\
-  !*** ./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl ***!
-  \****************************************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\nout vec3 vWorldPos;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vWorldPos = (uTransformM * vec4(aPos, 1)).xyz;\r\n    \r\n}");
 
 /***/ }),
 
@@ -17027,6 +17339,32 @@ module.exports = g;
 
 /***/ }),
 
+/***/ "./src/asset/img/checkboard.png":
+/*!**************************************!*\
+  !*** ./src/asset/img/checkboard.png ***!
+  \**************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/img/checkboard.png");
+
+/***/ }),
+
+/***/ "./src/asset/img/snake-food.png":
+/*!**************************************!*\
+  !*** ./src/asset/img/snake-food.png ***!
+  \**************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (__webpack_require__.p + "static/img/snake-food.png");
+
+/***/ }),
+
 /***/ "./src/css/base.css":
 /*!**************************!*\
   !*** ./src/css/base.css ***!
@@ -17056,81 +17394,518 @@ module.exports = content.locals || {};
 
 /***/ }),
 
-/***/ "./src/generic.ts":
-/*!************************!*\
-  !*** ./src/generic.ts ***!
-  \************************/
+/***/ "./src/snake/food.ts":
+/*!***************************!*\
+  !*** ./src/snake/food.ts ***!
+  \***************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const default_frag_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-frag.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-frag.glsl"));
-const default_vert_glsl_1 = __importDefault(__webpack_require__(/*! !raw-loader!./shader/default-vert.glsl */ "./node_modules/raw-loader/dist/cjs.js!./src/shader/default-vert.glsl"));
-const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
-__webpack_require__(/*! ./css/base.css */ "./src/css/base.css");
+exports.loadSnakeAssets = exports.Food = exports.FoodGenerator = void 0;
 const zogra_engine_1 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
-const zogra_engine_2 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
-const canvas = document.querySelector("#canvas");
-const renderer = new zogra_renderer_1.ZograRenderer(canvas, 1280, 720);
-let TestMaterial = class TestMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(default_vert_glsl_1.default, default_frag_glsl_1.default)) {
-    constructor() {
-        super(...arguments);
-        this.color = zogra_renderer_1.Color.white;
-        this.texture = null;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const snake_food_png_1 = __importDefault(__webpack_require__(/*! ../asset/img/snake-food.png */ "./src/asset/img/snake-food.png"));
+const map_1 = __webpack_require__(/*! ./map */ "./src/snake/map.ts");
+class FoodGenerator extends zogra_engine_1.Entity {
+    constructor(snake) {
+        super();
+        this.spawnInterval = [2, 4];
+        this.spawnRadius = 5;
+        this.foodLifetime = 5;
+        this.foodSize = 0.5;
+        this.foodDistance = 5;
+        this.foods = [];
+        this.snake = snake;
     }
+    start() {
+        this.spawnFood();
+    }
+    update() {
+        this.foods = this.foods.filter(food => !food.destroyed);
+    }
+    spawnFood() {
+        var _a;
+        let pos = zogra_renderer_1.vec2.zero();
+        for (let i = 0; i < 64; i++) {
+            pos = zogra_renderer_1.vec2.math(Math.floor)(zogra_renderer_1.vec2.math(Math.random)()
+                .mul(this.spawnRadius)
+                .plus(this.snake.head))
+                .plus(.5);
+            if (this.foods.some(food => zogra_renderer_1.Vector2.distance(food.position.toVec2(), pos) < this.foodDistance))
+                continue;
+            if (map_1.GameMap.instance.getTile(pos) === map_1.GameMap.tileGround) {
+                map_1.GameMap.instance.setTile(pos, map_1.GameMap.tileFood);
+                const food = new Food(pos);
+                (_a = this.snake.scene) === null || _a === void 0 ? void 0 : _a.add(food);
+                this.foods.push(food);
+                break;
+            }
+        }
+        setTimeout(this.spawnFood.bind(this), zogra_renderer_1.MathUtils.lerp(...this.spawnInterval, Math.random()) * 1000);
+    }
+}
+exports.FoodGenerator = FoodGenerator;
+const foodTimeline = [
+    {
+        time: 0,
+        keyframe: {
+            state: "spawn",
+        }
+    },
+    {
+        time: 0.5,
+        keyframe: {
+            state: "idle",
+        }
+    },
+    {
+        time: 3,
+        keyframe: {
+            state: "leaving",
+        }
+    }
+];
+const timelineLeaving = [
+    {
+        time: 0,
+        keyframe: {
+            opacity: 1
+        }
+    },
+    {
+        time: 0.3,
+        keyframe: {
+            opacity: 1
+        }
+    },
+    {
+        time: 0.8,
+        keyframe: {
+            opacity: 0
+        }
+    },
+];
+const timelineSpawn = [
+    {
+        time: 0,
+        keyframe: {
+            size: 0
+        },
+    },
+    {
+        time: 0.5,
+        keyframe: {
+            size: 1
+        }
+    }
+];
+class Food extends zogra_engine_1.SpriteObject {
+    constructor(pos) {
+        super();
+        this.foodSize = 0.5;
+        this.animator = new zogra_engine_1.Animator(15, foodTimeline);
+        this.animatorSpawn = new zogra_engine_1.Animator(0.5, timelineSpawn);
+        this.animatorLeaving = new zogra_engine_1.Animator(1, timelineLeaving);
+        this.sprite = Food.foodSprite;
+        this.position = pos.toVec3(1);
+        this.localScaling = zogra_renderer_1.vec3(this.foodSize);
+        const collider = new zogra_engine_1.BoxCollider();
+        collider.size = zogra_renderer_1.vec2(this.foodSize);
+        this.collider = collider;
+        this.animator = new zogra_engine_1.Animator(15, foodTimeline);
+        this.animator.callback = (state) => {
+            switch (state.frame.state) {
+                case "spawn":
+                    !this.animatorSpawn.playing && this.animatorSpawn.play();
+                    break;
+                case "leaving":
+                    !this.animatorLeaving.playing && this.animatorLeaving.play();
+                    break;
+            }
+        };
+        this.animatorLeaving.loop = true;
+        this.animatorSpawn.callback = (state) => {
+            this.localScaling = zogra_renderer_1.vec3(state.frame.size * this.foodSize);
+        };
+        this.animatorLeaving.callback = (state) => {
+            this.materials[0].color.a = state.frame.opacity;
+        };
+    }
+    start() {
+        this.animator.play();
+    }
+    update(time) {
+        this.animator.update(time.deltaTime);
+        this.animatorSpawn.update(time.deltaTime);
+        this.animatorLeaving.update(time.deltaTime);
+        if (this.animator.finished) {
+            this.destroy();
+        }
+    }
+}
+exports.Food = Food;
+Food.foodSprite = null;
+async function loadSnakeAssets() {
+    const textureFood = await zogra_renderer_1.TextureImporter.url(snake_food_png_1.default).then(r => r.tex2d());
+    // textureFood.filterMode = FilterMode.Nearest;
+    textureFood.updateParameters();
+    textureFood.generateMipmap();
+    Food.foodSprite = new zogra_engine_1.Sprite(textureFood, zogra_renderer_1.vec2.one(), zogra_renderer_1.vec2.zero());
+}
+exports.loadSnakeAssets = loadSnakeAssets;
+
+
+/***/ }),
+
+/***/ "./src/snake/index.ts":
+/*!****************************!*\
+  !*** ./src/snake/index.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
-__decorate([
-    zogra_renderer_1.shaderProp("uColor", "color")
-], TestMaterial.prototype, "color", void 0);
-__decorate([
-    zogra_renderer_1.shaderProp("uMainTex", "tex2d")
-], TestMaterial.prototype, "texture", void 0);
-TestMaterial = __decorate([
-    zogra_renderer_1.materialDefine
-], TestMaterial);
-const material = new TestMaterial();
-material.color = zogra_renderer_1.rgb(1, .5, .25);
-const mesh = new zogra_renderer_1.Mesh();
-mesh.verts = [
-    zogra_renderer_1.vec3(0, 0, 0),
-    zogra_renderer_1.vec3(1, 0, 0),
-    zogra_renderer_1.vec3(1, 1, 0),
-    zogra_renderer_1.vec3(0, 1, 0)
-];
-mesh.uvs = [
-    zogra_renderer_1.vec2(0, 0),
-    zogra_renderer_1.vec2(1, 0),
-    zogra_renderer_1.vec2(1, 1),
-    zogra_renderer_1.vec2(0, 1)
-];
-mesh.triangles = [
-    0, 1, 2,
-    2, 3, 0
-];
-mesh.calculateNormals(0);
-const rt = new zogra_engine_1.RenderTexture(canvas.width, canvas.height, false);
-renderer.setRenderTarget(rt);
-renderer.setGlobalUniform("uColor", "color", zogra_renderer_1.Color.green);
-renderer.clear();
-renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
-renderer.setRenderTarget(zogra_engine_2.RenderTarget.CanvasTarget);
-material.texture = rt;
-renderer.clear();
-renderer.drawMesh(mesh, zogra_renderer_1.mat4.rts(zogra_renderer_1.quat.identity(), zogra_renderer_1.vec3(-.5, -.5, 0), zogra_renderer_1.vec3(1, 1, 1)), material);
+Object.defineProperty(exports, "__esModule", { value: true });
+const zogra_engine_1 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
+__webpack_require__(/*! ../css/base.css */ "./src/css/base.css");
+const ZograRendererPackage = __importStar(__webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js"));
+const ZograEnginePackage = __importStar(__webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js"));
+const noisejs = __webpack_require__(/*! noisejs */ "./node_modules/noisejs/index.js");
+const snake_1 = __webpack_require__(/*! ./snake */ "./src/snake/snake.ts");
+const map_1 = __webpack_require__(/*! ./map */ "./src/snake/map.ts");
+const food_1 = __webpack_require__(/*! ./food */ "./src/snake/food.ts");
+window.Noise = noisejs.Noise;
+window.ZograEngine = ZograEnginePackage;
+window.ZograRenderer = ZograRendererPackage;
+const canvas = document.querySelector("#canvas");
+const engine = new zogra_engine_1.ZograEngine(canvas, zogra_engine_1.Default2DRenderPipeline);
+engine.fixedDeltaTime = true;
+const input = new zogra_engine_1.InputManager();
+engine.on("update", (time) => {
+    input.update();
+});
+engine.start();
+const scene = engine.scene;
+window.scene = scene;
+scene.physics = new zogra_engine_1.Physics2D();
+async function init() {
+    await map_1.GameMap.loadMapAssets();
+    await food_1.loadSnakeAssets();
+    const tilemap = new map_1.GameMap();
+    scene.add(tilemap);
+    const camera = new zogra_engine_1.Camera();
+    camera.position = zogra_engine_1.vec3(0, 0, 20);
+    camera.projection = zogra_engine_1.Projection.Orthographic;
+    camera.viewHeight = 10;
+    scene.add(camera);
+    window.camera = camera;
+    let snake;
+    while (true) {
+        let pos = zogra_engine_1.vec2.math(Math.floor)(zogra_engine_1.vec2.math(Math.random)().mul(1000)).plus(0.5);
+        let bodies = [];
+        for (let i = 0; i < 4; i++) {
+            if (tilemap.getTile(pos.plus(zogra_engine_1.vec2.right())) === map_1.GameMap.tileGround)
+                bodies.push(pos.clone());
+            else
+                break;
+        }
+        if (bodies.length == 4) {
+            snake = new snake_1.Snake(bodies, zogra_engine_1.vec2.right(), camera, input);
+            camera.position = camera.position.set(pos.toVec3(camera.position.z));
+            break;
+        }
+    }
+    scene.add(snake);
+}
+init();
+
+
+/***/ }),
+
+/***/ "./src/snake/map.ts":
+/*!**************************!*\
+  !*** ./src/snake/map.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GameMap = exports.NoiseChunk = void 0;
+const zogra_engine_1 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
+const checkboard_png_1 = __importDefault(__webpack_require__(/*! ../asset/img/checkboard.png */ "./src/asset/img/checkboard.png"));
+const noisejs = __webpack_require__(/*! noisejs */ "./node_modules/noisejs/index.js");
+const Noise = new noisejs.Noise();
+class NoiseChunk extends zogra_engine_1.Chunk {
+    constructor(basePos, chunkSize) {
+        super(basePos, chunkSize);
+        for (let x = 0; x < chunkSize; x++)
+            for (let y = 0; y < chunkSize; y++) {
+                this.genMap(x, y);
+            }
+    }
+    genMap(x, y) {
+        const threshold = .05;
+        let scale = 1 / 8;
+        const noise = Noise.perlin2.bind(Noise);
+        const octave = 3;
+        let n = 0;
+        for (let i = 0; i < octave; i++) {
+            n += noise((x + this.basePos.x) * scale, (y + this.basePos.y) * scale) * Math.pow(0.5, i + 1);
+            scale *= 2;
+        }
+        if (n > threshold)
+            this.setTile(zogra_engine_1.vec2(x, y), GameMap.tileWall);
+        else
+            this.setTile(zogra_engine_1.vec2(x, y), GameMap.tileGround);
+    }
+}
+exports.NoiseChunk = NoiseChunk;
+class GameMap extends zogra_engine_1.Tilemap {
+    constructor() {
+        super(NoiseChunk);
+        GameMap.instance = this;
+        this.collider = new zogra_engine_1.TilemapCollider();
+    }
+    static async loadMapAssets() {
+        const checkboard = await zogra_engine_1.TextureImporter.url(checkboard_png_1.default).then(r => r.tex2d());
+        GameMap.tileGround.sprite = new zogra_engine_1.Sprite(checkboard, zogra_engine_1.vec2(4), zogra_engine_1.vec2(0, 0));
+        GameMap.tileGround.sprite.color = zogra_engine_1.Color.fromString("#cccccc");
+        GameMap.tileWall.sprite = new zogra_engine_1.Sprite(checkboard, zogra_engine_1.vec2(4), zogra_engine_1.vec2(0, 1));
+        GameMap.tileWall.sprite.color = zogra_engine_1.Color.fromString("#eeeeee");
+        GameMap.tileSnake.sprite = new zogra_engine_1.Sprite(checkboard, zogra_engine_1.vec2(4), zogra_engine_1.vec2(0, 2));
+        GameMap.tileSnake.sprite.color = zogra_engine_1.Color.fromString("#cccccc");
+        GameMap.tileFood.sprite = new zogra_engine_1.Sprite(checkboard, zogra_engine_1.vec2(4), zogra_engine_1.vec2(0, 3));
+        GameMap.tileFood.sprite.color = zogra_engine_1.Color.fromString("#cccccc");
+    }
+}
+exports.GameMap = GameMap;
+GameMap.instance = null;
+GameMap.tileGround = {
+    sprite: null,
+    collide: false,
+    name: "ground",
+};
+GameMap.tileWall = {
+    sprite: null,
+    collide: true,
+    name: "wall",
+};
+GameMap.tileSnake = {
+    sprite: null,
+    collide: false,
+    name: "snake",
+};
+GameMap.tileFood = {
+    sprite: null,
+    collide: false,
+    name: "food",
+};
+
+
+/***/ }),
+
+/***/ "./src/snake/snake.ts":
+/*!****************************!*\
+  !*** ./src/snake/snake.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Snake = void 0;
+const zogra_engine_1 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
+const food_1 = __webpack_require__(/*! ./food */ "./src/snake/food.ts");
+const map_1 = __webpack_require__(/*! ./map */ "./src/snake/map.ts");
+class Snake extends zogra_engine_1.LineRenderer {
+    constructor(bodies, headDir, camera, input) {
+        super();
+        this.headSpeed = 3;
+        this.tailSpeed = 3;
+        this.width = 0.6;
+        this.inputCacheSize = 3;
+        this.step = 1;
+        this.color = zogra_engine_1.Color.white;
+        this.bodies = [];
+        this.headDir = zogra_engine_1.vec2.right();
+        this.inputQueue = [];
+        this.headMoveDistance = 0;
+        this.tailMoveDistance = 0;
+        this.growingTail = [];
+        this.foodParticle = new zogra_engine_1.ParticleSystem();
+        this.bodies = bodies;
+        this.headDir = headDir;
+        this.camera = camera;
+        camera.position = this.head.toVec3(camera.position.z);
+        this.input = input;
+        this.foodGenerator = new food_1.FoodGenerator(this);
+        const collider = new zogra_engine_1.BoxCollider();
+        collider.size = zogra_engine_1.vec2(this.width);
+        this.collider = collider;
+        collider.on("onContact", this.onContact.bind(this));
+        this.foodParticle.maxCount = 256;
+        this.foodParticle.startAcceleration = { x: 0, y: 0, z: 0 };
+        this.foodParticle.lifeSpeed = [10, 0];
+        this.foodParticle.lifetime = [0.3, 0.4];
+        this.foodParticle.lifeSize = [0.3, 0];
+        for (const body of this.bodies) {
+            this.points.push({
+                position: body.clone(),
+                color: this.color,
+                width: this.width,
+            });
+        }
+        this.points.push({
+            position: zogra_engine_1.mul(headDir, this.width / 2).plus(this.head),
+            color: this.color,
+            width: this.width,
+        });
+        this.points[0].position = zogra_engine_1.mul(this.tailDir, -this.width / 2).plus(this.tail);
+    }
+    onContact(other) {
+        // console.log(other);
+        if (other.entity instanceof map_1.GameMap) {
+            this.dead();
+        }
+        else if (other.entity instanceof food_1.Food) {
+            this.growTail(1, 3);
+            this.foodParticle.emit(9, other.entity.position);
+            other.entity.destroy();
+        }
+    }
+    start() {
+        var _a, _b;
+        (_a = this.scene) === null || _a === void 0 ? void 0 : _a.add(this.foodGenerator);
+        (_b = this.scene) === null || _b === void 0 ? void 0 : _b.add(this.foodParticle);
+    }
+    update(time) {
+        console.log(this.bodies.length);
+        const collider = this.collider;
+        collider.offset = zogra_engine_1.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position);
+        if (this.input.getKeyDown(zogra_engine_1.Keys.A) || this.input.getKeyDown(zogra_engine_1.Keys.Left)) {
+            this.inputQueue.push(zogra_engine_1.vec2.left());
+        }
+        if (this.input.getKeyDown(zogra_engine_1.Keys.D) || this.input.getKeyDown(zogra_engine_1.Keys.Right)) {
+            this.inputQueue.push(zogra_engine_1.vec2.right());
+        }
+        if (this.input.getKeyDown(zogra_engine_1.Keys.W) || this.input.getKeyDown(zogra_engine_1.Keys.Up)) {
+            this.inputQueue.push(zogra_engine_1.vec2.up());
+        }
+        if (this.input.getKeyDown(zogra_engine_1.Keys.S) || this.input.getKeyDown(zogra_engine_1.Keys.Down)) {
+            this.inputQueue.push(zogra_engine_1.vec2.down());
+        }
+        if (this.inputQueue.length > this.inputCacheSize)
+            this.inputQueue = this.inputQueue.slice(this.inputQueue.length - this.inputCacheSize);
+        this.moveHead(time);
+        this.moveTail(time);
+        this.updateMesh();
+        this.camera.position = zogra_engine_1.vec2.math(zogra_engine_1.MathUtils.lerp)(this.camera.position.toVec2(), this.head, zogra_engine_1.vec2(0.5 * time.deltaTime, 0.7 * time.deltaTime)).toVec3(this.camera.position.z);
+    }
+    moveHead(time) {
+        this.headMoveDistance += this.headSpeed * time.deltaTime;
+        if (this.headMoveDistance >= this.step) {
+            this.bodies.push(zogra_engine_1.mul(this.headDir, this.step).plus(this.head));
+            while (this.inputQueue.length > 0) {
+                if (zogra_engine_1.dot(this.inputQueue[0], this.headDir) >= 0) {
+                    this.headDir = this.inputQueue[0];
+                    this.inputQueue = this.inputQueue.slice(1);
+                    break;
+                }
+                this.inputQueue = this.inputQueue.slice(1);
+            }
+            let nextPos = zogra_engine_1.plus(this.head, this.headDir);
+            if (map_1.GameMap.instance.getTile(nextPos) === map_1.GameMap.tileGround)
+                map_1.GameMap.instance.setTile(zogra_engine_1.plus(this.head, this.headDir), map_1.GameMap.tileSnake);
+            this.points[this.points.length - 1].position = this.head.clone();
+            this.points.push({
+                position: zogra_engine_1.mul(this.headDir, this.width / 2).plus(this.head),
+                color: this.color,
+                width: this.width,
+            });
+            this.headMoveDistance -= this.step;
+        }
+        const headPoint = this.points[this.points.length - 1];
+        const startPos = zogra_engine_1.mul(this.headDir, this.width / 2).plus(this.head);
+        headPoint.position.set(this.headDir).mul(this.headMoveDistance).plus(startPos);
+    }
+    moveTail(time) {
+        let moveDistance = this.tailSpeed * time.deltaTime;
+        if (this.growingTail.length > 0) {
+            const state = this.growingTail[0];
+            moveDistance = (this.tailSpeed * state.speed) * time.deltaTime;
+            state.time += time.deltaTime;
+            if (state.time >= state.duration) {
+                this.growingTail = this.growingTail.slice(1);
+            }
+        }
+        this.tailMoveDistance += moveDistance;
+        if (this.tailMoveDistance >= this.step) {
+            map_1.GameMap.instance.setTile(this.tail, map_1.GameMap.tileGround);
+            this.bodies = this.bodies.slice(1);
+            this.points = this.points.slice(1);
+            this.points[0].position = zogra_engine_1.mul(this.tailDir, -this.width / 2).plus(this.tail);
+            this.tailMoveDistance -= this.step;
+        }
+        const tailPoint = this.points[0];
+        const startPos = zogra_engine_1.mul(this.tailDir, -this.width / 2).plus(this.tail);
+        tailPoint.position.set(this.tailDir).mul(this.tailMoveDistance).plus(startPos);
+    }
+    growTail(length, steps) {
+        this.growingTail.push({
+            speed: (steps - length) / steps,
+            time: 0,
+            duration: steps / this.tailSpeed
+        });
+    }
+    dead() {
+        this.headSpeed = 0;
+        for (const body of this.bodies) {
+            this.foodParticle.emit(10, body.toVec3());
+        }
+        this.destroy();
+    }
+    get head() { return this.bodies[this.bodies.length - 1]; }
+    get tail() { return this.bodies[0]; }
+    get tailDir() {
+        return zogra_engine_1.minus(this.bodies[1], this.bodies[0]).normalize();
+    }
+}
+exports.Snake = Snake;
 
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=generic.js.map
+//# sourceMappingURL=snake.js.map
