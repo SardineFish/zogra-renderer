@@ -15,11 +15,13 @@ import { mul } from "zogra-renderer";
 import { vec4 } from "zogra-renderer";
 import { DebugLayerRenderer } from "./debug-layer";
 import { Debug } from "zogra-renderer/dist/core/global";
+import { Light2D, Light2DCompose } from "../2d";
 
 
 export class Default2DRenderPipeline implements ZograRenderPipeline
 {
     debuglayer = new DebugLayerRenderer();
+    light2DComposeMaterial = new Light2DCompose();
 
     constructor()
     {
@@ -70,8 +72,39 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
             // }
         }
 
+        this.prepareLights(context, data);
+        context.renderer.blit(null, RenderTarget.CanvasTarget, this.light2DComposeMaterial);
+
         this.debuglayer.render(context, data);
         camera.__postRender(context);
+    }
+
+    prepareLights(context: RenderContext, data: RenderData)
+    {
+        const lightList = context.scene.getEntitiesOfType(Light2D);
+        for (let i = 0; i < lightList.length; i++)
+        {
+            const light = lightList[i];
+
+            this.light2DComposeMaterial.lightPosList[i] = this.light2DComposeMaterial.lightPosList[i] || vec4.zero();
+            vec4.set(this.light2DComposeMaterial.lightPosList[i], light.position as unknown as vec4);
+            this.light2DComposeMaterial.lightPosList[i].w = 1;
+
+            this.light2DComposeMaterial.lightParamsList[i] = this.light2DComposeMaterial.lightParamsList[i] || vec4.zero();
+            this.light2DComposeMaterial.lightParamsList[i].x = light.volumnRadius;
+            this.light2DComposeMaterial.lightParamsList[i].y = light.lightRange;
+            this.light2DComposeMaterial.lightParamsList[i].z = light.attenuation;
+
+            this.light2DComposeMaterial.lightColorList[i] = this.light2DComposeMaterial.lightColorList[i] || Color.white;
+            this.light2DComposeMaterial.lightColorList[i].set(light.lightColor);
+
+            this.light2DComposeMaterial.shadowMapList[i] = light.getShadowMap(context, data);
+        }
+        this.light2DComposeMaterial.lightCount = lightList.length;
+        this.light2DComposeMaterial.cameraParams.x = data.camera.position.x;
+        this.light2DComposeMaterial.cameraParams.y = data.camera.position.y;
+        this.light2DComposeMaterial.cameraParams.z = data.camera.viewHeight * 2 * data.camera.aspectRatio;
+        this.light2DComposeMaterial.cameraParams.w = data.camera.viewHeight * 2;
     }
 
 }

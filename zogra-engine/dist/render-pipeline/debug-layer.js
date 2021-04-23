@@ -22,6 +22,7 @@ class DebugLayerRenderer extends zogra_renderer_1.DebugProvider {
         this.lines.lines = lines;
     }
     render(context, data) {
+        context.renderer.setRenderTarget(zogra_renderer_1.RenderTarget.CanvasTarget);
         context.renderer.drawLines(this.lines, zogra_renderer_3.mat4.identity(), context.renderer.assets.materials.ColoredLine);
         this.lines.clear();
     }

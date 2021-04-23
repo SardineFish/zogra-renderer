@@ -15,18 +15,17 @@ camera.viewHeight = 10;
 scene.add(camera);
 
 const light = new Light2D();
-light.lightRange = 5;
 scene.add(light);
 light.position = vec3(0, 3, 0);
 
-const obj = new RenderObject();
-obj.meshes[0] = MeshBuilder.quad();
-scene.add(obj, light);
+// const obj = new RenderObject();
+// obj.meshes[0] = MeshBuilder.quad();
+// scene.add(obj, light);
 
 
 engine.on("update", (time) =>
 {
-    light.updateShadowMesh();
+    // light.updateShadowMesh();
 
     input.update();
 

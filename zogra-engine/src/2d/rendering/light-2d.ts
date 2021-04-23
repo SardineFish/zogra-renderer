@@ -1,6 +1,10 @@
-import { Color, DefaultVertexData, mat4, Mesh, minus, mul, plus, vec2, Vector2, VertexStruct } from "zogra-renderer";
+import { Color, Culling, DefaultVertexData, FilterMode, mat4, MaterialFromShader, Mesh, minus, mul, plus, RenderTarget, RenderTexture, Shader, shaderProp, TextureFormat, vec2, Vector2, VertexStruct } from "zogra-renderer";
 import { Debug } from "zogra-renderer/dist/core/global";
+import { ShaderSource } from "../../assets";
 import { Entity } from "../../engine/entity";
+import { RenderData } from "../../render-pipeline/render-data";
+import { RenderContext } from "../../render-pipeline/render-pipeline";
+import { Shadow2DMaterial } from "./materials";
 
 export enum ShadowType
 {
@@ -8,19 +12,24 @@ export enum ShadowType
     Hard = "hard",
 };
 
-const VertStruct = VertexStruct({
+export const Shadow2DVertStruct = VertexStruct({
     ...DefaultVertexData,
-    shadowA: "vec2",
-    shadowB: "vec2",
-})
+    p0: "vec2",
+    p1: "vec2",
+});
 
 export class Light2D extends Entity
 {
     shadowType: ShadowType | false = ShadowType.Hard;
     volumnRadius: number = 1;
     lightRange: number = 10;
+    lightColor: Color = Color.white;
+    /** In range [-1..1] */
+    attenuation: number = 0;
 
-    private shadowMesh = new Mesh(VertStruct);
+    private shadowMesh = new Mesh(Shadow2DVertStruct);
+    private shadowMap?: RenderTexture;
+    private shadowMat = new Shadow2DMaterial();
 
     constructor()
     {
@@ -28,9 +37,26 @@ export class Light2D extends Entity
         this.shadowMesh.resize(100, 100);
     }
 
+    getShadowMap(context: RenderContext, data: RenderData)
+    {
+        if (!this.shadowMap)
+            this.shadowMap = new RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, TextureFormat.R8, FilterMode.Linear);
+        this.updateShadowMesh();
+        
+        context.renderer.setRenderTarget(this.shadowMap);
+        context.renderer.clear(Color.black);
+        this.shadowMat.lightPos.set(this.position);
+        this.shadowMat.lightRange = this.lightRange;
+        this.shadowMat.volumnSize = this.volumnRadius;
+        context.renderer.drawMesh(this.shadowMesh, this.localToWorldMatrix, this.shadowMat);
+        context.renderer.blit(this.shadowMap, RenderTarget.CanvasTarget);
+        return this.shadowMap;
+    }
+
     updateShadowMesh()
     {
-        this.appendLineShadow(vec2(0, 0), vec2(1, 0), this.worldToLocalMatrix, 0, 0);
+        this.appendLineShadow(vec2(1, 0), vec2(0, 0), this.worldToLocalMatrix, 0, 0);
+        this.shadowMesh.update();
     }
 
     // https://www.geogebra.org/m/keskajgx
@@ -46,23 +72,23 @@ export class Light2D extends Entity
         Debug().drawCircle(this.position, this.lightRange, Color.yellow);
 
 
-        const tangentP0 = this.circleTangentThroughPoint(p0, this.volumnRadius);
+        let tangentP0 = this.circleTangentThroughPoint(p0, this.volumnRadius);
         let tangentP1 = this.circleTangentThroughPoint(p1, this.volumnRadius);
-        tangentP1 = [tangentP1[1], tangentP1[0]];
+        tangentP0 = [tangentP0[1], tangentP0[0]];
         let shadowA: vec2;
         let shadowB: vec2;
         const tan0 = [minus(p0, tangentP0[0]).normalize(), minus(p0, tangentP0[1]).normalize()];
         const tan1 = [minus(p1, tangentP1[0]).normalize(), minus(p1, tangentP1[1]).normalize()];
 
         let meshType = 0;
-        if (vec2.cross(dir, tan0[0]) >= 0)
+        if (vec2.cross(dir, tan0[0]) <= 0)
         {
             meshType |= 1;
             shadowA = tan1[1].mul(Math.sqrt(R2 - r2)).plus(tangentP1[1]);
         }
         else
             shadowA = tan0[0].mul(Math.sqrt(R2 - r2)).plus(tangentP0[0]);
-        if (vec2.cross(dir, tan1[0]) >= 0)
+        if (vec2.cross(dir, tan1[0]) <= 0)
         {
             meshType |= 2;
             shadowB = tan0[1].mul(Math.sqrt(R2 - r2)).plus(tangentP0[1]);
@@ -81,6 +107,16 @@ export class Light2D extends Entity
                 this.shadowMesh.vertices[vertOffset + 2].vert.set(shadowB);
                 this.shadowMesh.vertices[vertOffset + 3].vert.set(shadowR);
                 this.shadowMesh.vertices[vertOffset + 4].vert.set(shadowA);
+                this.shadowMesh.vertices[vertOffset + 0].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 0].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 1].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 1].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 2].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 2].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 3].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 3].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 4].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 4].p1.set(p1);
                 this.shadowMesh.indices.set([
                     vertOffset + 0,
                     vertOffset + 3,
@@ -105,6 +141,14 @@ export class Light2D extends Entity
                 this.shadowMesh.vertices[vertOffset + 1].vert.set(shadowB);
                 this.shadowMesh.vertices[vertOffset + 2].vert.set(shadowR);
                 this.shadowMesh.vertices[vertOffset + 3].vert.set(shadowA);
+                this.shadowMesh.vertices[vertOffset + 0].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 0].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 1].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 1].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 2].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 2].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 3].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 3].p1.set(p1);
                 this.shadowMesh.indices.set([
                     vertOffset + 0,
                     vertOffset + 1,
@@ -125,6 +169,14 @@ export class Light2D extends Entity
                 this.shadowMesh.vertices[vertOffset + 1].vert.set(shadowB);
                 this.shadowMesh.vertices[vertOffset + 2].vert.set(shadowR);
                 this.shadowMesh.vertices[vertOffset + 3].vert.set(shadowA);
+                this.shadowMesh.vertices[vertOffset + 0].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 0].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 1].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 1].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 2].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 2].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 3].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 3].p1.set(p1);
                 this.shadowMesh.indices.set([
                     vertOffset + 0,
                     vertOffset + 1,
@@ -146,6 +198,16 @@ export class Light2D extends Entity
                 this.shadowMesh.vertices[vertOffset + 2].vert.set(shadowB);
                 this.shadowMesh.vertices[vertOffset + 3].vert.set(shadowR);
                 this.shadowMesh.vertices[vertOffset + 4].vert.set(shadowA);
+                this.shadowMesh.vertices[vertOffset + 0].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 0].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 1].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 1].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 2].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 2].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 3].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 3].p1.set(p1);
+                this.shadowMesh.vertices[vertOffset + 4].p0.set(p0);
+                this.shadowMesh.vertices[vertOffset + 4].p1.set(p1);
                 this.shadowMesh.indices.set([
                     vertOffset + 0,
                     vertOffset + 3,
