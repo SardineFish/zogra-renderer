@@ -188,6 +188,7 @@ class TextureBase extends Asset implements Texture
 
         this.created = true;
         this.updateParameters();
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
     protected setData(pixels: TextureData)

@@ -30,6 +30,11 @@ export const DefaultVertexData: DefaultVertexStruct =
 
 export const DefaultVertexStructInfo = BufferStructureInfo.from(DefaultVertexData);
 
+export function VertexStruct<T extends BufferStructure>(structure: T): T
+{
+    return structure;
+}
+
 export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset
 {
     vertices: RenderBuffer<VertexStruct>;

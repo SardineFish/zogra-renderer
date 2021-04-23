@@ -5,6 +5,7 @@ const gl_matrix_1 = require("gl-matrix");
 const quat_1 = require("./quat");
 const vec3_1 = require("./vec3");
 const vec4_1 = require("./vec4");
+const vec2_1 = require("./vec2");
 const utils_1 = require("./utils");
 const Mat4Constructor = Array;
 const __vec4_temp = vec4_1.vec4.zero();
@@ -77,6 +78,26 @@ mat4.mulPoint = utils_1.wrapGlMatrix((out, m, v) => {
     out[2] = __vec4_temp[2];
     return out;
 }, 2, vec3_1.vec3.zero);
+mat4.mulPoint2 = utils_1.wrapGlMatrix((out, m, v) => {
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = 0;
+    __vec4_temp[3] = 1;
+    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    return out;
+}, 2, vec2_1.vec2.zero);
+mat4.mulVector2 = utils_1.wrapGlMatrix((out, m, v) => {
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = 0;
+    __vec4_temp[3] = 0;
+    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    return out;
+}, 2, vec2_1.vec2.zero);
 function simpleOrthogonal(height, aspect, near, far) {
     const out = mat4.create();
     gl_matrix_1.mat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);

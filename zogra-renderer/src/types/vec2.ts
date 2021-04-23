@@ -18,6 +18,10 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
     {
         return Math.hypot(...this);
     }
+    get magnitudeSqr()
+    {
+        return this[0] * this[0] + this[1] * this[1];
+    }
 
     get normalized(): Vector2
     {

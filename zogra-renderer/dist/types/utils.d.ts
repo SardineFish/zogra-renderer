@@ -10,9 +10,12 @@ declare type WrappedFunction<TOut, TReturn, TArgs extends any[]> = {
     (out: ArrayLike<number>, ...args: {
         [key in keyof TArgs]: MapArrayArgs<TArgs[key]>;
     }): null extends TReturn ? ArrayLike<number> | null : ArrayLike<number>;
+    (out: TOut, ...args: {
+        [key in keyof TArgs]: MapArrayArgs<TArgs[key]>;
+    }): TReturn;
     (...args: {
         [key in keyof TArgs]: MapArrayArgs<TArgs[key]>;
-    }): null extends TReturn ? ArrayLike<number> | null : ArrayLike<number>;
+    }): TReturn;
 };
 export declare function wrapGlMatrix<TOut, TReturn, TArgs extends any[]>(func: (out: TOut, ...args: TArgs) => TOut, argCount: TArgs["length"], allocator: () => TOut): WrappedFunction<TOut, TReturn, TArgs>;
 export declare function wrapGlMatrix<TOut, TArgs extends any[]>(func: (out: TOut, ...args: TArgs) => TOut, argCount: TArgs["length"], allocator: () => TOut): WrappedFunction<TOut, TOut, TArgs>;

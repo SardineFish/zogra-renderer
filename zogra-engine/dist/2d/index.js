@@ -20,4 +20,5 @@ __exportStar(require("./rendering/sprite-object"), exports);
 __exportStar(require("./rendering/tilemap"), exports);
 __exportStar(require("./rendering/materials"), exports);
 __exportStar(require("./rendering/line-renderer"), exports);
+__exportStar(require("./rendering/light-2d"), exports);
 //# sourceMappingURL=index.js.map

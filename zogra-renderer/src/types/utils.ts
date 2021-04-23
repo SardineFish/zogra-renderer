@@ -15,7 +15,8 @@ type WrappedFunction<TOut, TReturn, TArgs extends any[]> = {
     (...args: { [key in keyof TArgs]: Readonly<TArgs[key]> }): TReturn,
     (out: TOut, ...args: { [key in keyof TArgs]: Readonly<TArgs[key]> }): TReturn,
     (out: ArrayLike<number>, ...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): null extends TReturn ? ArrayLike<number> | null : ArrayLike<number>,
-    (...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): null extends TReturn ? ArrayLike<number> | null : ArrayLike<number>,
+    (out: TOut, ...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): TReturn,
+    (...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): TReturn,
 };
 
 
@@ -32,7 +33,9 @@ export function wrapGlMatrix<TOut, TArgs extends any[]>(func: (out: TOut, ...arg
         }
         else
         {
-            const [out, ...rest] = args as [TOut, ...TArgs];
+            let [out, ...rest] = args as [TOut, ...TArgs];
+            if (out === undefined)
+                out = allocator();
             return func(out, ...rest);
         }
     }) as any;

@@ -19,133 +19,169 @@ export declare namespace mat4 {
         (): Matrix4x4;
         (out: Matrix4x4): Matrix4x4;
         (out: ArrayLike<number>): ArrayLike<number>;
-        (): ArrayLike<number>;
+        (out: Matrix4x4): Matrix4x4;
+        (): Matrix4x4;
     };
     var rts: {
         (args_0: Readonly<import("./quat").Quaternion>, args_1: Readonly<import("./vec3").Vector3>, args_2: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<import("./quat").Quaternion>, args_1: Readonly<import("./vec3").Vector3>, args_2: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>, args_2: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>, args_2: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>, args_2: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>, args_2: ArrayLike<number>): Matrix4x4;
     };
     var translate: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
     };
     var invert: {
         (args_0: Readonly<Matrix4x4>): Matrix4x4 | null;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>): Matrix4x4 | null;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number> | null;
-        (args_0: ArrayLike<number>): ArrayLike<number> | null;
+        (out: Matrix4x4, args_0: ArrayLike<number>): Matrix4x4 | null;
+        (args_0: ArrayLike<number>): Matrix4x4 | null;
     };
     var getTranslation: {
         (args_0: Readonly<Matrix4x4>): import("./vec3").Vector3;
         (out: import("./vec3").Vector3, args_0: Readonly<Matrix4x4>): import("./vec3").Vector3;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (out: import("./vec3").Vector3, args_0: ArrayLike<number>): import("./vec3").Vector3;
+        (args_0: ArrayLike<number>): import("./vec3").Vector3;
     };
     var getRotation: {
         (args_0: Readonly<Matrix4x4>): import("./quat").Quaternion;
         (out: import("./quat").Quaternion, args_0: Readonly<Matrix4x4>): import("./quat").Quaternion;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (out: import("./quat").Quaternion, args_0: ArrayLike<number>): import("./quat").Quaternion;
+        (args_0: ArrayLike<number>): import("./quat").Quaternion;
     };
     var getScaling: {
         (args_0: Readonly<Matrix4x4>): import("./vec3").Vector3;
         (out: import("./vec3").Vector3, args_0: Readonly<Matrix4x4>): import("./vec3").Vector3;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (out: import("./vec3").Vector3, args_0: ArrayLike<number>): import("./vec3").Vector3;
+        (args_0: ArrayLike<number>): import("./vec3").Vector3;
     };
     var mulVec4: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec4").Vector4>): import("./vec4").Vector4;
         (out: import("./vec4").Vector4, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec4").Vector4>): import("./vec4").Vector4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: import("./vec4").Vector4, args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec4").Vector4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec4").Vector4;
     };
     var perspective: {
         (args_0: number, args_1: number, args_2: number, args_3: number): Matrix4x4;
         (out: Matrix4x4, args_0: number, args_1: number, args_2: number, args_3: number): Matrix4x4;
         (out: ArrayLike<number>, args_0: number, args_1: number, args_2: number, args_3: number): ArrayLike<number>;
-        (args_0: number, args_1: number, args_2: number, args_3: number): ArrayLike<number>;
+        (out: Matrix4x4, args_0: number, args_1: number, args_2: number, args_3: number): Matrix4x4;
+        (args_0: number, args_1: number, args_2: number, args_3: number): Matrix4x4;
     };
     var transpose: {
         (args_0: Readonly<Matrix4x4>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>): Matrix4x4;
     };
     var rotate: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>, args_2: number): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>, args_2: number): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>, args_2: number): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>, args_2: number): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>, args_2: number): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>, args_2: number): Matrix4x4;
     };
     var scale: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
     };
     var fromTranslation: {
         (args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>): Matrix4x4;
     };
     var fromRotation: {
         (args_0: Readonly<import("./quat").Quaternion>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<import("./quat").Quaternion>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>): Matrix4x4;
     };
     var fromScaling: {
         (args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<import("./vec3").Vector3>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>): Matrix4x4;
     };
     var mul: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
     };
     var add: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
     };
     var sub: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
     };
     var plus: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
     };
     var minus: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>, args_1: Readonly<Matrix4x4>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): Matrix4x4;
     };
     var mulVector: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): import("./vec3").Vector3;
         (out: import("./vec3").Vector3, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): import("./vec3").Vector3;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: import("./vec3").Vector3, args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec3").Vector3;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec3").Vector3;
     };
     var mulPoint: {
         (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): import("./vec3").Vector3;
         (out: import("./vec3").Vector3, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec3").Vector3>): import("./vec3").Vector3;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: import("./vec3").Vector3, args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec3").Vector3;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec3").Vector3;
+    };
+    var mulPoint2: {
+        (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec2").Vector2>): import("./vec2").Vector2;
+        (out: import("./vec2").Vector2, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec2").Vector2>): import("./vec2").Vector2;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: import("./vec2").Vector2, args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec2").Vector2;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec2").Vector2;
+    };
+    var mulVector2: {
+        (args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec2").Vector2>): import("./vec2").Vector2;
+        (out: import("./vec2").Vector2, args_0: Readonly<Matrix4x4>, args_1: Readonly<import("./vec2").Vector2>): import("./vec2").Vector2;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: ArrayLike<number>): ArrayLike<number>;
+        (out: import("./vec2").Vector2, args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec2").Vector2;
+        (args_0: ArrayLike<number>, args_1: ArrayLike<number>): import("./vec2").Vector2;
     };
     var ortho: typeof orthogonal;
     var equal: (a: any, b: any) => boolean;
@@ -153,13 +189,15 @@ export declare namespace mat4 {
         (args_0: Readonly<Matrix4x4>): Matrix4x4;
         (out: Matrix4x4, args_0: Readonly<Matrix4x4>): Matrix4x4;
         (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-        (args_0: ArrayLike<number>): ArrayLike<number>;
+        (out: Matrix4x4, args_0: ArrayLike<number>): Matrix4x4;
+        (args_0: ArrayLike<number>): Matrix4x4;
     };
     var fill: {
         (args_0: number): Matrix4x4;
         (out: Matrix4x4, args_0: number): Matrix4x4;
         (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
-        (args_0: number): ArrayLike<number>;
+        (out: Matrix4x4, args_0: number): Matrix4x4;
+        (args_0: number): Matrix4x4;
     };
 }
 declare function orthogonal(height: number, aspect: number, near: number, far: number): mat4;

@@ -8,12 +8,13 @@ import "reflect-metadata";
 import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
 import { RenderTexture, Texture, Texture2D } from "./texture";
-import { BindingData, NumericUnifromTypes, TextureUniformTypes, UniformValueType } from "./types";
+import { BindingData, NumericUniformArrayTypes, NumericUnifromTypes, TextureArrayUniformTypes, TextureArrayValueType, TextureUniformTypes, UniformValueType } from "./types";
 import { UniformType } from "./types"
 import { Asset } from "./asset";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { vec4 } from "../types/vec4";
 import { mat4 } from "../types/mat4";
+import { quat } from "../types/quat";
 
 /**
  * Inicate where to get the value from material
@@ -23,6 +24,11 @@ enum ValueReference
     Field, // defined with @shaderProps
     Dynamic, // set by setProperty()
 }
+
+type UniformPropertyStorageType<T extends UniformType> =
+    T extends TextureUniformTypes | NumericUnifromTypes ? UniformValueType<T>
+    : T extends NumericUniformArrayTypes ? Float32Array
+    : never;
 
 interface FieldProperty
 {
@@ -36,23 +42,35 @@ interface DynamicProperty<T extends UniformType>
 }
 type PropertyReference<T extends UniformType> = FieldProperty | DynamicProperty<T>;
 
-type NumericProperty<T extends NumericUnifromTypes> = PropertyReference<T> &
-{
+type PropertyBase<T extends UniformType> = PropertyReference<T> & {
     type: T;
     location: WebGLUniformLocation | null;
+}
+
+type NumericProperty<T extends NumericUnifromTypes> = PropertyBase<T> &
+{
+    uploaded?: UniformPropertyStorageType<T>;
+};
+
+type VectorArrayProperty<T extends NumericUniformArrayTypes> = PropertyBase<T> & {
     uploaded?: UniformValueType<T>;
-};
+    buffer: Float32Array;
+}
 
-type TextureProperty<T extends TextureUniformTypes> = PropertyReference<T> &
+type TextureProperty<T extends TextureUniformTypes> = PropertyBase<T> &
 {
-    type: T;
-    location: WebGLUniformLocation | null;
-    textureUnit: number;
-    uploaded?: UniformValueType<T> | null;
-    uniformSet?: true;
+    uploaded?: number;
 };
+type TextureArrayProperty<T extends TextureArrayUniformTypes> = PropertyBase<T> & {
+    uploaded?: number[];
+}
 
-type PropertyInfo = NumericProperty<NumericUnifromTypes> | TextureProperty<TextureUniformTypes>;
+type PropertyInfo<T extends UniformType = UniformType> =
+    T extends NumericUnifromTypes ? NumericProperty<T>
+    : T extends NumericUniformArrayTypes ? VectorArrayProperty<T>
+    : T extends TextureUniformTypes ? TextureProperty<T>
+    : T extends TextureArrayUniformTypes ? TextureArrayProperty<T>
+    : never;
 
 export interface MaterialProperties
 {
@@ -68,6 +86,7 @@ export class Material extends Asset
     gl: WebGL2RenderingContext;
 
     private textureCount = 0;
+    private boundTextures: Texture[] = [];
     protected initialized = false;
 
     constructor(shader: Shader, gl = GL())
@@ -111,11 +130,11 @@ export class Material extends Asset
 
     // setProp<T extends UniformType>(key: string, uniformName: string, type: T, value: UniformValueType<T>): void
     // setProp<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void
-    setProp<T extends UniformType>(uniformName: string, type: T, value: Readonly<UniformValueType<T>>): void
+    setProp<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>): void
     {
         this.tryInit(true);
 
-        const prop = this.getOrCreatePropInfo(uniformName, type);
+        const prop = this.getOrCreatePropInfo<T>(uniformName, type);
 
         if (type !== prop.type)
         {
@@ -126,7 +145,9 @@ export class Material extends Asset
         if (prop.key)
             this[prop.key] = value;
         else
-            prop.value = cloneUniformValue(value);
+        {
+            prop.value = value;
+        }
     }
 
     /**
@@ -138,15 +159,15 @@ export class Material extends Asset
         this.tryInit(true);
 
         const gl = this.gl;
-        for (const uniformName in this.properties)
+        for (let unit = 0; unit < this.boundTextures.length; unit++)
         {
-            const prop = this.properties[uniformName];
-            if (prop.uploaded instanceof RenderTexture)
+            const texture = this.boundTextures[unit]
+            if (texture instanceof RenderTexture)
             {
-                prop.uploaded.unbind((prop as TextureProperty<TextureUniformTypes>).textureUnit);
-                prop.uploaded = null;
+                texture.unbind(unit);
             }
         }
+        this.boundTextures.length = 0;
     }
 
     protected tryInit(required = false): boolean
@@ -191,33 +212,53 @@ export class Material extends Asset
         this.uploadUniform(prop, value);
     }
 
-    private getOrCreatePropInfo<T extends UniformType>(uniformName: string, type: T): PropertyInfo
+    private getOrCreatePropInfo<T extends UniformType>(uniformName: string, type: T): PropertyInfo<T>
     {
         let prop = this.properties[uniformName];
         if (prop)
-            return prop;
-        switch (type)
+            return prop as PropertyInfo<T>;
+        if (type === "tex2d")
         {
-            case "tex2d":
-                prop = {
-                    type: type,
-                    uploaded: undefined,
-                    location: this.shader.uniformLocation(uniformName),
-                    textureUnit: this.textureCount++,
-                } as any;
-                break;
-            default:
-                prop = {
-                    type: type,
-                    location: this.shader.uniformLocation(uniformName),
-                    uploaded: undefined,
-                } as any;
+            prop = <TextureProperty<TextureUniformTypes>>{
+                type: type,
+                value: undefined as any,
+                uploaed: undefined,
+                location: this.shader.uniformLocation(uniformName),
+            };
         }
+        else if (type === "tex2d[]")
+        {
+            prop = <TextureArrayProperty<TextureArrayUniformTypes>>{
+                type: type,
+                value: undefined as any,
+                uploaded: undefined as any,
+                location: this.shader.uniformLocation(uniformName),
+                buffer: new Array(64),
+            }
+        }
+        else if (type.endsWith("[]"))
+            prop = <VectorArrayProperty<NumericUniformArrayTypes>>{
+                type: type,
+                value: undefined as any,
+                uploaded: undefined,
+                location: this.shader.uniformLocation(uniformName),
+                buffer: new Float32Array(),
+            } as any;
+        else
+        {
+            prop = <NumericProperty<NumericUnifromTypes>>{
+                type: type,
+                value: undefined as any,
+                uploaded: undefined,
+                location: this.shader.uniformLocation(uniformName),
+            } as any;
+        }
+
         this.properties[uniformName] = prop;
-        return prop;
+        return prop as PropertyInfo<T>;
     }
 
-    private uploadUniform(prop: PropertyInfo, value: UniformValueType<UniformType>)
+    private uploadUniform<T extends UniformType>(prop: PropertyInfo<T>, value: UniformValueType<T>)
     {
 
         const gl = this.gl;
@@ -246,9 +287,14 @@ export class Material extends Asset
         // }
         // if (!dirty)
         //     return false;
+    
+        let uploaded: UniformValueType<T> | number | number[] = value;
         
         switch (prop.type)
         {
+            case "int":
+                gl.uniform1i(prop.location, value as number);
+                break;
             case "float":
                 gl.uniform1f(prop.location, value as number);
                 break;
@@ -267,21 +313,95 @@ export class Material extends Asset
             case "mat4":
                 gl.uniformMatrix4fv(prop.location, false, value as mat4);
                 break;
-            case "tex2d":
+            case "int[]":
+                gl.uniform1iv(prop.location, value as number[]);
+                break;
+            case "float[]":
+                gl.uniform1fv(prop.location, value as number[]);
+                break;
+            case "vec2[]": {
+                const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec2[]">, 2, value as vec2[]);
+                gl.uniform2fv(prop.location, (prop as PropertyInfo<"vec2[]">).buffer, 0, length);
+                break;
+            }
+            case "vec3[]": {
+                const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec3[]">, 3, value as vec3[]);
+                gl.uniform3fv(prop.location, (prop as PropertyInfo<"vec3[]">).buffer, 0, length);
+                break;
+            }
+            case "color[]":
+            case "vec4[]": {
+                const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec4[]">, 4, value as vec4[]);
+                gl.uniform4fv(prop.location, (prop as PropertyInfo<"vec4[]">).buffer, 0, length);
+                break;
+            }
+            case "mat4[]": {
+                const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec4[]">, 16, value as mat4[]);
+                gl.uniform4fv(prop.location, (prop as PropertyInfo<"mat4[]">).buffer, 0, length);
+                break;
+            }
+            case "tex2d": {
                 // Update texture to texture unit instead of update uniform1i
                 // Due to performance issue mentioned in https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14.10
-                value = value || ctx.renderer.assets.textures.default;
-                    
-                (value as Texture).bind(prop.textureUnit);
-                if (!prop.uniformSet)
+
+                const texProp = prop as PropertyInfo<TextureUniformTypes>;
+
+                (value as UniformValueType<TextureUniformTypes>) = (value as UniformValueType<TextureUniformTypes>) || ctx.renderer.assets.textures.default;
+                let unit = this.bindNextTexture(value as Texture);
+
+                if (texProp.uploaded !== unit)
                 {
-                    gl.uniform1i(prop.location, prop.textureUnit);
-                    prop.uniformSet = true;
+                    gl.uniform1i(texProp.location, unit);
+                    texProp.uploaded = unit;
                 }
+
+                uploaded = unit;
                 break;
+            }
+            case "tex2d[]":{
+                const texProp = prop as PropertyInfo<TextureArrayUniformTypes>;
+                const texArray = value as Array<Texture | null>;
+
+                let shouldUpload = false;
+                const uniformValues = texProp.uploaded || [];
+                for (let i = 0; i < texArray.length; i++)
+                {
+                    const tex = texArray[i] || ctx.renderer.assets.textures.default;
+                    let unit = this.bindNextTexture(tex);
+                    if (texProp.uploaded?.[i] !== unit)
+                        shouldUpload = true;
+                    uniformValues[i] = unit;
+                }
+
+                if (shouldUpload)
+                {
+                    gl.uniform1iv(texProp.location, uniformValues, 0, texArray.length);
+                    texProp.uploaded = uniformValues;
+                }
+                uploaded = uniformValues;
+            }
         }
 
-        prop.uploaded = value;
+        prop.uploaded = uploaded as any;
+    }
+
+    private bindNextTexture(texture: Texture)
+    {
+        texture.bind(this.boundTextures.length);
+        return this.boundTextures.push(texture) - 1;
+    }
+
+    private setVectorUniformBuffer<T extends vec2 | vec3 | vec4 | quat | Color | mat4>(prop: PropertyInfo<NumericUniformArrayTypes>, elementSize: number, valueArray: T[])
+    {
+        if (prop.buffer.length < elementSize * valueArray.length)
+        {
+            prop.buffer = new Float32Array(elementSize * valueArray.length);
+        }
+        for (let i = 0; i < valueArray.length; i++)
+        {
+            prop.buffer.set(valueArray[i], i * elementSize);
+        }
+        return elementSize * valueArray.length;
     }
 }
 

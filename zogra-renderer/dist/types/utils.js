@@ -8,7 +8,9 @@ function wrapGlMatrix(func, argCount, allocator) {
             return func(out, ...args);
         }
         else {
-            const [out, ...rest] = args;
+            let [out, ...rest] = args;
+            if (out === undefined)
+                out = allocator();
             return func(out, ...rest);
         }
     });

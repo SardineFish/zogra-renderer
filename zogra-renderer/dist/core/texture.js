@@ -127,6 +127,7 @@ class TextureBase extends asset_1.Asset {
         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, this.width, this.height, 0, format, type, null);
         this.created = true;
         this.updateParameters();
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
     setData(pixels) {
         this.create();

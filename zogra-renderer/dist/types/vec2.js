@@ -14,6 +14,9 @@ class Vector2 extends V2Constructor {
     get magnitude() {
         return Math.hypot(...this);
     }
+    get magnitudeSqr() {
+        return this[0] * this[0] + this[1] * this[1];
+    }
     get normalized() {
         const m = this.magnitude;
         return m == 0 ? vec2.zero() : this.clone().div(vec2(m, m));

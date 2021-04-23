@@ -94,6 +94,28 @@ mat4.mulPoint = wrapGlMatrix<vec3, [mat4, vec3]>((out, m, v) =>
     out[2] = __vec4_temp[2];
     return out;
 }, 2, vec3.zero);
+mat4.mulPoint2 = wrapGlMatrix<vec2, [mat4, vec2]>((out, m, v) =>
+{
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = 0;
+    __vec4_temp[3] = 1;
+    glVec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    return out;
+}, 2, vec2.zero);
+mat4.mulVector2 = wrapGlMatrix<vec2, [mat4, vec2]>((out, m, v) =>
+{
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = 0;
+    __vec4_temp[3] = 0;
+    glVec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    return out;
+}, 2, vec2.zero);
 
 function simpleOrthogonal(height: number, aspect: number, near: number, far: number): mat4
 {

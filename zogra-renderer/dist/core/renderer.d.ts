@@ -44,7 +44,7 @@ export declare class ZograRenderer {
     drawMeshProceduralInstance<T extends BufferStructure>(mesh: Mesh<T>, material: Material, count: number): void;
     drawMesh<T extends BufferStructure>(mesh: Mesh<T>, transform: Readonly<mat4>, material: Material): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
-    setGlobalUniform<T extends UniformType>(name: string, type: T, value: Readonly<UniformValueType<T>>): void;
+    setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
     unsetGlobalUniform(name: string): void;
     private setupScissor;
 }

@@ -14,6 +14,7 @@ export interface DefaultVertexStruct extends BufferStructure {
 }
 export declare const DefaultVertexData: DefaultVertexStruct;
 export declare const DefaultVertexStructInfo: BufferStructureInfo<DefaultVertexStruct>;
+export declare function VertexStruct<T extends BufferStructure>(structure: T): T;
 export declare class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset {
     vertices: RenderBuffer<VertexStruct>;
     indices: Uint32Array;

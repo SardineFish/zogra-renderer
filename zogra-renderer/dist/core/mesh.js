@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MeshLegacy = exports.Mesh = exports.DefaultVertexStructInfo = exports.DefaultVertexData = void 0;
+exports.MeshLegacy = exports.Mesh = exports.VertexStruct = exports.DefaultVertexStructInfo = exports.DefaultVertexData = void 0;
 const vec3_1 = require("../types/vec3");
 const vec2_1 = require("../types/vec2");
 const color_1 = require("../types/color");
@@ -18,6 +18,10 @@ exports.DefaultVertexData = {
     uv2: "vec2",
 };
 exports.DefaultVertexStructInfo = buffer_1.BufferStructureInfo.from(exports.DefaultVertexData);
+function VertexStruct(structure) {
+    return structure;
+}
+exports.VertexStruct = VertexStruct;
 class Mesh extends asset_1.Asset {
     constructor(...args) {
         super("Mesh");

@@ -8,7 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.materialDefine = exports.SimpleTexturedMaterial = exports.MaterialFromShader = exports.shaderProp = exports.Material = void 0;
 const color_1 = require("../types/color");
-const util_1 = require("../utils/util");
 require("reflect-metadata");
 const global_1 = require("./global");
 require("reflect-metadata");
@@ -29,6 +28,7 @@ class Material extends asset_1.Asset {
         super();
         this.properties = {};
         this.textureCount = 0;
+        this.boundTextures = [];
         this.initialized = false;
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
@@ -70,8 +70,9 @@ class Material extends asset_1.Asset {
         }
         if (prop.key)
             this[prop.key] = value;
-        else
-            prop.value = util_1.cloneUniformValue(value);
+        else {
+            prop.value = value;
+        }
     }
     /**
      * Unbind all render textures from active texture slot due to avoid
@@ -80,13 +81,13 @@ class Material extends asset_1.Asset {
     unbindRenderTextures() {
         this.tryInit(true);
         const gl = this.gl;
-        for (const uniformName in this.properties) {
-            const prop = this.properties[uniformName];
-            if (prop.uploaded instanceof texture_1.RenderTexture) {
-                prop.uploaded.unbind(prop.textureUnit);
-                prop.uploaded = null;
+        for (let unit = 0; unit < this.boundTextures.length; unit++) {
+            const texture = this.boundTextures[unit];
+            if (texture instanceof texture_1.RenderTexture) {
+                texture.unbind(unit);
             }
         }
+        this.boundTextures.length = 0;
     }
     tryInit(required = false) {
         if (this.initialized)
@@ -121,26 +122,44 @@ class Material extends asset_1.Asset {
         let prop = this.properties[uniformName];
         if (prop)
             return prop;
-        switch (type) {
-            case "tex2d":
-                prop = {
-                    type: type,
-                    uploaded: undefined,
-                    location: this.shader.uniformLocation(uniformName),
-                    textureUnit: this.textureCount++,
-                };
-                break;
-            default:
-                prop = {
-                    type: type,
-                    location: this.shader.uniformLocation(uniformName),
-                    uploaded: undefined,
-                };
+        if (type === "tex2d") {
+            prop = {
+                type: type,
+                value: undefined,
+                uploaed: undefined,
+                location: this.shader.uniformLocation(uniformName),
+            };
+        }
+        else if (type === "tex2d[]") {
+            prop = {
+                type: type,
+                value: undefined,
+                uploaded: undefined,
+                location: this.shader.uniformLocation(uniformName),
+                buffer: new Array(64),
+            };
+        }
+        else if (type.endsWith("[]"))
+            prop = {
+                type: type,
+                value: undefined,
+                uploaded: undefined,
+                location: this.shader.uniformLocation(uniformName),
+                buffer: new Float32Array(),
+            };
+        else {
+            prop = {
+                type: type,
+                value: undefined,
+                uploaded: undefined,
+                location: this.shader.uniformLocation(uniformName),
+            };
         }
         this.properties[uniformName] = prop;
         return prop;
     }
     uploadUniform(prop, value) {
+        var _a;
         const gl = this.gl;
         const ctx = global_1.GlobalContext();
         if (!prop.location)
@@ -164,7 +183,11 @@ class Material extends asset_1.Asset {
         // }
         // if (!dirty)
         //     return false;
+        let uploaded = value;
         switch (prop.type) {
+            case "int":
+                gl.uniform1i(prop.location, value);
+                break;
             case "float":
                 gl.uniform1f(prop.location, value);
                 break;
@@ -183,18 +206,79 @@ class Material extends asset_1.Asset {
             case "mat4":
                 gl.uniformMatrix4fv(prop.location, false, value);
                 break;
-            case "tex2d":
+            case "int[]":
+                gl.uniform1iv(prop.location, value);
+                break;
+            case "float[]":
+                gl.uniform1fv(prop.location, value);
+                break;
+            case "vec2[]": {
+                const length = this.setVectorUniformBuffer(prop, 2, value);
+                gl.uniform2fv(prop.location, prop.buffer, 0, length);
+                break;
+            }
+            case "vec3[]": {
+                const length = this.setVectorUniformBuffer(prop, 3, value);
+                gl.uniform3fv(prop.location, prop.buffer, 0, length);
+                break;
+            }
+            case "color[]":
+            case "vec4[]": {
+                const length = this.setVectorUniformBuffer(prop, 4, value);
+                gl.uniform4fv(prop.location, prop.buffer, 0, length);
+                break;
+            }
+            case "mat4[]": {
+                const length = this.setVectorUniformBuffer(prop, 16, value);
+                gl.uniform4fv(prop.location, prop.buffer, 0, length);
+                break;
+            }
+            case "tex2d": {
                 // Update texture to texture unit instead of update uniform1i
                 // Due to performance issue mentioned in https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14.10
+                const texProp = prop;
                 value = value || ctx.renderer.assets.textures.default;
-                value.bind(prop.textureUnit);
-                if (!prop.uniformSet) {
-                    gl.uniform1i(prop.location, prop.textureUnit);
-                    prop.uniformSet = true;
+                let unit = this.bindNextTexture(value);
+                if (texProp.uploaded !== unit) {
+                    gl.uniform1i(texProp.location, unit);
+                    texProp.uploaded = unit;
                 }
+                uploaded = unit;
                 break;
+            }
+            case "tex2d[]": {
+                const texProp = prop;
+                const texArray = value;
+                let shouldUpload = false;
+                const uniformValues = texProp.uploaded || [];
+                for (let i = 0; i < texArray.length; i++) {
+                    const tex = texArray[i] || ctx.renderer.assets.textures.default;
+                    let unit = this.bindNextTexture(tex);
+                    if (((_a = texProp.uploaded) === null || _a === void 0 ? void 0 : _a[i]) !== unit)
+                        shouldUpload = true;
+                    uniformValues[i] = unit;
+                }
+                if (shouldUpload) {
+                    gl.uniform1iv(texProp.location, uniformValues, 0, texArray.length);
+                    texProp.uploaded = uniformValues;
+                }
+                uploaded = uniformValues;
+            }
         }
-        prop.uploaded = value;
+        prop.uploaded = uploaded;
+    }
+    bindNextTexture(texture) {
+        texture.bind(this.boundTextures.length);
+        return this.boundTextures.push(texture) - 1;
+    }
+    setVectorUniformBuffer(prop, elementSize, valueArray) {
+        if (prop.buffer.length < elementSize * valueArray.length) {
+            prop.buffer = new Float32Array(elementSize * valueArray.length);
+        }
+        for (let i = 0; i < valueArray.length; i++) {
+            prop.buffer.set(valueArray[i], i * elementSize);
+        }
+        return elementSize * valueArray.length;
     }
 }
 exports.Material = Material;

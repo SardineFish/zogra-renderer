@@ -376,12 +376,12 @@ export class ZograRenderer
 
     }
 
-    setGlobalUniform<T extends UniformType>(name: string, type: T, value: Readonly<UniformValueType<T>>)
+    setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
     {
         this.globalUniforms.set(name, {
             name: name,
             type: type,
-            value: cloneUniformValue(value),
+            value: value,
         });
     }
     unsetGlobalUniform(name: string)
