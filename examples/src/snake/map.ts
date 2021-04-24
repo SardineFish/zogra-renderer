@@ -79,12 +79,12 @@ export class GameMap extends Tilemap<NoiseChunk>
     {
         const checkboard = await TextureImporter.url(imgCheckBoard).then(r => r.tex2d());
         GameMap.tileGround.sprite = new Sprite(checkboard, vec2(4), vec2(0, 0));
-        GameMap.tileGround.sprite.color = Color.fromString("#cccccc");
+        GameMap.tileGround.sprite.color = Color.fromString("#eeeeee");
         GameMap.tileWall.sprite = new Sprite(checkboard, vec2(4), vec2(0, 1));
-        GameMap.tileWall.sprite.color = Color.fromString("#eeeeee");
+        GameMap.tileWall.sprite.color = Color.fromString("#cccccc");
         GameMap.tileSnake.sprite = new Sprite(checkboard, vec2(4), vec2(0, 2));
-        GameMap.tileSnake.sprite.color = Color.fromString("#cccccc");
+        GameMap.tileSnake.sprite.color = Color.fromString("#eeeeee");
         GameMap.tileFood.sprite = new Sprite(checkboard, vec2(4), vec2(0, 3));
-        GameMap.tileFood.sprite.color = Color.fromString("#cccccc");
+        GameMap.tileFood.sprite.color = Color.fromString("#eeeeee");
     }
 }

@@ -1,4 +1,4 @@
-import { BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Time, vec2, Vector2 } from "zogra-engine";
+import { BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Time, vec2, Vector2 } from "zogra-engine";
 import { Food, FoodGenerator } from "./food";
 import { GameMap } from "./map";
 
@@ -28,6 +28,7 @@ export class Snake extends LineRenderer
     foodGenerator: FoodGenerator;
     growingTail: TailGrowing[] = [];
     foodParticle = new ParticleSystem();
+    light = new Light2D();
 
     constructor(bodies: vec2[], headDir: vec2, camera: Camera, input: InputManager)
     {
@@ -47,6 +48,10 @@ export class Snake extends LineRenderer
         this.foodParticle.lifeSpeed = [10, 0];
         this.foodParticle.lifetime = [0.3, 0.4];
         this.foodParticle.lifeSize = [0.3, 0];
+
+        this.light.intensity = 0.6;
+        this.light.volumnRadius = this.width / 3;
+        this.light.attenuation = -0.7;
 
         for (const body of this.bodies)
         {
@@ -81,6 +86,7 @@ export class Snake extends LineRenderer
     {
         this.scene?.add(this.foodGenerator);
         this.scene?.add(this.foodParticle);
+        this.scene?.add(this.light);
     }
     update(time: Time)
     {
@@ -111,6 +117,8 @@ export class Snake extends LineRenderer
         this.moveTail(time);
         this.updateMesh();
         this.checkHitSelf();
+
+        this.light.position = vec2.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position).toVec3(0);
 
         this.camera.position = vec2.math(MathUtils.lerp)(
             this.camera.position.toVec2(),
@@ -208,6 +216,7 @@ export class Snake extends LineRenderer
             this.foodParticle.emit(10, body.toVec3());
         }
         this.destroy();
+        this.light.destroy();
     }
     get head() { return this.bodies[this.bodies.length - 1] }
     get tail() { return this.bodies[0] }

@@ -27,6 +27,7 @@ export class Light2D extends Entity
     volumnRadius: number = 1;
     lightRange: number = 10;
     lightColor: Color = Color.white;
+    intensity: number = 1;
     /** In range [-1..1] */
     attenuation: number = 0;
 

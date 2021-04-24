@@ -41,6 +41,8 @@ export class Shadow2DMaterial extends MaterialFromShader(new Shader(...ShaderSou
 
 export class Light2DCompose extends MaterialFromShader(new Shader(...ShaderSource.light2D, {
     blend: [Blending.DstColor, Blending.Zero],
+    depth: DepthTest.Disable,
+    zWrite: false,
 }))
 {
     @shaderProp("uLightPosList", "vec4[]")

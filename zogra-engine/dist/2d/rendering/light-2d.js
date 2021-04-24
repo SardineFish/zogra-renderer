@@ -19,6 +19,7 @@ class Light2D extends entity_1.Entity {
         this.volumnRadius = 1;
         this.lightRange = 10;
         this.lightColor = zogra_renderer_1.Color.white;
+        this.intensity = 1;
         /** In range [-1..1] */
         this.attenuation = 0;
         this.shadowMesh = new zogra_renderer_1.Mesh(exports.Shadow2DVertStruct);

@@ -57,6 +57,8 @@ __decorate([
 exports.Shadow2DMaterial = Shadow2DMaterial;
 class Light2DCompose extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.light2D, {
     blend: [zogra_renderer_1.Blending.DstColor, zogra_renderer_1.Blending.Zero],
+    depth: zogra_renderer_1.DepthTest.Disable,
+    zWrite: false,
 })) {
     constructor() {
         super(...arguments);

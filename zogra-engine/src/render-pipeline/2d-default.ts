@@ -83,6 +83,8 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
     prepareLights(context: RenderContext, data: RenderData)
     {
         const lightList = context.scene.getEntitiesOfType(Light2D);
+        for (let i = 0; i < this.light2DComposeMaterial.lightParamsList.length; i++)
+            this.light2DComposeMaterial.lightParamsList[i].fill(0);
         for (let i = 0; i < lightList.length; i++)
         {
             const light = lightList[i];
@@ -95,6 +97,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
             this.light2DComposeMaterial.lightParamsList[i].x = light.volumnRadius;
             this.light2DComposeMaterial.lightParamsList[i].y = light.lightRange;
             this.light2DComposeMaterial.lightParamsList[i].z = light.attenuation;
+            this.light2DComposeMaterial.lightParamsList[i].w = light.intensity;
 
             this.light2DComposeMaterial.lightColorList[i] = this.light2DComposeMaterial.lightColorList[i] || Color.white;
             this.light2DComposeMaterial.lightColorList[i].set(light.lightColor);

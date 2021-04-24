@@ -20,6 +20,7 @@ export declare class Light2D extends Entity {
     volumnRadius: number;
     lightRange: number;
     lightColor: Color;
+    intensity: number;
     /** In range [-1..1] */
     attenuation: number;
     private shadowMesh;

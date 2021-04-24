@@ -37,8 +37,8 @@ class TilemapCollider extends collider2d_1.Collider2D {
             return null;
         const pos = zogra_renderer_1.vec2.zero();
         const polygons = [];
-        for (let y = min.y; y < max.y; y += this.tilemap.chunkSize) {
-            for (let x = min.x; x < max.x; x += this.tilemap.chunkSize) {
+        for (let y = min.y; y < max.y + this.tilemap.chunkSize; y += this.tilemap.chunkSize) {
+            for (let x = min.x; x < max.x + this.tilemap.chunkSize; x += this.tilemap.chunkSize) {
                 pos.x = x;
                 pos.y = y;
                 const chunk = this.tilemap.getChunkAt(pos);

@@ -38,7 +38,7 @@ class PreviewRenderer {
     setupLight(context, data) {
         context.renderer.setGlobalUniform("uLightDir", "vec3", zogra_renderer_5.vec3(-1, 1, 0).normalize());
         context.renderer.setGlobalUniform("uAmbientSky", "color", zogra_renderer_2.rgb(.2, .2, .2));
-        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
+        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position.clone());
         context.renderer.setGlobalUniform("uLightColor", "color", zogra_renderer_2.rgb(.8, .8, .8));
     }
     renderCamera(context, data) {
@@ -51,7 +51,7 @@ class PreviewRenderer {
             context.renderer.setRenderTarget(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
+        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position.clone());
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {

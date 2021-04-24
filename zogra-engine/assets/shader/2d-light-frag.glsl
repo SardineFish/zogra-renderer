@@ -7,7 +7,7 @@ varying vec2 vUV;
 
 uniform vec4 uLightPosList[MAX_LIGHT];
 uniform vec4 uLightColorList[MAX_LIGHT];
-uniform vec4 uLightParamsList[MAX_LIGHT]; // (volumn, range, attenuation)
+uniform vec4 uLightParamsList[MAX_LIGHT]; // (volumn, range, attenuation, intensity)
 uniform sampler2D uShadowMapList[MAX_LIGHT];
 uniform int uLightCount;
 uniform vec4 uCameraParams; // (pos.x, pos.y, viewWidth, viewHgith)
@@ -38,12 +38,13 @@ float lightAttenuation(float r, float range, float volumn, float attenuation)
 void main()
 {
     vec2 worldPos = (vUV - vec2(0.5)) * uCameraParams.zw + uCameraParams.xy;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < MAX_LIGHT; i++)
     {
         float r = distance(uLightPosList[i].xy, worldPos);
         r -= uLightParamsList[i].x;
         r = r / (uLightParamsList[i].y -  uLightParamsList[i].x);
         float light = lightAttenuation(clamp(r, 0.0, 1.0), uLightParamsList[i].y, uLightParamsList[i].x, uLightParamsList[i].z);
+        light *= uLightParamsList[i].w;
         float shadow = texture2D(uShadowMapList[i], vUV.xy).r;
         light *= 1.0 - shadow;
         

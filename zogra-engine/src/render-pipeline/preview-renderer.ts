@@ -56,7 +56,7 @@ export class PreviewRenderer implements ZograRenderPipeline
     {
         context.renderer.setGlobalUniform("uLightDir", "vec3", vec3(-1, 1, 0).normalize());
         context.renderer.setGlobalUniform("uAmbientSky", "color", rgb(.2, .2, .2));
-        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
+        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position.clone());
         context.renderer.setGlobalUniform("uLightColor", "color", rgb(.8, .8, .8));
     }
 
@@ -81,7 +81,7 @@ export class PreviewRenderer implements ZograRenderPipeline
         
 
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
+        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position.clone());
 
         
 

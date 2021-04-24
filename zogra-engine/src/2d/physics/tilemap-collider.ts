@@ -46,9 +46,9 @@ export class TilemapCollider extends Collider2D
             return null;
         const pos = vec2.zero();
         const polygons = [] as Polygon[];
-        for (let y = min.y; y < max.y; y += this.tilemap.chunkSize)
+        for (let y = min.y; y < max.y + this.tilemap.chunkSize; y += this.tilemap.chunkSize)
         {
-            for (let x = min.x; x < max.x; x += this.tilemap.chunkSize)
+            for (let x = min.x; x < max.x + this.tilemap.chunkSize; x += this.tilemap.chunkSize)
             {
                 pos.x = x;
                 pos.y = y;

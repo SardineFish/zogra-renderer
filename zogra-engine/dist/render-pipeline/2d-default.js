@@ -54,6 +54,8 @@ class Default2DRenderPipeline {
     }
     prepareLights(context, data) {
         const lightList = context.scene.getEntitiesOfType(_2d_1.Light2D);
+        for (let i = 0; i < this.light2DComposeMaterial.lightParamsList.length; i++)
+            this.light2DComposeMaterial.lightParamsList[i].fill(0);
         for (let i = 0; i < lightList.length; i++) {
             const light = lightList[i];
             this.light2DComposeMaterial.lightPosList[i] = this.light2DComposeMaterial.lightPosList[i] || zogra_renderer_3.vec4.zero();
@@ -63,6 +65,7 @@ class Default2DRenderPipeline {
             this.light2DComposeMaterial.lightParamsList[i].x = light.volumnRadius;
             this.light2DComposeMaterial.lightParamsList[i].y = light.lightRange;
             this.light2DComposeMaterial.lightParamsList[i].z = light.attenuation;
+            this.light2DComposeMaterial.lightParamsList[i].w = light.intensity;
             this.light2DComposeMaterial.lightColorList[i] = this.light2DComposeMaterial.lightColorList[i] || zogra_renderer_1.Color.white;
             this.light2DComposeMaterial.lightColorList[i].set(light.lightColor);
             this.light2DComposeMaterial.shadowMapList[i] = light.getShadowMap(context, data);
