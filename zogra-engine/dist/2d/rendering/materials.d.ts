@@ -18,5 +18,6 @@ export declare class Light2DCompose extends Light2DCompose_base {
     shadowMapList: Array<Texture | null>;
     lightCount: number;
     cameraParams: vec4;
+    ambientLightColor: Color;
 }
 export {};

@@ -89,6 +89,18 @@ class Vector3 extends V3Constructor {
     clone(out = vec3.zero()) {
         return out.set(this);
     }
+    setX(x) {
+        this[0] = x;
+        return this;
+    }
+    setY(y) {
+        this[1] = y;
+        return this;
+    }
+    setZ(z) {
+        this[2] = z;
+        return this;
+    }
     toVec2() {
         return vec2_1.vec2(this[0], this[1]);
     }

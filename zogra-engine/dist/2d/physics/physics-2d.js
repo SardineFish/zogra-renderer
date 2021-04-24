@@ -25,6 +25,10 @@ class Physics2D {
             this.colliderList.length--;
         }
     }
+    /** @internal */
+    __getColliders() {
+        return this.colliderList;
+    }
     update(time) {
         var _a, _b, _c, _d, _e;
         this.updateMotion(time);

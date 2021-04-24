@@ -19,6 +19,13 @@ class Collider2D extends physics_generic_1.ColliderBase {
     off(event, listener) {
         this.__eventEmitter.on(event, listener);
     }
+    /** @internal */
+    checkCollision(other, otherMotoin) {
+        return null;
+    }
+    checkContact(other) {
+        return false;
+    }
 }
 exports.Collider2D = Collider2D;
 //# sourceMappingURL=collider2d.js.map

@@ -37,7 +37,7 @@ export declare class Vector4 extends V4Constructor implements Vector, ZograMatri
     set(v: Readonly<ArrayLike<number>>): this;
     fill(n: number): this;
     static math<F extends (...args: number[]) => number>(func: F): (...args: VecMathArgs<Parameters<F>, Readonly<vec4>>) => vec4;
-    __to(type: Function): Vector2 | Vector4 | Vector3;
+    __to(type: Function): Vector3 | Vector4 | Vector2;
 }
 export declare function vec4(x: number): Vector4;
 export declare namespace vec4 {
@@ -49,51 +49,51 @@ export declare namespace vec4 {
     var normalize: {
         (args_0: Readonly<Vector4>): Vector4;
         (out: Vector4, args_0: Readonly<Vector4>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
         (out: Vector4, args_0: ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
     };
     var plus: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
+        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
         (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
     var minus: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
+        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
         (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
     var mul: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
+        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
         (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
     var div: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
+        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
         (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
     var set: {
         (args_0: Readonly<Vector4>): Vector4;
         (out: Vector4, args_0: Readonly<Vector4>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
         (out: Vector4, args_0: ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
     };
     var fill: {
         (args_0: number): Vector4;
         (out: Vector4, args_0: number): Vector4;
-        (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
         (out: Vector4, args_0: number): Vector4;
         (args_0: number): Vector4;
+        (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
     };
 }
 export declare function vec4(x: number, y: number, z: number, w: number): Vector4;
@@ -106,51 +106,51 @@ export declare namespace vec4 {
     var normalize: {
         (args_0: Readonly<Vector4>): Vector4;
         (out: Vector4, args_0: Readonly<Vector4>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
         (out: Vector4, args_0: ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
     };
     var plus: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
+        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
         (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
     var minus: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
+        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
         (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
     var mul: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
+        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
         (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
     var div: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
+        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector3 | Vector4 | Vector2>): Vector4;
         (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
     };
     var set: {
         (args_0: Readonly<Vector4>): Vector4;
         (out: Vector4, args_0: Readonly<Vector4>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
         (out: Vector4, args_0: ArrayLike<number>): Vector4;
         (args_0: ArrayLike<number>): Vector4;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
     };
     var fill: {
         (args_0: number): Vector4;
         (out: Vector4, args_0: number): Vector4;
-        (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
         (out: Vector4, args_0: number): Vector4;
         (args_0: number): Vector4;
+        (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
     };
 }
 export {};

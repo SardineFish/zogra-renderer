@@ -12,6 +12,7 @@ class Default2DRenderPipeline {
     constructor() {
         this.debuglayer = new debug_layer_1.DebugLayerRenderer();
         this.light2DComposeMaterial = new _2d_1.Light2DCompose();
+        this.ambientLightColor = new zogra_renderer_1.Color(0.2, 0.2, 0.2, 1);
         global_1.Debug(this.debuglayer);
     }
     render(renderer, cameras) {
@@ -71,6 +72,7 @@ class Default2DRenderPipeline {
         this.light2DComposeMaterial.cameraParams.y = data.camera.position.y;
         this.light2DComposeMaterial.cameraParams.z = data.camera.viewHeight * 2 * data.camera.aspectRatio;
         this.light2DComposeMaterial.cameraParams.w = data.camera.viewHeight * 2;
+        this.light2DComposeMaterial.ambientLightColor = this.ambientLightColor;
     }
 }
 exports.Default2DRenderPipeline = Default2DRenderPipeline;

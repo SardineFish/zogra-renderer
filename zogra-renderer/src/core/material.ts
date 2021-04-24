@@ -233,7 +233,7 @@ export class Material extends Asset
                 value: undefined as any,
                 uploaded: undefined as any,
                 location: this.shader.uniformLocation(uniformName),
-                buffer: new Array(64),
+                buffer: new Array(),
             }
         }
         else if (type.endsWith("[]"))
@@ -314,30 +314,30 @@ export class Material extends Asset
                 gl.uniformMatrix4fv(prop.location, false, value as mat4);
                 break;
             case "int[]":
-                gl.uniform1iv(prop.location, value as number[]);
+                (value as number[]).length && gl.uniform1iv(prop.location, value as number[]);
                 break;
             case "float[]":
-                gl.uniform1fv(prop.location, value as number[]);
+                (value as number[]).length && gl.uniform1fv(prop.location, value as number[]);
                 break;
             case "vec2[]": {
                 const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec2[]">, 2, value as vec2[]);
-                gl.uniform2fv(prop.location, (prop as PropertyInfo<"vec2[]">).buffer, 0, length);
+                length && gl.uniform2fv(prop.location, (prop as PropertyInfo<"vec2[]">).buffer, 0, length);
                 break;
             }
             case "vec3[]": {
                 const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec3[]">, 3, value as vec3[]);
-                gl.uniform3fv(prop.location, (prop as PropertyInfo<"vec3[]">).buffer, 0, length);
+                length && gl.uniform3fv(prop.location, (prop as PropertyInfo<"vec3[]">).buffer, 0, length);
                 break;
             }
             case "color[]":
             case "vec4[]": {
                 const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec4[]">, 4, value as vec4[]);
-                gl.uniform4fv(prop.location, (prop as PropertyInfo<"vec4[]">).buffer, 0, length);
+                length && gl.uniform4fv(prop.location, (prop as PropertyInfo<"vec4[]">).buffer, 0, length);
                 break;
             }
             case "mat4[]": {
                 const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec4[]">, 16, value as mat4[]);
-                gl.uniform4fv(prop.location, (prop as PropertyInfo<"mat4[]">).buffer, 0, length);
+                length && gl.uniform4fv(prop.location, (prop as PropertyInfo<"mat4[]">).buffer, 0, length);
                 break;
             }
             case "tex2d": {

@@ -11,6 +11,7 @@ uniform vec4 uLightParamsList[MAX_LIGHT]; // (volumn, range, attenuation)
 uniform sampler2D uShadowMapList[MAX_LIGHT];
 uniform int uLightCount;
 uniform vec4 uCameraParams; // (pos.x, pos.y, viewWidth, viewHgith)
+uniform vec4 uAmbientLightColor;
 
 // out vec4 fragColor;
 
@@ -40,12 +41,14 @@ void main()
     for (int i = 0; i < 4; i++)
     {
         float r = distance(uLightPosList[i].xy, worldPos);
-        r = r / uLightParamsList[i].y;
+        r -= uLightParamsList[i].x;
+        r = r / (uLightParamsList[i].y -  uLightParamsList[i].x);
         float light = lightAttenuation(clamp(r, 0.0, 1.0), uLightParamsList[i].y, uLightParamsList[i].x, uLightParamsList[i].z);
         float shadow = texture2D(uShadowMapList[i], vUV.xy).r;
         light *= 1.0 - shadow;
         
         gl_FragColor += vec4(light) * uLightColorList[i].rgba;
     }
+    gl_FragColor += uAmbientLightColor;
     
 }

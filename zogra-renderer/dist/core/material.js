@@ -136,7 +136,7 @@ class Material extends asset_1.Asset {
                 value: undefined,
                 uploaded: undefined,
                 location: this.shader.uniformLocation(uniformName),
-                buffer: new Array(64),
+                buffer: new Array(),
             };
         }
         else if (type.endsWith("[]"))
@@ -207,30 +207,30 @@ class Material extends asset_1.Asset {
                 gl.uniformMatrix4fv(prop.location, false, value);
                 break;
             case "int[]":
-                gl.uniform1iv(prop.location, value);
+                value.length && gl.uniform1iv(prop.location, value);
                 break;
             case "float[]":
-                gl.uniform1fv(prop.location, value);
+                value.length && gl.uniform1fv(prop.location, value);
                 break;
             case "vec2[]": {
                 const length = this.setVectorUniformBuffer(prop, 2, value);
-                gl.uniform2fv(prop.location, prop.buffer, 0, length);
+                length && gl.uniform2fv(prop.location, prop.buffer, 0, length);
                 break;
             }
             case "vec3[]": {
                 const length = this.setVectorUniformBuffer(prop, 3, value);
-                gl.uniform3fv(prop.location, prop.buffer, 0, length);
+                length && gl.uniform3fv(prop.location, prop.buffer, 0, length);
                 break;
             }
             case "color[]":
             case "vec4[]": {
                 const length = this.setVectorUniformBuffer(prop, 4, value);
-                gl.uniform4fv(prop.location, prop.buffer, 0, length);
+                length && gl.uniform4fv(prop.location, prop.buffer, 0, length);
                 break;
             }
             case "mat4[]": {
                 const length = this.setVectorUniformBuffer(prop, 16, value);
-                gl.uniform4fv(prop.location, prop.buffer, 0, length);
+                length && gl.uniform4fv(prop.location, prop.buffer, 0, length);
                 break;
             }
             case "tex2d": {

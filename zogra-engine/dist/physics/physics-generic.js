@@ -6,6 +6,7 @@ class UnknownPhysics {
     __addCollider() { }
     /** @internal */
     __removeCollider() { }
+    __getColliders() { return []; }
     update() { }
 }
 exports.UnknownPhysics = UnknownPhysics;

@@ -36,6 +36,7 @@ class Shadow2DMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_ren
         p1: "aP1",
     },
     cull: zogra_renderer_1.Culling.Back,
+    blend: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.One]
 })) {
     constructor() {
         super(...arguments);
@@ -55,7 +56,7 @@ __decorate([
 ], Shadow2DMaterial.prototype, "lightRange", void 0);
 exports.Shadow2DMaterial = Shadow2DMaterial;
 class Light2DCompose extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.light2D, {
-    blend: [zogra_renderer_1.Blending.SrcColor, zogra_renderer_1.Blending.Zero],
+    blend: [zogra_renderer_1.Blending.DstColor, zogra_renderer_1.Blending.Zero],
 })) {
     constructor() {
         super(...arguments);
@@ -65,6 +66,7 @@ class Light2DCompose extends zogra_renderer_1.MaterialFromShader(new zogra_rende
         this.shadowMapList = [];
         this.lightCount = 0;
         this.cameraParams = zogra_renderer_1.vec4.zero();
+        this.ambientLightColor = zogra_renderer_1.Color.white;
     }
 }
 __decorate([
@@ -85,5 +87,8 @@ __decorate([
 __decorate([
     zogra_renderer_1.shaderProp("uCameraParams", "vec4")
 ], Light2DCompose.prototype, "cameraParams", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uAmbientLightColor", "color")
+], Light2DCompose.prototype, "ambientLightColor", void 0);
 exports.Light2DCompose = Light2DCompose;
 //# sourceMappingURL=materials.js.map

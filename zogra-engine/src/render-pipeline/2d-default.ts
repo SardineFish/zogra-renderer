@@ -22,6 +22,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
 {
     debuglayer = new DebugLayerRenderer();
     light2DComposeMaterial = new Light2DCompose();
+    ambientLightColor: Color = new Color(0.2, 0.2, 0.2, 1);
 
     constructor()
     {
@@ -105,6 +106,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
         this.light2DComposeMaterial.cameraParams.y = data.camera.position.y;
         this.light2DComposeMaterial.cameraParams.z = data.camera.viewHeight * 2 * data.camera.aspectRatio;
         this.light2DComposeMaterial.cameraParams.w = data.camera.viewHeight * 2;
+        this.light2DComposeMaterial.ambientLightColor = this.ambientLightColor;
     }
 
 }

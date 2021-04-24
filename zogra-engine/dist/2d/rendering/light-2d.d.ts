@@ -27,7 +27,8 @@ export declare class Light2D extends Entity {
     private shadowMat;
     constructor();
     getShadowMap(context: RenderContext, data: RenderData): RenderTexture;
-    updateShadowMesh(): void;
+    updateShadowMesh(context: RenderContext): void;
+    private __tempVectors;
     private appendLineShadow;
-    private circleTangentThroughPoint;
+    private appendVerts;
 }

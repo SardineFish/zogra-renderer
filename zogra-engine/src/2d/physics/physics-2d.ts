@@ -34,6 +34,12 @@ export class Physics2D<Collider extends Collider2D = Collider2D> implements IPhy
         }
     }
 
+    /** @internal */
+    __getColliders<T extends ICollider = Collider2D>(): T[]
+    {
+        return this.colliderList as unknown as T[];
+    }
+
     update(time: Time)
     {
         this.updateMotion(time);

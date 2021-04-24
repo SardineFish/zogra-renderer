@@ -12,6 +12,9 @@ export interface IPhysicsSystem
     /** @internal */
     __removeCollider(collider: ICollider): void;
 
+    /** @internal */
+    __getColliders<T extends ICollider>(): T[];
+
     update(time: Readonly<Time>): void;
 }
 
@@ -24,6 +27,8 @@ export class UnknownPhysics implements IPhysicsSystem
 
     /** @internal */
     __removeCollider() { }
+
+    __getColliders() { return [] }
 
     update() { }
 }

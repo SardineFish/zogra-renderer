@@ -124,6 +124,22 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
         return out.set(this);
     }
 
+    setX(x: number): this
+    {
+        this[0] = x;
+        return this;
+    }
+    setY(y: number): this
+    {
+        this[1] = y;
+        return this;
+    }
+    setZ(z: number): this
+    {
+        this[2] = z;
+        return this;
+    }
+
     toVec2()
     {
         return vec2(this[0], this[1]);

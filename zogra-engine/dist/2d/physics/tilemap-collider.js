@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TilemapCollider = void 0;
+const zogra_renderer_1 = require("zogra-renderer");
 const tilemap_1 = require("../rendering/tilemap");
 const box_collider_1 = require("./box-collider");
 const collider2d_1 = require("./collider2d");
@@ -30,6 +31,21 @@ class TilemapCollider extends collider2d_1.Collider2D {
             return tilemap_box_1.checkContactTilemapBox(this, other);
         console.warn("Unimplemented contact check");
         return false;
+    }
+    getPolygons(min, max) {
+        if (!this.tilemap)
+            return null;
+        const pos = zogra_renderer_1.vec2.zero();
+        const polygons = [];
+        for (let y = min.y; y < max.y; y += this.tilemap.chunkSize) {
+            for (let x = min.x; x < max.x; x += this.tilemap.chunkSize) {
+                pos.x = x;
+                pos.y = y;
+                const chunk = this.tilemap.getChunkAt(pos);
+                polygons.push(...chunk.getPolygons());
+            }
+        }
+        return polygons;
     }
 }
 exports.TilemapCollider = TilemapCollider;

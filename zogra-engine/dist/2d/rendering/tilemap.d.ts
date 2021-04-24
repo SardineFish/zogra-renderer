@@ -31,6 +31,7 @@ export declare class Chunk {
     readonly basePos: Readonly<vec2>;
     mesh: Mesh;
     protected tiles: Array<TileData | null>;
+    private polygons;
     private dirty;
     constructor(basePos: vec2, chunkSize: number);
     /**
@@ -45,6 +46,7 @@ export declare class Chunk {
      * @param tile
      */
     setTile(offset: vec2, tile: TileData | null): void;
+    private enumPolygons;
 }
 export interface TileData {
     collide: boolean;

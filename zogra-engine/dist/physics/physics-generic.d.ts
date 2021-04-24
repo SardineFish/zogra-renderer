@@ -8,6 +8,7 @@ export declare type IPhysicsSystemClass<T extends IPhysicsSystemClass<T>> = (new
     current(scene: Scene): InstanceType<T>;
 };
 export declare class UnknownPhysics implements IPhysicsSystem {
+    __getColliders(): never[];
     update(): void;
 }
 export interface ICollider {

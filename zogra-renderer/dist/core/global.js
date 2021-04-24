@@ -15,7 +15,7 @@ exports.GLContext = GLContext;
 let ctx;
 let debugProvider = new class EmptyDebugProvider extends debug_1.DebugProvider {
     drawLine(start, end, color) {
-        console.warn("No debug provider.");
+        // console.warn("No debug provider.");
     }
 };
 const setGlobalContext = (_ctx) => ctx = _ctx;

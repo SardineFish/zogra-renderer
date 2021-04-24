@@ -25,6 +25,7 @@ export class Shadow2DMaterial extends MaterialFromShader(new Shader(...ShaderSou
         p1: "aP1",
     },
     cull: Culling.Back,
+    blend: [Blending.One, Blending.One]
 }))
 {
     @shaderProp("uLightPos", "vec2")
@@ -39,7 +40,7 @@ export class Shadow2DMaterial extends MaterialFromShader(new Shader(...ShaderSou
 
 
 export class Light2DCompose extends MaterialFromShader(new Shader(...ShaderSource.light2D, {
-    blend: [Blending.SrcColor, Blending.Zero],
+    blend: [Blending.DstColor, Blending.Zero],
 }))
 {
     @shaderProp("uLightPosList", "vec4[]")
@@ -59,4 +60,7 @@ export class Light2DCompose extends MaterialFromShader(new Shader(...ShaderSourc
 
     @shaderProp("uCameraParams", "vec4")
     cameraParams: vec4 = vec4.zero();
+
+    @shaderProp("uAmbientLightColor", "color")
+    ambientLightColor = Color.white;
 }

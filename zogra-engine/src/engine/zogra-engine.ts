@@ -4,6 +4,7 @@ import { Camera } from "./camera";
 import { ZograRenderer } from "zogra-renderer";
 import { EventEmitter, EventDefinitions, IEventSource, EventKeys } from "zogra-renderer";
 import { UnknownPhysics } from "../physics/physics-generic";
+import { ConstructorType } from "../utils/util";
 
 interface GameTime
 {
@@ -22,11 +23,11 @@ interface ZograEngineEvents
     "scene-change": (scene: Scene, previous: Scene) => void;
 }
 
-export class ZograEngine implements IEventSource<ZograEngineEvents>
+export class ZograEngine<RenderPipeline extends ZograRenderPipeline = PreviewRenderer> implements IEventSource<ZograEngineEvents>
 {
     private _scene: Scene;
     renderer: ZograRenderer;
-    renderPipeline: ZograRenderPipeline;
+    renderPipeline: RenderPipeline;
     eventEmitter: EventEmitter<ZograEngineEvents>;
     fixedDeltaTime = false;
     private _time: Time = { deltaTime: 0, time: 0 };
@@ -38,7 +39,7 @@ export class ZograEngine implements IEventSource<ZograEngineEvents>
         this._scene = value;
         this.eventEmitter.emit("scene-change", value, previous);
     }
-    constructor(canvas:HTMLCanvasElement, RenderPipeline: ZograRenderPipelineConstructor = PreviewRenderer)
+    constructor(canvas:HTMLCanvasElement, RenderPipeline: ConstructorType<RenderPipeline, [ZograRenderer]> = PreviewRenderer as any)
     {
         this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);

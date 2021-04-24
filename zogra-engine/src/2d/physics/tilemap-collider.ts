@@ -5,6 +5,7 @@ import { Tilemap } from "../rendering/tilemap";
 import { BoxCollider } from "./box-collider";
 import { Collider2D, CollisionInfo2D } from "./collider2d";
 import { checkCollisionTilemapBox, checkContactTilemapBox } from "./collision/tilemap-box";
+import { Polygon } from "./polygon";
 
 export class TilemapCollider extends Collider2D
 {
@@ -37,5 +38,24 @@ export class TilemapCollider extends Collider2D
         
         console.warn("Unimplemented contact check");
         return false;
+    }
+
+    getPolygons(min: Readonly<vec2>, max: Readonly<vec2>)
+    {
+        if (!this.tilemap)
+            return null;
+        const pos = vec2.zero();
+        const polygons = [] as Polygon[];
+        for (let y = min.y; y < max.y; y += this.tilemap.chunkSize)
+        {
+            for (let x = min.x; x < max.x; x += this.tilemap.chunkSize)
+            {
+                pos.x = x;
+                pos.y = y;
+                const chunk = this.tilemap.getChunkAt(pos);
+                polygons.push(...chunk.getPolygons());
+            }
+        }
+        return polygons;
     }
 }

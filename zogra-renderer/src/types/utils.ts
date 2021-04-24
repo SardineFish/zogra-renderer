@@ -14,9 +14,9 @@ type MapArrayArgs<T> =
 type WrappedFunction<TOut, TReturn, TArgs extends any[]> = {
     (...args: { [key in keyof TArgs]: Readonly<TArgs[key]> }): TReturn,
     (out: TOut, ...args: { [key in keyof TArgs]: Readonly<TArgs[key]> }): TReturn,
-    (out: ArrayLike<number>, ...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): null extends TReturn ? ArrayLike<number> | null : ArrayLike<number>,
     (out: TOut, ...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): TReturn,
     (...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): TReturn,
+    (out: ArrayLike<number>, ...args: { [key in keyof TArgs]: MapArrayArgs<TArgs[key]> }): null extends TReturn ? ArrayLike<number> | null : ArrayLike<number>,
 };
 
 
