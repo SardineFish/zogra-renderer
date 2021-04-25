@@ -1,4 +1,4 @@
-import { Camera, Color, Default2DRenderPipeline, InputManager, Physics2D, Projection, TextureFormat, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
+import { Bloom, Camera, Color, Default2DRenderPipeline, InputManager, Physics2D, Projection, TextureFormat, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
 import "../css/base.css";
 import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";
@@ -15,7 +15,7 @@ import { loadSnakeAssets } from "./food";
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
 engine.fixedDeltaTime = true;
-engine.renderPipeline.ambientLightColor = new Color(0.3, .3, .3, 1);
+engine.renderPipeline.ambientLightColor = new Color(.3, .3, .3, 1);
 engine.renderPipeline.msaa = 4;
 engine.renderPipeline.renderFormat = TextureFormat.RGBA16F;
 const input = new InputManager();
@@ -30,6 +30,20 @@ const scene = engine.scene;
 (window as any).scene = scene;
 scene.physics = new Physics2D();
 
+
+const camera = new Camera();
+camera.position = vec3(0, 0, 20);
+camera.projection = Projection.Orthographic;
+camera.viewHeight = 10;
+scene.add(camera);
+(window as any).camera = camera;
+
+const bloom = new Bloom();
+bloom.threshold = 1.0;
+bloom.softThreshold = 0.5;
+
+camera.postprocess.push(bloom);
+
 async function init()
 {
     await GameMap.loadMapAssets();
@@ -37,13 +51,6 @@ async function init()
 
     const tilemap = new GameMap();
     scene.add(tilemap);
-
-    const camera = new Camera();
-    camera.position = vec3(0, 0, 20);
-    camera.projection = Projection.Orthographic;
-    camera.viewHeight = 10;
-    scene.add(camera);
-    (window as any).camera = camera;
 
     let snake: Snake;
     while (true)
