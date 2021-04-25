@@ -61,13 +61,17 @@ export class FrameBuffer extends GPUAsset implements IFrameBuffer
     readonly size: vec2;
     get width() { return this.size.x }
     get height() { return this.size.y }
-    private colorAttachments: Array<ColorAttachment | null> = [];
-    private depthAttachment: DepthAttachment | null = null;
+
     private frameBuffer: WebGLFramebuffer = null as any;
+    private _colorAttachments: Array<ColorAttachment | null> = [];
+    private _depthAttachment: DepthAttachment | null = null;
     private activeBuffers: number[] = [];
     private dirty = true;
 
     static CanvasBuffer = Object.freeze(new CanvasBuffer());
+
+    get colorAttachments(): ReadonlyArray<ColorAttachment | null> { return this._colorAttachments }
+    get depthAttachment() { return this._depthAttachment }
 
     constructor(width = 0, height = 0, ctx = GlobalContext())
     {
@@ -77,11 +81,18 @@ export class FrameBuffer extends GPUAsset implements IFrameBuffer
         this.tryInit(false);
     }
 
-    addColorAttachment(attachment: ColorAttachment, attachPoit: number = this.colorAttachments.length)
+    /** @internal */
+    glFBO()
+    {
+        this.tryInit(true);
+        return this.frameBuffer;
+    }
+
+    addColorAttachment(attachment: ColorAttachment, attachPoit: number = this._colorAttachments.length)
     {
         if (attachment.width !== this.size.x || attachment.height !== this.size.y)
             console.warn(`Color attachment size [${attachment.width}, ${attachment.height}] missmatch with framebuffer.`);
-        this.colorAttachments[attachPoit] = attachment;
+        this._colorAttachments[attachPoit] = attachment;
         this.dirty = true;
     }
 
@@ -89,7 +100,7 @@ export class FrameBuffer extends GPUAsset implements IFrameBuffer
     {
         if (attachment.width !== this.size.x || attachment.height !== this.size.y)
             console.warn(`Depth attachment size [${attachment.width}, ${attachment.height}] missmatch with framebuffer.`);
-        this.depthAttachment = attachment;
+        this._depthAttachment = attachment;
         this.dirty = true;
     }
 
@@ -97,8 +108,8 @@ export class FrameBuffer extends GPUAsset implements IFrameBuffer
     {
         this.size.x = width;
         this.size.y = height;
-        this.colorAttachments = [];
-        this.depthAttachment = null;
+        this._colorAttachments = [];
+        this._depthAttachment = null;
         this.dirty = true;
     }
 
@@ -117,19 +128,19 @@ export class FrameBuffer extends GPUAsset implements IFrameBuffer
         
         this.activeBuffers = [];
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-        for (let i = 0; i < this.colorAttachments.length; i++)
+        for (let i = 0; i < this._colorAttachments.length; i++)
         {
-            if (this.colorAttachments[i])
+            if (this._colorAttachments[i])
             {
-                (this.colorAttachments[i] as ColorAttachment).bindFramebuffer(i);
+                (this._colorAttachments[i] as ColorAttachment).bindFramebuffer(i);
                 this.activeBuffers.push(gl.COLOR_ATTACHMENT0 + i);
             }
             else
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.RENDERBUFFER, null);
         }
-        if (this.depthAttachment)
+        if (this._depthAttachment)
         {
-            this.depthAttachment.bindFramebuffer();
+            this._depthAttachment.bindFramebuffer();
             this.activeBuffers.push(gl.DEPTH_ATTACHMENT);
         }
         else

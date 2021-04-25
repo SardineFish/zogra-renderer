@@ -24,6 +24,7 @@ class ZograRenderer {
         this.globalUniforms = new Map();
         this.globalTextures = new Map();
         this.framebufferPool = new object_pool_1.ObjectPool((w, h) => new frame_buffer_1.FrameBuffer(w, h));
+        this.blitFramebuffer = [new frame_buffer_1.FrameBuffer(), new frame_buffer_1.FrameBuffer()];
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
@@ -115,6 +116,29 @@ class ZograRenderer {
         framebuffer.__isTemp = true;
         framebuffer.reset(width, height);
         return framebuffer;
+    }
+    blitCopy(src, dst) {
+        const gl = this.gl;
+        const [readBuffer, writeBuffer] = this.blitFramebuffer;
+        readBuffer.reset(src.width, src.height);
+        readBuffer.addColorAttachment(src);
+        readBuffer.bind();
+        writeBuffer.reset(src.width, src.height);
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, readBuffer.glFBO());
+        // gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderBuffer.glBuf());
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, writeBuffer.glFBO());
+        // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture.glTex(), 0);
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readBuffer.glFBO());
+        src instanceof texture_1.RenderTexture
+            ? gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glTex(), 0)
+            : gl.framebufferRenderbuffer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glBuf());
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, writeBuffer.glFBO());
+        dst instanceof texture_1.RenderTexture
+            ? gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glTex(), 0)
+            : gl.framebufferRenderbuffer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glBuf());
+        gl.blitFramebuffer(0, 0, src.width, src.height, 0, 0, dst.width, dst.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
     }
     clear(color = color_1.Color.black, clearDepth = true) {
         this.gl.clearColor(color.r, color.g, color.b, color.a);

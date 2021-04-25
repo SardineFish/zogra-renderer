@@ -11,7 +11,7 @@ class RenderBuffer extends asset_1.GPUAsset {
         super(ctx);
         this.multiSampling = 0;
         this.format = texture_format_1.TextureFormat.RGBA8;
-        this.glBuf = null;
+        this._glBuf = null;
         this.size = vec2_1.vec2(width, height);
         this.format = format;
         this.multiSampling = multiSampling;
@@ -21,17 +21,22 @@ class RenderBuffer extends asset_1.GPUAsset {
     set width(w) { this.size.x = w; }
     get height() { return this.size.y; }
     set height(h) { this.size.y = h; }
+    /** @internal */
+    glBuf() {
+        this.tryInit(true);
+        return this._glBuf;
+    }
     updateParams() {
         this.tryInit(true);
         const gl = this.ctx.gl;
-        gl.bindRenderbuffer(gl.RENDERBUFFER, this.glBuf);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this._glBuf);
         gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
     }
     init() {
         var _a;
         const gl = this.ctx.gl;
-        this.glBuf = (_a = gl.createRenderbuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer.");
-        gl.bindRenderbuffer(gl.RENDERBUFFER, this.glBuf);
+        this._glBuf = (_a = gl.createRenderbuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer.");
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this._glBuf);
         gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
         gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         return true;
@@ -39,12 +44,12 @@ class RenderBuffer extends asset_1.GPUAsset {
     bindFramebuffer(attachment) {
         this.tryInit(true);
         const gl = this.ctx.gl;
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.RENDERBUFFER, this.glBuf);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.RENDERBUFFER, this._glBuf);
     }
     destroy() {
         super.destroy();
         const gl = this.ctx.gl;
-        gl.deleteRenderbuffer(this.glBuf);
+        gl.deleteRenderbuffer(this._glBuf);
     }
 }
 exports.RenderBuffer = RenderBuffer;

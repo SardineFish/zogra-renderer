@@ -10,10 +10,12 @@ var RenderOrder;
     RenderOrder[RenderOrder["FarToNear"] = 1] = "FarToNear";
 })(RenderOrder = exports.RenderOrder || (exports.RenderOrder = {}));
 class RenderData {
-    constructor(camera, scene) {
+    constructor(camera, output, scene) {
         this.visibleObjects = [];
         this.visibleLights = [];
         this.camera = camera;
+        this.scene = scene;
+        this.cameraOutput = output;
         this.visibleLights = scene.getEntitiesOfType(engine_2.Light);
         this.visibleObjects = scene.getEntitiesOfType(engine_1.RenderObject);
     }

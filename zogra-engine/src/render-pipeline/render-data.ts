@@ -2,7 +2,7 @@ import { Camera } from "../engine/engine";
 import { RenderObject } from "../engine/engine";
 import { Light } from "../engine/engine";
 import { Scene } from "../engine/engine";
-import { vec3, Vector3 } from "zogra-renderer";
+import { FrameBuffer, IFrameBuffer, vec3, Vector3 } from "zogra-renderer";
 import { dot } from "zogra-renderer";
 import { mat4 } from "zogra-renderer";
 import { Entity } from "../engine/engine";
@@ -16,11 +16,15 @@ export enum RenderOrder
 export class RenderData
 {
     camera: Camera;
+    scene: Scene;
+    cameraOutput: FrameBuffer;
     private visibleObjects: RenderObject[] = [];
     private visibleLights: Light[] = [];
-    constructor(camera: Camera, scene: Scene)
+    constructor(camera: Camera, output: FrameBuffer, scene: Scene)
     {
         this.camera = camera;
+        this.scene = scene;
+        this.cameraOutput = output;
         this.visibleLights = scene.getEntitiesOfType(Light);
         this.visibleObjects = scene.getEntitiesOfType(RenderObject);
     }

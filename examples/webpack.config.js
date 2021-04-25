@@ -13,6 +13,7 @@ module.exports = {
         "snake": "./src/snake/index.ts",
         "particle": "./src/particle.ts",
         "light-2d": "./src/light-2d.ts",
+        "render-buffer": "./src/render-buffer.ts",
     },
     output: {
         path: path.resolve("./dist"),
@@ -83,7 +84,7 @@ module.exports = {
             },
         ]
     },
-    plugins: ["generic", "life-game", "engine-test", "fbx-loader", "tilemap", "snake", "particle", "light-2d"].map(chunk => new HtmlWebpackPlugin({
+    plugins: ["generic", "life-game", "engine-test", "fbx-loader", "tilemap", "snake", "particle", "light-2d", "render-buffer"].map(chunk => new HtmlWebpackPlugin({
         filename: `${chunk}.html`,
         template: "html/base.html",
         inject: true,

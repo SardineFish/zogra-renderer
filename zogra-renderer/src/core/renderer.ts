@@ -21,6 +21,7 @@ import { div } from "../types/math";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { BufferStructure, GLArrayBuffer } from "./array-buffer";
 import { ObjectPool } from "../utils/object-pool";
+import { RenderBuffer } from "./render-buffer";
 
 interface TempFramebuffer extends FrameBuffer
 {
@@ -47,6 +48,7 @@ export class ZograRenderer
     private globalUniforms = new Map<string, GlobalUniform>();
     private globalTextures = new Map<string, GlobalTexture>();
     private framebufferPool = new ObjectPool<FrameBuffer, [number, number]>((w, h) => new FrameBuffer(w, h));
+    private blitFramebuffer = [new FrameBuffer(), new FrameBuffer()];
 
     private helperAssets: {
         clipBlitMesh: Mesh,
@@ -180,6 +182,41 @@ export class ZograRenderer
         framebuffer.reset(width, height);
         return framebuffer;
     }
+
+    blitCopy(src: RenderBuffer | RenderTexture, dst: RenderBuffer | RenderTexture)
+    {
+        const gl = this.gl;
+        const [readBuffer, writeBuffer] = this.blitFramebuffer;
+        readBuffer.reset(src.width, src.height);
+        readBuffer.addColorAttachment(src);
+        readBuffer.bind();
+        writeBuffer.reset(src.width, src.height);
+
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, readBuffer.glFBO());
+        // gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderBuffer.glBuf());
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, writeBuffer.glFBO());
+        // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture.glTex(), 0);
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readBuffer.glFBO());
+        src instanceof RenderTexture
+            ? gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glTex(), 0)
+            : gl.framebufferRenderbuffer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glBuf());
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, writeBuffer.glFBO());
+        dst instanceof RenderTexture
+            ? gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glTex(), 0)
+            : gl.framebufferRenderbuffer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glBuf());
+
+
+        gl.blitFramebuffer(
+            0, 0, src.width, src.height,
+            0, 0, dst.width, dst.height,
+            gl.COLOR_BUFFER_BIT,
+            gl.NEAREST
+        );
+
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+    }
+
 
     clear(color = Color.black, clearDepth = true)
     {

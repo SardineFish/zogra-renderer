@@ -19,7 +19,7 @@ var Projection;
 class Camera extends entity_1.Entity {
     constructor(ctx = zogra_renderer_2.GlobalContext()) {
         super();
-        this.output = zogra_renderer_1.FrameBuffer.CanvasBuffer;
+        this.output = null;
         this.FOV = 30;
         this.near = 0.3;
         this.far = 1000;
@@ -73,7 +73,7 @@ class Camera extends entity_1.Entity {
         return zogra_renderer_7.vec3(p[0], p[1], p[2]);
     }
     screenToViewport(pos) {
-        if (this.output === zogra_renderer_1.FrameBuffer.CanvasBuffer)
+        if (this.output === null)
             return zogra_renderer_5.div(pos, zogra_renderer_3.vec2(this.ctx.width, this.ctx.height));
         else if (this.output instanceof zogra_renderer_1.RenderTexture) {
             return zogra_renderer_5.div(pos, zogra_renderer_3.vec2(this.output.width, this.output.height));

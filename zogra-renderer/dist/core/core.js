@@ -21,6 +21,7 @@ __exportStar(require("./asset"), exports);
 __exportStar(require("./lines"), exports);
 __exportStar(require("./event"), exports);
 __exportStar(require("./array-buffer"), exports);
+__exportStar(require("./render-buffer"), exports);
 __exportStar(require("./frame-buffer"), exports);
 __exportStar(require("./debug"), exports);
 var texture_format_1 = require("./texture-format");

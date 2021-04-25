@@ -11,6 +11,7 @@ import { UniformType, UniformValueType } from "./types";
 import { Lines } from "./lines";
 import { Rect } from "../types/rect";
 import { BufferStructure, GLArrayBuffer } from "./array-buffer";
+import { RenderBuffer } from "./render-buffer";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
     gl: WebGL2RenderingContext;
@@ -27,6 +28,7 @@ export declare class ZograRenderer {
     private globalUniforms;
     private globalTextures;
     private framebufferPool;
+    private blitFramebuffer;
     private helperAssets;
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number);
     use(): void;
@@ -38,6 +40,7 @@ export declare class ZograRenderer {
     setFramebuffer(colorAttachments: ColorAttachment[], depthAttachment?: DepthAttachment): void;
     private detachCurrentFramebuffer;
     private getTempFramebuffer;
+    blitCopy(src: RenderBuffer | RenderTexture, dst: RenderBuffer | RenderTexture): void;
     clear(color?: Color, clearDepth?: boolean): void;
     blit(src: Texture | null, dst: IFrameBuffer | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
     private useShader;

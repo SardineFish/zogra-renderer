@@ -8,6 +8,7 @@ const asset_1 = require("./asset");
 const shaders_1 = require("../builtin-assets/shaders");
 const vec2_1 = require("../types/vec2");
 const image_sizing_1 = require("../utils/image-sizing");
+const frame_buffer_1 = require("./frame-buffer");
 var FilterMode;
 (function (FilterMode) {
     FilterMode[FilterMode["Linear"] = WebGL2RenderingContext.LINEAR] = "Linear";
@@ -216,6 +217,12 @@ class RenderTexture extends TextureBase {
         this.create();
         const gl = this.ctx.gl;
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, this._glTex, 0);
+    }
+    createFramebuffer() {
+        this.create();
+        const fbo = new frame_buffer_1.FrameBuffer(this.width, this.height);
+        fbo.addColorAttachment(this, 0);
+        return fbo;
     }
 }
 exports.RenderTexture = RenderTexture;

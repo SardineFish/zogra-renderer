@@ -30,7 +30,7 @@ class Light2D extends entity_1.Entity {
     getShadowMap(context, data) {
         if (!this.shadowMap)
             this.shadowMap = new zogra_renderer_1.RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, zogra_renderer_1.TextureFormat.R8, zogra_renderer_1.FilterMode.Linear);
-        this.updateShadowMesh(context);
+        this.updateShadowMesh(context, data);
         context.renderer.setFramebuffer(this.shadowMap);
         context.renderer.clear(zogra_renderer_1.Color.black);
         this.shadowMat.lightPos.set(this.position);
@@ -40,13 +40,13 @@ class Light2D extends entity_1.Entity {
         // context.renderer.blit(this.shadowMap, RenderTarget.CanvasTarget);
         return this.shadowMap;
     }
-    updateShadowMesh(context) {
+    updateShadowMesh(context, data) {
         this.shadowMesh.indices.fill(0);
         const bound = [zogra_renderer_1.vec2(-this.lightRange).plus(this.position.toVec2()), zogra_renderer_1.vec2(this.lightRange).plus(this.position.toVec2())];
         const colliderToLight = zogra_renderer_1.mat4.identity();
         let vertOfset = 0;
         let indexOffset = 0;
-        for (const collider of context.scene.physics.__getColliders()) {
+        for (const collider of data.scene.physics.__getColliders()) {
             if (collider instanceof tilemap_collider_1.TilemapCollider) {
                 const polygons = collider.getPolygons(...bound);
                 if (!polygons)

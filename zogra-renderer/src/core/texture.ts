@@ -6,7 +6,7 @@ import { Asset, ICloneable } from "./asset";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { vec2 } from "../types/vec2";
 import { imageResize, ImageSizing } from "../utils/image-sizing";
-import { ColorAttachment, DepthAttachment } from "./frame-buffer";
+import { ColorAttachment, DepthAttachment, FrameBuffer } from "./frame-buffer";
 
 export enum FilterMode
 {
@@ -312,6 +312,13 @@ export class RenderTexture extends TextureBase implements ColorAttachment
         const gl = this.ctx.gl;
 
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, this._glTex, 0);
+    }
+    createFramebuffer()
+    {
+        this.create();
+        const fbo = new FrameBuffer(this.width, this.height);
+        fbo.addColorAttachment(this, 0);
+        return fbo;
     }
 }
 

@@ -45,7 +45,7 @@ export class Light2D extends Entity
     {
         if (!this.shadowMap)
             this.shadowMap = new RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, TextureFormat.R8, FilterMode.Linear);
-        this.updateShadowMesh(context);
+        this.updateShadowMesh(context, data);
         
         context.renderer.setFramebuffer(this.shadowMap);
         context.renderer.clear(Color.black);
@@ -57,14 +57,14 @@ export class Light2D extends Entity
         return this.shadowMap;
     }
 
-    updateShadowMesh(context: RenderContext)
+    updateShadowMesh(context: RenderContext, data: RenderData)
     {
         this.shadowMesh.indices.fill(0);
         const bound: [vec2, vec2] = [vec2(-this.lightRange).plus(this.position.toVec2()), vec2(this.lightRange).plus(this.position.toVec2())];
         const colliderToLight = mat4.identity();
         let vertOfset = 0;
         let indexOffset = 0;
-        for (const collider of context.scene.physics.__getColliders<Collider2D>())
+        for (const collider of data.scene.physics.__getColliders<Collider2D>())
         {
             if (collider instanceof TilemapCollider)
             {

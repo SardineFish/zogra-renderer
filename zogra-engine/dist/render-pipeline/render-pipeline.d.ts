@@ -8,10 +8,9 @@ export interface ZograRenderPipelineConstructor {
 }
 export declare type MaterialReplacer<T extends Material> = (original: T) => Material;
 export interface ZograRenderPipeline {
-    render(renderer: RenderContext, cameras: Camera[]): void;
+    render(renderer: RenderContext, scene: Scene, cameras: Camera[]): void;
     replaceMaterial<T extends Material>(MaterialType: ConstructorType<T>, material: Material): void;
 }
 export interface RenderContext {
     renderer: ZograRenderer;
-    scene: Scene;
 }

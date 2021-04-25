@@ -1,6 +1,7 @@
 import * as ZograEnginePackage from "zogra-engine";
-import { Camera, Color, Entity, InputManager, Keys, mat4, MaterialFromShader, mul, plus, PreviewRenderer, quat, RenderObject, rgb, Shader, shaderProp, Texture, vec3, ZograEngine } from "zogra-engine";
+import { Camera, Color, Entity, FrameBuffer, InputManager, Keys, mat4, MaterialFromShader, mul, plus, PreviewRenderer, quat, RenderObject, RenderTexture, rgb, Shader, shaderProp, Texture, TextureFormat, vec3, ZograEngine } from "zogra-engine";
 import * as ZograRendererPackage from "zogra-renderer";
+import { RenderBuffer } from "zogra-renderer/dist/core/render-buffer";
 import "./css/base.css";
 import frag from "./shader/default-frag.glsl";
 import vert from "./shader/default-vert.glsl";
@@ -28,7 +29,6 @@ engine.start();
 engine.on('update', () => input.update());
 
 
-
 function initCamera()
 {
     const wrapper = new Entity();
@@ -39,6 +39,15 @@ function initCamera()
     camera.clearColor = rgb(.3, .3, .3);
     camera.FOV = 60;
     engine.scene.add(camera, wrapper);
+    // const renderBuffer = new RenderBuffer(canvas.width, canvas.height, TextureFormat.RGBA8, 4);
+    const rt = new RenderTexture(canvas.width, canvas.height);
+    camera.output = null;
+
+    camera.on("postrender", (camera, context) =>
+    {
+        // context.renderer.copyRenderBuffer(renderBuffer, rt);
+        // context.renderer.blit(rt, FrameBuffer.CanvasBuffer);
+    });
 
     engine.on("update", (time) =>
     {
@@ -52,7 +61,7 @@ function initCamera()
         forward = forward.normalize();
         let right = mat4.mulVector(camera.localToWorldMatrix, vec3(1, 0, 0)).normalize();
         let up = vec3(0, 1, 0);
-        
+
 
         if (input.getKey(Keys.Shift) || input.getKey(Keys.Space))
             v.plus(vec3(0, 1 * time.deltaTime, 0));
@@ -70,7 +79,7 @@ function initCamera()
             input.lockPointer();
         if (input.getKeyUp(Keys.Mouse2))
             input.releasePointer();
-        
+
         let look = input.pointerDelta;
 
         /*if (input.getKey(Keys.Space))
@@ -96,5 +105,4 @@ function initObjects()
     {
         cube.rotation = quat.normalize(quat.mul(cube.rotation, quat.axisAngle(vec3(1, 1, 1), time.deltaTime * 0.5)));
     });
-
 }

@@ -2,7 +2,7 @@ import { GLContext } from "./global";
 import { TextureFormat } from "./texture-format";
 import { Asset, ICloneable } from "./asset";
 import { vec2 } from "../types/vec2";
-import { ColorAttachment, DepthAttachment } from "./frame-buffer";
+import { ColorAttachment, DepthAttachment, FrameBuffer } from "./frame-buffer";
 export declare enum FilterMode {
     Linear,
     Nearest
@@ -75,5 +75,6 @@ export declare class RenderTexture extends TextureBase implements ColorAttachmen
     setData(pixels: TextureData): void;
     destroy(): void;
     bindFramebuffer(attachment: number): void;
+    createFramebuffer(): FrameBuffer;
 }
 export {};

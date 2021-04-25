@@ -11,6 +11,7 @@ import { EventEmitter, IEventSource, EventKeys } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
 import { ray } from "zogra-renderer";
 import { vec4 } from "zogra-renderer";
+import { RenderBuffer } from "zogra-renderer/dist/core/render-buffer";
 
 
 export enum Projection
@@ -28,7 +29,7 @@ interface CameraEvents extends EntityEvents
 export class Camera extends Entity implements IEventSource<CameraEvents>
 {
     private ctx: GLContext;
-    output: IFrameBuffer = FrameBuffer.CanvasBuffer;
+    output: RenderTexture | null = null;
     FOV: number = 30;
     near: number = 0.3;
     far: number = 1000;
@@ -97,7 +98,7 @@ export class Camera extends Entity implements IEventSource<CameraEvents>
     }
     screenToViewport(pos: vec2): vec2
     {
-        if (this.output === FrameBuffer.CanvasBuffer)
+        if (this.output === null)
             return div(pos, vec2(this.ctx.width, this.ctx.height));
         else if (this.output instanceof RenderTexture)
         {

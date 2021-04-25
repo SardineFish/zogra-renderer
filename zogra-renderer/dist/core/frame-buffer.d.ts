@@ -31,12 +31,14 @@ export declare class FrameBuffer extends GPUAsset implements IFrameBuffer {
     readonly size: vec2;
     get width(): number;
     get height(): number;
-    private colorAttachments;
-    private depthAttachment;
     private frameBuffer;
+    private _colorAttachments;
+    private _depthAttachment;
     private activeBuffers;
     private dirty;
     static CanvasBuffer: Readonly<CanvasBuffer>;
+    get colorAttachments(): ReadonlyArray<ColorAttachment | null>;
+    get depthAttachment(): DepthAttachment | null;
     constructor(width?: number, height?: number, ctx?: GLContext);
     addColorAttachment(attachment: ColorAttachment, attachPoit?: number): void;
     setDepthAttachment(attachment: DepthAttachment): void;

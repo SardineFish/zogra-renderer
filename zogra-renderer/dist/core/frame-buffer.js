@@ -25,9 +25,9 @@ class CanvasBuffer {
 class FrameBuffer extends asset_1.GPUAsset {
     constructor(width = 0, height = 0, ctx = global_1.GlobalContext()) {
         super(ctx);
-        this.colorAttachments = [];
-        this.depthAttachment = null;
         this.frameBuffer = null;
+        this._colorAttachments = [];
+        this._depthAttachment = null;
         this.activeBuffers = [];
         this.dirty = true;
         this.size = vec2_1.vec2(Math.floor(width), Math.floor(height));
@@ -35,23 +35,30 @@ class FrameBuffer extends asset_1.GPUAsset {
     }
     get width() { return this.size.x; }
     get height() { return this.size.y; }
-    addColorAttachment(attachment, attachPoit = this.colorAttachments.length) {
+    get colorAttachments() { return this._colorAttachments; }
+    get depthAttachment() { return this._depthAttachment; }
+    /** @internal */
+    glFBO() {
+        this.tryInit(true);
+        return this.frameBuffer;
+    }
+    addColorAttachment(attachment, attachPoit = this._colorAttachments.length) {
         if (attachment.width !== this.size.x || attachment.height !== this.size.y)
             console.warn(`Color attachment size [${attachment.width}, ${attachment.height}] missmatch with framebuffer.`);
-        this.colorAttachments[attachPoit] = attachment;
+        this._colorAttachments[attachPoit] = attachment;
         this.dirty = true;
     }
     setDepthAttachment(attachment) {
         if (attachment.width !== this.size.x || attachment.height !== this.size.y)
             console.warn(`Depth attachment size [${attachment.width}, ${attachment.height}] missmatch with framebuffer.`);
-        this.depthAttachment = attachment;
+        this._depthAttachment = attachment;
         this.dirty = true;
     }
     reset(width = this.width, height = this.height) {
         this.size.x = width;
         this.size.y = height;
-        this.colorAttachments = [];
-        this.depthAttachment = null;
+        this._colorAttachments = [];
+        this._depthAttachment = null;
         this.dirty = true;
     }
     init() {
@@ -65,16 +72,16 @@ class FrameBuffer extends asset_1.GPUAsset {
         const gl = this.ctx.gl;
         this.activeBuffers = [];
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-        for (let i = 0; i < this.colorAttachments.length; i++) {
-            if (this.colorAttachments[i]) {
-                this.colorAttachments[i].bindFramebuffer(i);
+        for (let i = 0; i < this._colorAttachments.length; i++) {
+            if (this._colorAttachments[i]) {
+                this._colorAttachments[i].bindFramebuffer(i);
                 this.activeBuffers.push(gl.COLOR_ATTACHMENT0 + i);
             }
             else
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.RENDERBUFFER, null);
         }
-        if (this.depthAttachment) {
-            this.depthAttachment.bindFramebuffer();
+        if (this._depthAttachment) {
+            this._depthAttachment.bindFramebuffer();
             this.activeBuffers.push(gl.DEPTH_ATTACHMENT);
         }
         else

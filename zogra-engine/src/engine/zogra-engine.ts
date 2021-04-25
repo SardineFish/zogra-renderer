@@ -50,9 +50,8 @@ export class ZograEngine<RenderPipeline extends ZograRenderPipeline = PreviewRen
     {
         const cameras = this.scene.getEntitiesOfType(Camera);
         this.renderPipeline.render({
-            renderer: this.renderer,
-            scene: this.scene
-        }, cameras);
+            renderer: this.renderer
+        }, this.scene, cameras);
     }
     start()
     {

@@ -8,6 +8,7 @@ export * from "./asset";
 export * from "./lines";
 export * from "./event";
 export * from "./array-buffer";
+export * from "./render-buffer";
 export * from "./frame-buffer";
 export * from "./debug";
 export { TextureFormat } from "./texture-format";
