@@ -359,6 +359,7 @@ function flipTexture(
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst, 0);
     gl.viewport(0, 0, width, height);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+    gl.disable(gl.CULL_FACE);
 
     const shader = ctx.assets.shaders.FlipTexture;
     shader.use();
