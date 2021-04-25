@@ -1,5 +1,5 @@
 import { Timeline, SpriteObject, Sprite, Animator, Default2DMaterial, Time, Entity, BoxCollider } from "zogra-engine";
-import { vec2, MathUtils, vec3, TextureImporter, Vector2 } from "zogra-renderer";
+import { vec2, MathUtils, vec3, TextureImporter, Vector2, Color } from "zogra-renderer";
 import imgFood from "../asset/img/snake-food.png";
 import { GameMap } from "./map";
 import { Snake } from "./snake";
@@ -184,4 +184,5 @@ export async function loadSnakeAssets()
     textureFood.updateParameters();
     textureFood.generateMipmap();
     Food.foodSprite = new Sprite(textureFood, vec2.one(), vec2.zero());
+    Food.foodSprite.color = new Color(2, 2, 2, 1);
 }

@@ -33,6 +33,7 @@ export class Snake extends LineRenderer
     constructor(bodies: vec2[], headDir: vec2, camera: Camera, input: InputManager)
     {
         super();
+        this.color = new Color(1.3, 1.3, 1.3, 1);
         this.bodies = bodies;
         this.headDir = headDir;
         this.camera = camera;
@@ -44,6 +45,7 @@ export class Snake extends LineRenderer
         this.collider = collider;
         collider.on("onContact", this.onContact.bind(this));
         this.foodParticle.maxCount = 256;
+        this.foodParticle.startColor = new Color(2, 2, 2, 1);
         this.foodParticle.startAcceleration = { x: 0, y: 0, z: 0 };
         this.foodParticle.lifeSpeed = [10, 0];
         this.foodParticle.lifetime = [0.3, 0.4];

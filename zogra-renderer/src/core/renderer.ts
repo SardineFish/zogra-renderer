@@ -65,6 +65,8 @@ export class ZograRenderer
         this.scissor = new Rect(vec2.zero(), vec2(this.width, this.height));
 
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
+        this.gl.getExtension("EXT_color_buffer_float");
+        this.gl.getExtension("EXT_color_buffer_half_float");
 
 
         this.ctx = new GLContext();

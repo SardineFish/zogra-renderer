@@ -32,6 +32,8 @@ class ZograRenderer {
         this.canvas.height = this.height;
         this.scissor = new rect_1.Rect(vec2_1.vec2.zero(), vec2_1.vec2(this.width, this.height));
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
+        this.gl.getExtension("EXT_color_buffer_float");
+        this.gl.getExtension("EXT_color_buffer_half_float");
         this.ctx = new global_1.GLContext();
         Object.assign(this.ctx, {
             gl: this.gl,

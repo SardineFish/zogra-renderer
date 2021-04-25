@@ -1,4 +1,4 @@
-import { Camera, Color, Default2DRenderPipeline, InputManager, Physics2D, Projection, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
+import { Camera, Color, Default2DRenderPipeline, InputManager, Physics2D, Projection, TextureFormat, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
 import "../css/base.css";
 import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";
@@ -16,6 +16,8 @@ const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
 engine.fixedDeltaTime = true;
 engine.renderPipeline.ambientLightColor = new Color(0.3, .3, .3, 1);
+engine.renderPipeline.msaa = 4;
+engine.renderPipeline.renderFormat = TextureFormat.RGBA16F;
 const input = new InputManager();
 
 engine.on("update", (time) =>
