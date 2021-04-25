@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.materialDefine = exports.SimpleTexturedMaterial = exports.MaterialFromShader = exports.shaderProp = exports.Material = void 0;
+const shader_1 = require("./shader");
 const color_1 = require("../types/color");
 require("reflect-metadata");
 const global_1 = require("./global");
@@ -33,6 +34,7 @@ class Material extends asset_1.Asset {
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
         this._shader = shader;
+        this.pipelineStateOverride = Object.assign({}, shader.pipelineStates);
     }
     get shader() { return this._shader; }
     // set shader(value)
@@ -50,6 +52,7 @@ class Material extends asset_1.Asset {
     // }
     upload(data) {
         this.tryInit(true);
+        this.setupPipelineStateOverride();
         for (const uniformName in this.properties) {
             const prop = this.properties[uniformName];
             const value = prop.key
@@ -157,6 +160,61 @@ class Material extends asset_1.Asset {
         }
         this.properties[uniformName] = prop;
         return prop;
+    }
+    setPipelineStateOverride(settings) {
+        let blend = false;
+        let blendRGB = [shader_1.Blending.One, shader_1.Blending.Zero];
+        let blendAlpha = [shader_1.Blending.One, shader_1.Blending.OneMinusSrcAlpha];
+        if (typeof (settings.blend) === "number" && settings.blend !== shader_1.Blending.Disable) {
+            blend = true;
+            blendRGB = [settings.blend, settings.blend];
+            blendAlpha = [settings.blend, settings.blend];
+        }
+        else if (settings.blend instanceof Array) {
+            blend = true;
+            blendRGB = settings.blend;
+        }
+        if (settings.blendRGB) {
+            blend = settings.blend !== false && settings.blend !== shader_1.Blending.Disable;
+            blendRGB = settings.blendRGB;
+        }
+        if (settings.blendAlpha) {
+            blend = settings.blend !== false && settings.blend !== shader_1.Blending.Disable;
+            blendAlpha = settings.blendAlpha;
+        }
+        this.pipelineStateOverride = {
+            depth: settings.depth || shader_1.DepthTest.Less,
+            blend,
+            blendRGB,
+            blendAlpha,
+            zWrite: settings.zWrite === false ? false : true,
+            cull: settings.cull || shader_1.Culling.Back
+        };
+    }
+    setupPipelineStateOverride() {
+        const gl = this.gl;
+        if (this.pipelineStateOverride.depth === shader_1.DepthTest.Disable)
+            gl.disable(gl.DEPTH_TEST);
+        else {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(this.pipelineStateOverride.zWrite);
+            gl.depthFunc(this.pipelineStateOverride.depth);
+        }
+        if (!this.pipelineStateOverride.blend)
+            gl.disable(gl.BLEND);
+        else {
+            const [srcRGB, dstRGB] = this.pipelineStateOverride.blendRGB;
+            const [srcAlpha, dstAlpha] = this.pipelineStateOverride.blendAlpha;
+            gl.enable(gl.BLEND);
+            gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+        }
+        if (this.pipelineStateOverride.cull === shader_1.Culling.Disable)
+            gl.disable(gl.CULL_FACE);
+        else {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(this.pipelineStateOverride.cull);
+            gl.frontFace(gl.CCW);
+        }
     }
     uploadUniform(prop, value) {
         var _a;

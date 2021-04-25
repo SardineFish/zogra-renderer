@@ -58,7 +58,7 @@ class Shader extends asset_1.Asset {
         this.program = null;
         this.vertexShader = null;
         this.fragmentShader = null;
-        this.pipelineStates = null;
+        this.pipelineStates = {};
         this.builtinUniformLocations = null;
         this._compiled = false;
         if (!options.name)
@@ -69,6 +69,7 @@ class Shader extends asset_1.Asset {
         this.gl = gl;
         this.vertexStruct = array_buffer_1.BufferStructureInfo.from(this.options.vertexStructure || mesh_1.DefaultVertexData);
         this.attributeNames = Object.assign(Object.assign({}, exports.DefaultShaderAttributeNames), options.attributes);
+        this.setPipelineStateInternal(this.options);
         this.tryInit();
     }
     get compiled() { return this._compiled; }
@@ -80,31 +81,6 @@ class Shader extends asset_1.Asset {
         this.tryInit(true);
         this.gl.useProgram(this.program);
     }
-    setupPipelineStates() {
-        const gl = this.gl;
-        if (this.pipelineStates.depth === DepthTest.Disable)
-            gl.disable(gl.DEPTH_TEST);
-        else {
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthMask(this.pipelineStates.zWrite);
-            gl.depthFunc(this.pipelineStates.depth);
-        }
-        if (!this.pipelineStates.blend)
-            gl.disable(gl.BLEND);
-        else {
-            const [srcRGB, dstRGB] = this.pipelineStates.blendRGB;
-            const [srcAlpha, dstAlpha] = this.pipelineStates.blendAlpha;
-            gl.enable(gl.BLEND);
-            gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
-        }
-        if (this.pipelineStates.cull === Culling.Disable)
-            gl.disable(gl.CULL_FACE);
-        else {
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(this.pipelineStates.cull);
-            gl.frontFace(gl.CCW);
-        }
-    }
     setupBuiltinUniform(params) {
         this.tryInit(true);
         const gl = this.gl;
@@ -115,11 +91,6 @@ class Shader extends asset_1.Asset {
         this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP.asMut());
         this.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matM_IT, false, params.matM_IT.asMut());
         this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT.asMut());
-    }
-    setPipelineStates(settings) {
-        this.options = Object.assign(Object.assign({}, this.options), settings);
-        if (this.initialized)
-            this.setPipelineStateInternal(settings);
     }
     setPipelineStateInternal(settings) {
         let blend = false;
@@ -178,7 +149,6 @@ class Shader extends asset_1.Asset {
         for (const key in attributeNames) {
             this.attributes[key] = gl.getAttribLocation(this.program, attributeNames[key]);
         }
-        this.setPipelineStateInternal(this.options);
         this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniformNames);
         this.initialized = true;
         return true;

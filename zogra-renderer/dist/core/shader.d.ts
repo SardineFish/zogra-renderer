@@ -46,7 +46,7 @@ export interface StateSettings {
     zWrite: boolean;
     cull: Culling;
 }
-interface ShaderPipelineStateSettinsOptional {
+export interface ShaderPipelineStateSettinsOptional {
     depth?: DepthTest;
     blend?: [Blending, Blending] | boolean | Blending;
     blendRGB?: [Blending, Blending];
@@ -71,14 +71,13 @@ export declare class Shader<VertexData extends BufferStructure = typeof DefaultV
     private program;
     private vertexShader;
     private fragmentShader;
-    private pipelineStates;
+    pipelineStates: Readonly<StateSettings>;
     private builtinUniformLocations;
     private _compiled;
     get compiled(): boolean;
     constructor(vertexShader: string, fragmentShader: string, options?: ShaderSettingsOptional<VertexData>, gl?: WebGL2RenderingContext);
     uniformLocation(name: string): WebGLUniformLocation | null;
     use(): void;
-    setupPipelineStates(): void;
     setupBuiltinUniform(params: {
         matM: Readonly<mat4>;
         matVP: Readonly<mat4>;
@@ -86,7 +85,6 @@ export declare class Shader<VertexData extends BufferStructure = typeof DefaultV
         matM_IT: Readonly<mat4>;
         matMV_IT: Readonly<mat4>;
     }): void;
-    setPipelineStates(settings: ShaderPipelineStateSettinsOptional): void;
     private setPipelineStateInternal;
     _internal(): {
         options: ShaderSettingsOptional<VertexData>;

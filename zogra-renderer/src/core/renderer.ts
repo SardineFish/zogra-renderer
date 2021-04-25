@@ -233,25 +233,12 @@ export class ZograRenderer
         srcRect?: Rect,
         dstRect?: Rect)
     {
-        
-        if (dst instanceof RenderTexture)
-        {
-            const target = new FrameBuffer(dst.width, dst.height, this.ctx);
-            target.addColorAttachment(dst);
-            dst = target;
-        }
-        else if (dst instanceof Array)
-        {
-            const target = new FrameBuffer(0, 0, this.ctx);
-            for (let i = 0; i < dst.length; i++)
-            {
-                target.addColorAttachment(dst[i]);
-            }
-            dst = target;
-        }
+        const prevTarget = this.target;
+        this.setFramebuffer(dst as IFrameBuffer);
+        dst = this.target;
 
         const prevVP = this.viewProjectionMatrix;
-        const prevTarget = this.target;
+        // const prevTarget = this.target;
         let mesh = this.helperAssets.blitMesh;
         let viewport = dst === FrameBuffer.CanvasBuffer ? new Rect(vec2.zero(), this.canvasSize) : new Rect(vec2.zero(), dst.size.clone());
 
@@ -297,7 +284,7 @@ export class ZograRenderer
         
         this.shader = shader;
         shader.use();
-        shader.setupPipelineStates();
+        // shader.setupPipelineStates();
         
     }
 

@@ -1,4 +1,4 @@
-import { Shader } from "./shader";
+import { Shader, ShaderPipelineStateSettinsOptional, StateSettings } from "./shader";
 import "reflect-metadata";
 import { MaterialType, SimpleTexturedMaterialClass } from "./material-type";
 import "reflect-metadata";
@@ -41,6 +41,7 @@ export declare class Material extends Asset {
     private _shader;
     properties: MaterialProperties;
     gl: WebGL2RenderingContext;
+    pipelineStateOverride: StateSettings;
     private textureCount;
     private boundTextures;
     protected initialized: boolean;
@@ -56,6 +57,8 @@ export declare class Material extends Asset {
     protected tryInit(required?: boolean): boolean;
     setUniformDirectly<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>): void;
     private getOrCreatePropInfo;
+    setPipelineStateOverride(settings: ShaderPipelineStateSettinsOptional): void;
+    private setupPipelineStateOverride;
     private uploadUniform;
     private bindNextTexture;
     private setVectorUniformBuffer;

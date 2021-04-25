@@ -147,20 +147,11 @@ class ZograRenderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
     }
     blit(src, dst, material = this.assets.materials.blitCopy, srcRect, dstRect) {
-        if (dst instanceof texture_1.RenderTexture) {
-            const target = new frame_buffer_1.FrameBuffer(dst.width, dst.height, this.ctx);
-            target.addColorAttachment(dst);
-            dst = target;
-        }
-        else if (dst instanceof Array) {
-            const target = new frame_buffer_1.FrameBuffer(0, 0, this.ctx);
-            for (let i = 0; i < dst.length; i++) {
-                target.addColorAttachment(dst[i]);
-            }
-            dst = target;
-        }
-        const prevVP = this.viewProjectionMatrix;
         const prevTarget = this.target;
+        this.setFramebuffer(dst);
+        dst = this.target;
+        const prevVP = this.viewProjectionMatrix;
+        // const prevTarget = this.target;
         let mesh = this.helperAssets.blitMesh;
         let viewport = dst === frame_buffer_1.FrameBuffer.CanvasBuffer ? new rect_1.Rect(vec2_1.vec2.zero(), this.canvasSize) : new rect_1.Rect(vec2_1.vec2.zero(), dst.size.clone());
         if (src && (srcRect || dstRect)) {
@@ -195,7 +186,7 @@ class ZograRenderer {
         const gl = this.gl;
         this.shader = shader;
         shader.use();
-        shader.setupPipelineStates();
+        // shader.setupPipelineStates();
     }
     setupTransforms(shader, transformModel) {
         const gl = this.gl;

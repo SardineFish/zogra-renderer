@@ -1,4 +1,4 @@
-import { Shader } from "./shader";
+import { Blending, Culling, DepthTest, Shader, ShaderPipelineStateSettinsOptional, StateSettings } from "./shader";
 import { Color } from "../types/color";
 import { cloneUniformValue, decorator, panic } from "../utils/util";
 import "reflect-metadata";
@@ -84,6 +84,7 @@ export class Material extends Asset
     private _shader: Shader;
     properties: MaterialProperties = {};
     gl: WebGL2RenderingContext;
+    pipelineStateOverride: StateSettings;
 
     private textureCount = 0;
     private boundTextures: Texture[] = [];
@@ -96,6 +97,7 @@ export class Material extends Asset
         this.gl = gl;
         this._shader = shader;
 
+        this.pipelineStateOverride = { ...shader.pipelineStates };
     }
 
     get shader() { return this._shader }
@@ -116,6 +118,8 @@ export class Material extends Asset
     upload(data: BindingData)
     {
         this.tryInit(true);
+
+        this.setupPipelineStateOverride();
 
         for (const uniformName in this.properties)
         {
@@ -256,6 +260,76 @@ export class Material extends Asset
 
         this.properties[uniformName] = prop;
         return prop as PropertyInfo<T>;
+    }
+
+    setPipelineStateOverride(settings: ShaderPipelineStateSettinsOptional)
+    {
+        let blend = false;
+        let blendRGB: [Blending, Blending] = [Blending.One, Blending.Zero];
+        let blendAlpha: [Blending, Blending] = [Blending.One, Blending.OneMinusSrcAlpha];
+        if (typeof (settings.blend) === "number" && settings.blend !== Blending.Disable)
+        {
+            blend = true;
+            blendRGB = [settings.blend, settings.blend];
+            blendAlpha = [settings.blend, settings.blend];
+        }
+        else if (settings.blend instanceof Array)
+        {
+            blend = true;
+            blendRGB = settings.blend;
+        }
+        if (settings.blendRGB)
+        {
+            blend = settings.blend !== false && settings.blend !== Blending.Disable;
+            blendRGB = settings.blendRGB;
+        }
+        if (settings.blendAlpha)
+        {
+            blend = settings.blend !== false && settings.blend !== Blending.Disable;
+            blendAlpha = settings.blendAlpha;
+        }
+
+        this.pipelineStateOverride = {
+            depth: settings.depth || DepthTest.Less,
+            blend,
+            blendRGB,
+            blendAlpha,
+            zWrite: settings.zWrite === false ? false : true,
+            cull: settings.cull || Culling.Back
+        };
+    }
+
+    private setupPipelineStateOverride()
+    {
+        const gl = this.gl;
+
+        if (this.pipelineStateOverride.depth === DepthTest.Disable)
+            gl.disable(gl.DEPTH_TEST);
+        else
+        {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(this.pipelineStateOverride.zWrite);
+            gl.depthFunc(this.pipelineStateOverride.depth);
+        }
+
+        if (!this.pipelineStateOverride.blend)
+            gl.disable(gl.BLEND);
+        else
+        {
+            const [srcRGB, dstRGB] = this.pipelineStateOverride.blendRGB;
+            const [srcAlpha, dstAlpha] = this.pipelineStateOverride.blendAlpha;
+            gl.enable(gl.BLEND);
+            gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+        }
+
+        if (this.pipelineStateOverride.cull === Culling.Disable)
+            gl.disable(gl.CULL_FACE);
+        else
+        {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(this.pipelineStateOverride.cull);
+            gl.frontFace(gl.CCW);
+        }
     }
 
     private uploadUniform<T extends UniformType>(prop: PropertyInfo<T>, value: UniformValueType<T>)
