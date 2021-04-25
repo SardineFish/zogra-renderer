@@ -6,7 +6,7 @@ import { RenderObject } from "../engine/engine";
 import { Entity } from "../engine/engine";
 import { RenderData, RenderOrder } from "./render-data";
 import { Color, rgba, rgb } from "zogra-renderer";
-import { RenderTarget } from "zogra-renderer";
+import { FrameBuffer } from "zogra-renderer";
 import { RenderTexture } from "zogra-renderer";
 import { Lines, LineBuilder } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
@@ -69,10 +69,7 @@ export class PreviewRenderer implements ZograRenderPipeline
         const camera = data.camera;
         camera.__preRender(context);
 
-        if (camera.output === RenderTarget.CanvasTarget)
-            context.renderer.setRenderTarget(RenderTarget.CanvasTarget);
-        else
-            context.renderer.setRenderTarget(camera.output as RenderTexture);
+        context.renderer.setFramebuffer(camera.output);
         
         
         context.renderer.clear(camera.clearColor, camera.clearDepth);

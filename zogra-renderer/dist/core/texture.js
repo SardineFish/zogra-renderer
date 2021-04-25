@@ -187,8 +187,10 @@ class DepthTexture extends TextureBase {
     constructor(width, height, ctx = global_1.GlobalContext()) {
         super(width, height, texture_format_1.TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
     }
-    create() {
-        super.create();
+    bindFramebuffer() {
+        this.create();
+        const gl = this.ctx.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this._glTex, 0);
     }
 }
 exports.DepthTexture = DepthTexture;
@@ -209,6 +211,11 @@ class RenderTexture extends TextureBase {
             return;
         (_a = this.depthTexture) === null || _a === void 0 ? void 0 : _a.destroy();
         super.destroy();
+    }
+    bindFramebuffer(attachment) {
+        this.create();
+        const gl = this.ctx.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, this._glTex, 0);
     }
 }
 exports.RenderTexture = RenderTexture;

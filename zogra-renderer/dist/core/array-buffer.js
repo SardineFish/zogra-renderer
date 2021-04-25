@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ArrayBuffer = exports.BufferStructureInfo = void 0;
+exports.GLArrayBuffer = exports.BufferStructureInfo = void 0;
 const util_1 = require("../utils/util");
 const global_1 = require("./global");
 exports.BufferStructureInfo = {
@@ -36,7 +36,7 @@ exports.BufferStructureInfo = {
         return structInfo;
     }
 };
-class ArrayBuffer extends Array {
+class GLArrayBuffer extends Array {
     constructor(structure, items, ctx = global_1.GlobalContext()) {
         super(items);
         this.static = true;
@@ -208,5 +208,5 @@ class ArrayBuffer extends Array {
         return true;
     }
 }
-exports.ArrayBuffer = ArrayBuffer;
-//# sourceMappingURL=buffer.js.map
+exports.GLArrayBuffer = GLArrayBuffer;
+//# sourceMappingURL=array-buffer.js.map

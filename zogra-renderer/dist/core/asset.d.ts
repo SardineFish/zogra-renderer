@@ -13,6 +13,13 @@ export declare class Asset implements IAsset {
     constructor(name?: string);
     destroy(): void;
 }
+export declare abstract class GPUAsset extends Asset {
+    protected ctx: GLContext;
+    protected initialized: boolean;
+    constructor(ctx?: GLContext, name?: string);
+    protected tryInit(required?: boolean): boolean;
+    protected abstract init(): boolean;
+}
 export declare abstract class LazyInitAsset extends Asset {
     protected ctx: GLContext;
     protected initialzed: boolean;

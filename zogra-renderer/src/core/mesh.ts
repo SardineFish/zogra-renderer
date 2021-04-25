@@ -6,7 +6,7 @@ import { panicNull, panic, fillArray } from "../utils/util";
 import { Shader } from "./shader";
 import { minus, cross } from "../types/math";
 import { Asset } from "./asset";
-import { BufferStructure, BufferStructureInfo, RenderBuffer } from "./buffer";
+import { BufferStructure, BufferStructureInfo, GLArrayBuffer } from "./array-buffer";
 import { ZograMatrix } from "../types/generic";
 
 const VertDataFloatCount = 14;
@@ -37,7 +37,7 @@ export function VertexStruct<T extends BufferStructure>(structure: T): T
 
 export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset
 {
-    vertices: RenderBuffer<VertexStruct>;
+    vertices: GLArrayBuffer<VertexStruct>;
     indices: Uint32Array;
     private ctx: GLContext = null as any;
     private initialized = false;
@@ -57,25 +57,25 @@ export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexDat
         if (args.length === 0)
         {
             this.ctx = GlobalContext();
-            this.vertices = new RenderBuffer(DefaultVertexData as unknown as VertexStruct, 0, this.ctx);
+            this.vertices = new GLArrayBuffer(DefaultVertexData as unknown as VertexStruct, 0, this.ctx);
         }
         else if (args.length === 1)
         {
             if (args[0] instanceof GLContext)
             {
                 this.ctx = args[0];
-                this.vertices = new RenderBuffer(DefaultVertexData as unknown as VertexStruct, 0, this.ctx);
+                this.vertices = new GLArrayBuffer(DefaultVertexData as unknown as VertexStruct, 0, this.ctx);
             }
             else
             {
                 this.ctx = GlobalContext();
-                this.vertices = new RenderBuffer(args[0] as VertexStruct, 0, this.ctx);
+                this.vertices = new GLArrayBuffer(args[0] as VertexStruct, 0, this.ctx);
             }
         }
         else
         {
             this.ctx = args[1] as GLContext || GlobalContext();
-            this.vertices = new RenderBuffer(args[0] as VertexStruct, 0, this.ctx);
+            this.vertices = new GLArrayBuffer(args[0] as VertexStruct, 0, this.ctx);
         }
 
         this.tryInit(false);
@@ -150,7 +150,7 @@ export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexDat
     }
     private setVertexDataArray<K extends keyof DefaultVertexStruct, T extends number[]>(key: K, values: T[])
     {
-        const vertices = this.vertices as unknown as RenderBuffer<typeof DefaultVertexData>;
+        const vertices = this.vertices as unknown as GLArrayBuffer<typeof DefaultVertexData>;
         if (values.length >= this.vertices.length)
             this.vertices.resize(values.length);
         values.forEach((value, i) => this.vertices[i][key].set(value));

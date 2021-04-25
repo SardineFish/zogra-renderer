@@ -30,17 +30,28 @@ class FrameBuffer extends asset_1.GPUAsset {
         this.frameBuffer = null;
         this.activeBuffers = [];
         this.dirty = true;
-        this.width = Math.floor(width);
-        this.height = Math.floor(height);
-        this.size = vec2_1.vec2(width, height);
+        this.size = vec2_1.vec2(Math.floor(width), Math.floor(height));
         this.tryInit(false);
     }
-    addColorAttachment(rt, attachPoit = this.colorAttachments.length) {
-        this.colorAttachments[attachPoit] = rt;
+    get width() { return this.size.x; }
+    get height() { return this.size.y; }
+    addColorAttachment(attachment, attachPoit = this.colorAttachments.length) {
+        if (attachment.width !== this.size.x || attachment.height !== this.size.y)
+            console.warn(`Color attachment size [${attachment.width}, ${attachment.height}] missmatch with framebuffer.`);
+        this.colorAttachments[attachPoit] = attachment;
         this.dirty = true;
     }
     setDepthAttachment(attachment) {
+        if (attachment.width !== this.size.x || attachment.height !== this.size.y)
+            console.warn(`Depth attachment size [${attachment.width}, ${attachment.height}] missmatch with framebuffer.`);
         this.depthAttachment = attachment;
+        this.dirty = true;
+    }
+    reset(width = this.width, height = this.height) {
+        this.size.x = width;
+        this.size.y = height;
+        this.colorAttachments = [];
+        this.depthAttachment = null;
         this.dirty = true;
     }
     init() {
@@ -56,7 +67,7 @@ class FrameBuffer extends asset_1.GPUAsset {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
         for (let i = 0; i < this.colorAttachments.length; i++) {
             if (this.colorAttachments[i]) {
-                this.colorAttachments[i];
+                this.colorAttachments[i].bindFramebuffer(i);
                 this.activeBuffers.push(gl.COLOR_ATTACHMENT0 + i);
             }
             else
@@ -79,4 +90,4 @@ class FrameBuffer extends asset_1.GPUAsset {
 }
 exports.FrameBuffer = FrameBuffer;
 FrameBuffer.CanvasBuffer = Object.freeze(new CanvasBuffer());
-//# sourceMappingURL=render-target.js.map
+//# sourceMappingURL=frame-buffer.js.map

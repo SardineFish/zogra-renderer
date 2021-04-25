@@ -24,6 +24,36 @@ export class Asset implements IAsset
         AssetManager.destroy(this.assetID);
     }
 }
+export abstract class GPUAsset extends Asset
+{
+    protected ctx: GLContext;
+    protected initialized = false;
+
+    constructor(ctx = GlobalContext(), name?:string)
+    {
+        super(name);
+        this.ctx = ctx;
+    }
+
+    protected tryInit(required = false): boolean
+    {
+        if (this.initialized)
+            return true;
+        if (!this.ctx)
+            this.ctx = GlobalContext();
+        
+        const success = this.ctx && this.init();
+        
+        if (!success && required)
+            throw new Error(`Failed to init GPU Asset '${this.name}' without global gl context.`);
+        
+        this.initialized = success;
+        
+        return success;
+    }
+
+    protected abstract init(): boolean;
+}
 
 export abstract class LazyInitAsset extends Asset
 {

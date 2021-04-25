@@ -6,7 +6,7 @@ const global_1 = require("./global");
 const shaders_1 = require("../builtin-assets/shaders");
 const util_2 = require("../utils/util");
 const asset_1 = require("./asset");
-const buffer_1 = require("./buffer");
+const array_buffer_1 = require("./array-buffer");
 const mesh_1 = require("./mesh");
 var DepthTest;
 (function (DepthTest) {
@@ -67,7 +67,7 @@ class Shader extends asset_1.Asset {
         this.fragmentShaderSouce = fragmentShader;
         this.options = options;
         this.gl = gl;
-        this.vertexStruct = buffer_1.BufferStructureInfo.from(this.options.vertexStructure || mesh_1.DefaultVertexData);
+        this.vertexStruct = array_buffer_1.BufferStructureInfo.from(this.options.vertexStructure || mesh_1.DefaultVertexData);
         this.attributeNames = Object.assign(Object.assign({}, exports.DefaultShaderAttributeNames), options.attributes);
         this.tryInit();
     }

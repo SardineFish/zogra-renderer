@@ -6,7 +6,6 @@ const render_data_1 = require("./render-data");
 const zogra_renderer_2 = require("zogra-renderer");
 const zogra_renderer_3 = require("zogra-renderer");
 const zogra_renderer_4 = require("zogra-renderer");
-const zogra_renderer_5 = require("zogra-renderer");
 const debug_layer_1 = require("./debug-layer");
 class PreviewRenderer {
     constructor(renderer) {
@@ -14,17 +13,17 @@ class PreviewRenderer {
         this.debugLayer = new debug_layer_1.DebugLayerRenderer();
         this.renderer = renderer;
         const lineColor = zogra_renderer_2.rgba(1, 1, 1, 0.1);
-        const lb = new zogra_renderer_4.LineBuilder(0, renderer.gl);
+        const lb = new zogra_renderer_3.LineBuilder(0, renderer.gl);
         const Size = 10;
         const Grid = 1;
         for (let i = -Size; i <= Size; i += Grid) {
             lb.addLine([
-                zogra_renderer_5.vec3(i, 0, -Size),
-                zogra_renderer_5.vec3(i, 0, Size),
+                zogra_renderer_4.vec3(i, 0, -Size),
+                zogra_renderer_4.vec3(i, 0, Size),
             ], lineColor);
             lb.addLine([
-                zogra_renderer_5.vec3(-Size, 0, i),
-                zogra_renderer_5.vec3(Size, 0, i)
+                zogra_renderer_4.vec3(-Size, 0, i),
+                zogra_renderer_4.vec3(Size, 0, i)
             ], lineColor);
         }
         this.grid = lb.toLines();
@@ -36,7 +35,7 @@ class PreviewRenderer {
         }
     }
     setupLight(context, data) {
-        context.renderer.setGlobalUniform("uLightDir", "vec3", zogra_renderer_5.vec3(-1, 1, 0).normalize());
+        context.renderer.setGlobalUniform("uLightDir", "vec3", zogra_renderer_4.vec3(-1, 1, 0).normalize());
         context.renderer.setGlobalUniform("uAmbientSky", "color", zogra_renderer_2.rgb(.2, .2, .2));
         context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position.clone());
         context.renderer.setGlobalUniform("uLightColor", "color", zogra_renderer_2.rgb(.8, .8, .8));
@@ -45,10 +44,7 @@ class PreviewRenderer {
         context.renderer.clear(zogra_renderer_2.rgb(.3, .3, .3), true);
         const camera = data.camera;
         camera.__preRender(context);
-        if (camera.output === zogra_renderer_3.RenderTarget.CanvasTarget)
-            context.renderer.setRenderTarget(zogra_renderer_3.RenderTarget.CanvasTarget);
-        else
-            context.renderer.setRenderTarget(camera.output);
+        context.renderer.setFramebuffer(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
         context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position.clone());

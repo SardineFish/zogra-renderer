@@ -78,7 +78,7 @@ export const BufferStructureInfo = {
     }
 };
 
-export class RenderBuffer<T extends BufferStructure> extends Array<BufferElementView<T>>
+export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElementView<T>>
 {
     public static = true;
     public Data: BufferElementView<T> = null as any;

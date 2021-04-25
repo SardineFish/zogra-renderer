@@ -1,4 +1,4 @@
-import { Color, Material, MaterialFromShader, MathUtils, Mesh, MeshBuilder, quat, RenderBuffer, Shader, shaderProp, Texture, vec2, vec3, vec4, Vector3 } from "zogra-renderer";
+import { Color, Material, MaterialFromShader, MathUtils, Mesh, MeshBuilder, quat, FrameBuffer, GLArrayBuffer, Shader, shaderProp, Texture, vec2, vec3, vec4, Vector3 } from "zogra-renderer";
 import { Debug } from "zogra-renderer/dist/core/global";
 import { Default2DMaterial } from "../2d";
 import { ShaderSource } from "../assets";
@@ -71,7 +71,7 @@ export class ParticleSystem extends RenderObject
     lifeSpeed: ParticleScalarModifier = null;
     lifeAcceleration: ParticlePropertySettings<vec3, ParticleScalarModifier> = { x: null, y: null, z: null };
 
-    private particlesBuffer = new RenderBuffer({
+    private particlesBuffer = new GLArrayBuffer({
         pos: "vec3",
         color: "vec4",
         rotation: "vec3",

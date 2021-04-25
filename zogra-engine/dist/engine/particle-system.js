@@ -59,7 +59,7 @@ class ParticleSystem extends render_object_1.RenderObject {
         this.lifeRotation = { x: null, y: null, z: null };
         this.lifeSpeed = null;
         this.lifeAcceleration = { x: null, y: null, z: null };
-        this.particlesBuffer = new zogra_renderer_1.RenderBuffer({
+        this.particlesBuffer = new zogra_renderer_1.GLArrayBuffer({
             pos: "vec3",
             color: "vec4",
             rotation: "vec3",

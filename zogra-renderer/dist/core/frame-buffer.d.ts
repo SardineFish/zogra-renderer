@@ -28,9 +28,9 @@ declare class CanvasBuffer implements IFrameBuffer {
     destroy(): void;
 }
 export declare class FrameBuffer extends GPUAsset implements IFrameBuffer {
-    readonly width: number;
-    readonly height: number;
-    readonly size: Readonly<vec2>;
+    readonly size: vec2;
+    get width(): number;
+    get height(): number;
     private colorAttachments;
     private depthAttachment;
     private frameBuffer;
@@ -38,8 +38,9 @@ export declare class FrameBuffer extends GPUAsset implements IFrameBuffer {
     private dirty;
     static CanvasBuffer: Readonly<CanvasBuffer>;
     constructor(width?: number, height?: number, ctx?: GLContext);
-    addColorAttachment(rt: ColorAttachment, attachPoit?: number): void;
+    addColorAttachment(attachment: ColorAttachment, attachPoit?: number): void;
     setDepthAttachment(attachment: DepthAttachment): void;
+    reset(width?: number, height?: number): void;
     protected init(): boolean;
     bind(): void;
     destroy(): void;

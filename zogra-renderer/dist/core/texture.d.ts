@@ -2,6 +2,7 @@ import { GLContext } from "./global";
 import { TextureFormat } from "./texture-format";
 import { Asset, ICloneable } from "./asset";
 import { vec2 } from "../types/vec2";
+import { ColorAttachment, DepthAttachment } from "./frame-buffer";
 export declare enum FilterMode {
     Linear,
     Nearest
@@ -64,14 +65,15 @@ export declare class Texture2D extends TextureBase implements ICloneable {
     setData(pixels: TextureData): void;
     clone(): Texture2D;
 }
-export declare class DepthTexture extends TextureBase {
+export declare class DepthTexture extends TextureBase implements DepthAttachment {
     constructor(width: number, height: number, ctx?: GLContext);
-    create(): void;
+    bindFramebuffer(): void;
 }
-export declare class RenderTexture extends TextureBase {
+export declare class RenderTexture extends TextureBase implements ColorAttachment {
     depthTexture: DepthTexture | null;
     constructor(width: number, height: number, depth?: boolean, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
     setData(pixels: TextureData): void;
     destroy(): void;
+    bindFramebuffer(attachment: number): void;
 }
 export {};

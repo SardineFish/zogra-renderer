@@ -8,7 +8,7 @@ const global_1 = require("./global");
 const util_1 = require("../utils/util");
 const math_1 = require("../types/math");
 const asset_1 = require("./asset");
-const buffer_1 = require("./buffer");
+const array_buffer_1 = require("./array-buffer");
 const VertDataFloatCount = 14;
 exports.DefaultVertexData = {
     vert: "vec3",
@@ -17,7 +17,7 @@ exports.DefaultVertexData = {
     uv: "vec2",
     uv2: "vec2",
 };
-exports.DefaultVertexStructInfo = buffer_1.BufferStructureInfo.from(exports.DefaultVertexData);
+exports.DefaultVertexStructInfo = array_buffer_1.BufferStructureInfo.from(exports.DefaultVertexData);
 function VertexStruct(structure) {
     return structure;
 }
@@ -33,21 +33,21 @@ class Mesh extends asset_1.Asset {
         this.indices = new Uint32Array();
         if (args.length === 0) {
             this.ctx = global_1.GlobalContext();
-            this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0, this.ctx);
+            this.vertices = new array_buffer_1.GLArrayBuffer(exports.DefaultVertexData, 0, this.ctx);
         }
         else if (args.length === 1) {
             if (args[0] instanceof global_1.GLContext) {
                 this.ctx = args[0];
-                this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0, this.ctx);
+                this.vertices = new array_buffer_1.GLArrayBuffer(exports.DefaultVertexData, 0, this.ctx);
             }
             else {
                 this.ctx = global_1.GlobalContext();
-                this.vertices = new buffer_1.RenderBuffer(args[0], 0, this.ctx);
+                this.vertices = new array_buffer_1.GLArrayBuffer(args[0], 0, this.ctx);
             }
         }
         else {
             this.ctx = args[1] || global_1.GlobalContext();
-            this.vertices = new buffer_1.RenderBuffer(args[0], 0, this.ctx);
+            this.vertices = new array_buffer_1.GLArrayBuffer(args[0], 0, this.ctx);
         }
         this.tryInit(false);
     }

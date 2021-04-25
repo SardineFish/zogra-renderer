@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AssetManager = exports.LazyInitAsset = exports.Asset = void 0;
+exports.AssetManager = exports.LazyInitAsset = exports.GPUAsset = exports.Asset = void 0;
 const util_1 = require("../utils/util");
 const event_1 = require("./event");
 const global_1 = require("./global");
@@ -16,6 +16,25 @@ class Asset {
     }
 }
 exports.Asset = Asset;
+class GPUAsset extends Asset {
+    constructor(ctx = global_1.GlobalContext(), name) {
+        super(name);
+        this.initialized = false;
+        this.ctx = ctx;
+    }
+    tryInit(required = false) {
+        if (this.initialized)
+            return true;
+        if (!this.ctx)
+            this.ctx = global_1.GlobalContext();
+        const success = this.ctx && this.init();
+        if (!success && required)
+            throw new Error(`Failed to init GPU Asset '${this.name}' without global gl context.`);
+        this.initialized = success;
+        return success;
+    }
+}
+exports.GPUAsset = GPUAsset;
 class LazyInitAsset extends Asset {
     constructor(ctx = global_1.GlobalContext()) {
         super();

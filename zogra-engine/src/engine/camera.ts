@@ -1,6 +1,5 @@
 import { Transform } from "./transform";
-import { IRenderTarget, RenderTexture } from "zogra-renderer";
-import { RenderTarget } from "zogra-renderer";
+import { FrameBuffer, IFrameBuffer, RenderTexture } from "zogra-renderer";
 import { GLContext, GlobalContext } from "zogra-renderer";
 import { vec2 } from "zogra-renderer";
 import { Entity, EntityEvents } from "./entity";
@@ -29,7 +28,7 @@ interface CameraEvents extends EntityEvents
 export class Camera extends Entity implements IEventSource<CameraEvents>
 {
     private ctx: GLContext;
-    output: RenderTexture | IRenderTarget = RenderTarget.CanvasTarget;
+    output: IFrameBuffer = FrameBuffer.CanvasBuffer;
     FOV: number = 30;
     near: number = 0.3;
     far: number = 1000;
@@ -98,7 +97,7 @@ export class Camera extends Entity implements IEventSource<CameraEvents>
     }
     screenToViewport(pos: vec2): vec2
     {
-        if (this.output === RenderTarget.CanvasTarget)
+        if (this.output === FrameBuffer.CanvasBuffer)
             return div(pos, vec2(this.ctx.width, this.ctx.height));
         else if (this.output instanceof RenderTexture)
         {

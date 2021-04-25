@@ -1,6 +1,6 @@
 import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";
-import { BufferStructure } from "./buffer";
+import { BufferStructure } from "./array-buffer";
 import { DefaultVertexData } from "./mesh";
 export declare type AttributeLocations<VertexStruct extends BufferStructure> = {
     [key in keyof VertexStruct]: number;

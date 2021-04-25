@@ -1,4 +1,4 @@
-import { DebugProvider, Lines, RenderTarget } from "zogra-renderer";
+import { DebugProvider, Lines, FrameBuffer } from "zogra-renderer";
 import { Color } from "zogra-renderer";
 import { mat4 } from "zogra-renderer";
 import { minus } from "zogra-renderer";
@@ -27,7 +27,7 @@ export class DebugLayerRenderer extends DebugProvider
 
     render(context: RenderContext, data: RenderData)
     {
-        context.renderer.setRenderTarget(RenderTarget.CanvasTarget);
+        context.renderer.setFramebuffer(FrameBuffer.CanvasBuffer);
         context.renderer.drawLines(this.lines, mat4.identity(), context.renderer.assets.materials.ColoredLine);
         this.lines.clear();
     }

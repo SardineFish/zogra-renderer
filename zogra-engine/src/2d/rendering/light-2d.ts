@@ -1,4 +1,4 @@
-import { Color, Culling, DefaultVertexData, FilterMode, mat4, MaterialFromShader, Mesh, minus, mul, plus, RenderTarget, RenderTexture, Shader, shaderProp, TextureFormat, vec2, vec3, Vector2, VertexStruct } from "zogra-renderer";
+import { Color, Culling, DefaultVertexData, FilterMode, mat4, MaterialFromShader, Mesh, minus, mul, plus, FrameBuffer, RenderTexture, Shader, shaderProp, TextureFormat, vec2, vec3, Vector2, VertexStruct } from "zogra-renderer";
 import { Debug } from "zogra-renderer/dist/core/global";
 import { ShaderSource } from "../../assets";
 import { Entity } from "../../engine/entity";
@@ -47,7 +47,7 @@ export class Light2D extends Entity
             this.shadowMap = new RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, TextureFormat.R8, FilterMode.Linear);
         this.updateShadowMesh(context);
         
-        context.renderer.setRenderTarget(this.shadowMap);
+        context.renderer.setFramebuffer(this.shadowMap);
         context.renderer.clear(Color.black);
         this.shadowMat.lightPos.set(this.position);
         this.shadowMat.lightRange = this.lightRange;

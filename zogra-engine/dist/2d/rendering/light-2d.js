@@ -31,7 +31,7 @@ class Light2D extends entity_1.Entity {
         if (!this.shadowMap)
             this.shadowMap = new zogra_renderer_1.RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, zogra_renderer_1.TextureFormat.R8, zogra_renderer_1.FilterMode.Linear);
         this.updateShadowMesh(context);
-        context.renderer.setRenderTarget(this.shadowMap);
+        context.renderer.setFramebuffer(this.shadowMap);
         context.renderer.clear(zogra_renderer_1.Color.black);
         this.shadowMat.lightPos.set(this.position);
         this.shadowMat.lightRange = this.lightRange;

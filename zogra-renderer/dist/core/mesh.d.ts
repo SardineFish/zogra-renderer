@@ -4,7 +4,7 @@ import { Color } from "../types/color";
 import { GLContext } from "./global";
 import { Shader } from "./shader";
 import { Asset } from "./asset";
-import { BufferStructure, BufferStructureInfo, RenderBuffer } from "./buffer";
+import { BufferStructure, BufferStructureInfo, GLArrayBuffer } from "./array-buffer";
 export interface DefaultVertexStruct extends BufferStructure {
     vert: "vec3";
     color: "vec4";
@@ -16,7 +16,7 @@ export declare const DefaultVertexData: DefaultVertexStruct;
 export declare const DefaultVertexStructInfo: BufferStructureInfo<DefaultVertexStruct>;
 export declare function VertexStruct<T extends BufferStructure>(structure: T): T;
 export declare class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset {
-    vertices: RenderBuffer<VertexStruct>;
+    vertices: GLArrayBuffer<VertexStruct>;
     indices: Uint32Array;
     private ctx;
     private initialized;

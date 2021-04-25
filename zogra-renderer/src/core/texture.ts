@@ -6,6 +6,7 @@ import { Asset, ICloneable } from "./asset";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { vec2 } from "../types/vec2";
 import { imageResize, ImageSizing } from "../utils/image-sizing";
+import { ColorAttachment, DepthAttachment } from "./frame-buffer";
 
 export enum FilterMode
 {
@@ -267,19 +268,22 @@ export class Texture2D extends TextureBase implements ICloneable
     }
 }
 
-export class DepthTexture extends TextureBase
+export class DepthTexture extends TextureBase implements DepthAttachment
 {
     constructor(width: number, height: number, ctx = GlobalContext())
     {
         super(width, height, TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
     }
-    create()
+    bindFramebuffer(): void
     {
-        super.create();
+        this.create();
+        const gl = this.ctx.gl;
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this._glTex, 0);
     }
 }
 
-export class RenderTexture extends TextureBase
+export class RenderTexture extends TextureBase implements ColorAttachment
 {
     depthTexture: DepthTexture | null = null;
     constructor(width: number, height: number, depth: boolean = false, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
@@ -301,6 +305,13 @@ export class RenderTexture extends TextureBase
             return;
         this.depthTexture?.destroy();
         super.destroy();
+    }
+    bindFramebuffer(attachment: number)
+    {
+        this.create();
+        const gl = this.ctx.gl;
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, this._glTex, 0);
     }
 }
 

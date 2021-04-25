@@ -27,10 +27,7 @@ class Default2DRenderPipeline {
     renderCamera(context, data) {
         const camera = data.camera;
         camera.__preRender(context);
-        if (camera.output === zogra_renderer_2.RenderTarget.CanvasTarget)
-            context.renderer.setRenderTarget(zogra_renderer_2.RenderTarget.CanvasTarget);
-        else
-            context.renderer.setRenderTarget(camera.output);
+        context.renderer.setFramebuffer(camera.output);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
         // context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
@@ -48,7 +45,7 @@ class Default2DRenderPipeline {
             // }
         }
         this.prepareLights(context, data);
-        context.renderer.blit(null, zogra_renderer_2.RenderTarget.CanvasTarget, this.light2DComposeMaterial);
+        context.renderer.blit(null, zogra_renderer_2.FrameBuffer.CanvasBuffer, this.light2DComposeMaterial);
         this.debuglayer.render(context, data);
         camera.__postRender(context);
     }

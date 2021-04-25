@@ -4,7 +4,7 @@ import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { getUniformsLocation } from "../utils/util";
 import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";
-import { BufferStructure, BufferStructureInfo } from "./buffer";
+import { BufferStructure, BufferStructureInfo } from "./array-buffer";
 import { DefaultVertexData } from "./mesh";
 
 export type AttributeLocations<VertexStruct extends BufferStructure> =

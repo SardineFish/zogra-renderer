@@ -1,4 +1,4 @@
-import { IRenderTarget, RenderTexture } from "zogra-renderer";
+import { IFrameBuffer } from "zogra-renderer";
 import { GLContext } from "zogra-renderer";
 import { vec2 } from "zogra-renderer";
 import { Entity, EntityEvents } from "./entity";
@@ -17,7 +17,7 @@ interface CameraEvents extends EntityEvents {
 }
 export declare class Camera extends Entity implements IEventSource<CameraEvents> {
     private ctx;
-    output: RenderTexture | IRenderTarget;
+    output: IFrameBuffer;
     FOV: number;
     near: number;
     far: number;
