@@ -4,5 +4,9 @@ export declare const ShaderSource: {
     particle2D: ShaderPair;
     shadow2D: ShaderPair;
     light2D: ShaderPair;
+    boxBlur: ShaderPair;
+    bloomFilter: ShaderPair;
+    bloomCompose: ShaderPair;
+    blitCopy: ShaderPair;
 };
 export {};

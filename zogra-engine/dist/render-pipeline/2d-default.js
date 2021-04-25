@@ -60,8 +60,16 @@ class Default2DRenderPipeline {
         var _a;
         const camera = data.camera;
         const resource = this.getCameraResources(context, camera);
-        const [src, dst] = resource.postprocessFBOs;
+        let [src, dst] = resource.postprocessFBOs;
         context.renderer.blitCopy(resource.outputBuffer, src.colorAttachments[0]);
+        for (const postprocess of camera.postprocess) {
+            if (!postprocess.__intialized) {
+                postprocess.create(context);
+                postprocess.__intialized = true;
+            }
+            postprocess.render(context, src.colorAttachments[0], dst);
+            [src, dst] = [dst, src];
+        }
         context.renderer.blit(src.colorAttachments[0], (_a = camera.output) !== null && _a !== void 0 ? _a : zogra_renderer_3.FrameBuffer.CanvasBuffer);
     }
     getCameraResources(context, camera) {

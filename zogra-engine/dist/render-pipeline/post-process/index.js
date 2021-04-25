@@ -10,12 +10,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BuiltinShaders = void 0;
-__exportStar(require("zogra-renderer"), exports);
-__exportStar(require("./engine/engine"), exports);
-__exportStar(require("./render-pipeline/rp"), exports);
-__exportStar(require("./2d"), exports);
-__exportStar(require("./utils"), exports);
-const assets_1 = require("./assets");
-exports.BuiltinShaders = assets_1.ShaderSource;
+__exportStar(require("./post-process"), exports);
+__exportStar(require("./bloom"), exports);
 //# sourceMappingURL=index.js.map

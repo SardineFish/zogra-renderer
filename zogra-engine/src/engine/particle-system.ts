@@ -1,4 +1,4 @@
-import { Color, Material, MaterialFromShader, MathUtils, Mesh, MeshBuilder, quat, FrameBuffer, GLArrayBuffer, Shader, shaderProp, Texture, vec2, vec3, vec4, Vector3 } from "zogra-renderer";
+import { Color, Material, MaterialFromShader, MathUtils, Mesh, MeshBuilder, quat, FrameBuffer, GLArrayBuffer, Shader, shaderProp, Texture, vec2, vec3, vec4, Vector3, VertexStruct, ShaderAttributeNames, DefaultShaderAttributeNames } from "zogra-renderer";
 import { Debug } from "zogra-renderer/dist/core/global";
 import { Default2DMaterial } from "../2d";
 import { ShaderSource } from "../assets";
@@ -7,22 +7,27 @@ import { RenderContext } from "../render-pipeline/render-pipeline";
 import { RenderObject } from "./render-object";
 import { Time } from "./zogra-engine";
 
+const ParticleVertStruct = VertexStruct({
+    vert: "vec3",
+    color: "vec4",
+    normal: "vec3",
+    uv: "vec2",
+    uv2: "vec2",
+    pos: "vec3",
+    rotation: "vec3",
+    size: "float",
+});
+
+const ParticleAttributeName: ShaderAttributeNames<typeof ParticleVertStruct> = {
+    ...DefaultShaderAttributeNames,
+    pos: "particlePos",
+    rotation: "particleRotation",
+    size: "particleSize",
+}
+
 export class ParticleMaterial extends MaterialFromShader(new Shader(...ShaderSource.particle2D, {
-    vertexStructure: {
-        vert: "vec3",
-        color: "vec4",
-        normal: "vec3",
-        uv: "vec2",
-        uv2: "vec2",
-        pos: "vec3",
-        rotation: "vec3",
-        size: "float",
-    },
-    attributes: {
-        pos: "particlePos",
-        rotation: "particleRotation",
-        size: "particleSize",
-    }
+    vertexStructure: ParticleVertStruct,
+    attributes: ParticleAttributeName
 })) {
     @shaderProp("uColor", "color")
     color: Color = Color.white;
@@ -54,6 +59,8 @@ export type ParticlePropertySettings<T, U> =
 
 export class ParticleSystem extends RenderObject
 {
+    static VertexStructure = ParticleVertStruct;
+    static AttributeNames = ParticleAttributeName;
     mesh: Mesh = MeshBuilder.quad();
     material: Material = new ParticleMaterial();
     duration: ParticleScalarGenerator = 1;

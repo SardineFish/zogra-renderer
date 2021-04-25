@@ -10,22 +10,20 @@ exports.ParticleSystem = exports.ParticleMaterial = void 0;
 const zogra_renderer_1 = require("zogra-renderer");
 const assets_1 = require("../assets");
 const render_object_1 = require("./render-object");
+const ParticleVertStruct = zogra_renderer_1.VertexStruct({
+    vert: "vec3",
+    color: "vec4",
+    normal: "vec3",
+    uv: "vec2",
+    uv2: "vec2",
+    pos: "vec3",
+    rotation: "vec3",
+    size: "float",
+});
+const ParticleAttributeName = Object.assign(Object.assign({}, zogra_renderer_1.DefaultShaderAttributeNames), { pos: "particlePos", rotation: "particleRotation", size: "particleSize" });
 class ParticleMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.particle2D, {
-    vertexStructure: {
-        vert: "vec3",
-        color: "vec4",
-        normal: "vec3",
-        uv: "vec2",
-        uv2: "vec2",
-        pos: "vec3",
-        rotation: "vec3",
-        size: "float",
-    },
-    attributes: {
-        pos: "particlePos",
-        rotation: "particleRotation",
-        size: "particleSize",
-    }
+    vertexStructure: ParticleVertStruct,
+    attributes: ParticleAttributeName
 })) {
     constructor() {
         super(...arguments);
@@ -257,4 +255,6 @@ class ParticleSystem extends render_object_1.RenderObject {
     }
 }
 exports.ParticleSystem = ParticleSystem;
+ParticleSystem.VertexStructure = ParticleVertStruct;
+ParticleSystem.AttributeNames = ParticleAttributeName;
 //# sourceMappingURL=particle-system.js.map

@@ -27,6 +27,7 @@ class Camera extends entity_1.Entity {
         this.projection = Projection.Perspective;
         this.clearColor = zogra_renderer_6.Color.black;
         this.clearDepth = true;
+        this.postprocess = [];
         this.ctx = ctx;
     }
     get pixelSize() {

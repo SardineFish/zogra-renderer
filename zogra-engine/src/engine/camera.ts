@@ -6,7 +6,7 @@ import { Entity, EntityEvents } from "./entity";
 import { mat4 } from "zogra-renderer";
 import { Deg2Rad, div, mul, minus } from "zogra-renderer";
 import { Color } from "zogra-renderer";
-import { RenderContext } from "../render-pipeline/rp";
+import { PostProcess, RenderContext } from "../render-pipeline/rp";
 import { EventEmitter, IEventSource, EventKeys } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
 import { ray } from "zogra-renderer";
@@ -37,6 +37,8 @@ export class Camera extends Entity implements IEventSource<CameraEvents>
     projection = Projection.Perspective;
     clearColor: Color = Color.black;
     clearDepth = true;
+
+    postprocess: PostProcess[] = [];
 
     get pixelSize()
     {

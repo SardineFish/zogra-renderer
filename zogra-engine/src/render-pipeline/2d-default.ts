@@ -31,7 +31,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
     debuglayer = new DebugLayerRenderer();
     light2DComposeMaterial = new Light2DCompose();
     ambientLightColor: Color = new Color(0.2, 0.2, 0.2, 1);
-    perCameraResources = new Map<Camera, CameraRenderResources>()
+    perCameraResources = new Map<Camera, CameraRenderResources>();
 
     constructor()
     {
@@ -93,8 +93,21 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
     {
         const camera = data.camera;
         const resource = this.getCameraResources(context, camera);
-        const [src, dst] = resource.postprocessFBOs;
+        let [src, dst] = resource.postprocessFBOs;
         context.renderer.blitCopy(resource.outputBuffer, src.colorAttachments[0] as RenderTexture);
+
+        for(const postprocess of camera.postprocess)
+        {
+            if (!postprocess.__intialized)
+            {
+                postprocess.create(context);
+                postprocess.__intialized = true;
+            }
+            
+            postprocess.render(context, src.colorAttachments[0] as RenderTexture, dst);
+            [src, dst] = [dst, src];
+        }
+
         context.renderer.blit(src.colorAttachments[0] as RenderTexture, camera.output ?? FrameBuffer.CanvasBuffer);
     }
 
