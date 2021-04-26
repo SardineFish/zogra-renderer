@@ -16,8 +16,12 @@ class Light2DPass extends render_pass_1.RenderPass {
         super();
         this.light2DShadowMaterial = new Light2DWithShadow();
         this.lightComposeMaterial = new Light2DCompose();
+        this.lightInstancingMaterial = new Light2DSimpleInstancing();
+        this.lightInstancingBuffer = new zogra_renderer_1.GLArrayBuffer(Light2DInstancingStruct, 64);
         this.settings = pipelineSettings;
         this.lightmap = new zogra_renderer_1.RenderTexture(context.screen.width, context.screen.height, false, zogra_renderer_1.TextureFormat.RGBA16F, zogra_renderer_1.FilterMode.Linear);
+        this.simpleLightMesh = zogra_renderer_1.MeshBuilder.quad(zogra_renderer_1.vec2.zero(), zogra_renderer_1.vec2(2));
+        this.lightInstancingBuffer.static = false;
     }
     render(context, data) {
         const lightList = data.scene.getEntitiesOfType(light_2d_1.Light2D);
@@ -26,10 +30,21 @@ class Light2DPass extends render_pass_1.RenderPass {
         context.renderer.setFramebuffer(this.lightmap);
         context.renderer.clear(zogra_renderer_1.Color.black);
         this.drawShadowLights(context, data, shadowLights);
-        // this.drawSimpleLights(context, data, simpleLights);
+        this.drawSimpleLights(context, data, simpleLights);
         context.renderer.blit(this.lightmap, data.cameraOutput, this.lightComposeMaterial);
     }
     drawSimpleLights(context, data, simpleLights) {
+        if (simpleLights.length > this.lightInstancingBuffer.length)
+            this.lightInstancingBuffer.resize(this.lightInstancingBuffer.length * 2);
+        for (let i = 0; i < simpleLights.length; i++) {
+            zogra_renderer_1.vec4.set(this.lightInstancingBuffer[i].lightColor, simpleLights[i].lightColor);
+            zogra_renderer_1.vec3.set(this.lightInstancingBuffer[i].lightPos, simpleLights[i].position);
+            this.lightInstancingBuffer[i].lightParams[0] = simpleLights[i].volumnRadius;
+            this.lightInstancingBuffer[i].lightParams[1] = simpleLights[i].lightRange;
+            this.lightInstancingBuffer[i].lightParams[2] = simpleLights[i].attenuation;
+            this.lightInstancingBuffer[i].lightParams[3] = simpleLights[i].intensity;
+        }
+        context.renderer.drawMeshInstance(this.simpleLightMesh, this.lightInstancingBuffer, this.lightInstancingMaterial, simpleLights.length);
     }
     drawShadowLights(context, data, shadowLights) {
         for (let i = 0; i < this.light2DShadowMaterial.lightParamsList.length; i++)
@@ -99,6 +114,21 @@ class Light2DCompose extends zogra_renderer_1.MaterialFromShader(new zogra_rende
     blend: [zogra_renderer_1.Blending.DstColor, zogra_renderer_1.Blending.Zero],
     depth: zogra_renderer_1.DepthTest.Disable,
     zWrite: false,
+})) {
+}
+const Light2DInstancingStruct = zogra_renderer_1.VertexStruct({
+    lightPos: "vec3",
+    lightParams: "vec4",
+    lightColor: "vec4",
+});
+class Light2DSimpleInstancing extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.light2DSimple, {
+    vertexStructure: Object.assign(Object.assign({}, zogra_renderer_1.DefaultVertexData), Light2DInstancingStruct),
+    attributes: {
+        lightPos: "aLightPos",
+        lightColor: "aLightColor",
+        lightParams: "aLightParams",
+    },
+    blend: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.One],
 })) {
 }
 //# sourceMappingURL=2d-light-pass.js.map

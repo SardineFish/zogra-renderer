@@ -32,12 +32,17 @@ var bloom_filter_default = "#version 300 es\r\nprecision mediump float;\r\n\r\ni
 var blit_copy_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec2 vUV;\r\nuniform sampler2D uMainTex;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = texture(uMainTex, vUV).rgba;\r\n}";
 // assets/shader/bloom-compose.glsl
 var bloom_compose_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec2 vUV;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform float uIntensity;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = vec4(texture(uMainTex, vUV).rgb * vec3(uIntensity), 1.0);\r\n}";
+// assets/shader/2d-light-simple-vert.glsl
+var d_light_simple_vert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec2 aUV;\r\nin vec4 aLightColor;\r\nin vec4 aLightParams; // (volumn, range, attenuation, intensity)\r\nin vec3 aLightPos;\r\n\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 vLightColor;\r\nout vec4 vLightParams; \r\nout vec3 vLightPos;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos.xy * vec2(aLightParams.y) + aLightPos.xy, 0, 1);\r\n    vPos = gl_Position;\r\n    vUV = aUV;\r\n    vLightParams = aLightParams;\r\n    vLightColor = aLightColor;\r\n    vLightPos = aLightPos;\r\n}";
+// assets/shader/2d-light-simple-frag.glsl
+var d_light_simple_frag_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vLightColor;\r\nin vec4 vLightParams; // (volumn, range, attenuation, intensity)\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nout vec4 fragColor;\r\n\r\nfloat lightAttenuation(float r, float range, float volumn, float attenuation)\r\n{\r\n    r -= volumn;\r\n    r /= range - volumn;\r\n    if(attenuation <= -1.0)\r\n        return 0.0;\r\n    else if (attenuation <= 0.0)\r\n    {\r\n        float t = 1.0 / (attenuation + 1.0) - 1.0;\r\n        return exp(-r * t) - exp(-t) * r;\r\n    }\r\n    else if (attenuation < 1.0)\r\n    {\r\n        float t = 1.0 / (1.0 - attenuation) - 1.0;\r\n        r = 1.0 - r;\r\n        return 1.0 - (exp(-r * t) - exp(-t) * r);\r\n    }\r\n    else {\r\n        return r >= 1.0 ? 0.0 : 1.0;\r\n    }\r\n}\r\n\r\nvoid main()\r\n{\r\n    float r = length(vUV * vec2(2) - vec2(1)) * vLightParams.y;\r\n    float attenuation = lightAttenuation(r, vLightParams.y, vLightParams.x, vLightParams.z);\r\n    attenuation = max(attenuation, 0.0);\r\n    attenuation *= vLightParams.w;\r\n    vec3 color = vLightColor.rgb * vec3(attenuation);\r\n\r\n    fragColor = vec4(color, 1);\r\n    // fragColor = vec4(1);\r\n}";
 // assets/shader/shader.ts
 var ShaderSource = {
     default2D: [d_vert_default, d_frag_default],
     particle2D: [particle_vert_default, d_frag_default],
     shadow2D: [d_shadow_vert_default, d_shadow_frag_default],
     light2D: [d_light_vert_default, d_light_frag_default],
+    light2DSimple: [d_light_simple_vert_default, d_light_simple_frag_default],
     boxBlur: [d_vert_default, box_blur_default],
     bloomFilter: [d_vert_default, bloom_filter_default],
     bloomCompose: [d_vert_default, bloom_compose_default],

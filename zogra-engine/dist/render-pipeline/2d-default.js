@@ -47,24 +47,6 @@ class Default2DRenderPipeline {
         this.debuglayer.render(context, data);
         camera.__postRender(context);
     }
-    // postprocess(context: RenderContext, data: RenderData)
-    // {
-    //     const camera = data.camera;
-    //     const resource = this.getCameraResources(context, camera);
-    //     let [src, dst] = resource.postprocessFBOs;
-    //     context.renderer.blitCopy(resource.outputBuffer, src.colorAttachments[0] as RenderTexture);
-    //     for(const postprocess of camera.postprocess)
-    //     {
-    //         if (!postprocess.__intialized)
-    //         {
-    //             postprocess.create(context);
-    //             postprocess.__intialized = true;
-    //         }
-    //         postprocess.render(context, src.colorAttachments[0] as RenderTexture, dst);
-    //         [src, dst] = [dst, src];
-    //     }
-    //     context.renderer.blit(src.colorAttachments[0] as RenderTexture, camera.output ?? FrameBuffer.CanvasBuffer);
-    // }
     getCameraResources(context, camera) {
         let resource = this.perCameraResources.get(camera);
         if (!resource) {

@@ -9,6 +9,8 @@ import boxBlur from "./box-blur.glsl";
 import bloomFilter from "./bloom-filter.glsl";
 import blitCopy from "./blit-copy.glsl";
 import bloomCompose from "./bloom-compose.glsl";
+import _2dLightSimpleVert from "./2d-light-simple-vert.glsl";
+import _2dLightSimpleFrag from "./2d-light-simple-frag.glsl";
 
 type ShaderPair = [string, string];
 
@@ -17,6 +19,7 @@ export const ShaderSource = {
     particle2D: [particleVert, _2dFrag] as ShaderPair,
     shadow2D: [_2dShadowVert, _2dShadowFrag] as ShaderPair,
     light2D: [_2dLightVert, _2dLightFrag] as ShaderPair,
+    light2DSimple: [_2dLightSimpleVert, _2dLightSimpleFrag] as ShaderPair,
     boxBlur: [_2dVert, boxBlur] as ShaderPair,
     bloomFilter: [_2dVert, bloomFilter] as ShaderPair,
     bloomCompose: [_2dVert, bloomCompose] as ShaderPair,

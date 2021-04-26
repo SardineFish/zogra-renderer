@@ -35,7 +35,7 @@ class PreviewRenderer {
     }
     render(context, scene, cameras) {
         for (let i = 0; i < cameras.length; i++) {
-            const data = new render_data_1.RenderData(cameras[i], this.getFramebuffer(context, cameras[i]), scene);
+            const data = render_data_1.RenderData.create(cameras[i], scene, this.getFramebuffer(context, cameras[i]));
             this.renderCamera(context, data);
         }
     }

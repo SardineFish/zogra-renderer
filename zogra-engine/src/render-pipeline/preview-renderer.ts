@@ -50,7 +50,7 @@ export class PreviewRenderer implements ZograRenderPipeline
     {
         for (let i = 0; i < cameras.length; i++)
         {
-            const data = new RenderData(cameras[i], this.getFramebuffer(context, cameras[i]), scene);
+            const data = RenderData.create(cameras[i], scene, this.getFramebuffer(context, cameras[i]));
             this.renderCamera(context, data);
         }
     }

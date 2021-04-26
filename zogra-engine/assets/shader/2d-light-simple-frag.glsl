@@ -33,10 +33,11 @@ float lightAttenuation(float r, float range, float volumn, float attenuation)
 void main()
 {
     float r = length(vUV * vec2(2) - vec2(1)) * vLightParams.y;
-    float attenuation = lightAttenuation(r, vLightParams.y, vLightParams.x, vLightParams.z) * vLightParams.w;
+    float attenuation = lightAttenuation(r, vLightParams.y, vLightParams.x, vLightParams.z);
+    attenuation = max(attenuation, 0.0);
+    attenuation *= vLightParams.w;
+    vec3 color = vLightColor.rgb * vec3(attenuation);
 
-    vec4 color = texture(uMainTex, vUV.xy).rgba;
-    // color = color * vec3(uColor);
-    fragColor = color.rgba * vColor.rgba * uColor.rgba;
-    // fragColor = vec4(vUV.xy, 0, 1);
+    fragColor = vec4(color, 1);
+    // fragColor = vec4(1);
 }

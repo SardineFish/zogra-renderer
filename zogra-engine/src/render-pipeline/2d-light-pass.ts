@@ -1,4 +1,4 @@
-import { Blending, Color, DepthTest, FilterMode, FrameBuffer, MaterialFromShader, RenderTexture, Shader, shaderProp, Texture, TextureFormat, vec4 } from "zogra-renderer";
+import { Blending, Color, DefaultVertexData, DepthTest, FilterMode, FrameBuffer, GLArrayBuffer, MaterialFromShader, Mesh, MeshBuilder, RenderTexture, Shader, shaderProp, Texture, TextureFormat, vec2, vec3, vec4, VertexStruct } from "zogra-renderer";
 import { Light2D, ShadowType } from "../2d/rendering/light-2d";
 import { ShaderSource } from "../assets";
 import { Camera } from "../engine/camera";
@@ -15,7 +15,10 @@ export class Light2DPass extends RenderPass
     lightmap: RenderTexture;
     light2DShadowMaterial = new Light2DWithShadow();
     lightComposeMaterial = new Light2DCompose();
+    lightInstancingMaterial = new Light2DSimpleInstancing();
     settings: Default2DRenderPipeline;
+    lightInstancingBuffer = new GLArrayBuffer(Light2DInstancingStruct, 64);
+    simpleLightMesh: Mesh;
 
     constructor(context: RenderContext, pipelineSettings: Default2DRenderPipeline)
     {
@@ -29,6 +32,8 @@ export class Light2DPass extends RenderPass
             TextureFormat.RGBA16F,
             FilterMode.Linear
         );
+        this.simpleLightMesh = MeshBuilder.quad(vec2.zero(), vec2(2));
+        this.lightInstancingBuffer.static = false;
     }
 
     render(context: RenderContext, data: RenderData): void
@@ -36,17 +41,32 @@ export class Light2DPass extends RenderPass
         const lightList = data.scene.getEntitiesOfType(Light2D);
         const shadowLights = lightList.filter(light => light.shadowType === ShadowType.Hard || light.shadowType === ShadowType.Soft);
         const simpleLights = lightList.filter(light => light.shadowType === false);
+
         context.renderer.setFramebuffer(this.lightmap);
         context.renderer.clear(Color.black);
+
         this.drawShadowLights(context, data, shadowLights);
-        // this.drawSimpleLights(context, data, simpleLights);
+        this.drawSimpleLights(context, data, simpleLights);
 
         context.renderer.blit(this.lightmap, data.cameraOutput, this.lightComposeMaterial);
     }
 
     private drawSimpleLights(context: RenderContext, data: RenderData, simpleLights: Light2D[])
     {
-        
+        if (simpleLights.length > this.lightInstancingBuffer.length)
+            this.lightInstancingBuffer.resize(this.lightInstancingBuffer.length * 2);
+        for (let i = 0; i < simpleLights.length; i++)
+        {
+            vec4.set(this.lightInstancingBuffer[i].lightColor, simpleLights[i].lightColor);
+            vec3.set(this.lightInstancingBuffer[i].lightPos, simpleLights[i].position);
+            this.lightInstancingBuffer[i].lightParams[0] = simpleLights[i].volumnRadius;
+            this.lightInstancingBuffer[i].lightParams[1] = simpleLights[i].lightRange;
+            this.lightInstancingBuffer[i].lightParams[2] = simpleLights[i].attenuation;
+            this.lightInstancingBuffer[i].lightParams[3] = simpleLights[i].intensity;
+        }
+
+        context.renderer.drawMeshInstance(this.simpleLightMesh, this.lightInstancingBuffer, this.lightInstancingMaterial, simpleLights.length);
+
     }
 
     private drawShadowLights(context: RenderContext, data: RenderData, shadowLights: Light2D[])
@@ -116,6 +136,28 @@ class Light2DCompose extends MaterialFromShader(new Shader(...ShaderSource.blitC
     blend: [Blending.DstColor, Blending.Zero],
     depth: DepthTest.Disable,
     zWrite: false,
+}))
+{
+
+}
+
+const Light2DInstancingStruct = VertexStruct({
+    lightPos: "vec3",
+    lightParams: "vec4",
+    lightColor: "vec4",
+});
+
+class Light2DSimpleInstancing extends MaterialFromShader(new Shader(...ShaderSource.light2DSimple, {
+    vertexStructure: {
+        ...DefaultVertexData,
+        ...Light2DInstancingStruct,
+    },
+    attributes: {
+        lightPos: "aLightPos",
+        lightColor: "aLightColor",
+        lightParams: "aLightParams",
+    },
+    blend: [Blending.One, Blending.One],
 }))
 {
 
