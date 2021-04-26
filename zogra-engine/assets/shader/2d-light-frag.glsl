@@ -15,7 +15,7 @@ uniform vec4 uAmbientLightColor;
 
 // out vec4 fragColor;
 
-float lightAttenuation(float r, float range, float volumn, float attenuation)
+float lightAttenuation(float r, float attenuation)
 {
     if(attenuation <= -1.0)
         return 0.0;
@@ -43,7 +43,7 @@ void main()
         float r = distance(uLightPosList[i].xy, worldPos);
         r -= uLightParamsList[i].x;
         r = r / (uLightParamsList[i].y -  uLightParamsList[i].x);
-        float light = lightAttenuation(clamp(r, 0.0, 1.0), uLightParamsList[i].y, uLightParamsList[i].x, uLightParamsList[i].z);
+        float light = lightAttenuation(clamp(r, 0.0, 1.0), uLightParamsList[i].z);
         light *= uLightParamsList[i].w;
         float shadow = texture2D(uShadowMapList[i], vUV.xy).r;
         light *= 1.0 - shadow;

@@ -13,4 +13,12 @@ export interface ZograRenderPipeline {
 }
 export interface RenderContext {
     renderer: ZograRenderer;
+    screen: Screen;
 }
+export interface Screen {
+    width: number;
+    height: number;
+}
+export declare const RenderContext: {
+    create(renderer: ZograRenderer): RenderContext;
+};

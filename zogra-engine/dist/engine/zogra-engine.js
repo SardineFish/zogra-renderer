@@ -25,9 +25,7 @@ class ZograEngine {
     }
     renderScene() {
         const cameras = this.scene.getEntitiesOfType(camera_1.Camera);
-        this.renderPipeline.render({
-            renderer: this.renderer
-        }, this.scene, cameras);
+        this.renderPipeline.render(rp_1.RenderContext.create(this.renderer), this.scene, cameras);
     }
     start() {
         let previousDelay = 0;

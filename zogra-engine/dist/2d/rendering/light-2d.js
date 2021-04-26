@@ -1,10 +1,16 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Light2D = exports.Shadow2DVertStruct = exports.ShadowType = void 0;
+exports.Shadow2DMaterial = exports.Light2D = exports.Shadow2DVertStruct = exports.ShadowType = void 0;
 const zogra_renderer_1 = require("zogra-renderer");
+const assets_1 = require("../../assets");
 const entity_1 = require("../../engine/entity");
 const tilemap_collider_1 = require("../physics/tilemap-collider");
-const materials_1 = require("./materials");
 var ShadowType;
 (function (ShadowType) {
     ShadowType["Soft"] = "soft";
@@ -23,11 +29,13 @@ class Light2D extends entity_1.Entity {
         /** In range [-1..1] */
         this.attenuation = 0;
         this.shadowMesh = new zogra_renderer_1.Mesh(exports.Shadow2DVertStruct);
-        this.shadowMat = new materials_1.Shadow2DMaterial();
+        this.shadowMat = new Shadow2DMaterial();
         this.__tempVectors = Array.from(new Array(32)).map(() => zogra_renderer_1.vec2.zero());
         this.shadowMesh.resize(50, 90);
     }
     getShadowMap(context, data) {
+        // if (this.shadowType === false)
+        //     return null;
         if (!this.shadowMap)
             this.shadowMap = new zogra_renderer_1.RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, zogra_renderer_1.TextureFormat.R8, zogra_renderer_1.FilterMode.Linear);
         this.updateShadowMesh(context, data);
@@ -37,7 +45,7 @@ class Light2D extends entity_1.Entity {
         this.shadowMat.lightRange = this.lightRange;
         this.shadowMat.volumnSize = this.volumnRadius;
         context.renderer.drawMesh(this.shadowMesh, this.localToWorldMatrix, this.shadowMat);
-        // context.renderer.blit(this.shadowMap, RenderTarget.CanvasTarget);
+        // context.renderer.blit(this.shadowMap, FrameBuffer.CanvasBuffer);
         return this.shadowMap;
     }
     updateShadowMesh(context, data) {
@@ -226,4 +234,30 @@ function circleTangentThroughPoint(point, radius, out = [zogra_renderer_1.vec2.z
     out[1].set(_temp2).minus(t);
     return out;
 }
+class Shadow2DMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.shadow2D, {
+    vertexStructure: exports.Shadow2DVertStruct,
+    attributes: {
+        p0: "aP0",
+        p1: "aP1",
+    },
+    cull: zogra_renderer_1.Culling.Back,
+    blend: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.One]
+})) {
+    constructor() {
+        super(...arguments);
+        this.lightPos = zogra_renderer_1.vec2.zero();
+        this.volumnSize = 1;
+        this.lightRange = 10;
+    }
+}
+__decorate([
+    zogra_renderer_1.shaderProp("uLightPos", "vec2")
+], Shadow2DMaterial.prototype, "lightPos", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uVolumnSize", "float")
+], Shadow2DMaterial.prototype, "volumnSize", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uLightRange", "float")
+], Shadow2DMaterial.prototype, "lightRange", void 0);
+exports.Shadow2DMaterial = Shadow2DMaterial;
 //# sourceMappingURL=light-2d.js.map

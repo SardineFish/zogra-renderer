@@ -1,4 +1,4 @@
-import { Color, Culling, DefaultVertexData, FilterMode, mat4, MaterialFromShader, Mesh, minus, mul, plus, FrameBuffer, RenderTexture, Shader, shaderProp, TextureFormat, vec2, vec3, Vector2, VertexStruct } from "zogra-renderer";
+import { Color, Culling, DefaultVertexData, FilterMode, mat4, MaterialFromShader, Mesh, minus, mul, plus, FrameBuffer, RenderTexture, Shader, shaderProp, TextureFormat, vec2, vec3, Vector2, VertexStruct, Blending } from "zogra-renderer";
 import { Debug } from "zogra-renderer/dist/core/global";
 import { ShaderSource } from "../../assets";
 import { Entity } from "../../engine/entity";
@@ -6,7 +6,6 @@ import { RenderData } from "../../render-pipeline/render-data";
 import { RenderContext } from "../../render-pipeline/render-pipeline";
 import { Collider2D } from "../physics/collider2d";
 import { TilemapCollider } from "../physics/tilemap-collider";
-import { Shadow2DMaterial } from "./materials";
 import { Tilemap } from "./tilemap";
 
 export enum ShadowType
@@ -43,6 +42,8 @@ export class Light2D extends Entity
 
     getShadowMap(context: RenderContext, data: RenderData)
     {
+        // if (this.shadowType === false)
+        //     return null;
         if (!this.shadowMap)
             this.shadowMap = new RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, TextureFormat.R8, FilterMode.Linear);
         this.updateShadowMesh(context, data);
@@ -53,7 +54,7 @@ export class Light2D extends Entity
         this.shadowMat.lightRange = this.lightRange;
         this.shadowMat.volumnSize = this.volumnRadius;
         context.renderer.drawMesh(this.shadowMesh, this.localToWorldMatrix, this.shadowMat);
-        // context.renderer.blit(this.shadowMap, RenderTarget.CanvasTarget);
+        // context.renderer.blit(this.shadowMap, FrameBuffer.CanvasBuffer);
         return this.shadowMap;
     }
 
@@ -278,4 +279,24 @@ function circleTangentThroughPoint(point: Readonly <vec2>, radius: number, out: 
     out[0].set(_temp2).plus(t);
     out[1].set(_temp2).minus(t);
     return out;
+}
+
+export class Shadow2DMaterial extends MaterialFromShader(new Shader(...ShaderSource.shadow2D, {
+    vertexStructure: Shadow2DVertStruct,
+    attributes: {
+        p0: "aP0",
+        p1: "aP1",
+    },
+    cull: Culling.Back,
+    blend: [Blending.One, Blending.One]
+}))
+{
+    @shaderProp("uLightPos", "vec2")
+    lightPos: vec2 = vec2.zero();
+
+    @shaderProp("uVolumnSize", "float")
+    volumnSize: number = 1;
+
+    @shaderProp("uLightRange", "float")
+    lightRange: number = 10;
 }

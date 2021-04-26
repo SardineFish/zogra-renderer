@@ -1,5 +1,5 @@
 import { Scene } from "./scene";
-import { ZograRenderPipeline, ZograRenderPipelineConstructor, PreviewRenderer } from "../render-pipeline/rp";
+import { ZograRenderPipeline, ZograRenderPipelineConstructor, PreviewRenderer, RenderContext } from "../render-pipeline/rp";
 import { Camera } from "./camera";
 import { ZograRenderer } from "zogra-renderer";
 import { EventEmitter, EventDefinitions, IEventSource, EventKeys } from "zogra-renderer";
@@ -49,9 +49,7 @@ export class ZograEngine<RenderPipeline extends ZograRenderPipeline = PreviewRen
     renderScene()
     {
         const cameras = this.scene.getEntitiesOfType(Camera);
-        this.renderPipeline.render({
-            renderer: this.renderer
-        }, this.scene, cameras);
+        this.renderPipeline.render(RenderContext.create(this.renderer), this.scene, cameras);
     }
     start()
     {

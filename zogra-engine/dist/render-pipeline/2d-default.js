@@ -6,16 +6,18 @@ const render_data_1 = require("./render-data");
 const zogra_renderer_2 = require("zogra-renderer");
 const zogra_renderer_3 = require("zogra-renderer");
 const zogra_renderer_4 = require("zogra-renderer");
-const zogra_renderer_5 = require("zogra-renderer");
 const debug_layer_1 = require("./debug-layer");
 const global_1 = require("zogra-renderer/dist/core/global");
-const _2d_1 = require("../2d");
+const _2d_light_pass_1 = require("./2d-light-pass");
+const draw_scene_1 = require("./draw-scene");
+const post_process_1 = require("./post-process");
+const final_blit_1 = require("./final-blit");
+const clear_pass_1 = require("./clear-pass");
 class Default2DRenderPipeline {
     constructor() {
         this.msaa = 4;
         this.renderFormat = zogra_renderer_1.TextureFormat.RGBA8;
         this.debuglayer = new debug_layer_1.DebugLayerRenderer();
-        this.light2DComposeMaterial = new _2d_1.Light2DCompose();
         this.ambientLightColor = new zogra_renderer_2.Color(0.2, 0.2, 0.2, 1);
         this.perCameraResources = new Map();
         global_1.Debug(this.debuglayer);
@@ -23,7 +25,7 @@ class Default2DRenderPipeline {
     render(context, scene, cameras) {
         for (const camera of cameras) {
             const resource = this.getCameraResources(context, camera);
-            const data = new render_data_1.RenderData(camera, resource.outputFBO, scene);
+            const data = render_data_1.RenderData.create(camera, scene, resource.outputFBO);
             this.renderCamera(context, data);
         }
     }
@@ -33,45 +35,36 @@ class Default2DRenderPipeline {
     renderCamera(context, data) {
         const camera = data.camera;
         camera.__preRender(context);
-        context.renderer.setFramebuffer(data.cameraOutput);
-        context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        // context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
-        const objs = data.getVisibleObjects(render_data_1.RenderOrder.FarToNear);
-        for (const obj of objs) {
-            obj.render(context, data);
-            // const modelMatrix = obj.localToWorldMatrix;
-            // for (let i = 0; i < obj.meshes.length; i++)
-            // {
-            //     if (!obj.meshes[i])
-            //         continue;
-            //     const mat = obj.materials[i] || context.renderer.assets.materials.default;
-            //     mat.setProp("uCameraPos", "vec3", camera.position);
-            //     context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
-            // }
+        const resource = this.getCameraResources(context, camera);
+        for (const pass of resource.renderPass) {
+            pass.setup(context, data);
+            pass.render(context, data);
         }
-        this.prepareLights(context, data);
-        context.renderer.blit(null, data.cameraOutput, this.light2DComposeMaterial);
-        this.postprocess(context, data);
+        for (const pass of resource.renderPass) {
+            pass.cleanup(context, data);
+        }
         this.debuglayer.render(context, data);
         camera.__postRender(context);
     }
-    postprocess(context, data) {
-        var _a;
-        const camera = data.camera;
-        const resource = this.getCameraResources(context, camera);
-        let [src, dst] = resource.postprocessFBOs;
-        context.renderer.blitCopy(resource.outputBuffer, src.colorAttachments[0]);
-        for (const postprocess of camera.postprocess) {
-            if (!postprocess.__intialized) {
-                postprocess.create(context);
-                postprocess.__intialized = true;
-            }
-            postprocess.render(context, src.colorAttachments[0], dst);
-            [src, dst] = [dst, src];
-        }
-        context.renderer.blit(src.colorAttachments[0], (_a = camera.output) !== null && _a !== void 0 ? _a : zogra_renderer_3.FrameBuffer.CanvasBuffer);
-    }
+    // postprocess(context: RenderContext, data: RenderData)
+    // {
+    //     const camera = data.camera;
+    //     const resource = this.getCameraResources(context, camera);
+    //     let [src, dst] = resource.postprocessFBOs;
+    //     context.renderer.blitCopy(resource.outputBuffer, src.colorAttachments[0] as RenderTexture);
+    //     for(const postprocess of camera.postprocess)
+    //     {
+    //         if (!postprocess.__intialized)
+    //         {
+    //             postprocess.create(context);
+    //             postprocess.__intialized = true;
+    //         }
+    //         postprocess.render(context, src.colorAttachments[0] as RenderTexture, dst);
+    //         [src, dst] = [dst, src];
+    //     }
+    //     context.renderer.blit(src.colorAttachments[0] as RenderTexture, camera.output ?? FrameBuffer.CanvasBuffer);
+    // }
     getCameraResources(context, camera) {
         let resource = this.perCameraResources.get(camera);
         if (!resource) {
@@ -84,35 +77,20 @@ class Default2DRenderPipeline {
                 postprocessFBOs: [rt0.createFramebuffer(), rt1.createFramebuffer()],
                 outputFBO: fbo,
                 outputBuffer: renderbuffer,
+                renderPass: this.createRenderPass(context, camera),
             };
             this.perCameraResources.set(camera, resource);
         }
         return resource;
     }
-    prepareLights(context, data) {
-        const lightList = data.scene.getEntitiesOfType(_2d_1.Light2D);
-        for (let i = 0; i < this.light2DComposeMaterial.lightParamsList.length; i++)
-            this.light2DComposeMaterial.lightParamsList[i].fill(0);
-        for (let i = 0; i < lightList.length; i++) {
-            const light = lightList[i];
-            this.light2DComposeMaterial.lightPosList[i] = this.light2DComposeMaterial.lightPosList[i] || zogra_renderer_5.vec4.zero();
-            zogra_renderer_5.vec4.set(this.light2DComposeMaterial.lightPosList[i], light.position);
-            this.light2DComposeMaterial.lightPosList[i].w = 1;
-            this.light2DComposeMaterial.lightParamsList[i] = this.light2DComposeMaterial.lightParamsList[i] || zogra_renderer_5.vec4.zero();
-            this.light2DComposeMaterial.lightParamsList[i].x = light.volumnRadius;
-            this.light2DComposeMaterial.lightParamsList[i].y = light.lightRange;
-            this.light2DComposeMaterial.lightParamsList[i].z = light.attenuation;
-            this.light2DComposeMaterial.lightParamsList[i].w = light.intensity;
-            this.light2DComposeMaterial.lightColorList[i] = this.light2DComposeMaterial.lightColorList[i] || zogra_renderer_2.Color.white;
-            this.light2DComposeMaterial.lightColorList[i].set(light.lightColor);
-            this.light2DComposeMaterial.shadowMapList[i] = light.getShadowMap(context, data);
-        }
-        this.light2DComposeMaterial.lightCount = lightList.length;
-        this.light2DComposeMaterial.cameraParams.x = data.camera.position.x;
-        this.light2DComposeMaterial.cameraParams.y = data.camera.position.y;
-        this.light2DComposeMaterial.cameraParams.z = data.camera.viewHeight * 2 * data.camera.aspectRatio;
-        this.light2DComposeMaterial.cameraParams.w = data.camera.viewHeight * 2;
-        this.light2DComposeMaterial.ambientLightColor = this.ambientLightColor;
+    createRenderPass(context, camera) {
+        return [
+            new clear_pass_1.ClearPass(),
+            new draw_scene_1.DrawScene(render_data_1.RenderOrder.FarToNear),
+            new _2d_light_pass_1.Light2DPass(context, this),
+            new post_process_1.PostprocessPass(context, this.renderFormat),
+            new final_blit_1.FinalBlit(context, this.renderFormat),
+        ];
     }
 }
 exports.Default2DRenderPipeline = Default2DRenderPipeline;

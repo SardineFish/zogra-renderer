@@ -1,4 +1,4 @@
-import { Color, RenderTexture } from "zogra-renderer";
+import { Color, RenderTexture, vec2 } from "zogra-renderer";
 import { Entity } from "../../engine/entity";
 import { RenderData } from "../../render-pipeline/render-data";
 import { RenderContext } from "../../render-pipeline/render-pipeline";
@@ -33,3 +33,10 @@ export declare class Light2D extends Entity {
     private appendLineShadow;
     private appendVerts;
 }
+declare const Shadow2DMaterial_base: typeof import("zogra-renderer").MaterialType;
+export declare class Shadow2DMaterial extends Shadow2DMaterial_base {
+    lightPos: vec2;
+    volumnSize: number;
+    lightRange: number;
+}
+export {};
