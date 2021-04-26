@@ -1,5 +1,6 @@
-import { BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Time, vec2, Vector2 } from "zogra-engine";
-import { ColorFood, Food, FoodGenerator } from "./food";
+import { Animator, BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, ShadowType, Time, vec2, vec4, Vector2 } from "zogra-engine";
+import { GameGlobals } from ".";
+import { BlackHole, ColorFood, Food, FoodGenerator } from "./food";
 import { GameMap } from "./map";
 
 interface TailGrowing
@@ -11,6 +12,13 @@ interface TailGrowing
 
 export class Snake extends LineRenderer
 {
+    initialLightRange = 15;
+    initialLightIntensity = 0.4;
+    initialAmbient = 0.2;
+    maxLightIntensity = 0.6;
+    intensityDropRate = this.maxLightIntensity / 30;
+    lightRangeDropRate = this.initialLightRange / 20;
+    ambientDropRate = this.initialAmbient / 40;
     headSpeed = 3;
     tailSpeed = 3;
     width = 0.6;
@@ -29,10 +37,18 @@ export class Snake extends LineRenderer
     growingTail: TailGrowing[] = [];
     foodParticle = new ParticleSystem();
     light = new Light2D();
+    animator = new Animator();
+
+    actualLength: number;
+
+    get ambientIntensity() { return GameGlobals().renderPipeline.ambientIntensity }
+    set ambientIntensity(v) { GameGlobals().renderPipeline.ambientIntensity = v }
+
 
     constructor(bodies: vec2[], headDir: vec2, camera: Camera, input: InputManager)
     {
         super();
+        this.actualLength = bodies.length;
         this.color = new Color(1.8, 1.8, 1.8, 1);
         this.bodies = bodies;
         this.headDir = headDir;
@@ -52,8 +68,9 @@ export class Snake extends LineRenderer
         this.foodParticle.lifetime = [0.3, 0.4];
         this.foodParticle.lifeSize = [0.3, 0];
 
+        this.light.shadowType = ShadowType.Soft;
         this.light.lightRange = 15;
-        this.light.intensity = 0.3;
+        this.light.intensity = 0.4;
         this.light.lightColor = new Color(1, 1, 1, 1);
         this.light.volumnRadius = this.width / 3;
         this.light.attenuation = -0.8;
@@ -82,19 +99,67 @@ export class Snake extends LineRenderer
         }
         else if (other.entity instanceof Food)
         {
-            this.growTail(1, 3);
+            this.growTail(1, 2);
+            this.actualLength += 1;
             this.foodParticle.emit(9, other.entity.position);
             other.entity.destroy();
+
+            const range = MathUtils.lerp(this.light.lightRange, this.initialLightRange, 0.5);
+            let intensity = MathUtils.lerp(this.light.intensity, this.maxLightIntensity, 0.5);
+            intensity = Math.min(intensity, this.maxLightIntensity - this.ambientIntensity);
+            this.animator.playProcedural(2, t =>
+            {
+                this.light.lightRange = MathUtils.lerp(this.light.lightRange, range, t);
+                this.light.intensity = MathUtils.lerp(this.light.intensity, intensity, t);
+            })
         }
         else if (other.entity instanceof ColorFood)
         {
+            this.growTail(2, 3);
+            this.actualLength += 3;
             const colorFood = other.entity as ColorFood;
             const originalColor = this.foodParticle.startColor;
-            this.light.lightColor.plus(colorFood.color).mul(0.5);
-            this.foodParticle.startColor = () => colorFood.color.mul(MathUtils.lerp(0.3, 2, Math.random())) as Color;
+            // this.light.lightColor.plus(colorFood.color).mul(0.5);
+            this.foodParticle.startColor = () => vec4.mul(Color.white, colorFood.color, MathUtils.lerp(0.3, 2, Math.random())) as Color;
             this.foodParticle.emit(16, other.entity.position);
             this.foodParticle.startColor = originalColor;
             other.entity.destroy();
+
+            const range = this.initialLightRange;
+            const intensity = this.initialLightIntensity;
+            const ambient = this.initialAmbient;
+            // console.log("eat",colorFood.color);
+            const color = colorFood.color.plus(this.light.lightColor).mul(0.5);
+            // console.log(range, intensity, ambient, color);
+            this.animator.playProcedural(2, t =>
+            {
+                this.light.lightRange = MathUtils.lerp(this.light.lightRange, range, t);
+                this.light.intensity = Math.min(this.maxLightIntensity-  this.ambientIntensity, MathUtils.lerp(this.light.intensity, intensity, t));
+                this.light.lightColor = vec4.mathNonAlloc(MathUtils.lerp)(this.light.lightColor, this.light.lightColor, color, vec4(t)) as Color;
+                GameGlobals().renderPipeline.ambientIntensity = MathUtils.lerp(GameGlobals().renderPipeline.ambientIntensity, ambient, t);
+                // console.log(this.light.lightRange, this.light.intensity, this.light.lightColor, this.ambientIntensity);
+            })
+        }
+        else if (other.entity instanceof BlackHole)
+        {
+            this.growTail(2 - this.actualLength, 2);
+            this.growTail(this.actualLength - 2, this.actualLength - 2);
+            const colorFood = other.entity as BlackHole;
+            const originalColor = this.foodParticle.startColor;
+            this.foodParticle.startColor = () => Color.black;
+            this.foodParticle.emit(16, other.entity.position);
+            this.foodParticle.startColor = originalColor;
+            other.entity.destroy();
+
+            const range = this.light.lightRange * 0.8;
+            const intensity = this.light.intensity * 0.8;
+            const ambient = GameGlobals().renderPipeline.ambientIntensity * 0.2;
+            this.animator.playProcedural(2, t =>
+            {
+                this.light.lightRange = MathUtils.lerp(this.light.lightRange, range, t);
+                this.light.intensity = MathUtils.lerp(this.light.intensity, intensity, t);
+                GameGlobals().renderPipeline.ambientIntensity = MathUtils.lerp(GameGlobals().renderPipeline.ambientIntensity, ambient, t);
+            })
         }
     }
     start()
@@ -105,7 +170,11 @@ export class Snake extends LineRenderer
     }
     update(time: Time)
     {
-        console.log(this.bodies.length);
+        this.light.intensity = Math.max(0, this.light.intensity - this.intensityDropRate * time.deltaTime);
+        this.light.lightRange = Math.max(this.light.volumnRadius, this.light.lightRange - this.lightRangeDropRate * time.deltaTime);
+        this.ambientIntensity = Math.max(0, this.ambientIntensity - this.ambientDropRate * time.deltaTime);
+        this.animator.update(time.deltaTime);
+        // console.log(this.bodies.length);
         const collider = this.collider as BoxCollider;
         collider.offset = mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position);
         
@@ -189,20 +258,29 @@ export class Snake extends LineRenderer
             }
         }
 
-        this.tailMoveDistance += moveDistance;
-        if (this.tailMoveDistance >= this.step)
+        while (moveDistance > 0)
         {
-            GameMap.instance.setTile(this.tail, GameMap.tileGround);
-            this.bodies = this.bodies.slice(1);
-            this.points = this.points.slice(1);
+            if (this.tailMoveDistance + moveDistance >= this.step)
+            {
+                moveDistance -= this.step - this.tailMoveDistance;
+                this.tailMoveDistance = this.step;
+                GameMap.instance.setTile(this.tail, GameMap.tileGround);
+                this.bodies = this.bodies.slice(1);
+                this.points = this.points.slice(1);
 
-            this.points[0].position = mul(this.tailDir, -this.width / 2).plus(this.tail);
-            this.tailMoveDistance -= this.step;
+                this.points[0].position = mul(this.tailDir, -this.width / 2).plus(this.tail);
+                this.tailMoveDistance -= this.step;
+            }
+            else
+            {
+                this.tailMoveDistance += moveDistance;
+                moveDistance -= moveDistance;
+            }
+            
+            const tailPoint = this.points[0];
+            const startPos = mul(this.tailDir, -this.width / 2).plus(this.tail);
+            tailPoint.position.set(this.tailDir).mul(this.tailMoveDistance).plus(startPos);
         }
-
-        const tailPoint = this.points[0];
-        const startPos = mul(this.tailDir, -this.width / 2).plus(this.tail);
-        tailPoint.position.set(this.tailDir).mul(this.tailMoveDistance).plus(startPos);
     }
     checkHitSelf()
     {
@@ -237,6 +315,8 @@ export class Snake extends LineRenderer
     get tail() { return this.bodies[0] }
     get tailDir()
     {
-        return minus(this.bodies[1], this.bodies[0]).normalize();
+        if (this.bodies.length > 1)
+            return minus(this.bodies[1], this.bodies[0]).normalize();
+        return this.headDir;
     }
 }

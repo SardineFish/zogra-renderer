@@ -148,8 +148,10 @@ class Chunk {
     }
     /** @internal */
     getPolygons() {
-        if (this.dirty)
+        if (this.dirty) {
             this.polygons = Array.from(this.enumPolygons());
+            // console.log("gen", this.polygons.reduce((sum, poly) => sum + poly.points.length, 0));
+        }
         this.dirty = false;
         return this.polygons;
     }

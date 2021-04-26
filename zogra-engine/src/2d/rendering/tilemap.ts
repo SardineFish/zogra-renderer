@@ -203,7 +203,10 @@ export class Chunk
     getPolygons()
     {
         if (this.dirty)
+        {
             this.polygons = Array.from(this.enumPolygons());
+            // console.log("gen", this.polygons.reduce((sum, poly) => sum + poly.points.length, 0));
+        }
         this.dirty = false;
         return this.polygons;
     }

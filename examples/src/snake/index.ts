@@ -15,7 +15,7 @@ import { loadSnakeAssets } from "./food";
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
 engine.fixedDeltaTime = true;
-engine.renderPipeline.ambientLightColor = new Color(.3, .3, .3, 1);
+engine.renderPipeline.ambientIntensity = 0.2;
 engine.renderPipeline.msaa = 4;
 engine.renderPipeline.renderFormat = TextureFormat.RGBA16F;
 const input = new InputManager();
@@ -57,12 +57,15 @@ async function init()
     {
         let pos = vec2.math(Math.floor)(vec2.math(Math.random)().mul(1000)).plus(0.5);
         let bodies: vec2[] = [];
-        for (let i = 0; i < 4; i++)
+        for (let i = 0; i < 10; i++)
         {
             if (tilemap.getTile(pos.plus(vec2.right())) === GameMap.tileGround)
-                bodies.push(pos.clone());
+            {
+                if (i < 4)
+                    bodies.push(pos.clone());
+            }
             else
-                break;
+                bodies = [];
         }
         if (bodies.length == 4)
         {
@@ -74,3 +77,11 @@ async function init()
     scene.add(snake);
 }
 init();
+
+export function GameGlobals()
+{
+    return {
+        engine,
+        renderPipeline: engine.renderPipeline,
+    }
+}
