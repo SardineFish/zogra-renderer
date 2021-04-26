@@ -1,4 +1,4 @@
-import { Camera, Chunk, Color, Default2DRenderPipeline, InputManager, Keys, Light2D, MathUtils, MeshBuilder, Physics2D, Projection, RenderObject, Sprite, TileData, Tilemap, TilemapCollider, vec2, vec3, ZograEngine } from "zogra-engine";
+import { Camera, Chunk, Color, Default2DRenderPipeline, InputManager, Keys, Light2D, MathUtils, MeshBuilder, Physics2D, Projection, RenderObject, ShadowType, Sprite, TileData, Tilemap, TilemapCollider, vec2, vec3, ZograEngine } from "zogra-engine";
 import "./css/base.css";
 
 import noisejs = require("noisejs");
@@ -79,9 +79,20 @@ engine.on("update", (time) =>
     if (input.getKeyDown(Keys.Mouse0))
     {
         const pos = camera.screenToWorld(input.pointerPosition);
-        tilemap.setTile(pos.toVec2(), tile);
-        console.log(input.pointerPosition, pos, camera.screenToViewport(input.pointerPosition));
+        const light = new Light2D();
+        light.lightRange = 3;
+        light.volumnRadius = 0;
+        light.attenuation = -0.8;
+        light.shadowType = false;
+        light.position = pos.setZ(0);
+        scene.add(light);
+        // console.log(input.pointerPosition, pos, camera.screenToViewport(input.pointerPosition));
 
+    }
+    if (input.getKeyDown(Keys.Mouse2))
+    {
+        const pos = camera.screenToWorld(input.pointerPosition);
+        tilemap.setTile(pos.toVec2(), tile);
     }
 
     const speed = 10;

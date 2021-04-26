@@ -1,9 +1,10 @@
-import { Timeline, SpriteObject, Sprite, Animator, Default2DMaterial, Time, Entity, BoxCollider } from "zogra-engine";
+import { Timeline, SpriteObject, Sprite, Animator, Default2DMaterial, Time, Entity, BoxCollider, Light2D, ShadowType } from "zogra-engine";
 import { vec2, MathUtils, vec3, TextureImporter, Vector2, Color } from "zogra-renderer";
 import imgFood from "../asset/img/snake-food.png";
 import { GameMap } from "./map";
 import { Snake } from "./snake";
-
+import noisejs = require("noisejs");
+const { Noise } = noisejs;
 
 export class FoodGenerator extends Entity
 {
@@ -13,7 +14,7 @@ export class FoodGenerator extends Entity
     foodSize = 0.5;
     foodDistance = 5;
     snake: Snake;
-    foods: Food[] = [];
+    foods: Entity[] = [];
 
     constructor(snake: Snake)
     {
@@ -49,9 +50,21 @@ export class FoodGenerator extends Entity
             if (GameMap.instance.getTile(pos) === GameMap.tileGround)
             {
                 GameMap.instance.setTile(pos, GameMap.tileFood);
-                const food = new Food(pos);
-                this.snake.scene?.add(food);
-                this.foods.push(food);
+
+                if (Math.random() < 0.5)
+                {
+                    const food = new ColorFood();
+                    food.position = pos.toVec3();
+                    this.snake.scene?.add(food);
+                    this.foods.push(food);
+                }
+                else
+                {
+                    const food = new Food(pos);
+                    this.snake.scene?.add(food);
+                    this.foods.push(food);
+                }
+
                 break;
             }
         }
@@ -174,6 +187,58 @@ export class Food extends SpriteObject
         {
             this.destroy();
         }
+    }
+}
+
+export class ColorFood extends Entity
+{
+    foodSize = 0.3;
+    lights: Light2D[] = [];
+    noise = new Noise(Math.random());
+    color: Color;
+    constructor()
+    {
+        super();
+        this.color = Color.fromHSL(360 * Math.random(), 1, 0.5);
+        const collider = new BoxCollider();
+        collider.size = vec2(this.foodSize);
+        this.collider = new BoxCollider()
+    }
+    start()
+    {
+        console.log(this.position);
+        for (let i = 0; i < 3; i++)
+        {
+            this.lights[i] = new Light2D();
+            this.lights[i].lightRange = MathUtils.lerp(0.1, 0.2, Math.random())
+            this.lights[i].volumnRadius = 0;
+            this.lights[i].shadowType = false;
+            this.lights[i].intensity = 0.4;
+            this.lights[i].attenuation = 0.9;
+            this.lights[i].lightColor = this.color;
+            this.scene?.add(this.lights[i], this);
+        }
+    }
+
+    update(time: Time)
+    {
+        const speed = 1;
+        for (let i = 0; i < 3; i++)
+        {
+            this.lights[i].localPosition = vec3(this.noise.perlin2(i, time.time * speed), this.noise.perlin2(time.time * speed, i), 0).mul(0.4);
+        }
+    }
+}
+
+export class BlackHole extends Entity
+{
+    light: Light2D;
+    constructor()
+    {
+        super();
+
+        this.light = new Light2D();
+        this.light.lightColor = new Color(-1, -1, -1, 1);
     }
 }
 

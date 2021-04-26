@@ -1,5 +1,5 @@
 import { BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Time, vec2, Vector2 } from "zogra-engine";
-import { Food, FoodGenerator } from "./food";
+import { ColorFood, Food, FoodGenerator } from "./food";
 import { GameMap } from "./map";
 
 interface TailGrowing
@@ -84,6 +84,16 @@ export class Snake extends LineRenderer
         {
             this.growTail(1, 3);
             this.foodParticle.emit(9, other.entity.position);
+            other.entity.destroy();
+        }
+        else if (other.entity instanceof ColorFood)
+        {
+            const colorFood = other.entity as ColorFood;
+            const originalColor = this.foodParticle.startColor;
+            this.light.lightColor.plus(colorFood.color).mul(0.5);
+            this.foodParticle.startColor = () => colorFood.color.mul(MathUtils.lerp(0.3, 2, Math.random())) as Color;
+            this.foodParticle.emit(16, other.entity.position);
+            this.foodParticle.startColor = originalColor;
             other.entity.destroy();
         }
     }
