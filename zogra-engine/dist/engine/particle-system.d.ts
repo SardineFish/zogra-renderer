@@ -88,5 +88,6 @@ export declare class ParticleSystem extends RenderObject {
     private getScalarValue;
     private updateScalarValue;
     static boxEmitter(size: vec2): ParticleEmitter;
+    static circleEmitter(radius: number): ParticleEmitter;
 }
 export {};

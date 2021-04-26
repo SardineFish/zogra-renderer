@@ -21,7 +21,7 @@ exports.Shadow2DVertStruct = zogra_renderer_1.VertexStruct(Object.assign(Object.
 class Light2D extends entity_1.Entity {
     constructor() {
         super();
-        this.shadowType = ShadowType.Hard;
+        this.shadowType = false;
         this.volumnRadius = 1;
         this.lightRange = 10;
         this.lightColor = zogra_renderer_1.Color.white;
@@ -31,7 +31,7 @@ class Light2D extends entity_1.Entity {
         this.shadowMesh = new zogra_renderer_1.Mesh(exports.Shadow2DVertStruct);
         this.shadowMat = new Shadow2DMaterial();
         this.__tempVectors = Array.from(new Array(32)).map(() => zogra_renderer_1.vec2.zero());
-        this.shadowMesh.resize(50, 90);
+        this.shadowMesh.resize(5000, 9000);
     }
     getShadowMap(context, data) {
         // if (this.shadowType === false)

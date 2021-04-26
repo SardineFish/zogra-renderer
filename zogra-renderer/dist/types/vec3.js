@@ -146,6 +146,8 @@ vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 vec3.math = Vector3.math;
 vec3.normalize = utils_1.wrapGlMatrix(gl_matrix_1.vec3.normalize, 1, vec3.zero);
+vec3.inverse = utils_1.wrapGlMatrix(gl_matrix_1.vec3.inverse, 1, vec3.zero);
+vec3.negate = utils_1.wrapGlMatrix(gl_matrix_1.vec3.negate, 1, vec3.zero);
 vec3.plus = utils_1.wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
         out[0] = a[0] + b;

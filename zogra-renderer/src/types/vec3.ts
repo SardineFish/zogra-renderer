@@ -202,6 +202,8 @@ vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 vec3.math = Vector3.math;
 vec3.normalize = wrapGlMatrix<vec3, [vec3]>(glVec3.normalize as any, 1, vec3.zero);
+vec3.inverse = wrapGlMatrix<vec3, [vec3]>(glVec3.inverse as any, 1, vec3.zero);
+vec3.negate = wrapGlMatrix<vec3, [vec3]>(glVec3.negate as any, 1, vec3.zero);
 vec3.plus = wrapGlMatrix<vec3, [vec3, vec4 | vec3 | vec2 | number]>((out, a, b) =>
 {
     if (typeof (b) === "number")

@@ -18,7 +18,8 @@ class Default2DRenderPipeline {
         this.msaa = 4;
         this.renderFormat = zogra_renderer_1.TextureFormat.RGBA8;
         this.debuglayer = new debug_layer_1.DebugLayerRenderer();
-        this.ambientLightColor = new zogra_renderer_2.Color(0.2, 0.2, 0.2, 1);
+        this.ambientLightColor = new zogra_renderer_2.Color(1, 1, 1, 1);
+        this.ambientIntensity = 0.2;
         this.perCameraResources = new Map();
         global_1.Debug(this.debuglayer);
     }

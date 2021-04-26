@@ -256,7 +256,9 @@ export class ParticleSystem extends RenderObject
         let speed = this.getScalarValue(this.startSpeed);
         // velocity.mul(speed);
         particle.velocity.set(velocity);
-        particle.velocity[3] = speed;
+        if (speed < 0)
+            vec3.negate(particle.velocity, velocity);
+        particle.velocity[3] = Math.abs(speed);
         particle.pos.set(pos);
         particle.size[0] = this.getScalarValue(this.startSize);
         particle.lifetime[0] = 0;
@@ -328,6 +330,20 @@ export class ParticleSystem extends RenderObject
             posOut[0] = (Math.random() - 0.5) * size.x;
             posOut[1] = (Math.random() - 0.5) * size.y;
             posOut[2] = 0;
+            posOut.plus(center);
+            vec3.minus(dirOut, posOut, center).normalize();
+        };
+    }
+
+    static circleEmitter(radius: number): ParticleEmitter
+    {
+        return (particleSystem, center, dirOut, posOut) =>
+        {
+            const r = Math.sqrt(Math.random()) * radius;
+            const theta = Math.random() * Math.PI * 2;
+            posOut.x = Math.cos(theta) * r;
+            posOut.y = Math.sin(theta) * r;
+            posOut.z = 0;
             posOut.plus(center);
             vec3.minus(dirOut, posOut, center).normalize();
         };

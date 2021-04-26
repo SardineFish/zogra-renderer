@@ -1,25 +1,47 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Animator = void 0;
+exports.Animator = exports.AnimationPlayback = exports.Timeline = void 0;
 const zogra_renderer_1 = require("zogra-renderer");
-class Animator {
-    constructor(duration, timeline = null, time = 0) {
+function Timeline(timeline) {
+    const times = Object.keys(timeline.frames).map(t => ({ key: t, time: parseFloat(t) })).sort((a, b) => a.time - b.time);
+    const output = {
+        loop: timeline.loop || false,
+        duration: timeline.duration,
+        frames: []
+    };
+    for (const time of times) {
+        output.frames.push({
+            time: time.time,
+            values: timeline.frames[time.key],
+        });
+    }
+    return output;
+}
+exports.Timeline = Timeline;
+class AnimationPlayback {
+    constructor(timeline, time = 0) {
+        this.frameTime = 0;
+        this.time = 0;
         this.timeScale = 1;
-        this.callback = null;
-        this.loop = false;
+        this.updater = null;
         this.state = "stopped";
         this.currentFrame = {};
-        this.duration = duration;
-        this.time = time;
+        this.frameTime = time;
         this.timeline = timeline;
+        this.loop = timeline.loop;
+        this.duration = timeline.duration;
     }
     get playing() { return this.state === "playing" || this.state === "pending"; }
     get finished() { return this.state === "stopped"; }
     play(time = 0) {
-        this.time = time;
-        this.state = "pending";
-        if (this.timeline && this.timeline.length > 0)
-            Object.assign(this.currentFrame, this.timeline[0].keyframe);
+        return new Promise((resolve) => {
+            this.resolver = resolve;
+            this.frameTime = time;
+            this.frameTime = time;
+            this.state = "pending";
+            if (this.timeline && this.timeline.frames.length > 0)
+                Object.assign(this.currentFrame, this.timeline.frames[0].values);
+        });
     }
     stop() {
         this.state = "stopped";
@@ -41,57 +63,134 @@ class Animator {
         }
     }
     updateAnimation(dt) {
-        if (!this.callback)
+        if (!this.updater)
             return;
+        if (this.loop)
+            this.frameTime = this.time % this.timeline.duration;
+        else
+            this.frameTime = this.time;
         this.updateFrame();
-        this.callback({
+        this.updater({
             deltaTime: dt,
             frame: this.currentFrame,
             animator: this,
             time: this.time,
-            progress: this.time / this.duration
+            frameTime: this.frameTime,
+            progress: this.frameTime / this.duration
         });
     }
     updateFrame() {
-        if (this.timeline && this.timeline.length > 0) {
-            for (let i = 0; i < this.timeline.length; i++) {
-                if (this.timeline[i].time >= this.time) {
-                    if (i === 0 || this.timeline[i].time === this.time)
-                        Object.assign(this.currentFrame, this.timeline[i].keyframe);
+        if (this.timeline && this.timeline.frames.length > 0) {
+            for (let i = 0; i < this.timeline.frames.length; i++) {
+                if (this.timeline.frames[i].time >= this.frameTime) {
+                    if (i === 0 || this.timeline.frames[i].time === this.frameTime)
+                        Object.assign(this.currentFrame, this.timeline.frames[i].values);
                     else {
-                        this.interpolate(this.currentFrame, this.timeline[i - 1], this.timeline[i]);
+                        this.interpolate(this.currentFrame, this.timeline.frames[i - 1], this.timeline.frames[i]);
                     }
                     return this.currentFrame;
                 }
             }
             if (this.loop) {
-                this.interpolate(this.currentFrame, this.timeline[this.timeline.length - 1], this.timeline[0]);
+                this.interpolate(this.currentFrame, this.timeline.frames[this.timeline.frames.length - 1], this.timeline.frames[0]);
             }
             else {
-                Object.assign(this.currentFrame, this.timeline[this.timeline.length - 1].keyframe);
+                Object.assign(this.currentFrame, this.timeline.frames[this.timeline.frames.length - 1].values);
             }
         }
     }
     interpolate(frame, previous, next) {
-        let t = (this.time - previous.time) / (next.time - previous.time);
+        let t = (this.frameTime - previous.time) / (next.time - previous.time);
         if (next.time < previous.time)
-            t = (this.time - previous.time) / (this.duration - previous.time + next.time);
-        for (const key in previous.keyframe) {
-            frame[key] = previous.keyframe[key];
-            if (typeof (previous.keyframe[key]) === "number" && typeof (next.keyframe[key]) === "number") {
-                frame[key] = zogra_renderer_1.MathUtils.lerp(previous.keyframe[key], next.keyframe[key], t);
+            t = (this.frameTime - previous.time) / (this.timeline.duration + next.time - previous.time);
+        for (const key in previous.values) {
+            frame[key] = previous.values[key];
+            if (typeof (previous.values[key]) === "number" && typeof (next.values[key]) === "number") {
+                frame[key] = zogra_renderer_1.MathUtils.lerp(previous.values[key], next.values[key], t);
             }
         }
         return frame;
     }
     checkEnd() {
+        var _a;
         if (this.time >= this.duration) {
-            if (this.loop) {
-                this.time %= this.duration;
-            }
-            else {
-                this.time = this.duration;
-                this.state = "stopped";
+            this.time = this.duration;
+            this.state = "stopped";
+            (_a = this.resolver) === null || _a === void 0 ? void 0 : _a.call(this, this);
+        }
+    }
+}
+exports.AnimationPlayback = AnimationPlayback;
+class ProceduralPlayback {
+    constructor(time, updater) {
+        this.currentTime = 0;
+        this.state = "stopped";
+        this.totalTime = time;
+        this.updater = updater;
+    }
+    get finished() { return this.state === "stopped"; }
+    play() {
+        return new Promise(resolve => {
+            if (this.state === "stopped")
+                this.state = "pending";
+            this.resolver = resolve;
+        });
+    }
+    stop() {
+        this.resolver = undefined;
+        this.state = "stopped";
+    }
+    update(dt) {
+        var _a;
+        switch (this.state) {
+            case "stopped":
+                return;
+            case "pending":
+                this.state = "playing";
+            case "playing":
+                this.currentTime += dt;
+                this.checkEnd();
+                (_a = this.updater) === null || _a === void 0 ? void 0 : _a.call(this, this.currentTime / this.totalTime);
+                break;
+        }
+    }
+    checkEnd() {
+        var _a;
+        if (this.currentTime >= this.totalTime) {
+            this.currentTime = this.totalTime;
+            this.state = "stopped";
+            (_a = this.resolver) === null || _a === void 0 ? void 0 : _a.call(this);
+        }
+    }
+}
+class Animator {
+    constructor() {
+        this.tracks = [];
+    }
+    play(timeline, updater, playDuration = timeline.duration, loop = timeline.loop, time = 0) {
+        const playback = new AnimationPlayback(timeline, time);
+        playback.loop = loop;
+        playback.duration = playDuration;
+        playback.updater = updater;
+        const promise = playback.play(time);
+        this.tracks.push(playback);
+        return promise;
+    }
+    playProcedural(time, updater, startTime = 0) {
+        const playback = new ProceduralPlayback(time, updater);
+        playback.currentTime = startTime;
+        const promise = playback.play();
+        this.tracks.push(playback);
+        return promise;
+    }
+    update(dt) {
+        for (let i = 0; i < this.tracks.length; i++) {
+            const playback = this.tracks[i];
+            playback.update(dt);
+            if (playback.finished) {
+                this.tracks[i] = this.tracks[this.tracks.length - 1];
+                this.tracks.length--;
+                i--;
             }
         }
     }

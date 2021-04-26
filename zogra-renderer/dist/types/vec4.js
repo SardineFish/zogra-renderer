@@ -100,6 +100,15 @@ class Vector4 extends V4Constructor {
             return vec4(func(...args.map(v => v.x)), func(...args.map(v => v.y)), func(...args.map(v => v.z)), func(...args.map(v => v.w)));
         };
     }
+    static mathNonAlloc(func) {
+        return (out, ...args) => {
+            out[0] = func(...args.map(v => v[0]));
+            out[1] = func(...args.map(v => v[1]));
+            out[2] = func(...args.map(v => v[2]));
+            out[3] = func(...args.map(v => v[3]));
+            return out;
+        };
+    }
     __to(type) {
         switch (type) {
             case Vector4:
@@ -125,6 +134,7 @@ vec4.floor = (v) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z), Math
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 vec4.math = Vector4.math;
+vec4.mathNonAlloc = Vector4.mathNonAlloc;
 vec4.normalize = utils_1.wrapGlMatrix(gl_matrix_1.vec4.normalize, 1, vec4.zero);
 vec4.plus = utils_1.wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {

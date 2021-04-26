@@ -22,7 +22,7 @@ export const Shadow2DVertStruct = VertexStruct({
 
 export class Light2D extends Entity
 {
-    shadowType: ShadowType | false = ShadowType.Hard;
+    shadowType: ShadowType | false = false;
     volumnRadius: number = 1;
     lightRange: number = 10;
     lightColor: Color = Color.white;
@@ -37,7 +37,7 @@ export class Light2D extends Entity
     constructor()
     {
         super();
-        this.shadowMesh.resize(50, 90);
+        this.shadowMesh.resize(5000, 9000);
     }
 
     getShadowMap(context: RenderContext, data: RenderData)

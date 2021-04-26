@@ -24,12 +24,13 @@ export declare class Default2DRenderPipeline implements ZograRenderPipeline {
     renderFormat: TextureFormat;
     debuglayer: DebugLayerRenderer;
     ambientLightColor: Color;
+    ambientIntensity: number;
     perCameraResources: Map<Camera, CameraRenderResources>;
     constructor();
     render(context: RenderContext, scene: Scene, cameras: Camera[]): void;
     replaceMaterial<T extends Material>(MaterialType: ConstructorType<T>, material: Material): void;
     renderCamera(context: RenderContext, data: RenderData): void;
     getCameraResources(context: RenderContext, camera: Camera): CameraRenderResources;
-    createRenderPass(context: RenderContext, camera: Camera): (Light2DPass | ClearPass | DrawScene | PostprocessPass | FinalBlit)[];
+    createRenderPass(context: RenderContext, camera: Camera): (ClearPass | DrawScene | Light2DPass | PostprocessPass | FinalBlit)[];
 }
 export {};

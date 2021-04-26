@@ -97,7 +97,7 @@ export class Light2DPass extends RenderPass
         this.light2DShadowMaterial.cameraParams.y = data.camera.position.y;
         this.light2DShadowMaterial.cameraParams.z = data.camera.viewHeight * 2 * data.camera.aspectRatio;
         this.light2DShadowMaterial.cameraParams.w = data.camera.viewHeight * 2;
-        this.light2DShadowMaterial.ambientLightColor = this.settings.ambientLightColor;
+        vec4.mul(this.light2DShadowMaterial.ambientLightColor, this.settings.ambientLightColor, this.settings.ambientIntensity);
 
         context.renderer.blit(null, this.lightmap, this.light2DShadowMaterial);
     }
