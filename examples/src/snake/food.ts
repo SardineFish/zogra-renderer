@@ -50,7 +50,7 @@ export class FoodGenerator extends Entity
         if (this.foods.length >= this.foodLimit)
             return;
             
-        if (Math.random() < 0.9)
+        if (Math.random() < 0.6)
         {
             const pos = this.getSpawnPos(this.spawnRadius);
             if (pos)

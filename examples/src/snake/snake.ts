@@ -3,11 +3,17 @@ import { GameGlobals } from ".";
 import { BlackHole, ColorFood, Food, FoodGenerator } from "./food";
 import { GameMap } from "./map";
 
-interface TailGrowing
+interface SnakeGrowing
 {
-    time: number,
-    speed: number,
-    duration: number,
+    length: number;
+    headSpeed: number;
+    tailSpeed: number;
+}
+
+interface SnakeBoost
+{
+    speed: number;
+    duration: number;
 }
 
 export class Snake extends LineRenderer
@@ -19,8 +25,9 @@ export class Snake extends LineRenderer
     intensityDropRate = this.maxLightIntensity / 30;
     lightRangeDropRate = this.initialLightRange / 20;
     ambientDropRate = this.initialAmbient / 40;
-    headSpeed = 3;
-    tailSpeed = 3;
+    speed = 3;
+    // headSpeed = 3;
+    // tailSpeed = 3;
     width = 0.6;
     inputCacheSize = 3;
     step = 1;
@@ -34,20 +41,21 @@ export class Snake extends LineRenderer
     camera: Camera;
     input: InputManager;
     foodGenerator: FoodGenerator;
-    growingTail: TailGrowing[] = [];
+    growingQueue: SnakeGrowing[] = [];
     foodParticle = new ParticleSystem();
     light = new Light2D();
     animator = new Animator();
 
+    currentLength: number;
     actualLength: number;
 
     get ambientIntensity() { return GameGlobals().renderPipeline.ambientIntensity }
     set ambientIntensity(v) { GameGlobals().renderPipeline.ambientIntensity = v }
 
-
     constructor(bodies: vec2[], headDir: vec2, camera: Camera, input: InputManager)
     {
         super();
+        this.currentLength = bodies.length;
         this.actualLength = bodies.length;
         this.color = new Color(1.8, 1.8, 1.8, 1);
         this.bodies = bodies;
@@ -100,7 +108,7 @@ export class Snake extends LineRenderer
         else if (other.entity instanceof Food)
         {
             this.growTail(1, 2);
-            this.actualLength += 1;
+            // this.actualLength += 1;
             this.foodParticle.emit(9, other.entity.position);
             other.entity.destroy();
 
@@ -115,8 +123,8 @@ export class Snake extends LineRenderer
         }
         else if (other.entity instanceof ColorFood)
         {
-            this.growTail(2, 3);
-            this.actualLength += 3;
+            this.growTail(3, 4);
+            // this.actualLength += 3;
             const colorFood = other.entity as ColorFood;
             const originalColor = this.foodParticle.startColor;
             // this.light.lightColor.plus(colorFood.color).mul(0.5);
@@ -142,8 +150,19 @@ export class Snake extends LineRenderer
         }
         else if (other.entity instanceof BlackHole)
         {
-            this.growTail(2 - this.actualLength, 2);
-            this.growTail(this.actualLength - 2, this.actualLength - 2);
+            // this.growTail(2 - this.currentLength, 2);
+            // this.growTail(this.currentLength - 2, this.currentLength - 2);
+            this.growingQueue = [];
+            this.enqueueGrowing({
+                length: 2,
+                headSpeed: 0,
+                tailSpeed: (this.actualLength - 2) / this.speed,
+            });
+            this.enqueueGrowing({
+                length: this.actualLength,
+                headSpeed: 1,
+                tailSpeed: 0
+            });
             const colorFood = other.entity as BlackHole;
             const originalColor = this.foodParticle.startColor;
             this.foodParticle.startColor = () => Color.black;
@@ -197,10 +216,41 @@ export class Snake extends LineRenderer
         if (this.inputQueue.length > this.inputCacheSize)
             this.inputQueue = this.inputQueue.slice(this.inputQueue.length - this.inputCacheSize);
 
-        this.moveHead(time);
-        this.moveTail(time);
+        let headMovement = this.speed * time.deltaTime;
+        let tailMovement = this.speed * time.deltaTime;
+        let isGrowing = false;
+        if (this.growingQueue.length > 0)
+        {
+            isGrowing = true;
+            const growing = this.growingQueue[0];
+            headMovement =growing.headSpeed * this.speed * time.deltaTime;
+            tailMovement =growing.tailSpeed * this.speed * time.deltaTime;
+            let totalMovement = headMovement - tailMovement;
+            if (Math.sign(growing.length - (this.currentLength + totalMovement)) !== Math.sign(totalMovement))
+            {
+                const dt = Math.abs(growing.length - this.currentLength) / Math.abs(totalMovement) * time.deltaTime;
+                this.growingQueue = this.growingQueue.slice(1);
+                if (this.growingQueue.length > 0)
+                {
+                    headMovement = growing.headSpeed * this.speed * dt + (time.deltaTime - dt) * this.growingQueue[0].headSpeed * this.speed;
+                    tailMovement = growing.tailSpeed * this.speed * dt + (time.deltaTime - dt) * this.growingQueue[0].tailSpeed * this.speed;
+                }
+                else
+                {
+                    headMovement = growing.headSpeed * this.speed * dt + (time.deltaTime - dt) * this.speed;
+                    tailMovement = growing.tailSpeed * this.speed * dt + (time.deltaTime - dt) * this.speed;
+                }
+            }
+        }
+
+        
+        this.moveHead(headMovement);
+        this.moveTail(tailMovement);
         this.updateMesh();
         this.checkHitSelf();
+
+        // if (isGrowing)
+        //     console.log(this.currentLength);
 
         this.light.position = vec2.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position).toVec3(0);
 
@@ -210,9 +260,10 @@ export class Snake extends LineRenderer
             vec2(0.5 * time.deltaTime, 0.7 * time.deltaTime)
         ).toVec3(this.camera.position.z);
     }
-    moveHead(time: Time)
+    moveHead(distance: number)
     {
-        this.headMoveDistance += this.headSpeed * time.deltaTime;
+        this.headMoveDistance += distance;
+        this.currentLength += distance;
         if (this.headMoveDistance >= this.step)
         {
             this.bodies.push(mul(this.headDir, this.step).plus(this.head));
@@ -244,25 +295,15 @@ export class Snake extends LineRenderer
         const startPos = mul(this.headDir, this.width / 2).plus(this.head);
         headPoint.position.set(this.headDir).mul(this.headMoveDistance).plus(startPos);
     }
-    moveTail(time: Time)
+    moveTail(distance: number)
     {
-        let moveDistance = this.tailSpeed * time.deltaTime;
-        if (this.growingTail.length > 0)
-        {
-            const state = this.growingTail[0];
-            moveDistance = (this.tailSpeed * state.speed) * time.deltaTime;
-            state.time += time.deltaTime;
-            if (state.time>= state.duration)
-            {
-                this.growingTail = this.growingTail.slice(1);
-            }
-        }
+        this.currentLength -= distance;
 
-        while (moveDistance > 0)
+        while (distance > 0)
         {
-            if (this.tailMoveDistance + moveDistance >= this.step)
+            if (this.tailMoveDistance + distance >= this.step)
             {
-                moveDistance -= this.step - this.tailMoveDistance;
+                distance -= this.step - this.tailMoveDistance;
                 this.tailMoveDistance = this.step;
                 GameMap.instance.setTile(this.tail, GameMap.tileGround);
                 this.bodies = this.bodies.slice(1);
@@ -273,8 +314,8 @@ export class Snake extends LineRenderer
             }
             else
             {
-                this.tailMoveDistance += moveDistance;
-                moveDistance -= moveDistance;
+                this.tailMoveDistance += distance;
+                distance -= distance;
             }
             
             const tailPoint = this.points[0];
@@ -293,17 +334,22 @@ export class Snake extends LineRenderer
             }
         }
     }
+    enqueueGrowing(growing: SnakeGrowing)
+    {
+        this.growingQueue.push(growing);
+    }
     growTail(length: number, steps: number)
     {
-        this.growingTail.push({
-            speed: (steps - length) / steps,
-            time: 0,
-            duration: steps / this.tailSpeed
-        })
+        this.actualLength += length;
+        this.growingQueue.push({
+            length: this.actualLength,
+            headSpeed: 1,
+            tailSpeed: (steps - length) / steps
+        });
     }
     dead()
     {
-        this.headSpeed = 0;
+        this.speed = 0;
         for (const body of this.bodies)
         {
             this.foodParticle.emit(10, body.toVec3());
