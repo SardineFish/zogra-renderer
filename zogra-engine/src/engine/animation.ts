@@ -6,36 +6,42 @@ export interface Keyframe<T>
     values: T,
 }
 
-interface AnimationFrameState<T>
+interface AnimationFrameState<Frame, Target>
 {
     time: number,
     frameTime: number,
     deltaTime: number,
     progress: number,
-    frame: T,
-    animator: AnimationPlayback<T>,
+    frame: Frame,
+    target?: Target,
+    animator: AnimationPlayback<Frame, Target>,
 }
 
-interface SimpleTimeline<T>
+interface SimpleTimeline<Frame, Target = unknown>
 {
     loop?: boolean,
     duration: number,
-    frames: { [key: number]: T };
+    frames: { [key: number]: Frame },
+    updater?: SimpleUpdater<Frame, Target>,
 }
 
-export interface Timeline<T>
+type SimpleUpdater<Frame, Target> = (frame: Frame, target: Target) => void;
+
+export interface Timeline<Frame, Target = unknown>
 {
     loop: boolean,
     duration: number,
-    frames: Keyframe<T>[],
+    frames: Keyframe<Frame>[],
+    updater?: SimpleUpdater<Frame, Target>,
 }
-export function Timeline<T>(timeline: SimpleTimeline<T>): Timeline<T>
+export function Timeline<Frame, Target = unknown>(timeline: SimpleTimeline<Frame, Target>): Timeline<Frame, Target>
 {
     const times = Object.keys(timeline.frames).map(t => ({ key: t, time: parseFloat(t) })).sort((a, b) => a.time - b.time);
-    const output: Timeline<T> = {
+    const output: Timeline<Frame, Target> = {
         loop: timeline.loop || false,
         duration: timeline.duration,
-        frames: []
+        frames: [],
+        updater: timeline.updater,
     };
     for (const time of times)
     {
@@ -47,7 +53,7 @@ export function Timeline<T>(timeline: SimpleTimeline<T>): Timeline<T>
     return output;
 }
 
-type AnimationCallback<T> = (frame: AnimationFrameState<T>) => void;
+type AnimationCallback<Frame, Target> = (frame: AnimationFrameState<Frame, Target>) => void;
 
 export interface IPlayback<T>
 {
@@ -57,26 +63,36 @@ export interface IPlayback<T>
     update(dt: number): void;
 }
 
-export class AnimationPlayback<T> implements IPlayback<AnimationPlayback<T>>
+export class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlayback<Frame, Target>>
 {
     frameTime: number = 0;
     time: number = 0;
     timeScale = 1;
-    updater: AnimationCallback<T> | null = null; 
-    timeline: Timeline<T>;
+    target: Target | undefined = undefined;
+    updater: AnimationCallback<Frame, Target> | undefined = undefined; 
+    timeline: Timeline<Frame, Target>;
     loop: boolean;
     state: "pending" | "playing" | "stopped" = "stopped";
-    currentFrame: T = {} as any;
+    currentFrame: Frame = {} as any;
     duration: number;
 
     private resolver?: (t: this) => void;
 
-    constructor(timeline: Timeline<T>, time = 0)
+    constructor(timeline: Timeline<Frame, Target>, target?: Target, updater?: AnimationCallback<Frame, Target>)
     {
-        this.frameTime = time;
+        this.frameTime = 0;
         this.timeline = timeline;
         this.loop = timeline.loop;
         this.duration = timeline.duration;
+        this.target = target;
+        this.updater = updater;
+        if (!this.updater && target && timeline.updater)
+        {
+            this.updater = (frame) =>
+            {
+                (timeline.updater as SimpleUpdater<Frame, Target>)(frame.frame, target);
+            }
+        }
     }
     get playing() { return this.state === "playing" || this.state === "pending" }
     get finished() { return this.state === "stopped" }
@@ -133,6 +149,7 @@ export class AnimationPlayback<T> implements IPlayback<AnimationPlayback<T>>
             deltaTime: dt,
             frame: this.currentFrame,
             animator: this,
+            target: this.target,
             time: this.time,
             frameTime: this.frameTime,
             progress: this.frameTime / this.duration
@@ -168,7 +185,7 @@ export class AnimationPlayback<T> implements IPlayback<AnimationPlayback<T>>
         }
     }
 
-    private interpolate(frame: T, previous: Keyframe<T>, next: Keyframe<T>)
+    private interpolate(frame: Frame, previous: Keyframe<Frame>, next: Keyframe<Frame>)
     {
         let t = (this.frameTime - previous.time) / (next.time - previous.time);
         if (next.time < previous.time)
@@ -252,23 +269,40 @@ class ProceduralPlayback implements IPlayback<void>
 
 }
 
-interface AnimatorEvent<T>
+interface AnimatorEvent<T, Target>
 {
-    start(timeline: AnimationPlayback<T>, time: number): void,
-    finish(timeline: AnimationPlayback<T>): void,
+    start(timeline: AnimationPlayback<T, Target>, time: number): void,
+    finish(timeline: AnimationPlayback<T, Target>): void,
 }
 
-export class Animator<Frame = unknown>
+export interface AnimationPlaybackOptions<Frame, Target = unknown>
 {
-    tracks: IPlayback<Frame>[] = [];
+    updater: AnimationCallback<Frame, Target>,
+    playDuration: number,
+    loop: boolean,
+    startTime: number,
+}
 
-    play<T>(timeline: Timeline<T>, updater: AnimationCallback<T>, playDuration = timeline.duration, loop = timeline.loop, time = 0): Promise<AnimationPlayback<T>>
+export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
+{
+    defaultTarget: AnimatorTarget | undefined;
+    tracks: IPlayback<unknown>[] = [];
+
+    constructor(target?: AnimatorTarget)
     {
-        const playback = new AnimationPlayback(timeline, time);
-        playback.loop = loop;
-        playback.duration = playDuration;
-        playback.updater = updater;
-        const promise = playback.play(time);
+        this.defaultTarget = target;
+    }
+
+    play<Frame = AnimatorFrame, Target = AnimatorTarget>(
+        timeline: Timeline<Frame, Target>,
+        target: Target = this.defaultTarget as unknown as Target,
+        duration: number = timeline.duration,
+        updater?: AnimationCallback<Frame, Target>
+    ): Promise<AnimationPlayback<Frame, Target>>
+    {
+        const playback = new AnimationPlayback<Frame, Target>(timeline, target, updater);
+        playback.duration = duration;
+        const promise = playback.play();
         this.tracks.push(playback as any);
         return promise;
     }

@@ -7,7 +7,8 @@ function Timeline(timeline) {
     const output = {
         loop: timeline.loop || false,
         duration: timeline.duration,
-        frames: []
+        frames: [],
+        updater: timeline.updater,
     };
     for (const time of times) {
         output.frames.push({
@@ -19,17 +20,25 @@ function Timeline(timeline) {
 }
 exports.Timeline = Timeline;
 class AnimationPlayback {
-    constructor(timeline, time = 0) {
+    constructor(timeline, target, updater) {
         this.frameTime = 0;
         this.time = 0;
         this.timeScale = 1;
-        this.updater = null;
+        this.target = undefined;
+        this.updater = undefined;
         this.state = "stopped";
         this.currentFrame = {};
-        this.frameTime = time;
+        this.frameTime = 0;
         this.timeline = timeline;
         this.loop = timeline.loop;
         this.duration = timeline.duration;
+        this.target = target;
+        this.updater = updater;
+        if (!this.updater && target && timeline.updater) {
+            this.updater = (frame) => {
+                timeline.updater(frame.frame, target);
+            };
+        }
     }
     get playing() { return this.state === "playing" || this.state === "pending"; }
     get finished() { return this.state === "stopped"; }
@@ -74,6 +83,7 @@ class AnimationPlayback {
             deltaTime: dt,
             frame: this.currentFrame,
             animator: this,
+            target: this.target,
             time: this.time,
             frameTime: this.frameTime,
             progress: this.frameTime / this.duration
@@ -164,15 +174,14 @@ class ProceduralPlayback {
     }
 }
 class Animator {
-    constructor() {
+    constructor(target) {
         this.tracks = [];
+        this.defaultTarget = target;
     }
-    play(timeline, updater, playDuration = timeline.duration, loop = timeline.loop, time = 0) {
-        const playback = new AnimationPlayback(timeline, time);
-        playback.loop = loop;
-        playback.duration = playDuration;
-        playback.updater = updater;
-        const promise = playback.play(time);
+    play(timeline, target = this.defaultTarget, duration = timeline.duration, updater) {
+        const playback = new AnimationPlayback(timeline, target, updater);
+        playback.duration = duration;
+        const promise = playback.play();
         this.tracks.push(playback);
         return promise;
     }
