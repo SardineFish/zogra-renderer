@@ -3,13 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Chunk = exports.Tilemap = void 0;
 const zogra_renderer_1 = require("zogra-renderer");
 const render_object_1 = require("../../engine/render-object");
+const default_materials_1 = require("../../render-pipeline/default-materials");
 const polygon_1 = require("../physics/polygon");
-const materials_1 = require("./materials");
 class Tilemap extends render_object_1.RenderObject {
     constructor(...args) {
         super();
         this.chunks = new Map();
-        this.materials[0] = new materials_1.Default2DMaterial();
+        this.materials[0] = default_materials_1.BuiltinMaterials.tilemapDefault;
         if (args.length === 0) {
             this.chunkSize = 16;
             this.ChunkType = Chunk;

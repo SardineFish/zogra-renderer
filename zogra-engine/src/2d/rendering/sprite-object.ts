@@ -1,12 +1,12 @@
 import { Material, Mesh, MeshBuilder, vec2 } from "zogra-renderer";
 import { RenderObject } from "../../engine/render-object";
-import { Default2DMaterial } from "./materials";
+import { BuiltinMaterials } from "../../render-pipeline/default-materials";
 import { Sprite } from "./sprite";
 
 export class SpriteObject extends RenderObject
 {
     private mesh: Mesh = MeshBuilder.quad();
-    private material: Material = new Default2DMaterial();
+    private material: Material = BuiltinMaterials.spriteDefault;
     private _sprite: Sprite | null = null;
 
     constructor()

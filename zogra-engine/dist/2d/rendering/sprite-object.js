@@ -3,12 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpriteObject = void 0;
 const zogra_renderer_1 = require("zogra-renderer");
 const render_object_1 = require("../../engine/render-object");
-const materials_1 = require("./materials");
+const default_materials_1 = require("../../render-pipeline/default-materials");
 class SpriteObject extends render_object_1.RenderObject {
     constructor() {
         super();
         this.mesh = zogra_renderer_1.MeshBuilder.quad();
-        this.material = new materials_1.Default2DMaterial();
+        this.material = default_materials_1.BuiltinMaterials.spriteDefault;
         this._sprite = null;
         this.meshes[0] = this.mesh;
         this.materials[0] = this.material;

@@ -1,6 +1,7 @@
 import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4} from "zogra-renderer";
 import { RenderContext, RenderData, Camera } from "../..";
 import { RenderObject, RenderObjectEvents } from "../../engine/render-object";
+import { BuiltinMaterials } from "../../render-pipeline/default-materials";
 import { ConstructorType } from "../../utils/util";
 import { Polygon } from "../physics/polygon";
 import { Default2DMaterial } from "./materials";
@@ -19,7 +20,7 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
     constructor(...args: [] | [number] | [ConstructorType<TChunk, [vec2, number]>] | [number, ConstructorType<TChunk, [vec2, number]>])
     {
         super();
-        this.materials[0] = new Default2DMaterial();
+        this.materials[0] = BuiltinMaterials.tilemapDefault;
         if (args.length === 0)
         {
             this.chunkSize = 16;
