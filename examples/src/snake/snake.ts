@@ -1,7 +1,11 @@
-import { Animator, BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, ShadowType, Time, vec2, vec4, Vector2 } from "zogra-engine";
+import { Animator, BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, ShadowType, Time, Timeline, vec2, vec4, Vector2 } from "zogra-engine";
 import { GameGlobals } from ".";
-import { BlackHole, ColorFood, Food, FoodGenerator } from "./food";
+import { FoodGenerator } from "./food-generator";
+import { BlackHole } from "./black-hole";
+import { ColorFood } from "./color-food";
+import { Food } from "./food";
 import { GameMap } from "./map";
+import { BoostFood } from "./boost-food";
 
 interface SnakeGrowing
 {
@@ -45,6 +49,8 @@ export class Snake extends LineRenderer
     foodParticle = new ParticleSystem();
     light = new Light2D();
     animator = new Animator();
+    boostAnimator = new Animator<unknown, Snake>(this);
+    boostTimeout = -1;
 
     currentLength: number;
     actualLength: number;
@@ -148,6 +154,38 @@ export class Snake extends LineRenderer
                 // console.log(this.light.lightRange, this.light.intensity, this.light.lightColor, this.ambientIntensity);
             })
         }
+        else if (other.entity instanceof BoostFood)
+        {
+            if (this.boostTimeout > 0)
+                clearTimeout(this.boostTimeout);
+            this.foodParticle.emit(9, other.entity.position);
+            other.entity.destroy();
+
+            const boostSpeed = Math.sqrt(this.speed ** 2 + 10);
+            this.boostAnimator.clear();
+            this.boostAnimator.play(Timeline({
+                duration: 10,
+                frames: {
+                    [0]: {
+                        speed: this.speed,
+                    },
+                    [1]: {
+                        speed: boostSpeed,
+                    },
+                    [8]: {
+                        speed: boostSpeed,
+                    },
+                    [10]: {
+                        speed: 3,
+                    }
+                },
+                updater: (frame, target: Snake) =>
+                {
+                    target.speed = frame.speed;
+                    console.log(target.speed);
+                }
+            }));
+        }
         else if (other.entity instanceof BlackHole)
         {
             // this.growTail(2 - this.currentLength, 2);
@@ -193,6 +231,7 @@ export class Snake extends LineRenderer
         this.light.lightRange = Math.max(this.light.volumnRadius, this.light.lightRange - this.lightRangeDropRate * time.deltaTime);
         this.ambientIntensity = Math.max(0, this.ambientIntensity - this.ambientDropRate * time.deltaTime);
         this.animator.update(time.deltaTime);
+        this.boostAnimator.update(time.deltaTime);
         // console.log(this.bodies.length);
         const collider = this.collider as BoxCollider;
         collider.offset = mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position);

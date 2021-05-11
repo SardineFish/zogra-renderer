@@ -5,7 +5,7 @@ import * as ZograEnginePackage from "zogra-engine";
 import noisejs = require("noisejs");
 import { Snake } from "./snake";
 import { GameMap } from "./map";
-import { loadSnakeAssets } from "./food";
+import { loadAssets } from "./assets";
 
 (window as any).Noise = noisejs.Noise;
 (window as any).ZograEngine = ZograEnginePackage;
@@ -47,7 +47,7 @@ camera.postprocess.push(bloom);
 async function init()
 {
     await GameMap.loadMapAssets();
-    await loadSnakeAssets();
+    await loadAssets();
 
     const tilemap = new GameMap();
     scene.add(tilemap);
