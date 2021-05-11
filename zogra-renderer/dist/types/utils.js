@@ -16,9 +16,30 @@ function wrapGlMatrix(func, argCount, allocator) {
     });
 }
 exports.wrapGlMatrix = wrapGlMatrix;
+const DAMP_EPSLON = 0.01;
+const DAMP_DURATION = -Math.log(DAMP_EPSLON);
 exports.MathUtils = {
     lerp(a, b, t) {
         return (b - a) * t + a;
     },
+    linstep(a, b, x) {
+        return exports.MathUtils.clamp((x - a) / (b - a), 0, 1);
+    },
+    smoothStep(a, b, x) {
+        const t = exports.MathUtils.linstep(a, b, x);
+        return t * t * (3.0 - 2.0 * t);
+    },
+    clamp(x, min, max) {
+        return Math.min(Math.max(x, min), max);
+    },
+    mapClamped(inMin, inMax, outMin, outMax, value) {
+        const t = this.linstep(inMin, inMax, value);
+        return exports.MathUtils.lerp(outMin, outMax, t);
+    },
+    damp(from, to, damping, deltaTime) {
+        const timeScale = DAMP_DURATION / damping;
+        const t = Math.exp(-deltaTime * timeScale);
+        return this.lerp(from, to, 1 - t);
+    }
 };
 //# sourceMappingURL=utils.js.map

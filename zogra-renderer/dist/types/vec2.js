@@ -88,6 +88,12 @@ class Vector2 extends V2Constructor {
         this[1] = -this[1];
         return this;
     }
+    /** 1 - this */
+    oneMinus() {
+        this[0] = 1 - this[0];
+        this[1] = 1 - this[1];
+        return this;
+    }
     equals(v) {
         if (v === undefined)
             return false;
@@ -179,6 +185,22 @@ vec2.div = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec2.zero);
+vec2.exp = utils_1.wrapGlMatrix((out, x) => {
+    if (typeof (x) === "number") {
+        out[0] = Math.exp(x);
+        out[1] = Math.exp(x);
+    }
+    else {
+        out[0] = Math.exp(x[0]);
+        out[1] = Math.exp(x[1]);
+    }
+    return out;
+}, 1, vec2.zero);
+vec2.inverse = utils_1.wrapGlMatrix((out, v) => {
+    out[0] = 1 / v[0];
+    out[1] = 1 / v[1];
+    return out;
+}, 1, vec2.zero);
 vec2.dot = (a, b) => {
     return a[0] * b[0] + a[1] * b[1];
 };

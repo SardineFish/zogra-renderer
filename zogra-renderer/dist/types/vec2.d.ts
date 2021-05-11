@@ -33,6 +33,8 @@ export declare class Vector2 extends V2Constructor implements Vector, ZograMatri
     normalize(): Vector2;
     inverse(): this;
     negate(): this;
+    /** 1 - this */
+    oneMinus(): this;
     equals(v: any): boolean;
     clone(out?: vec2): vec2;
     set(v: Readonly<vec2>): this;
@@ -79,6 +81,20 @@ export declare namespace vec2 {
         (out: Vector2, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector2;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector2;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+    };
+    var exp: {
+        (args_0: Readonly<number | Vector2>): Vector2;
+        (out: Vector2, args_0: Readonly<number | Vector2>): Vector2;
+        (out: Vector2, args_0: number | ArrayLike<number>): Vector2;
+        (args_0: number | ArrayLike<number>): Vector2;
+        (out: ArrayLike<number>, args_0: number | ArrayLike<number>): ArrayLike<number>;
+    };
+    var inverse: {
+        (args_0: Readonly<Vector2>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>): Vector2;
+        (out: Vector2, args_0: ArrayLike<number>): Vector2;
+        (args_0: ArrayLike<number>): Vector2;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
     };
     var dot: (a: ArrayLike<number> | Vector2, b: ArrayLike<number> | Vector2) => number;
     var cross: (a: ArrayLike<number> | Vector2, b: ArrayLike<number> | Vector2) => number;
@@ -149,6 +165,20 @@ export declare namespace vec2 {
         (out: Vector2, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector2;
         (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector2;
         (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
+    };
+    var exp: {
+        (args_0: Readonly<number | Vector2>): Vector2;
+        (out: Vector2, args_0: Readonly<number | Vector2>): Vector2;
+        (out: Vector2, args_0: number | ArrayLike<number>): Vector2;
+        (args_0: number | ArrayLike<number>): Vector2;
+        (out: ArrayLike<number>, args_0: number | ArrayLike<number>): ArrayLike<number>;
+    };
+    var inverse: {
+        (args_0: Readonly<Vector2>): Vector2;
+        (out: Vector2, args_0: Readonly<Vector2>): Vector2;
+        (out: Vector2, args_0: ArrayLike<number>): Vector2;
+        (args_0: ArrayLike<number>): Vector2;
+        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
     };
     var dot: (a: ArrayLike<number> | Vector2, b: ArrayLike<number> | Vector2) => number;
     var cross: (a: ArrayLike<number> | Vector2, b: ArrayLike<number> | Vector2) => number;
