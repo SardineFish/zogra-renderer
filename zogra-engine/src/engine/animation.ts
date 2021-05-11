@@ -61,6 +61,7 @@ export interface IPlayback<T>
     play(): Promise<T>;
     stop(): void;
     update(dt: number): void;
+    reject(): void;
 }
 
 export class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlayback<Frame, Target>>
@@ -77,6 +78,7 @@ export class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlay
     duration: number;
 
     private resolver?: (t: this) => void;
+    private rejector?: () => void;
 
     constructor(timeline: Timeline<Frame, Target>, target?: Target, updater?: AnimationCallback<Frame, Target>)
     {
@@ -99,9 +101,10 @@ export class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlay
 
     play(time = 0): Promise<this>
     {
-        return new Promise((resolve) =>
+        return new Promise((resolve, reject) =>
         {
             this.resolver = resolve;
+            this.rejector = reject;
             this.frameTime = time;
             this.frameTime = time;
             this.state = "pending";
@@ -131,6 +134,11 @@ export class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlay
                 this.updateAnimation(dt);
                 break;
         }
+    }
+
+    reject()
+    {
+        this.rejector?.();
     }
 
     private updateAnimation(dt: number)
@@ -218,6 +226,7 @@ class ProceduralPlayback implements IPlayback<void>
     totalTime: number;
     state: "pending" | "playing" | "stopped" = "stopped";
     resolver?: () => void;
+    rejector?: () => void;
     updater?: (t: number) => void;
     constructor(time: number, updater?: (t: number) => void)
     {
@@ -229,11 +238,12 @@ class ProceduralPlayback implements IPlayback<void>
 
     play(): Promise<void>
     {
-        return new Promise(resolve =>
+        return new Promise((resolve, reject) =>
         {
+            this.rejector = reject;
+            this.resolver = resolve;
             if (this.state === "stopped")
                 this.state = "pending";
-            this.resolver = resolve;
         });
     }
     stop(): void
@@ -255,6 +265,10 @@ class ProceduralPlayback implements IPlayback<void>
                 this.updater?.(this.currentTime / this.totalTime);
                 break;
         }
+    }
+    reject()
+    {
+        this.rejector?.();
     }
 
     private checkEnd()
@@ -330,5 +344,12 @@ export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
                 i--;
             }
         }
+    }
+
+    clear()
+    {
+        for (const track of this.tracks)
+            track.reject();
+        this.tracks.length = 0;
     }
 }

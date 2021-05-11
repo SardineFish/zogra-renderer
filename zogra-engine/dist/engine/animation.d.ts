@@ -33,6 +33,7 @@ export interface IPlayback<T> {
     play(): Promise<T>;
     stop(): void;
     update(dt: number): void;
+    reject(): void;
 }
 export declare class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlayback<Frame, Target>> {
     frameTime: number;
@@ -46,12 +47,14 @@ export declare class AnimationPlayback<Frame, Target> implements IPlayback<Anima
     currentFrame: Frame;
     duration: number;
     private resolver?;
+    private rejector?;
     constructor(timeline: Timeline<Frame, Target>, target?: Target, updater?: AnimationCallback<Frame, Target>);
     get playing(): boolean;
     get finished(): boolean;
     play(time?: number): Promise<this>;
     stop(): void;
     update(dt: number): void;
+    reject(): void;
     private updateAnimation;
     private updateFrame;
     private interpolate;
@@ -70,5 +73,6 @@ export declare class Animator<AnimatorFrame = unknown, AnimatorTarget = undefine
     play<Frame = AnimatorFrame, Target = AnimatorTarget>(timeline: Timeline<Frame, Target>, target?: Target, duration?: number, updater?: AnimationCallback<Frame, Target>): Promise<AnimationPlayback<Frame, Target>>;
     playProcedural(time: number, updater?: (t: number) => void, startTime?: number): Promise<void>;
     update(dt: number): void;
+    clear(): void;
 }
 export {};

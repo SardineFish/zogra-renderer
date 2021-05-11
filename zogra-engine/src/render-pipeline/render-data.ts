@@ -19,7 +19,7 @@ export type RenderData<Extension = {}> = Extension &
     scene: Scene;
     cameraOutput: FrameBuffer;
     visibleObjects: RenderObject[],
-    getVisibleObjects(renderOrder?: RenderOrder): ReadonlyArray<RenderObject>;
+    getVisibleObjects<T = RenderObject>(renderOrder?: RenderOrder, filter?: (obj: RenderObject) => boolean): ReadonlyArray<T>;
 };
 
 export const RenderData =
@@ -31,15 +31,18 @@ export const RenderData =
             scene,
             cameraOutput: output,
             visibleObjects: scene.getEntitiesOfType(RenderObject),
-            getVisibleObjects(renderOrder: RenderOrder = RenderOrder.NearToFar): ReadonlyArray<RenderObject>
+            getVisibleObjects<T = RenderObject>(renderOrder: RenderOrder = RenderOrder.NearToFar, filter?: (obj: RenderObject)=>boolean): ReadonlyArray<T>
             {
                 const viewMat = this.camera.worldToLocalMatrix;
-                let wrap = this.visibleObjects.map(obj => ({ pos: mat4.mulPoint(viewMat, obj.position), obj: obj }));
+                let objects = this.visibleObjects;
+                if (filter)
+                    objects = objects.filter(filter);
+                let wrap = objects.map(obj => ({ pos: mat4.mulPoint(viewMat, obj.position), obj: obj }));
                 if (renderOrder === RenderOrder.NearToFar)
                     wrap = wrap.sort((a, b) => b.pos.z - a.pos.z);
                 else
                     wrap = wrap.sort((a, b) => a.pos.z - b.pos.z);
-                return wrap.map(t => t.obj);
+                return wrap.map(t => t.obj) as unknown as ReadonlyArray<T>;
             },
         };
     }

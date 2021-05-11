@@ -15,9 +15,12 @@ exports.RenderData = {
             scene,
             cameraOutput: output,
             visibleObjects: scene.getEntitiesOfType(engine_1.RenderObject),
-            getVisibleObjects(renderOrder = RenderOrder.NearToFar) {
+            getVisibleObjects(renderOrder = RenderOrder.NearToFar, filter) {
                 const viewMat = this.camera.worldToLocalMatrix;
-                let wrap = this.visibleObjects.map(obj => ({ pos: zogra_renderer_1.mat4.mulPoint(viewMat, obj.position), obj: obj }));
+                let objects = this.visibleObjects;
+                if (filter)
+                    objects = objects.filter(filter);
+                let wrap = objects.map(obj => ({ pos: zogra_renderer_1.mat4.mulPoint(viewMat, obj.position), obj: obj }));
                 if (renderOrder === RenderOrder.NearToFar)
                     wrap = wrap.sort((a, b) => b.pos.z - a.pos.z);
                 else

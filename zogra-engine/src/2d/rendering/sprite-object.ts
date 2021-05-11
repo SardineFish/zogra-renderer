@@ -1,6 +1,8 @@
 import { Color, Material, Mesh, MeshBuilder, vec2, vec4 } from "zogra-renderer";
 import { RenderObject } from "../../engine/render-object";
 import { BuiltinMaterials } from "../../render-pipeline/default-materials";
+import { RenderData } from "../../render-pipeline/render-data";
+import { RenderContext } from "../../render-pipeline/render-pipeline";
 import { Sprite } from "./sprite";
 
 const spriteVerts = [
@@ -65,7 +67,7 @@ export class SpriteObject extends RenderObject
 
         if (sprite)
         {
-            this.material.texture = sprite.texture;
+            // this.material.texture = sprite.texture;
             this.mesh.vertices[0].uv.set([sprite.uvRect.xMin, sprite.uvRect.yMin]);
             this.mesh.vertices[1].uv.set([sprite.uvRect.xMax, sprite.uvRect.yMin]);
             this.mesh.vertices[2].uv.set([sprite.uvRect.xMax, sprite.uvRect.yMax]);
@@ -82,4 +84,9 @@ export class SpriteObject extends RenderObject
         }
     }
 
+    render(context: RenderContext, data: RenderData)
+    {
+        this.material.setProp("uMainTex", "tex2d", this.sprite?.texture || null);
+        context.renderer.drawMesh(this.mesh, this.localToWorldMatrix, this.material);
+    }
 }

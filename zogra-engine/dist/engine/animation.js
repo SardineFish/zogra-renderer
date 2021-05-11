@@ -43,8 +43,9 @@ class AnimationPlayback {
     get playing() { return this.state === "playing" || this.state === "pending"; }
     get finished() { return this.state === "stopped"; }
     play(time = 0) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.resolver = resolve;
+            this.rejector = reject;
             this.frameTime = time;
             this.frameTime = time;
             this.state = "pending";
@@ -70,6 +71,10 @@ class AnimationPlayback {
                 this.updateAnimation(dt);
                 break;
         }
+    }
+    reject() {
+        var _a;
+        (_a = this.rejector) === null || _a === void 0 ? void 0 : _a.call(this);
     }
     updateAnimation(dt) {
         if (!this.updater)
@@ -140,10 +145,11 @@ class ProceduralPlayback {
     }
     get finished() { return this.state === "stopped"; }
     play() {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
+            this.rejector = reject;
+            this.resolver = resolve;
             if (this.state === "stopped")
                 this.state = "pending";
-            this.resolver = resolve;
         });
     }
     stop() {
@@ -163,6 +169,10 @@ class ProceduralPlayback {
                 (_a = this.updater) === null || _a === void 0 ? void 0 : _a.call(this, this.currentTime / this.totalTime);
                 break;
         }
+    }
+    reject() {
+        var _a;
+        (_a = this.rejector) === null || _a === void 0 ? void 0 : _a.call(this);
     }
     checkEnd() {
         var _a;
@@ -202,6 +212,11 @@ class Animator {
                 i--;
             }
         }
+    }
+    clear() {
+        for (const track of this.tracks)
+            track.reject();
+        this.tracks.length = 0;
     }
 }
 exports.Animator = Animator;

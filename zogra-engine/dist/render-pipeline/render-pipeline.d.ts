@@ -1,8 +1,9 @@
-import { Camera } from "../engine/engine";
+import { Camera, RenderObject } from "../engine/engine";
 import { ZograRenderer } from "zogra-renderer";
 import { Scene } from "../engine/engine";
 import { Material } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
+import { RenderOrder } from "./render-data";
 export interface ZograRenderPipelineConstructor {
     new (renderer: ZograRenderer): ZograRenderPipeline;
 }
@@ -18,6 +19,11 @@ export interface RenderContext {
 export interface Screen {
     width: number;
     height: number;
+}
+export interface DrawObjectsOption {
+    order: RenderOrder;
+    filter: (obj: RenderObject) => boolean;
+    material: Material;
 }
 export declare const RenderContext: {
     create(renderer: ZograRenderer): RenderContext;

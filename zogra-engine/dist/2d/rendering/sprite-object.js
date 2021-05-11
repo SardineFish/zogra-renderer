@@ -51,7 +51,7 @@ class SpriteObject extends render_object_1.RenderObject {
     set sprite(sprite) {
         this._sprite = sprite;
         if (sprite) {
-            this.material.texture = sprite.texture;
+            // this.material.texture = sprite.texture;
             this.mesh.vertices[0].uv.set([sprite.uvRect.xMin, sprite.uvRect.yMin]);
             this.mesh.vertices[1].uv.set([sprite.uvRect.xMax, sprite.uvRect.yMin]);
             this.mesh.vertices[2].uv.set([sprite.uvRect.xMax, sprite.uvRect.yMax]);
@@ -65,6 +65,11 @@ class SpriteObject extends render_object_1.RenderObject {
         else {
             this.material.texture = null;
         }
+    }
+    render(context, data) {
+        var _a;
+        this.material.setProp("uMainTex", "tex2d", ((_a = this.sprite) === null || _a === void 0 ? void 0 : _a.texture) || null);
+        context.renderer.drawMesh(this.mesh, this.localToWorldMatrix, this.material);
     }
 }
 exports.SpriteObject = SpriteObject;
