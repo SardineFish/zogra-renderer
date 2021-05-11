@@ -77,7 +77,7 @@ export class BlackHole extends Entity
         this.particle.emitter = ParticleSystem.circleEmitter(1);
 
         const collider = new BoxCollider();
-        collider.size = vec2(0.3);
+        collider.size = vec2(0.1);
         this.collider = new BoxCollider();
     }
     async start()

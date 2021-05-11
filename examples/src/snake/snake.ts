@@ -1,4 +1,4 @@
-import { Animator, BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, ShadowType, Time, Timeline, vec2, vec4, Vector2 } from "zogra-engine";
+import { Animator, BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, Entity, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, ShadowType, Time, Timeline, vec2, vec4, Vector2 } from "zogra-engine";
 import { GameGlobals } from ".";
 import { FoodGenerator } from "./food-generator";
 import { BlackHole } from "./black-hole";
@@ -6,6 +6,8 @@ import { ColorFood } from "./color-food";
 import { Food } from "./food";
 import { GameMap } from "./map";
 import { BoostFood } from "./boost-food";
+import { GameCamera } from "./game-camera";
+import { Debug } from "zogra-renderer/dist/core/global";
 
 interface SnakeGrowing
 {
@@ -22,6 +24,7 @@ interface SnakeBoost
 
 export class Snake extends LineRenderer
 {
+    headEntity: Entity;
     initialLightRange = 15;
     initialLightIntensity = 0.4;
     initialAmbient = 0.2;
@@ -42,7 +45,7 @@ export class Snake extends LineRenderer
     inputQueue: vec2[] = [];
     headMoveDistance = 0;
     tailMoveDistance = 0;
-    camera: Camera;
+    camera: GameCamera;
     input: InputManager;
     foodGenerator: FoodGenerator;
     growingQueue: SnakeGrowing[] = [];
@@ -50,6 +53,7 @@ export class Snake extends LineRenderer
     light = new Light2D();
     animator = new Animator();
     boostAnimator = new Animator<unknown, Snake>(this);
+    cameraAnimator = new Animator<unknown, GameCamera>();
     boostTimeout = -1;
 
     currentLength: number;
@@ -58,7 +62,7 @@ export class Snake extends LineRenderer
     get ambientIntensity() { return GameGlobals().renderPipeline.ambientIntensity }
     set ambientIntensity(v) { GameGlobals().renderPipeline.ambientIntensity = v }
 
-    constructor(bodies: vec2[], headDir: vec2, camera: Camera, input: InputManager)
+    constructor(bodies: vec2[], headDir: vec2, camera: GameCamera, input: InputManager)
     {
         super();
         this.currentLength = bodies.length;
@@ -74,6 +78,8 @@ export class Snake extends LineRenderer
         collider.size = vec2(this.width);
         this.collider = collider;
         collider.on("onContact", this.onContact.bind(this));
+
+        this.headEntity = new Entity();
 
         this.foodParticle.maxCount = 256;
         this.foodParticle.startColor = () => new Color(1, 1, 1, 1).mul(MathUtils.lerp(1, 3, Math.random())) as Color;
@@ -103,6 +109,9 @@ export class Snake extends LineRenderer
             width: this.width,
         });
         this.points[0].position = mul(this.tailDir, -this.width / 2).plus(this.tail);
+
+
+        this.headEntity.position = vec2.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position).toVec3(0);
     }
     onContact(other: Collider2D)
     {
@@ -182,25 +191,72 @@ export class Snake extends LineRenderer
                 updater: (frame, target: Snake) =>
                 {
                     target.speed = frame.speed;
-                    console.log(target.speed);
+                    // console.log(target.speed);
                 }
             }));
+            this.cameraAnimator.clear();
+            this.cameraAnimator.play(Timeline({
+                duration: 0.9,
+                frames: {
+                    [0]: {
+                        shake: 5,
+                        amplitude: 0.6,
+                    },
+                    [0.9]: {
+                        shake: 0,
+                        amplitude: 0
+                    },
+                },
+                updater: (frame, camera: GameCamera) =>
+                {
+                    camera.shake = frame.shake;
+                    camera.shakeAmplitude = frame.amplitude;
+                }
+            }), this.camera);
         }
         else if (other.entity instanceof BlackHole)
         {
             // this.growTail(2 - this.currentLength, 2);
             // this.growTail(this.currentLength - 2, this.currentLength - 2);
+            const shrinkTime = 1;
             this.growingQueue = [];
             this.enqueueGrowing({
                 length: 2,
                 headSpeed: 0,
-                tailSpeed: (this.actualLength - 2) / this.speed,
+                tailSpeed: (this.actualLength - 2) / shrinkTime / this.speed,
             });
             this.enqueueGrowing({
                 length: this.actualLength,
                 headSpeed: 1,
                 tailSpeed: 0
             });
+            this.cameraAnimator.clear();
+            this.cameraAnimator.play(Timeline({
+                duration: 1.5,
+                frames: {
+                    [0]: {
+                        shake: 0,
+                        amplitude: 0,
+                    },
+                    [0.2]: {
+                        shake: 10,
+                        amplitude: 0.3,
+                    },
+                    [1]: {
+                        shake: 10,
+                        amplitude: 0.3
+                    },
+                    [1.5]: {
+                        shake: 0,
+                        amplitude: 0,
+                    }
+                },
+                updater: (frame, camera: GameCamera) =>
+                {
+                    camera.shake = frame.shake;
+                    camera.shakeAmplitude = frame.amplitude;
+                }
+            }), this.camera);
             const colorFood = other.entity as BlackHole;
             const originalColor = this.foodParticle.startColor;
             this.foodParticle.startColor = () => Color.black;
@@ -223,7 +279,8 @@ export class Snake extends LineRenderer
     {
         this.scene?.add(this.foodGenerator);
         this.scene?.add(this.foodParticle);
-        this.scene?.add(this.light);
+        this.scene?.add(this.headEntity);
+        this.scene?.add(this.light, this.headEntity);
     }
     update(time: Time)
     {
@@ -232,9 +289,8 @@ export class Snake extends LineRenderer
         this.ambientIntensity = Math.max(0, this.ambientIntensity - this.ambientDropRate * time.deltaTime);
         this.animator.update(time.deltaTime);
         this.boostAnimator.update(time.deltaTime);
+        this.cameraAnimator.update(time.deltaTime);
         // console.log(this.bodies.length);
-        const collider = this.collider as BoxCollider;
-        collider.offset = mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position);
         
         if (this.input.getKeyDown(Keys.A) || this.input.getKeyDown(Keys.Left))
         {
@@ -281,23 +337,33 @@ export class Snake extends LineRenderer
                 }
             }
         }
-
         
         this.moveHead(headMovement);
         this.moveTail(tailMovement);
         this.updateMesh();
         this.checkHitSelf();
 
+        {
+            const headSpeed = headMovement / time.deltaTime;
+            const viewHeight = MathUtils.mapClamped(0, 6, 7, 13, headSpeed);
+            const damping = headSpeed <= 3.1 ? 2 : 0.5;
+            this.camera.viewHeight = MathUtils.damp(this.camera.viewHeight, viewHeight, damping, time.deltaTime);
+        }
+
         // if (isGrowing)
         //     console.log(this.currentLength);
 
-        this.light.position = vec2.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position).toVec3(0);
+        this.headEntity.position = vec2.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position).toVec3(0);
+        Debug().drawCircle(this.headEntity.position, this.width / 2);
 
-        this.camera.position = vec2.math(MathUtils.lerp)(
-            this.camera.position.toVec2(),
-            this.head,
-            vec2(0.5 * time.deltaTime, 0.7 * time.deltaTime)
-        ).toVec3(this.camera.position.z);
+        const collider = this.collider as BoxCollider;
+        collider.offset = this.headEntity.position.toVec2();
+
+        // this.camera.position = vec2.math(MathUtils.lerp)(
+        //     this.camera.position.toVec2(),
+        //     this.head,
+        //     vec2(0.5 * time.deltaTime, 0.7 * time.deltaTime)
+        // ).toVec3(this.camera.position.z);
     }
     moveHead(distance: number)
     {

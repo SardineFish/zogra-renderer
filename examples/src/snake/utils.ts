@@ -13,3 +13,20 @@ export function probability(args: { [key: number]: () => void })
         total -= item.weight;
     }
 }
+export function noise_fbm(octave: number, noise: (x: number) => number)
+{
+    return (x: number) =>
+    {
+        let n = 0;
+        let amplitude = 1;
+        let scale = 0.5;
+        for (let i = 0; i < octave; i++)
+        {
+            amplitude *= 0.5;
+            scale *= 2;
+            n += amplitude * noise(x * scale);
+        }
+        n /= 1 - amplitude;
+        return n;
+    }
+}

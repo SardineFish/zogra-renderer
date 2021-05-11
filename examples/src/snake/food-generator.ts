@@ -64,7 +64,7 @@ export class FoodGenerator extends Entity
                 this.foods.push(food);
             }
         }
-        else if (Math.random() < 0.6)
+        else if (Math.random() < 0.1)
         {
             const pos = this.getSpawnPos(this.spawnRadius);
             if (pos)
@@ -76,7 +76,7 @@ export class FoodGenerator extends Entity
                 this.foods.push(food);
             }
         }
-        else if (Math.random() < 0.8)
+        else if (Math.random() < 0.5)
         {
             const pos = this.getSpawnPos(this.spawnRadius);
             if (pos)

@@ -6,6 +6,7 @@ import noisejs = require("noisejs");
 import { Snake } from "./snake";
 import { GameMap } from "./map";
 import { loadAssets } from "./assets";
+import { GameCamera } from "./game-camera";
 
 (window as any).Noise = noisejs.Noise;
 (window as any).ZograEngine = ZograEnginePackage;
@@ -31,7 +32,7 @@ const scene = engine.scene;
 scene.physics = new Physics2D();
 
 
-const camera = new Camera();
+const camera = new GameCamera();
 camera.position = vec3(0, 0, 20);
 camera.projection = Projection.Orthographic;
 camera.viewHeight = 10;
@@ -75,6 +76,9 @@ async function init()
         }
     }
     scene.add(snake);
+
+    camera.followTarget = snake.headEntity;
+    camera.position = snake.headEntity.position.clone().setZ(20);
 }
 init();
 
