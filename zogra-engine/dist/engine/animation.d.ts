@@ -72,6 +72,7 @@ export declare class Animator<AnimatorFrame = unknown, AnimatorTarget = undefine
     constructor(target?: AnimatorTarget);
     play<Frame = AnimatorFrame, Target = AnimatorTarget>(timeline: Timeline<Frame, Target>, target?: Target, duration?: number, updater?: AnimationCallback<Frame, Target>): Promise<AnimationPlayback<Frame, Target>>;
     playProcedural(time: number, updater?: (t: number) => void, startTime?: number): Promise<void>;
+    wait(time: number, callback: () => void): void;
     update(dt: number): void;
     clear(): void;
 }

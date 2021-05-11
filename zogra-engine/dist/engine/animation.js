@@ -202,6 +202,12 @@ class Animator {
         this.tracks.push(playback);
         return promise;
     }
+    wait(time, callback) {
+        const playback = new ProceduralPlayback(time);
+        const promise = playback.play();
+        this.tracks.push(playback);
+        promise.then(callback);
+    }
     update(dt) {
         for (let i = 0; i < this.tracks.length; i++) {
             const playback = this.tracks[i];

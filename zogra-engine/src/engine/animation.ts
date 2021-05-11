@@ -330,6 +330,14 @@ export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
         return promise;
     }
 
+    wait(time: number, callback: () => void)
+    {
+        const playback = new ProceduralPlayback(time);
+        const promise = playback.play();
+        this.tracks.push(playback);
+        promise.then(callback);
+    }
+
     update(dt: number)
     {
         for (let i = 0; i < this.tracks.length; i++)

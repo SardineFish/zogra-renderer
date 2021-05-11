@@ -34,14 +34,18 @@ export class Light2D extends Entity
     private shadowMap?: RenderTexture;
     private shadowMat = new Shadow2DMaterial();
 
-    constructor()
+    constructor(shadowType: ShadowType | false = false)
     {
         super();
-        this.shadowMesh.resize(5000, 9000);
+        this.shadowType = shadowType;
+        if (this.shadowType)
+            this.shadowMesh.resize(5000, 9000);
     }
 
     getShadowMap(context: RenderContext, data: RenderData)
     {
+        if (this.shadowMesh.vertices.length <= 0)
+            this.shadowMesh.resize(50, 90);
         // if (this.shadowType === false)
         //     return null;
         if (!this.shadowMap)
