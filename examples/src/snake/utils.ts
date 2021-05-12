@@ -30,3 +30,22 @@ export function noise_fbm(octave: number, noise: (x: number) => number)
         return n;
     }
 }
+export type WeightedRandom<T> = Array<{
+    weight: number,
+    value: T,
+}>;
+export function WeightedRandom<T>(items: WeightedRandom<T>)
+{
+    const total = items.reduce((sum, item) => sum + item.weight, 0);
+    return (t: number) =>
+    {
+        let sum = 0;
+        for (const item of items)
+        {
+            sum += item.weight;
+            if (t < sum / total)
+                return item.value;
+        }
+        return items[items.length - 1].value;
+    }
+}

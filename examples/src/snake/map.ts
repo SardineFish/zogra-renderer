@@ -6,6 +6,7 @@ const Noise = new noisejs.Noise();
 
 export class NoiseChunk extends Chunk
 {
+    foodCount = 0;
     constructor(basePos: vec2, chunkSize: number)
     {
         super(basePos, chunkSize);

@@ -12,7 +12,6 @@ import { GameCamera } from "./game-camera";
 (window as any).ZograEngine = ZograEnginePackage;
 (window as any).ZograRenderer = ZograRendererPackage;
 
-
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
 engine.fixedDeltaTime = true;

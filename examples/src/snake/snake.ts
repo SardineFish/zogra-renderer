@@ -22,6 +22,12 @@ interface SnakeBoost
     duration: number;
 }
 
+const Tracks = {
+    light: 0,
+    camera: 1,
+    boost: 2
+};
+
 export class Snake extends LineRenderer
 {
     headEntity: Entity;
@@ -29,9 +35,9 @@ export class Snake extends LineRenderer
     initialLightIntensity = 0.4;
     initialAmbient = 0.2;
     maxLightIntensity = 0.6;
-    intensityDropRate = this.maxLightIntensity / 30;
-    lightRangeDropRate = this.initialLightRange / 20;
-    ambientDropRate = this.initialAmbient / 40;
+    intensityDropDamping = () => 160 * Math.log(this.actualLength);
+    lightRangeDropDamping = () => 50 * Math.log(this.actualLength);
+    ambientDropDamping = () => 10 * Math.log(this.actualLength);
     speed = 3;
     // headSpeed = 3;
     // tailSpeed = 3;
@@ -50,11 +56,11 @@ export class Snake extends LineRenderer
     foodGenerator: FoodGenerator;
     growingQueue: SnakeGrowing[] = [];
     foodParticle = new ParticleSystem();
+    deadParticle = new ParticleSystem();
     light = new Light2D();
-    animator = new Animator();
-    boostAnimator = new Animator<unknown, Snake>(this);
-    cameraAnimator = new Animator<unknown, GameCamera>();
+    animator = new Animator(this);
     boostTimeout = -1;
+    isDead = false;
 
     currentLength: number;
     actualLength: number;
@@ -88,6 +94,13 @@ export class Snake extends LineRenderer
         this.foodParticle.lifetime = [0.3, 0.4];
         this.foodParticle.lifeSize = [0.3, 0];
 
+        this.deadParticle.maxCount = 256;
+        this.deadParticle.startColor = () => new Color(1, 1, 1, 1).mul(MathUtils.lerp(2, 5, Math.random())) as Color;
+        this.deadParticle.startAcceleration = { x: 0, y: 0, z: 0 };
+        this.deadParticle.lifeSpeed = [3, 0];
+        this.deadParticle.lifetime = [0.4, 1];
+        this.deadParticle.lifeSize = [0.3, 0];
+
         this.light.shadowType = ShadowType.Soft;
         this.light.lightRange = 15;
         this.light.intensity = 0.4;
@@ -115,6 +128,8 @@ export class Snake extends LineRenderer
     }
     onContact(other: Collider2D)
     {
+        if (this.isDead)
+            return;
         // console.log(other);
         if (other.entity instanceof GameMap)
         {
@@ -122,15 +137,15 @@ export class Snake extends LineRenderer
         }
         else if (other.entity instanceof Food)
         {
-            this.growTail(1, 2);
+            // this.growTail(1, 2);
             // this.actualLength += 1;
             this.foodParticle.emit(9, other.entity.position);
             other.entity.destroy();
 
-            const range = MathUtils.lerp(this.light.lightRange, this.initialLightRange, 0.5);
+            const range = MathUtils.lerp(this.light.lightRange, this.initialLightRange, 0.8);
             let intensity = MathUtils.lerp(this.light.intensity, this.maxLightIntensity, 0.5);
             intensity = Math.min(intensity, this.maxLightIntensity - this.ambientIntensity);
-            this.animator.playProcedural(2, t =>
+            this.animator.playProceduralOn(Tracks.light, 2, t =>
             {
                 this.light.lightRange = MathUtils.lerp(this.light.lightRange, range, t);
                 this.light.intensity = MathUtils.lerp(this.light.intensity, intensity, t);
@@ -138,7 +153,7 @@ export class Snake extends LineRenderer
         }
         else if (other.entity instanceof ColorFood)
         {
-            this.growTail(3, 4);
+            this.growTail(5, 6);
             // this.actualLength += 3;
             const colorFood = other.entity as ColorFood;
             const originalColor = this.foodParticle.startColor;
@@ -154,7 +169,7 @@ export class Snake extends LineRenderer
             // console.log("eat",colorFood.color);
             const color = colorFood.color.plus(this.light.lightColor).mul(0.5);
             // console.log(range, intensity, ambient, color);
-            this.animator.playProcedural(2, t =>
+            this.animator.playProceduralOn(Tracks.light, 3, t =>
             {
                 this.light.lightRange = MathUtils.lerp(this.light.lightRange, range, t);
                 this.light.intensity = Math.min(this.maxLightIntensity-  this.ambientIntensity, MathUtils.lerp(this.light.intensity, intensity, t));
@@ -171,8 +186,8 @@ export class Snake extends LineRenderer
             other.entity.destroy();
 
             const boostSpeed = Math.sqrt(this.speed ** 2 + 10);
-            this.boostAnimator.clear();
-            this.boostAnimator.play(Timeline({
+            // this.boostAnimator.clear();
+            this.animator.playOn(Tracks.boost, Timeline({
                 duration: 10,
                 frames: {
                     [0]: {
@@ -193,9 +208,9 @@ export class Snake extends LineRenderer
                     target.speed = frame.speed;
                     // console.log(target.speed);
                 }
-            }));
-            this.cameraAnimator.clear();
-            this.cameraAnimator.play(Timeline({
+            }), this);
+            // this.cameraAnimator.clear();
+            this.animator.playOn(Tracks.camera, Timeline({
                 duration: 0.9,
                 frames: {
                     [0]: {
@@ -230,8 +245,8 @@ export class Snake extends LineRenderer
                 headSpeed: 1,
                 tailSpeed: 0
             });
-            this.cameraAnimator.clear();
-            this.cameraAnimator.play(Timeline({
+            // this.cameraAnimator.clear();
+            this.animator.playOn(Tracks.camera, Timeline({
                 duration: 1.5,
                 frames: {
                     [0]: {
@@ -267,49 +282,51 @@ export class Snake extends LineRenderer
             const range = this.light.lightRange * 0.8;
             const intensity = this.light.intensity * 0.8;
             const ambient = GameGlobals().renderPipeline.ambientIntensity * 0.2;
-            this.animator.playProcedural(2, t =>
+            this.animator.playProceduralOn(Tracks.light, 2, t =>
             {
                 this.light.lightRange = MathUtils.lerp(this.light.lightRange, range, t);
                 this.light.intensity = MathUtils.lerp(this.light.intensity, intensity, t);
                 GameGlobals().renderPipeline.ambientIntensity = MathUtils.lerp(GameGlobals().renderPipeline.ambientIntensity, ambient, t);
-            })
+            });
         }
     }
     start()
     {
         this.scene?.add(this.foodGenerator);
         this.scene?.add(this.foodParticle);
+        this.scene?.add(this.deadParticle);
         this.scene?.add(this.headEntity);
         this.scene?.add(this.light, this.headEntity);
     }
     update(time: Time)
     {
-        this.light.intensity = Math.max(0, this.light.intensity - this.intensityDropRate * time.deltaTime);
-        this.light.lightRange = Math.max(this.light.volumnRadius, this.light.lightRange - this.lightRangeDropRate * time.deltaTime);
-        this.ambientIntensity = Math.max(0, this.ambientIntensity - this.ambientDropRate * time.deltaTime);
         this.animator.update(time.deltaTime);
-        this.boostAnimator.update(time.deltaTime);
-        this.cameraAnimator.update(time.deltaTime);
-        // console.log(this.bodies.length);
-        
-        if (this.input.getKeyDown(Keys.A) || this.input.getKeyDown(Keys.Left))
+        if (!this.isDead)
         {
-            this.inputQueue.push(vec2.left());
+            this.light.intensity = MathUtils.damp(this.light.intensity, 0, this.intensityDropDamping(), time.deltaTime);
+            this.ambientIntensity = MathUtils.damp(this.ambientIntensity, 0, this.ambientDropDamping(), time.deltaTime);
+            this.light.lightRange = MathUtils.damp(this.light.lightRange, 0, this.lightRangeDropDamping(), time.deltaTime);
+            // console.log(this.bodies.length);
+
+            if (this.input.getKeyDown(Keys.A) || this.input.getKeyDown(Keys.Left))
+            {
+                this.inputQueue.push(vec2.left());
+            }
+            if (this.input.getKeyDown(Keys.D) || this.input.getKeyDown(Keys.Right))
+            {
+                this.inputQueue.push(vec2.right());
+            }
+            if (this.input.getKeyDown(Keys.W) || this.input.getKeyDown(Keys.Up))
+            {
+                this.inputQueue.push(vec2.up());
+            }
+            if (this.input.getKeyDown(Keys.S) || this.input.getKeyDown(Keys.Down))
+            {
+                this.inputQueue.push(vec2.down());
+            }
+            if (this.inputQueue.length > this.inputCacheSize)
+                this.inputQueue = this.inputQueue.slice(this.inputQueue.length - this.inputCacheSize);
         }
-        if (this.input.getKeyDown(Keys.D) || this.input.getKeyDown(Keys.Right))
-        {
-            this.inputQueue.push(vec2.right());
-        }
-        if (this.input.getKeyDown(Keys.W) || this.input.getKeyDown(Keys.Up))
-        {
-            this.inputQueue.push(vec2.up());
-        }
-        if (this.input.getKeyDown(Keys.S) || this.input.getKeyDown(Keys.Down))
-        {
-            this.inputQueue.push(vec2.down());
-        }
-        if (this.inputQueue.length > this.inputCacheSize)
-            this.inputQueue = this.inputQueue.slice(this.inputQueue.length - this.inputCacheSize);
 
         let headMovement = this.speed * time.deltaTime;
         let tailMovement = this.speed * time.deltaTime;
@@ -341,23 +358,27 @@ export class Snake extends LineRenderer
         this.moveHead(headMovement);
         this.moveTail(tailMovement);
         this.updateMesh();
-        this.checkHitSelf();
 
+        if (!this.isDead)
         {
-            const headSpeed = headMovement / time.deltaTime;
-            const viewHeight = MathUtils.mapClamped(0, 6, 7, 13, headSpeed);
-            const damping = headSpeed <= 3.1 ? 2 : 0.5;
-            this.camera.viewHeight = MathUtils.damp(this.camera.viewHeight, viewHeight, damping, time.deltaTime);
+            this.checkHitSelf();
+
+            {
+                const headSpeed = headMovement / time.deltaTime;
+                const viewHeight = MathUtils.mapClamped(0, 6, 7, 13, headSpeed);
+                const damping = headSpeed <= 3.1 ? 2 : 0.5;
+                this.camera.viewHeight = MathUtils.damp(this.camera.viewHeight, viewHeight, damping, time.deltaTime);
+            }
+
+            // if (isGrowing)
+            //     console.log(this.currentLength);
+
+            this.headEntity.position = vec2.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position).toVec3(0);
+            // Debug().drawCircle(this.headEntity.position, this.width / 2);
+
+            const collider = this.collider as BoxCollider;
+            collider.offset = this.headEntity.position.toVec2();
         }
-
-        // if (isGrowing)
-        //     console.log(this.currentLength);
-
-        this.headEntity.position = vec2.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position).toVec3(0);
-        Debug().drawCircle(this.headEntity.position, this.width / 2);
-
-        const collider = this.collider as BoxCollider;
-        collider.offset = this.headEntity.position.toVec2();
 
         // this.camera.position = vec2.math(MathUtils.lerp)(
         //     this.camera.position.toVec2(),
@@ -367,6 +388,8 @@ export class Snake extends LineRenderer
     }
     moveHead(distance: number)
     {
+        if (this.bodies.length <= 0 || this.points.length <= 0)
+            return;
         this.headMoveDistance += distance;
         this.currentLength += distance;
         if (this.headMoveDistance >= this.step)
@@ -402,6 +425,8 @@ export class Snake extends LineRenderer
     }
     moveTail(distance: number)
     {
+        if (this.bodies.length <= 0 || this.points.length <= 0)
+            return;
         this.currentLength -= distance;
 
         while (distance > 0)
@@ -410,11 +435,11 @@ export class Snake extends LineRenderer
             {
                 distance -= this.step - this.tailMoveDistance;
                 this.tailMoveDistance = this.step;
-                GameMap.instance.setTile(this.tail, GameMap.tileGround);
+                if (GameMap.instance.getTile(this.tail) === GameMap.tileSnake)
+                    GameMap.instance.setTile(this.tail, GameMap.tileGround);
                 this.bodies = this.bodies.slice(1);
                 this.points = this.points.slice(1);
 
-                this.points[0].position = mul(this.tailDir, -this.width / 2).plus(this.tail);
                 this.tailMoveDistance -= this.step;
             }
             else
@@ -423,6 +448,8 @@ export class Snake extends LineRenderer
                 distance -= distance;
             }
             
+            if (!this.tail)
+                return;
             const tailPoint = this.points[0];
             const startPos = mul(this.tailDir, -this.width / 2).plus(this.tail);
             tailPoint.position.set(this.tailDir).mul(this.tailMoveDistance).plus(startPos);
@@ -452,15 +479,60 @@ export class Snake extends LineRenderer
             tailSpeed: (steps - length) / steps
         });
     }
-    dead()
+    reverse()
     {
-        this.speed = 0;
-        for (const body of this.bodies)
+        const headDir = this.tailDir.negate();
+        this.bodies.push(mul(this.headDir, this.step).plus(this.head));
+        this.bodies = this.bodies.slice(1);
+
+        this.bodies = this.bodies.reverse();
+        this.points = this.points.reverse();
+        [this.headMoveDistance, this.tailMoveDistance] = [this.step - this.tailMoveDistance, this.step - this.headMoveDistance];
+        this.headDir = headDir;
+        this.updateMesh();
+    }
+    async dead()
+    {
+        this.isDead = true;
+        // this.speed = 0;
+        this.animator.playProceduralOn(Tracks.light, 1, (t, dt) =>
         {
-            this.foodParticle.emit(10, body.toVec3());
-        }
-        this.destroy();
-        this.light.destroy();
+            this.light.intensity = MathUtils.damp(this.light.intensity, this.initialLightIntensity, 1, dt);
+            this.ambientIntensity = MathUtils.damp(this.ambientIntensity, this.initialAmbient, 1, dt);
+        });
+        const lightEntity = this.headEntity;
+        this.headEntity = new Entity();
+
+        this.reverse();
+
+        let time = 3;
+        const speed = Math.max(this.speed, this.currentLength / time);
+        time = this.currentLength / speed;
+        this.enqueueGrowing({
+            headSpeed: 0,
+            tailSpeed: speed / this.speed,
+            length: 0,
+        });
+        this.camera.shake = 6;
+        this.camera.shakeAmplitude = 3;
+        this.camera.shakeOctave = 2;
+        this.animator.playProceduralOn(Tracks.camera, time, (_, dt) =>
+        {
+            this.camera.shake = MathUtils.damp(this.camera.shake, 0, time, dt, 0.01);
+            this.camera.shakeAmplitude = MathUtils.damp(this.camera.shakeAmplitude, 0.2, time, dt);
+        });
+
+        await this.animator.playProcedural(time + 1, (_, dt) =>
+        {
+            this.light.intensity = MathUtils.damp(this.light.intensity, 0, time, dt);
+            if (this.points.length <= 1)
+                return;
+            const pos = this.points[0].position;
+            lightEntity.position = this.tailDir.mul(this.width / 2).plus(pos).toVec3();
+            this.deadParticle.emit(1, lightEntity.position);
+        });
+
+        this.camera.shake = 0;
     }
     get head() { return this.bodies[this.bodies.length - 1] }
     get tail() { return this.bodies[0] }
@@ -468,6 +540,6 @@ export class Snake extends LineRenderer
     {
         if (this.bodies.length > 1)
             return minus(this.bodies[1], this.bodies[0]).normalize();
-        return this.headDir;
+        return this.headDir.clone();
     }
 }
