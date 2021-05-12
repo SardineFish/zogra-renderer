@@ -1,6 +1,5 @@
-import { boxRaycast, div, dot, minus, plugins, plus, Rect, vec2 } from "zogra-renderer";
+import { boxRaycast, div, dot, minus, plus, Rect, vec2 } from "zogra-renderer";
 import { Debug } from "zogra-renderer/dist/core/global";
-import { Tilemap } from "../../rendering/tilemap";
 import { BoxCollider } from "../box-collider";
 import { CollisionInfo2D } from "../collider2d";
 import { TilemapCollider } from "../tilemap-collider";

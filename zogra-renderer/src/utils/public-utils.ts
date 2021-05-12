@@ -1,1 +1,1 @@
-export * from "./mesh-builder";
+export * from "./image-sizing";

@@ -1,2 +1,2 @@
-export * from "./mesh-builder";
+export * from "./image-sizing";
 //# sourceMappingURL=public-utils.js.map

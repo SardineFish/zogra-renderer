@@ -12,10 +12,10 @@ export declare const BuiltinUniformNames: {
     color: string;
 };
 export declare function compileBuiltinShaders(gl: WebGL2RenderingContext): {
-    DefaultShader: Shader<import("..").DefaultVertexStruct>;
-    BlitCopy: Shader<import("..").DefaultVertexStruct>;
-    FlipTexture: Shader<import("..").DefaultVertexStruct>;
-    ColoredLine: Shader<import("..").DefaultVertexStruct>;
-    ErrorShader: Shader<import("..").DefaultVertexStruct>;
+    DefaultShader: Shader<import("../core").DefaultVertexStruct>;
+    BlitCopy: Shader<import("../core").DefaultVertexStruct>;
+    FlipTexture: Shader<import("../core").DefaultVertexStruct>;
+    ColoredLine: Shader<import("../core").DefaultVertexStruct>;
+    ErrorShader: Shader<import("../core").DefaultVertexStruct>;
 };
 export { BuiltinShaderSources };

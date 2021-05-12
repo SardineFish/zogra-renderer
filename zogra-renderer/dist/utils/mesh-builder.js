@@ -1,4 +1,4 @@
-import { vec3, vec2, Color, mul } from "../types/types";
+import { vec3, vec2, Color, mul } from "../types";
 import { GlobalContext } from "../core/global";
 import { DefaultVertexData, Mesh } from "../core/mesh";
 export class MeshBuilder {
