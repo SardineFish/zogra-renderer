@@ -227,8 +227,8 @@ class ProceduralPlayback implements IPlayback<void>
     state: "pending" | "playing" | "stopped" = "stopped";
     resolver?: () => void;
     rejector?: () => void;
-    updater?: (t: number) => void;
-    constructor(time: number, updater?: (t: number) => void)
+    updater?: (t: number, dt: number) => void;
+    constructor(time: number, updater?: (t: number, dt: number) => void)
     {
         this.totalTime = time;
         this.updater = updater;
@@ -262,7 +262,7 @@ class ProceduralPlayback implements IPlayback<void>
             case "playing":
                 this.currentTime += dt;
                 this.checkEnd();
-                this.updater?.(this.currentTime / this.totalTime);
+                this.updater?.(this.currentTime / this.totalTime, dt);
                 break;
         }
     }
@@ -300,14 +300,15 @@ export interface AnimationPlaybackOptions<Frame, Target = unknown>
 export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
 {
     defaultTarget: AnimatorTarget | undefined;
-    tracks: IPlayback<unknown>[] = [];
+    tracks: Array<IPlayback<unknown> | undefined> = [];
 
     constructor(target?: AnimatorTarget)
     {
         this.defaultTarget = target;
     }
 
-    play<Frame = AnimatorFrame, Target = AnimatorTarget>(
+    playOn<Frame = AnimatorFrame, Target = AnimatorTarget>(
+        track: number,
         timeline: Timeline<Frame, Target>,
         target: Target = this.defaultTarget as unknown as Target,
         duration: number = timeline.duration,
@@ -317,17 +318,35 @@ export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
         const playback = new AnimationPlayback<Frame, Target>(timeline, target, updater);
         playback.duration = duration;
         const promise = playback.play();
-        this.tracks.push(playback as any);
+        if (this.tracks[track])
+            (this.tracks[track] as IPlayback<unknown>).reject();
+        this.tracks[track] = playback;
         return promise;
     }
 
-    playProcedural(time: number, updater?: (t: number)=>void, startTime = 0): Promise<void>
+    play<Frame = AnimatorFrame, Target = AnimatorTarget>(
+        timeline: Timeline<Frame, Target>,
+        target: Target = this.defaultTarget as unknown as Target,
+        duration: number = timeline.duration,
+        updater?: AnimationCallback<Frame, Target>
+    ): Promise<AnimationPlayback<Frame, Target>>
+    {
+        return this.playOn(this.tracks.length, timeline, target, duration, updater);
+    }
+
+    playProceduralOn(track: number, time: number, updater?: (t: number, dt: number) => void, startTime = 0): Promise<void>
     {
         const playback = new ProceduralPlayback(time, updater);
         playback.currentTime = startTime;
         const promise = playback.play();
-        this.tracks.push(playback as any);
+        if (this.tracks[track])
+            (this.tracks[track] as IPlayback<unknown>).reject();
+        this.tracks[track] = playback;
         return promise;
+    }
+    playProcedural(time: number, updater?: (t: number, dt: number)=>void, startTime = 0): Promise<void>
+    {
+        return this.playProceduralOn(this.tracks.length, time, updater);
     }
 
     wait(time: number, callback: () => void)
@@ -343,21 +362,21 @@ export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
         for (let i = 0; i < this.tracks.length; i++)
         {
             const playback = this.tracks[i];
+            if (!playback)
+                continue;
             playback.update(dt);
-
             if (playback.finished)
             {
-                this.tracks[i] = this.tracks[this.tracks.length - 1];
-                this.tracks.length--;
-                i--;
+                this.tracks[i] = undefined;
             }
+
         }
     }
 
     clear()
     {
         for (const track of this.tracks)
-            track.reject();
+            track?.reject();
         this.tracks.length = 0;
     }
 }

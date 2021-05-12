@@ -68,10 +68,12 @@ export interface AnimationPlaybackOptions<Frame, Target = unknown> {
 }
 export declare class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined> {
     defaultTarget: AnimatorTarget | undefined;
-    tracks: IPlayback<unknown>[];
+    tracks: Array<IPlayback<unknown> | undefined>;
     constructor(target?: AnimatorTarget);
+    playOn<Frame = AnimatorFrame, Target = AnimatorTarget>(track: number, timeline: Timeline<Frame, Target>, target?: Target, duration?: number, updater?: AnimationCallback<Frame, Target>): Promise<AnimationPlayback<Frame, Target>>;
     play<Frame = AnimatorFrame, Target = AnimatorTarget>(timeline: Timeline<Frame, Target>, target?: Target, duration?: number, updater?: AnimationCallback<Frame, Target>): Promise<AnimationPlayback<Frame, Target>>;
-    playProcedural(time: number, updater?: (t: number) => void, startTime?: number): Promise<void>;
+    playProceduralOn(track: number, time: number, updater?: (t: number, dt: number) => void, startTime?: number): Promise<void>;
+    playProcedural(time: number, updater?: (t: number, dt: number) => void, startTime?: number): Promise<void>;
     wait(time: number, callback: () => void): void;
     update(dt: number): void;
     clear(): void;

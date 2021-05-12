@@ -36,10 +36,11 @@ exports.MathUtils = {
         const t = this.linstep(inMin, inMax, value);
         return exports.MathUtils.lerp(outMin, outMax, t);
     },
-    damp(from, to, damping, deltaTime) {
-        const timeScale = DAMP_DURATION / damping;
-        const t = Math.exp(-deltaTime * timeScale);
-        return this.lerp(from, to, 1 - t);
-    }
+    damp: damp,
 };
+function damp(from, to, damping, deltaTime, epslon = DAMP_EPSLON, dampDuration = -Math.log(epslon)) {
+    const timeScale = dampDuration / damping;
+    const t = Math.exp(-deltaTime * timeScale);
+    return exports.MathUtils.lerp(from, to, 1 - t);
+}
 //# sourceMappingURL=utils.js.map

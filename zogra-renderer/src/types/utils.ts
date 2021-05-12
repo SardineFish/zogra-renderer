@@ -67,10 +67,13 @@ export const MathUtils = {
         const t = this.linstep(inMin, inMax, value);
         return MathUtils.lerp(outMin, outMax, t);
     },
-    damp(from: number, to: number, damping: number, deltaTime: number)
-    {
-        const timeScale = DAMP_DURATION / damping;
-        const t = Math.exp(-deltaTime * timeScale);
-        return this.lerp(from, to, 1 - t);
-    }
+    damp: damp,
+}
+
+function damp(from: number, to: number, damping: number, deltaTime: number, epslon?: number): number
+function damp(from: number, to: number, damping: number, deltaTime: number, epslon = DAMP_EPSLON, dampDuration = -Math.log(epslon)): number
+{
+    const timeScale = dampDuration / damping;
+    const t = Math.exp(-deltaTime * timeScale);
+    return MathUtils.lerp(from, to, 1 - t);
 }

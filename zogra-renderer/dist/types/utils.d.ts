@@ -25,6 +25,7 @@ export declare const MathUtils: {
     smoothStep(a: number, b: number, x: number): number;
     clamp(x: number, min: number, max: number): number;
     mapClamped(inMin: number, inMax: number, outMin: number, outMax: number, value: number): number;
-    damp(from: number, to: number, damping: number, deltaTime: number): number;
+    damp: typeof damp;
 };
+declare function damp(from: number, to: number, damping: number, deltaTime: number, epslon?: number): number;
 export {};

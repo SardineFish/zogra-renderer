@@ -166,7 +166,7 @@ class ProceduralPlayback {
             case "playing":
                 this.currentTime += dt;
                 this.checkEnd();
-                (_a = this.updater) === null || _a === void 0 ? void 0 : _a.call(this, this.currentTime / this.totalTime);
+                (_a = this.updater) === null || _a === void 0 ? void 0 : _a.call(this, this.currentTime / this.totalTime, dt);
                 break;
         }
     }
@@ -188,19 +188,29 @@ class Animator {
         this.tracks = [];
         this.defaultTarget = target;
     }
-    play(timeline, target = this.defaultTarget, duration = timeline.duration, updater) {
+    playOn(track, timeline, target = this.defaultTarget, duration = timeline.duration, updater) {
         const playback = new AnimationPlayback(timeline, target, updater);
         playback.duration = duration;
         const promise = playback.play();
-        this.tracks.push(playback);
+        if (this.tracks[track])
+            this.tracks[track].reject();
+        this.tracks[track] = playback;
         return promise;
     }
-    playProcedural(time, updater, startTime = 0) {
+    play(timeline, target = this.defaultTarget, duration = timeline.duration, updater) {
+        return this.playOn(this.tracks.length, timeline, target, duration, updater);
+    }
+    playProceduralOn(track, time, updater, startTime = 0) {
         const playback = new ProceduralPlayback(time, updater);
         playback.currentTime = startTime;
         const promise = playback.play();
-        this.tracks.push(playback);
+        if (this.tracks[track])
+            this.tracks[track].reject();
+        this.tracks[track] = playback;
         return promise;
+    }
+    playProcedural(time, updater, startTime = 0) {
+        return this.playProceduralOn(this.tracks.length, time, updater);
     }
     wait(time, callback) {
         const playback = new ProceduralPlayback(time);
@@ -211,17 +221,17 @@ class Animator {
     update(dt) {
         for (let i = 0; i < this.tracks.length; i++) {
             const playback = this.tracks[i];
+            if (!playback)
+                continue;
             playback.update(dt);
             if (playback.finished) {
-                this.tracks[i] = this.tracks[this.tracks.length - 1];
-                this.tracks.length--;
-                i--;
+                this.tracks[i] = undefined;
             }
         }
     }
     clear() {
         for (const track of this.tracks)
-            track.reject();
+            track === null || track === void 0 ? void 0 : track.reject();
         this.tracks.length = 0;
     }
 }
