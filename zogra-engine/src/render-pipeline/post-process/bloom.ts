@@ -38,7 +38,7 @@ export class Bloom extends PostProcess
     private materialFilter = new BloomFilterMaterial();
     private materialCompose = new BloomComposeMaterial();
     private blurRenderer = new DownsampleBlurRenderer();
-    private filterOutput = null as any;
+    private filterOutput: RenderTexture = null as any;
 
     create(context: RenderContext)
     {
@@ -55,6 +55,8 @@ export class Bloom extends PostProcess
 
     render(context: RenderContext, src: RenderTexture, dst: FrameBuffer): void
     {
+        if (!src.size.equals(this.filterOutput.size))
+            this.filterOutput.resize(src.width, src.height, TextureResizing.Discard);
         // this.materialFilter.threshold = this.threshold;
         // this.materialFilter.softThreshold = this.threshold;
         // this.materialFilter.texture = src;

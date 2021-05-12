@@ -4,7 +4,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { Color, Culling, DefaultVertexData, FilterMode, mat4, MaterialFromShader, Mesh, RenderTexture, Shader, shaderProp, TextureFormat, vec2, VertexStruct, Blending } from "zogra-renderer";
+import { Color, Culling, DefaultVertexData, FilterMode, mat4, MaterialFromShader, Mesh, RenderTexture, Shader, shaderProp, TextureFormat, vec2, VertexStruct, Blending, TextureResizing } from "zogra-renderer";
 import { ShaderSource } from "../../assets";
 import { Entity } from "../../engine/entity";
 import { TilemapCollider } from "../physics/tilemap-collider";
@@ -41,6 +41,8 @@ export class Light2D extends Entity {
         //     return null;
         if (!this.shadowMap)
             this.shadowMap = new RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, TextureFormat.R8, FilterMode.Linear);
+        if (!this.shadowMap.size.equals(data.cameraOutput.size))
+            this.shadowMap.resize(data.cameraOutput.width, data.cameraOutput.height, TextureResizing.Discard);
         this.updateShadowMesh(context, data);
         context.renderer.setFramebuffer(this.shadowMap);
         context.renderer.clear(Color.black);

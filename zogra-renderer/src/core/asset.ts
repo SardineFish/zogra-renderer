@@ -113,7 +113,7 @@ class AssetManagerType implements IEventSource<AssetManagerEvents>
     {
         const currentId = ++this.id;
         this.assetsMap.set(currentId, asset);
-        setImmediate(() => this.eventEmitter.emit("asset-created", asset));
+        // setImmediate(() => this.eventEmitter.emit("asset-created", asset));
         return asset.assetID = currentId;
     }
     find(name: string): IAsset | undefined
@@ -137,7 +137,7 @@ class AssetManagerType implements IEventSource<AssetManagerEvents>
             return;
         this.assetsMap.delete(id);
         
-        setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
+        // setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
     }
     findAssetsOfType<T extends IAsset>(type: ConstructorType<T>): T[]
     {

@@ -15,13 +15,24 @@ export class RenderBuffer extends GPUAsset {
         this.tryInit(false);
     }
     get width() { return this.size.x; }
-    set width(w) { this.size.x = w; }
+    // set width(w) { this.size.x = w }
     get height() { return this.size.y; }
-    set height(h) { this.size.y = h; }
+    // set height(h) { this.size.y = h }
     /** @internal */
     glBuf() {
         this.tryInit(true);
         return this._glBuf;
+    }
+    resize(width, height) {
+        this.size.x = width;
+        this.size.y = height;
+        if (!this.initialized)
+            return this;
+        const gl = this.ctx.gl;
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this._glBuf);
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        return this;
     }
     updateParams() {
         this.tryInit(true);

@@ -7,6 +7,9 @@ export class FinalBlit extends RenderPass {
     }
     render(context, data) {
         var _a, _b;
+        if (!data.cameraOutput.size.equals(this.tempRT.size)) {
+            this.tempRT.resize(data.cameraOutput.width, data.cameraOutput.height);
+        }
         const camera = data.camera;
         if (data.postprocessOutput) {
             context.renderer.blit(data.postprocessOutput, (_a = camera.output) !== null && _a !== void 0 ? _a : FrameBuffer.CanvasBuffer);

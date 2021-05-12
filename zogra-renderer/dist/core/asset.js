@@ -1,4 +1,3 @@
-import { setImmediate } from "../utils/util";
 import { EventEmitter } from "./event";
 import { GlobalContext } from "./global";
 export class Asset {
@@ -66,7 +65,7 @@ class AssetManagerType {
     newAssetID(asset) {
         const currentId = ++this.id;
         this.assetsMap.set(currentId, asset);
-        setImmediate(() => this.eventEmitter.emit("asset-created", asset));
+        // setImmediate(() => this.eventEmitter.emit("asset-created", asset));
         return asset.assetID = currentId;
     }
     find(id) {
@@ -84,7 +83,7 @@ class AssetManagerType {
         if (!asset)
             return;
         this.assetsMap.delete(id);
-        setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
+        // setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
     }
     findAssetsOfType(type) {
         return Array.from(this.assetsMap.values()).filter(asset => asset instanceof type);

@@ -49,7 +49,7 @@ declare class TextureBase extends Asset implements Texture {
     bind(unit: number): void;
     unbind(unit: number): void;
     destroy(): void;
-    resize(width: number, height: number, textureContent?: TextureResizing): void;
+    resize(width: number, height: number, textureContent?: TextureResizing): this;
     generateMipmap(): void;
     updateParameters(): void;
     /**

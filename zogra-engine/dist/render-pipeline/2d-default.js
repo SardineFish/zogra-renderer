@@ -1,8 +1,7 @@
-import { FilterMode, RenderBuffer, TextureFormat } from "zogra-renderer";
+import { RenderBuffer, TextureFormat, vec2 } from "zogra-renderer";
 import { RenderData, RenderOrder } from "./render-data";
 import { Color } from "zogra-renderer";
 import { FrameBuffer } from "zogra-renderer";
-import { RenderTexture } from "zogra-renderer";
 import { DebugLayerRenderer } from "./render-pass/debug-layer";
 import { Debug } from "zogra-renderer/dist/core/global";
 import { Light2DPass } from "./render-pass/2d-light-pass";
@@ -51,15 +50,21 @@ export class Default2DRenderPipeline {
             const fbo = new FrameBuffer(context.renderer.canvas.width, context.renderer.canvas.height);
             const renderbuffer = new RenderBuffer(fbo.width, fbo.height, this.renderFormat, this.msaa);
             fbo.addColorAttachment(renderbuffer);
-            const rt0 = new RenderTexture(context.renderer.canvas.width, context.renderer.canvas.height, false, this.renderFormat, FilterMode.Linear);
-            const rt1 = new RenderTexture(context.renderer.canvas.width, context.renderer.canvas.height, false, this.renderFormat, FilterMode.Linear);
             resource = {
-                postprocessFBOs: [rt0.createFramebuffer(), rt1.createFramebuffer()],
                 outputFBO: fbo,
                 outputBuffer: renderbuffer,
                 renderPass: this.createRenderPass(context, camera),
             };
             this.perCameraResources.set(camera, resource);
+        }
+        const size = camera.output === null
+            ? vec2(context.screen.width, context.screen.height)
+            : camera.output.size;
+        if (!size.equals(resource.outputFBO.size)) {
+            console.log("resize", resource.outputFBO.size, size);
+            const fbo = resource.outputFBO.colorAttachments[0].resize(size.x, size.y);
+            resource.outputFBO.reset(size.x, size.y);
+            resource.outputFBO.addColorAttachment(fbo, 0);
         }
         return resource;
     }

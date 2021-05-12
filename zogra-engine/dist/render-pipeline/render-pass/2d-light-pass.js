@@ -4,7 +4,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { Blending, Color, DefaultVertexData, DepthTest, FilterMode, GLArrayBuffer, MaterialFromShader, MeshBuilder, RenderTexture, Shader, shaderProp, TextureFormat, vec2, vec3, vec4, VertexStruct } from "zogra-renderer";
+import { Blending, Color, DefaultVertexData, DepthTest, FilterMode, GLArrayBuffer, MaterialFromShader, MeshBuilder, RenderTexture, Shader, shaderProp, TextureFormat, TextureResizing, vec2, vec3, vec4, VertexStruct } from "zogra-renderer";
 import { Light2D, ShadowType } from "../../2d/rendering/light-2d";
 import { ShaderSource } from "../../assets";
 import { RenderPass } from "./render-pass";
@@ -21,6 +21,8 @@ export class Light2DPass extends RenderPass {
         this.lightInstancingBuffer.static = false;
     }
     render(context, data) {
+        if (!data.cameraOutput.size.equals(this.lightmap.size))
+            this.lightmap.resize(data.cameraOutput.width, data.cameraOutput.height, TextureResizing.Discard);
         const lightList = data.scene.getEntitiesOfType(Light2D);
         const shadowLights = lightList.filter(light => light.shadowType === ShadowType.Hard || light.shadowType === ShadowType.Soft);
         const simpleLights = lightList.filter(light => light.shadowType === false);

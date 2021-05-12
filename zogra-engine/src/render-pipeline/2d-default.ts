@@ -1,6 +1,6 @@
 import { ZograRenderPipeline, RenderContext, MaterialReplacer } from "./render-pipeline";
 import { Camera, Projection, Scene } from "../engine";
-import { FilterMode, mat4, RenderBuffer, TextureFormat } from "zogra-renderer";
+import { FilterMode, mat4, RenderBuffer, TextureFormat, TextureResizing, vec2 } from "zogra-renderer";
 import { ZograRenderer, Material, Mesh, MSAASamples } from "zogra-renderer";
 import { RenderObject } from "../engine";
 import { Entity } from "../engine";
@@ -27,7 +27,6 @@ interface CameraRenderResources
 {
     outputFBO: FrameBuffer,
     outputBuffer: RenderBuffer,
-    postprocessFBOs: [FrameBuffer, FrameBuffer];
     renderPass: RenderPass[];
 }
 
@@ -89,17 +88,26 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
             const renderbuffer = new RenderBuffer(fbo.width, fbo.height, this.renderFormat, this.msaa);
             fbo.addColorAttachment(renderbuffer);
 
-            const rt0 = new RenderTexture(context.renderer.canvas.width, context.renderer.canvas.height, false, this.renderFormat, FilterMode.Linear);
-            const rt1 = new RenderTexture(context.renderer.canvas.width, context.renderer.canvas.height, false, this.renderFormat, FilterMode.Linear);
-
             resource = {
-                postprocessFBOs: [rt0.createFramebuffer(), rt1.createFramebuffer()],
                 outputFBO: fbo,
                 outputBuffer: renderbuffer,
                 renderPass: this.createRenderPass(context, camera),
             };
 
             this.perCameraResources.set(camera, resource);
+        }
+
+        const size = camera.output === null
+            ? vec2(context.screen.width, context.screen.height)
+            : camera.output.size;
+        
+        if (!size.equals(resource.outputFBO.size))
+        {
+            console.log("resize", resource.outputFBO.size, size);
+            const fbo = (resource.outputFBO.colorAttachments[0] as RenderBuffer).resize(size.x, size.y);
+
+            resource.outputFBO.reset(size.x, size.y);
+            resource.outputFBO.addColorAttachment(fbo, 0);
         }
         return resource;
     }

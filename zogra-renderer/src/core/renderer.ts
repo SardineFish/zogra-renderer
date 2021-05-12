@@ -97,6 +97,8 @@ export class ZograRenderer
 
     setSize(width: number, height: number)
     {
+        width = Math.floor(width);
+        height = Math.floor(height);
         this.canvas.width = width;
         this.canvas.height = height;
         this.width = width;

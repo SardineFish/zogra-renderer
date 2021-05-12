@@ -16,7 +16,6 @@ import { ClearPass } from "./render-pass/clear-pass";
 interface CameraRenderResources {
     outputFBO: FrameBuffer;
     outputBuffer: RenderBuffer;
-    postprocessFBOs: [FrameBuffer, FrameBuffer];
     renderPass: RenderPass[];
 }
 export declare class Default2DRenderPipeline implements ZograRenderPipeline {
@@ -31,6 +30,6 @@ export declare class Default2DRenderPipeline implements ZograRenderPipeline {
     replaceMaterial<T extends Material>(MaterialType: ConstructorType<T>, material: Material): void;
     renderCamera(context: RenderContext, data: RenderData): void;
     getCameraResources(context: RenderContext, camera: Camera): CameraRenderResources;
-    createRenderPass(context: RenderContext, camera: Camera): (DrawScene | ClearPass | Light2DPass | PostprocessPass | FinalBlit)[];
+    createRenderPass(context: RenderContext, camera: Camera): (ClearPass | DrawScene | Light2DPass | PostprocessPass | FinalBlit)[];
 }
 export {};

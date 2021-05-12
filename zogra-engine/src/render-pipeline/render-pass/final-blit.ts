@@ -14,6 +14,10 @@ export class FinalBlit extends RenderPass<Partial<PostprocessData>>
     }
     render(context: RenderContext, data: RenderData<Partial<PostprocessData>>)
     {
+        if (!data.cameraOutput.size.equals(this.tempRT.size))
+        {
+            this.tempRT.resize(data.cameraOutput.width, data.cameraOutput.height);
+        }
         const camera = data.camera;
         if (data.postprocessOutput)
         {

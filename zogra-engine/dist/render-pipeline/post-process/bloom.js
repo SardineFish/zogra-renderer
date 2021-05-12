@@ -4,7 +4,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { RenderTexture, MaterialFromShader, Shader, shaderProp, TextureFormat, Blending, DepthTest } from "zogra-renderer";
+import { RenderTexture, MaterialFromShader, Shader, shaderProp, TextureFormat, Blending, DepthTest, TextureResizing } from "zogra-renderer";
 import { ShaderSource } from "../../assets";
 import { DownsampleBlurRenderer } from "../../utils/blur-renderer";
 import { PostProcess } from "./post-process";
@@ -61,6 +61,8 @@ export class Bloom extends PostProcess {
         });
     }
     render(context, src, dst) {
+        if (!src.size.equals(this.filterOutput.size))
+            this.filterOutput.resize(src.width, src.height, TextureResizing.Discard);
         // this.materialFilter.threshold = this.threshold;
         // this.materialFilter.softThreshold = this.threshold;
         // this.materialFilter.texture = src;

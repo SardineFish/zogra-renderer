@@ -11,9 +11,8 @@ export declare class RenderBuffer extends GPUAsset implements ColorAttachment {
     private _glBuf;
     constructor(width: number, height: number, format?: TextureFormat, multiSampling?: MSAASamples, ctx?: GLContext);
     get width(): number;
-    set width(w: number);
     get height(): number;
-    set height(h: number);
+    resize(width: number, height: number): this;
     updateParams(): void;
     init(): boolean;
     bindFramebuffer(attachment: number): void;

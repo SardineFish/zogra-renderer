@@ -146,6 +146,8 @@ class TextureBase extends Asset implements Texture
         this._glTex = newTex._glTex;
 
         gl.deleteTexture(oldTex._glTex);
+
+        return this;
     }
 
     generateMipmap()

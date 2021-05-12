@@ -1,4 +1,4 @@
-import { Blending, Color, DefaultVertexData, DepthTest, FilterMode, FrameBuffer, GLArrayBuffer, MaterialFromShader, Mesh, MeshBuilder, RenderTexture, Shader, shaderProp, Texture, TextureFormat, vec2, vec3, vec4, VertexStruct } from "zogra-renderer";
+import { Blending, Color, DefaultVertexData, DepthTest, FilterMode, FrameBuffer, GLArrayBuffer, MaterialFromShader, Mesh, MeshBuilder, RenderTexture, Shader, shaderProp, Texture, TextureFormat, TextureResizing, vec2, vec3, vec4, VertexStruct } from "zogra-renderer";
 import { Light2D, ShadowType } from "../../2d/rendering/light-2d";
 import { ShaderSource } from "../../assets";
 import { Camera } from "../../engine/camera";
@@ -38,6 +38,9 @@ export class Light2DPass extends RenderPass
 
     render(context: RenderContext, data: RenderData): void
     {
+        if (!data.cameraOutput.size.equals(this.lightmap.size))
+            this.lightmap.resize(data.cameraOutput.width, data.cameraOutput.height, TextureResizing.Discard);
+        
         const lightList = data.scene.getEntitiesOfType(Light2D);
         const shadowLights = lightList.filter(light => light.shadowType === ShadowType.Hard || light.shadowType === ShadowType.Soft);
         const simpleLights = lightList.filter(light => light.shadowType === false);

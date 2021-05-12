@@ -52,6 +52,8 @@ export class ZograRenderer {
         setGlobalContext(this.ctx);
     }
     setSize(width, height) {
+        width = Math.floor(width);
+        height = Math.floor(height);
         this.canvas.width = width;
         this.canvas.height = height;
         this.width = width;
