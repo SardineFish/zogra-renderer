@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FrameBuffer = void 0;
-const global_1 = require("./global");
-const util_1 = require("../utils/util");
-const vec2_1 = require("../types/vec2");
-const asset_1 = require("./asset");
+import { GlobalContext } from "./global";
+import { panic } from "../utils/util";
+import { vec2 } from "../types/vec2";
+import { GPUAsset } from "./asset";
 const FrameBufferAttachment = {
     canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK },
     fromRenderTexture: (rt) => ({ tex: rt.glTex() })
@@ -12,25 +9,25 @@ const FrameBufferAttachment = {
 class CanvasBuffer {
     get name() { return ""; }
     get assetID() { return -1; }
-    get width() { return global_1.GlobalContext().width; }
-    get height() { return global_1.GlobalContext().height; }
-    get size() { return global_1.GlobalContext().renderer.canvasSize; }
+    get width() { return GlobalContext().width; }
+    get height() { return GlobalContext().height; }
+    get size() { return GlobalContext().renderer.canvasSize; }
     bind() {
-        const gl = global_1.GlobalContext().gl;
+        const gl = GlobalContext().gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, this.width, this.height);
     }
     destroy() { }
 }
-class FrameBuffer extends asset_1.GPUAsset {
-    constructor(width = 0, height = 0, ctx = global_1.GlobalContext()) {
+export class FrameBuffer extends GPUAsset {
+    constructor(width = 0, height = 0, ctx = GlobalContext()) {
         super(ctx);
         this.frameBuffer = null;
         this._colorAttachments = [];
         this._depthAttachment = null;
         this.activeBuffers = [];
         this.dirty = true;
-        this.size = vec2_1.vec2(Math.floor(width), Math.floor(height));
+        this.size = vec2(Math.floor(width), Math.floor(height));
         this.tryInit(false);
     }
     get width() { return this.size.x; }
@@ -64,7 +61,7 @@ class FrameBuffer extends asset_1.GPUAsset {
     init() {
         var _a;
         const gl = this.ctx.gl;
-        this.frameBuffer = (_a = gl.createFramebuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer object");
+        this.frameBuffer = (_a = gl.createFramebuffer()) !== null && _a !== void 0 ? _a : panic("Failed to create frame buffer object");
         return true;
     }
     bind() {
@@ -95,6 +92,5 @@ class FrameBuffer extends asset_1.GPUAsset {
         gl.deleteFramebuffer(this.frameBuffer);
     }
 }
-exports.FrameBuffer = FrameBuffer;
 FrameBuffer.CanvasBuffer = Object.freeze(new CanvasBuffer());
 //# sourceMappingURL=frame-buffer.js.map

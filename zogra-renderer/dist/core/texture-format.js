@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.mapGLFormat = exports.TextureFormat = void 0;
-var TextureFormat;
+export var TextureFormat;
 (function (TextureFormat) {
     TextureFormat[TextureFormat["RGB"] = WebGL2RenderingContext.RGB] = "RGB";
     TextureFormat[TextureFormat["RGBA"] = WebGL2RenderingContext.RGBA] = "RGBA";
@@ -34,9 +31,9 @@ var TextureFormat;
     TextureFormat[TextureFormat["RGBA8UI"] = WebGL2RenderingContext.RGBA8UI] = "RGBA8UI";
     TextureFormat[TextureFormat["DEPTH_COMPONENT"] = WebGL2RenderingContext.DEPTH_COMPONENT] = "DEPTH_COMPONENT";
     TextureFormat[TextureFormat["DEPTH_STENCIL"] = WebGL2RenderingContext.DEPTH_STENCIL] = "DEPTH_STENCIL";
-})(TextureFormat = exports.TextureFormat || (exports.TextureFormat = {}));
+})(TextureFormat || (TextureFormat = {}));
 ;
-function mapGLFormat(gl, format) {
+export function mapGLFormat(gl, format) {
     const map = {
         [TextureFormat.RGB]: [gl.RGB, gl.RGB, gl.UNSIGNED_BYTE],
         [TextureFormat.RGBA]: [gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE],
@@ -72,5 +69,4 @@ function mapGLFormat(gl, format) {
     };
     return map[format];
 }
-exports.mapGLFormat = mapGLFormat;
 //# sourceMappingURL=texture-format.js.map

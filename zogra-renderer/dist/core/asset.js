@@ -1,23 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AssetManager = exports.LazyInitAsset = exports.GPUAsset = exports.Asset = void 0;
-const util_1 = require("../utils/util");
-const event_1 = require("./event");
-const global_1 = require("./global");
-class Asset {
+import { setImmediate } from "../utils/util";
+import { EventEmitter } from "./event";
+import { GlobalContext } from "./global";
+export class Asset {
     constructor(name) {
         this.destroyed = false;
-        this.assetID = exports.AssetManager.newAssetID(this);
+        this.assetID = AssetManager.newAssetID(this);
         this.name = name || `Asset_${this.assetID}`;
     }
     destroy() {
         this.destroyed = true;
-        exports.AssetManager.destroy(this.assetID);
+        AssetManager.destroy(this.assetID);
     }
 }
-exports.Asset = Asset;
-class GPUAsset extends Asset {
-    constructor(ctx = global_1.GlobalContext(), name) {
+export class GPUAsset extends Asset {
+    constructor(ctx = GlobalContext(), name) {
         super(name);
         this.initialized = false;
         this.ctx = ctx;
@@ -26,7 +22,7 @@ class GPUAsset extends Asset {
         if (this.initialized)
             return true;
         if (!this.ctx)
-            this.ctx = global_1.GlobalContext();
+            this.ctx = GlobalContext();
         const success = this.ctx && this.init();
         if (!success && required)
             throw new Error(`Failed to init GPU Asset '${this.name}' without global gl context.`);
@@ -34,9 +30,8 @@ class GPUAsset extends Asset {
         return success;
     }
 }
-exports.GPUAsset = GPUAsset;
-class LazyInitAsset extends Asset {
-    constructor(ctx = global_1.GlobalContext()) {
+export class LazyInitAsset extends Asset {
+    constructor(ctx = GlobalContext()) {
         super();
         this.initialzed = false;
         this.ctx = ctx;
@@ -44,7 +39,7 @@ class LazyInitAsset extends Asset {
     tryInit(required = false) {
         if (this.initialzed)
             return true;
-        const ctx = this.ctx || global_1.GlobalContext();
+        const ctx = this.ctx || GlobalContext();
         if (!ctx) {
             if (required)
                 throw new Error("Failed to initialize GPU resource withou a global GL context.");
@@ -62,17 +57,16 @@ class LazyInitAsset extends Asset {
         }
     }
 }
-exports.LazyInitAsset = LazyInitAsset;
 class AssetManagerType {
     constructor() {
         this.assetsMap = new Map();
         this.id = 1;
-        this.eventEmitter = new event_1.EventEmitter();
+        this.eventEmitter = new EventEmitter();
     }
     newAssetID(asset) {
         const currentId = ++this.id;
         this.assetsMap.set(currentId, asset);
-        util_1.setImmediate(() => this.eventEmitter.emit("asset-created", asset));
+        setImmediate(() => this.eventEmitter.emit("asset-created", asset));
         return asset.assetID = currentId;
     }
     find(id) {
@@ -90,7 +84,7 @@ class AssetManagerType {
         if (!asset)
             return;
         this.assetsMap.delete(id);
-        util_1.setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
+        setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
     }
     findAssetsOfType(type) {
         return Array.from(this.assetsMap.values()).filter(asset => asset instanceof type);
@@ -102,5 +96,5 @@ class AssetManagerType {
         return this.eventEmitter.off(event, listener);
     }
 }
-exports.AssetManager = new AssetManagerType();
+export const AssetManager = new AssetManagerType();
 //# sourceMappingURL=asset.js.map

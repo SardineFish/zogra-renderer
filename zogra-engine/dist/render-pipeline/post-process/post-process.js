@@ -1,23 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PostprocessPass = exports.PostProcess = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const render_pass_1 = require("../render-pass");
-class PostProcess {
+import { FilterMode, RenderTexture } from "zogra-renderer";
+import { RenderPass } from "../render-pass";
+export class PostProcess {
     constructor() {
         /** @internal */
         this.__intialized = false;
     }
     create(context) { }
 }
-exports.PostProcess = PostProcess;
-class PostprocessPass extends render_pass_1.RenderPass {
+export class PostprocessPass extends RenderPass {
     constructor(context, renderFormat) {
         super();
         this.format = renderFormat;
         this.buffers = [
-            new zogra_renderer_1.RenderTexture(context.screen.width, context.screen.height, false, this.format, zogra_renderer_1.FilterMode.Nearest).createFramebuffer(),
-            new zogra_renderer_1.RenderTexture(context.screen.width, context.screen.height, false, this.format, zogra_renderer_1.FilterMode.Nearest).createFramebuffer(),
+            new RenderTexture(context.screen.width, context.screen.height, false, this.format, FilterMode.Nearest).createFramebuffer(),
+            new RenderTexture(context.screen.width, context.screen.height, false, this.format, FilterMode.Nearest).createFramebuffer(),
         ];
     }
     render(context, data) {
@@ -36,5 +32,4 @@ class PostprocessPass extends render_pass_1.RenderPass {
         data.postprocessOutput = src.colorAttachments[0];
     }
 }
-exports.PostprocessPass = PostprocessPass;
 //# sourceMappingURL=post-process.js.map

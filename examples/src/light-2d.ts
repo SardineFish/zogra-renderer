@@ -1,7 +1,7 @@
 import { Camera, Chunk, Color, Default2DRenderPipeline, InputManager, Keys, Light2D, MathUtils, MeshBuilder, Physics2D, Projection, RenderObject, ShadowType, Sprite, TileData, Tilemap, TilemapCollider, vec2, vec3, ZograEngine } from "zogra-engine";
 import "./css/base.css";
 
-import noisejs = require("noisejs");
+import noisejs from "noisejs";
 const Noise = new noisejs.Noise();
 
 

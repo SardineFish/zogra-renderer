@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderContext = void 0;
-exports.RenderContext = {
+export const RenderContext = {
     create(renderer) {
         return {
             renderer,

@@ -1,52 +1,49 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Shadow2DMaterial = exports.Light2D = exports.Shadow2DVertStruct = exports.ShadowType = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const assets_1 = require("../../assets");
-const entity_1 = require("../../engine/entity");
-const tilemap_collider_1 = require("../physics/tilemap-collider");
-var ShadowType;
+import { Color, Culling, DefaultVertexData, FilterMode, mat4, MaterialFromShader, Mesh, RenderTexture, Shader, shaderProp, TextureFormat, vec2, VertexStruct, Blending } from "zogra-renderer";
+import { ShaderSource } from "../../assets";
+import { Entity } from "../../engine/entity";
+import { TilemapCollider } from "../physics/tilemap-collider";
+export var ShadowType;
 (function (ShadowType) {
     ShadowType["Soft"] = "soft";
     ShadowType["Hard"] = "hard";
-})(ShadowType = exports.ShadowType || (exports.ShadowType = {}));
+})(ShadowType || (ShadowType = {}));
 ;
-exports.Shadow2DVertStruct = zogra_renderer_1.VertexStruct(Object.assign(Object.assign({}, zogra_renderer_1.DefaultVertexData), { p0: "vec2", p1: "vec2" }));
-class Light2D extends entity_1.Entity {
+export const Shadow2DVertStruct = VertexStruct(Object.assign(Object.assign({}, DefaultVertexData), { p0: "vec2", p1: "vec2" }));
+export class Light2D extends Entity {
     constructor(shadowType = false) {
         super();
         this.shadowType = false;
         this.volumnRadius = 1;
         this.lightRange = 10;
-        this.lightColor = zogra_renderer_1.Color.white;
+        this.lightColor = Color.white;
         this.intensity = 1;
         /** In range [-1..1] */
         this.attenuation = 0;
         this.shadowMesh = null;
         this.shadowMat = new Shadow2DMaterial();
-        this.__tempVectors = Array.from(new Array(32)).map(() => zogra_renderer_1.vec2.zero());
+        this.__tempVectors = Array.from(new Array(32)).map(() => vec2.zero());
         this.shadowType = shadowType;
         if (this.shadowType)
             this.shadowMesh.resize(5000, 9000);
     }
     getShadowMap(context, data) {
         if (!this.shadowMesh)
-            this.shadowMesh = new zogra_renderer_1.Mesh(exports.Shadow2DVertStruct);
+            this.shadowMesh = new Mesh(Shadow2DVertStruct);
         if (this.shadowMesh.vertices.length <= 0)
             this.shadowMesh.resize(50, 90);
         // if (this.shadowType === false)
         //     return null;
         if (!this.shadowMap)
-            this.shadowMap = new zogra_renderer_1.RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, zogra_renderer_1.TextureFormat.R8, zogra_renderer_1.FilterMode.Linear);
+            this.shadowMap = new RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, TextureFormat.R8, FilterMode.Linear);
         this.updateShadowMesh(context, data);
         context.renderer.setFramebuffer(this.shadowMap);
-        context.renderer.clear(zogra_renderer_1.Color.black);
+        context.renderer.clear(Color.black);
         this.shadowMat.lightPos.set(this.position);
         this.shadowMat.lightRange = this.lightRange;
         this.shadowMat.volumnSize = this.volumnRadius;
@@ -56,17 +53,17 @@ class Light2D extends entity_1.Entity {
     }
     updateShadowMesh(context, data) {
         this.shadowMesh.indices.fill(0);
-        const bound = [zogra_renderer_1.vec2(-this.lightRange).plus(this.position.toVec2()), zogra_renderer_1.vec2(this.lightRange).plus(this.position.toVec2())];
-        const colliderToLight = zogra_renderer_1.mat4.identity();
+        const bound = [vec2(-this.lightRange).plus(this.position.toVec2()), vec2(this.lightRange).plus(this.position.toVec2())];
+        const colliderToLight = mat4.identity();
         let vertOfset = 0;
         let indexOffset = 0;
         for (const collider of data.scene.physics.__getColliders()) {
-            if (collider instanceof tilemap_collider_1.TilemapCollider) {
+            if (collider instanceof TilemapCollider) {
                 const polygons = collider.getPolygons(...bound);
                 if (!polygons)
                     continue;
                 colliderToLight.set(collider.tilemap.localToWorldMatrix);
-                zogra_renderer_1.mat4.mul(colliderToLight, colliderToLight, this.worldToLocalMatrix);
+                mat4.mul(colliderToLight, colliderToLight, this.worldToLocalMatrix);
                 for (const polygon of polygons) {
                     for (let i = 0; i < polygon.points.length; i++) {
                         const [verts, indices] = this.appendLineShadow(polygon.points[i], polygon.points[(i + 1) % polygon.points.length], colliderToLight, vertOfset, indexOffset);
@@ -87,11 +84,11 @@ class Light2D extends entity_1.Entity {
         }
         const r2 = this.volumnRadius * this.volumnRadius;
         const R2 = this.lightRange * this.lightRange;
-        const p0 = zogra_renderer_1.mat4.mulPoint2(this.__tempVectors[temp++], objToLight, pointA);
-        const p1 = zogra_renderer_1.mat4.mulPoint2(this.__tempVectors[temp++], objToLight, pointB);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 0].vert, p0);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 1].vert, p1);
-        const dir = zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p1, p0).normalize();
+        const p0 = mat4.mulPoint2(this.__tempVectors[temp++], objToLight, pointA);
+        const p1 = mat4.mulPoint2(this.__tempVectors[temp++], objToLight, pointB);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 0].vert, p0);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 1].vert, p1);
+        const dir = vec2.minus(this.__tempVectors[temp++], p1, p0).normalize();
         // Debug().drawCircle(this.position, this.volumnRadius);
         // Debug().drawCircle(this.position, this.lightRange, Color.yellow);
         let tangentP0 = circleTangentThroughPoint(p0, this.volumnRadius, [this.__tempVectors[temp++], this.__tempVectors[temp++]]);
@@ -104,39 +101,39 @@ class Light2D extends entity_1.Entity {
         const shadowA = this.shadowMesh.vertices[vertOffset + 4].vert;
         const shadowB = this.shadowMesh.vertices[vertOffset + 2].vert;
         const tan0 = [
-            zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p0, tangentP0[0]).normalize(),
-            zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p0, tangentP0[1]).normalize()
+            vec2.minus(this.__tempVectors[temp++], p0, tangentP0[0]).normalize(),
+            vec2.minus(this.__tempVectors[temp++], p0, tangentP0[1]).normalize()
         ];
         const tan1 = [
-            zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p1, tangentP1[0]).normalize(),
-            zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p1, tangentP1[1]).normalize()
+            vec2.minus(this.__tempVectors[temp++], p1, tangentP1[0]).normalize(),
+            vec2.minus(this.__tempVectors[temp++], p1, tangentP1[1]).normalize()
         ];
         let meshType = 0;
-        if (zogra_renderer_1.vec2.cross(dir, tan0[0]) <= 0) {
+        if (vec2.cross(dir, tan0[0]) <= 0) {
             meshType |= 1;
             shadowA.set(tan1[1].mul(Math.sqrt(R2 - r2)).plus(tangentP1[1]));
         }
         else
             shadowA.set(tan0[0].mul(Math.sqrt(R2 - r2)).plus(tangentP0[0]));
-        if (zogra_renderer_1.vec2.cross(dir, tan1[0]) <= 0) {
+        if (vec2.cross(dir, tan1[0]) <= 0) {
             meshType |= 2;
             shadowB.set(tan0[1].mul(Math.sqrt(R2 - r2)).plus(tangentP0[1]));
         }
         else
             shadowB.set(tan1[0].mul(Math.sqrt(R2 - r2)).plus(tangentP1[0]));
         // console.log(meshType);
-        const OC = zogra_renderer_1.vec2.plus(this.__tempVectors[temp++], shadowA, shadowB).mul(0.5);
-        const shadowR = zogra_renderer_1.vec2.mul(this.shadowMesh.vertices[vertOffset + 3].vert, OC, R2 / OC.magnitudeSqr);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 0].p0, p0);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 0].p1, p1);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 1].p0, p0);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 1].p1, p1);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 2].p0, p0);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 2].p1, p1);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 3].p0, p0);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 3].p1, p1);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 4].p0, p0);
-        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 4].p1, p1);
+        const OC = vec2.plus(this.__tempVectors[temp++], shadowA, shadowB).mul(0.5);
+        const shadowR = vec2.mul(this.shadowMesh.vertices[vertOffset + 3].vert, OC, R2 / OC.magnitudeSqr);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 0].p0, p0);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 0].p1, p1);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 1].p0, p0);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 1].p1, p1);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 2].p0, p0);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 2].p1, p1);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 3].p0, p0);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 3].p1, p1);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 4].p0, p0);
+        vec2.set(this.shadowMesh.vertices[vertOffset + 4].p1, p1);
         switch (meshType) {
             case 0:
                 this.shadowMesh.indices.set([
@@ -232,46 +229,44 @@ class Light2D extends entity_1.Entity {
         (_b = this.shadowMap) === null || _b === void 0 ? void 0 : _b.destroy();
     }
 }
-exports.Light2D = Light2D;
-const _temp1 = zogra_renderer_1.vec2.zero(), _temp2 = zogra_renderer_1.vec2.zero();
+const _temp1 = vec2.zero(), _temp2 = vec2.zero();
 // Ref: https://en.wikipedia.org/wiki/Tangent_lines_to_circles#With_analytic_geometry
-function circleTangentThroughPoint(point, radius, out = [zogra_renderer_1.vec2.zero(), zogra_renderer_1.vec2.zero()]) {
+function circleTangentThroughPoint(point, radius, out = [vec2.zero(), vec2.zero()]) {
     const r2 = radius * radius;
     const d2 = point.magnitudeSqr;
     const t = _temp1;
     t.x = -point.y;
     t.y = point.x;
     t.mul(radius / d2 * Math.sqrt(d2 - r2));
-    zogra_renderer_1.vec2.mul(_temp2, point, r2 / d2);
+    vec2.mul(_temp2, point, r2 / d2);
     // const t = vec2(-point.y, point.x).mul(radius / d2 * Math.sqrt(d2 - r2));
     out[0].set(_temp2).plus(t);
     out[1].set(_temp2).minus(t);
     return out;
 }
-class Shadow2DMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.shadow2D, {
-    vertexStructure: exports.Shadow2DVertStruct,
+export class Shadow2DMaterial extends MaterialFromShader(new Shader(...ShaderSource.shadow2D, {
+    vertexStructure: Shadow2DVertStruct,
     attributes: {
         p0: "aP0",
         p1: "aP1",
     },
-    cull: zogra_renderer_1.Culling.Back,
-    blend: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.One]
+    cull: Culling.Back,
+    blend: [Blending.One, Blending.One]
 })) {
     constructor() {
         super(...arguments);
-        this.lightPos = zogra_renderer_1.vec2.zero();
+        this.lightPos = vec2.zero();
         this.volumnSize = 1;
         this.lightRange = 10;
     }
 }
 __decorate([
-    zogra_renderer_1.shaderProp("uLightPos", "vec2")
+    shaderProp("uLightPos", "vec2")
 ], Shadow2DMaterial.prototype, "lightPos", void 0);
 __decorate([
-    zogra_renderer_1.shaderProp("uVolumnSize", "float")
+    shaderProp("uVolumnSize", "float")
 ], Shadow2DMaterial.prototype, "volumnSize", void 0);
 __decorate([
-    zogra_renderer_1.shaderProp("uLightRange", "float")
+    shaderProp("uLightRange", "float")
 ], Shadow2DMaterial.prototype, "lightRange", void 0);
-exports.Shadow2DMaterial = Shadow2DMaterial;
 //# sourceMappingURL=light-2d.js.map

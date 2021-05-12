@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Polygon = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-class Polygon {
+import { Rect, vec2 } from "zogra-renderer";
+export class Polygon {
     constructor(capacity = 0) {
-        this.bound = new zogra_renderer_1.Rect(zogra_renderer_1.vec2.zero(), zogra_renderer_1.vec2.zero());
+        this.bound = new Rect(vec2.zero(), vec2.zero());
         this.points = new Array();
     }
     append(vert) {
@@ -15,5 +12,4 @@ class Polygon {
         this.bound.max.y = Math.max(vert.y, this.bound.max.y);
     }
 }
-exports.Polygon = Polygon;
 //# sourceMappingURL=polygon.js.map

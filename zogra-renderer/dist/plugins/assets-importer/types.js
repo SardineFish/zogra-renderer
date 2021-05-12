@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AssetsPack = void 0;
-class AssetsPack {
+export class AssetsPack {
     constructor() {
         this.mainAsset = null;
         this.assets = new Map();
@@ -24,5 +21,4 @@ class AssetsPack {
         return Array.from(this.assets.values()).filter(asset => asset instanceof Type);
     }
 }
-exports.AssetsPack = AssetsPack;
 //# sourceMappingURL=types.js.map

@@ -1,15 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Chunk = exports.Tilemap = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const render_object_1 = require("../../engine/render-object");
-const default_materials_1 = require("../../render-pipeline/default-materials");
-const polygon_1 = require("../physics/polygon");
-class Tilemap extends render_object_1.RenderObject {
+import { minus, plus, vec2, vec3, MeshBuilder, div } from "zogra-renderer";
+import { RenderObject } from "../../engine/render-object";
+import { BuiltinMaterials } from "../../render-pipeline/default-materials";
+import { Polygon } from "../physics/polygon";
+export class Tilemap extends RenderObject {
     constructor(...args) {
         super();
         this.chunks = new Map();
-        this.materials[0] = default_materials_1.BuiltinMaterials.tilemapDefault;
+        this.materials[0] = BuiltinMaterials.tilemapDefault;
         if (args.length === 0) {
             this.chunkSize = 16;
             this.ChunkType = Chunk;
@@ -30,37 +27,37 @@ class Tilemap extends render_object_1.RenderObject {
     }
     render(context, data) {
         this.eventEmitter.with().emit("render", this, context, data);
-        let screenSize = zogra_renderer_1.vec2(data.camera.viewHeight * data.camera.aspectRatio, data.camera.viewHeight);
-        let [minCorner] = this.chunkPos(zogra_renderer_1.minus(data.camera.position.toVec2(), screenSize));
-        let [maxCorner] = this.chunkPos(zogra_renderer_1.plus(data.camera.position.toVec2(), screenSize));
+        let screenSize = vec2(data.camera.viewHeight * data.camera.aspectRatio, data.camera.viewHeight);
+        let [minCorner] = this.chunkPos(minus(data.camera.position.toVec2(), screenSize));
+        let [maxCorner] = this.chunkPos(plus(data.camera.position.toVec2(), screenSize));
         // context.renderer.drawMesh(this.mesh, mat4.translate(vec3(0, 0, 0)), this.materials[0]);
         // return;
         for (let chunkY = minCorner.y; chunkY <= maxCorner.y; chunkY++)
             for (let chunkX = minCorner.x; chunkX <= maxCorner.x; chunkX++) {
-                const chunk = this.getOrCreateChunk(zogra_renderer_1.vec2(chunkX, chunkY));
+                const chunk = this.getOrCreateChunk(vec2(chunkX, chunkY));
                 // chunk.mesh.update();
                 context.renderer.drawMesh(chunk.mesh, this.localToWorldMatrix, this.materials[0]);
             }
     }
     getTile(pos) {
-        let [chunkPos, offset] = this.chunkPos(zogra_renderer_1.vec2.math(Math.floor)(pos));
+        let [chunkPos, offset] = this.chunkPos(vec2.math(Math.floor)(pos));
         let chunk = this.getOrCreateChunk(chunkPos);
         return chunk.getTile(offset);
     }
     setTile(pos, tile) {
-        let [chunkPos, offset] = this.chunkPos(zogra_renderer_1.vec2.math(Math.floor)(pos));
+        let [chunkPos, offset] = this.chunkPos(vec2.math(Math.floor)(pos));
         let chunk = this.getOrCreateChunk(chunkPos);
         return chunk.setTile(offset, tile);
     }
     getChunkAt(pos) {
-        let [chunkPos, _] = this.chunkPos(zogra_renderer_1.vec2.math(Math.floor)(pos));
+        let [chunkPos, _] = this.chunkPos(vec2.math(Math.floor)(pos));
         return this.getOrCreateChunk(chunkPos);
     }
     visibleChunkRange(camera) {
-        let screenSize = zogra_renderer_1.vec2(camera.viewHeight * camera.aspectRatio, camera.viewHeight);
-        let [minCorner] = this.chunkPos(zogra_renderer_1.minus(camera.position.toVec2(), screenSize));
-        let [maxCorner] = this.chunkPos(zogra_renderer_1.plus(camera.position.toVec2(), screenSize));
-        return [minCorner, zogra_renderer_1.plus(maxCorner, 1)];
+        let screenSize = vec2(camera.viewHeight * camera.aspectRatio, camera.viewHeight);
+        let [minCorner] = this.chunkPos(minus(camera.position.toVec2(), screenSize));
+        let [maxCorner] = this.chunkPos(plus(camera.position.toVec2(), screenSize));
+        return [minCorner, plus(maxCorner, 1)];
     }
     getOrCreateChunk(chunkPos) {
         const idx = this.calcChunkID(chunkPos);
@@ -102,17 +99,16 @@ class Tilemap extends render_object_1.RenderObject {
      * @returns
      */
     chunkPos(pos) {
-        let floorPos = zogra_renderer_1.vec2.math(Math.floor)(pos);
+        let floorPos = vec2.math(Math.floor)(pos);
         // const floorOffset = vec2(
         //     floorPos.x < 0 ? /*1*/ 0 : 0,
         //     floorPos.y < 0 ? /*1*/ 0 : 0,
         // );
-        return [zogra_renderer_1.vec2.math(Math.floor)(zogra_renderer_1.div(floorPos, this.chunkSize)),
-            zogra_renderer_1.vec2.math(floorReminder)(floorPos, zogra_renderer_1.vec2(this.chunkSize))];
+        return [vec2.math(Math.floor)(div(floorPos, this.chunkSize)),
+            vec2.math(floorReminder)(floorPos, vec2(this.chunkSize))];
     }
 }
-exports.Tilemap = Tilemap;
-class Chunk {
+export class Chunk {
     constructor(basePos, chunkSize) {
         this.polygons = [];
         this.dirty = false;
@@ -217,13 +213,13 @@ class Chunk {
                      */
                     case up:
                         if ((_a = tileAt(head.x, head.y)) === null || _a === void 0 ? void 0 : _a.collide) {
-                            points.push(zogra_renderer_1.vec2(head.x + 1, head.y));
+                            points.push(vec2(head.x + 1, head.y));
                             dir = right;
                         }
                         else if ((_b = tileAt(head.x - 1, head.y)) === null || _b === void 0 ? void 0 : _b.collide)
                             head.y += 1;
                         else if ((_c = tileAt(head.x - 1, head.y - 1)) === null || _c === void 0 ? void 0 : _c.collide) {
-                            points.push(zogra_renderer_1.vec2(head.x - 1, head.y));
+                            points.push(vec2(head.x - 1, head.y));
                             dir = left;
                         }
                         else
@@ -238,13 +234,13 @@ class Chunk {
                     */
                     case left:
                         if ((_d = tileAt(head.x - 1, head.y)) === null || _d === void 0 ? void 0 : _d.collide) {
-                            points.push(zogra_renderer_1.vec2(head.x, head.y + 1));
+                            points.push(vec2(head.x, head.y + 1));
                             dir = up;
                         }
                         else if ((_e = tileAt(head.x - 1, head.y - 1)) === null || _e === void 0 ? void 0 : _e.collide)
                             head.x -= 1;
                         else if ((_f = tileAt(head.x, head.y - 1)) === null || _f === void 0 ? void 0 : _f.collide) {
-                            points.push(zogra_renderer_1.vec2(head.x, head.y - 1));
+                            points.push(vec2(head.x, head.y - 1));
                             dir = down;
                         }
                         else
@@ -259,13 +255,13 @@ class Chunk {
                      */
                     case down:
                         if ((_g = tileAt(head.x - 1, head.y - 1)) === null || _g === void 0 ? void 0 : _g.collide) {
-                            points.push(zogra_renderer_1.vec2(head.x - 1, head.y));
+                            points.push(vec2(head.x - 1, head.y));
                             dir = left;
                         }
                         else if ((_h = tileAt(head.x, head.y - 1)) === null || _h === void 0 ? void 0 : _h.collide)
                             head.y -= 1;
                         else if ((_j = tileAt(head.x, head.y)) === null || _j === void 0 ? void 0 : _j.collide) {
-                            points.push(zogra_renderer_1.vec2(head.x + 1, head.y));
+                            points.push(vec2(head.x + 1, head.y));
                             dir = right;
                         }
                         else
@@ -280,13 +276,13 @@ class Chunk {
                      */
                     case right:
                         if ((_k = tileAt(head.x, head.y - 1)) === null || _k === void 0 ? void 0 : _k.collide) {
-                            points.push(zogra_renderer_1.vec2(head.x, head.y - 1));
+                            points.push(vec2(head.x, head.y - 1));
                             dir = down;
                         }
                         else if ((_l = tileAt(head.x, head.y)) === null || _l === void 0 ? void 0 : _l.collide)
                             head.x += 1;
                         else if ((_m = tileAt(head.x - 1, head.y)) === null || _m === void 0 ? void 0 : _m.collide) {
-                            points.push(zogra_renderer_1.vec2(head.x, head.y + 1));
+                            points.push(vec2(head.x, head.y + 1));
                             dir = up;
                         }
                         else
@@ -308,29 +304,29 @@ class Chunk {
                 let dir;
                 switch (edge) {
                     case left:
-                        start = zogra_renderer_1.vec2(x, y + 1);
-                        next = zogra_renderer_1.vec2(x, y);
+                        start = vec2(x, y + 1);
+                        next = vec2(x, y);
                         dir = down;
                         break;
                     case down:
-                        start = zogra_renderer_1.vec2(x, y);
-                        next = zogra_renderer_1.vec2(x + 1, y);
+                        start = vec2(x, y);
+                        next = vec2(x + 1, y);
                         dir = right;
                         break;
                     case right:
-                        start = zogra_renderer_1.vec2(x + 1, y);
-                        next = zogra_renderer_1.vec2(x + 1, y + 1);
+                        start = vec2(x + 1, y);
+                        next = vec2(x + 1, y + 1);
                         dir = up;
                         break;
                     case up:
-                        start = zogra_renderer_1.vec2(x + 1, y + 1);
-                        next = zogra_renderer_1.vec2(x, y + 1);
+                        start = vec2(x + 1, y + 1);
+                        next = vec2(x, y + 1);
                         dir = down;
                         break;
                 }
                 if (!visited[edgeOf(start, next)]) {
                     const points = searchPolygon(start, next, dir);
-                    const polygon = new polygon_1.Polygon(points.length);
+                    const polygon = new Polygon(points.length);
                     for (const point of points) {
                         polygon.append(point.plus(this.basePos));
                     }
@@ -340,30 +336,29 @@ class Chunk {
         }
     }
 }
-exports.Chunk = Chunk;
 function floorReminder(x, m) {
     return x >= 0
         ? x % m
         : (m + x % m) % m;
 }
 function createChunkMesh(basePos, chunkSize) {
-    const builder = new zogra_renderer_1.MeshBuilder(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
+    const builder = new MeshBuilder(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
     const quad = [
         {
-            vert: zogra_renderer_1.vec3(0),
-            uv: zogra_renderer_1.vec2(0, 0),
+            vert: vec3(0),
+            uv: vec2(0, 0),
         },
         {
-            vert: zogra_renderer_1.vec3(0),
-            uv: zogra_renderer_1.vec2(1, 0),
+            vert: vec3(0),
+            uv: vec2(1, 0),
         },
         {
-            vert: zogra_renderer_1.vec3(0),
-            uv: zogra_renderer_1.vec2(1, 1),
+            vert: vec3(0),
+            uv: vec2(1, 1),
         },
         {
-            vert: zogra_renderer_1.vec3(0),
-            uv: zogra_renderer_1.vec2(0, 1),
+            vert: vec3(0),
+            uv: vec2(0, 1),
         }
     ];
     for (let y = 0; y < chunkSize; y++)

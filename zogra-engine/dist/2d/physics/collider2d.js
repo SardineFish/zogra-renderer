@@ -1,15 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Collider2D = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const physics_generic_1 = require("../../physics/physics-generic");
-class Collider2D extends physics_generic_1.ColliderBase {
+import { EventEmitter } from "zogra-renderer";
+import { ColliderBase } from "../../physics/physics-generic";
+export class Collider2D extends ColliderBase {
     constructor() {
         super(...arguments);
         this.rigidbody = null;
         this.enabled = true;
         /** @internal */
-        this.__eventEmitter = new zogra_renderer_1.EventEmitter();
+        this.__eventEmitter = new EventEmitter();
         /** @internal */
         this.__colliderIdx = -1;
     }
@@ -27,5 +24,4 @@ class Collider2D extends physics_generic_1.ColliderBase {
         return false;
     }
 }
-exports.Collider2D = Collider2D;
 //# sourceMappingURL=collider2d.js.map

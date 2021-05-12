@@ -1,12 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.LineBuilder = exports.Lines = void 0;
-const color_1 = require("../types/color");
-const global_1 = require("./global");
-const util_1 = require("../utils/util");
-const asset_1 = require("./asset");
-class Lines extends asset_1.Asset {
-    constructor(gl = global_1.GL()) {
+import { Color } from "../types/color";
+import { GL } from "./global";
+import { panic, fillArray } from "../utils/util";
+import { Asset } from "./asset";
+export class Lines extends Asset {
+    constructor(gl = GL()) {
         var _a, _b;
         super();
         this._verts = [];
@@ -17,8 +14,8 @@ class Lines extends asset_1.Asset {
         this.indices = new Uint32Array(0);
         this.name = `Lines_${this.assetID}`;
         this.gl = gl;
-        this.VBO = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create vertex buffer.");
-        this.EBO = (_b = gl.createBuffer()) !== null && _b !== void 0 ? _b : util_1.panic("Failed to create element buffer.");
+        this.VBO = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : panic("Failed to create vertex buffer.");
+        this.EBO = (_b = gl.createBuffer()) !== null && _b !== void 0 ? _b : panic("Failed to create element buffer.");
     }
     get verts() { return this._verts; }
     set verts(verts) {
@@ -47,7 +44,7 @@ class Lines extends asset_1.Asset {
             if (this.lines.length % 2 !== 0)
                 throw new Error("Invalid lines.");
             if (this.colors.length !== this.verts.length)
-                this.colors = [...this.colors, ...util_1.fillArray(color_1.Color.white, this.verts.length - this.colors.length)];
+                this.colors = [...this.colors, ...fillArray(Color.white, this.verts.length - this.colors.length)];
             this.vertices = new Float32Array(this.verts.flatMap((vert, idx) => [
                 ...vert,
                 ...this.colors[idx],
@@ -89,15 +86,14 @@ class Lines extends asset_1.Asset {
         super.destroy();
     }
 }
-exports.Lines = Lines;
-class LineBuilder {
-    constructor(capacity = 0, gl = global_1.GL()) {
+export class LineBuilder {
+    constructor(capacity = 0, gl = GL()) {
         this.verts = [];
         this.colors = [];
         this.lines = [];
         this.gl = gl;
     }
-    addLine(line, color = color_1.Color.white) {
+    addLine(line, color = Color.white) {
         const base = this.verts.length;
         const [u, v] = line;
         this.verts.push(u, v);
@@ -113,5 +109,4 @@ class LineBuilder {
         return line;
     }
 }
-exports.LineBuilder = LineBuilder;
 //# sourceMappingURL=lines.js.map

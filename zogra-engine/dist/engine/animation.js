@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Animator = exports.AnimationPlayback = exports.Timeline = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-function Timeline(timeline) {
+import { MathUtils } from "zogra-renderer";
+export function Timeline(timeline) {
     const times = Object.keys(timeline.frames).map(t => ({ key: t, time: parseFloat(t) })).sort((a, b) => a.time - b.time);
     const output = {
         loop: timeline.loop || false,
@@ -18,8 +15,7 @@ function Timeline(timeline) {
     }
     return output;
 }
-exports.Timeline = Timeline;
-class AnimationPlayback {
+export class AnimationPlayback {
     constructor(timeline, target, updater) {
         this.frameTime = 0;
         this.time = 0;
@@ -121,7 +117,7 @@ class AnimationPlayback {
         for (const key in previous.values) {
             frame[key] = previous.values[key];
             if (typeof (previous.values[key]) === "number" && typeof (next.values[key]) === "number") {
-                frame[key] = zogra_renderer_1.MathUtils.lerp(previous.values[key], next.values[key], t);
+                frame[key] = MathUtils.lerp(previous.values[key], next.values[key], t);
             }
         }
         return frame;
@@ -135,7 +131,6 @@ class AnimationPlayback {
         }
     }
 }
-exports.AnimationPlayback = AnimationPlayback;
 class ProceduralPlayback {
     constructor(time, updater) {
         this.currentTime = 0;
@@ -183,7 +178,7 @@ class ProceduralPlayback {
         }
     }
 }
-class Animator {
+export class Animator {
     constructor(target) {
         this.tracks = [];
         this.defaultTarget = target;
@@ -235,5 +230,4 @@ class Animator {
         this.tracks.length = 0;
     }
 }
-exports.Animator = Animator;
 //# sourceMappingURL=animation.js.map

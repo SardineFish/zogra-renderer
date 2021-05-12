@@ -1,19 +1,16 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Scene = void 0;
-const entity_1 = require("./entity");
-const zogra_renderer_1 = require("zogra-renderer");
-const zogra_renderer_2 = require("zogra-renderer");
-class Scene extends entity_1.EntityManager {
+import { EntityManager } from "./entity";
+import { EventEmitter } from "zogra-renderer";
+import { AssetManager } from "zogra-renderer";
+export class Scene extends EntityManager {
     constructor(PhysicsSystem) {
         super();
         //private managers = new Map<Function, EntityManager>();
         /** @internal */
         this.engine = undefined;
-        this.eventEmitter = new zogra_renderer_1.EventEmitter();
+        this.eventEmitter = new EventEmitter();
         this.addsNextFrame = new Map();
         this.removesNextFrame = new Set();
-        this.assetID = zogra_renderer_2.AssetManager.newAssetID(this);
+        this.assetID = AssetManager.newAssetID(this);
         this.name = `Scene_${this.assetID}`;
         this.physics = new PhysicsSystem();
     }
@@ -103,5 +100,4 @@ class Scene extends entity_1.EntityManager {
             entity.__exit(time);
     }
 }
-exports.Scene = Scene;
 //# sourceMappingURL=scene.js.map

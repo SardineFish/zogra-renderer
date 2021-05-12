@@ -1,12 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.vec4 = exports.Vector4 = void 0;
-const vec3_1 = require("./vec3");
-const vec2_1 = require("./vec2");
-const gl_matrix_1 = require("gl-matrix");
-const utils_1 = require("./utils");
+import { Vector3, vec3 } from "./vec3";
+import { Vector2, vec2 } from "./vec2";
+import { vec4 as glVec4 } from "gl-matrix";
+import { wrapGlMatrix } from "./utils";
 const V4Constructor = Array;
-class Vector4 extends V4Constructor {
+export class Vector4 extends V4Constructor {
     get x() { return this[0]; }
     set x(x) { this[0] = x; }
     get y() { return this[1]; }
@@ -113,19 +110,17 @@ class Vector4 extends V4Constructor {
         switch (type) {
             case Vector4:
                 return this.clone();
-            case vec3_1.Vector3:
-                return vec3_1.vec3(this[0], this[1], this[2]);
-            case vec2_1.Vector2:
-                return vec2_1.vec2(this[0], this[1]);
+            case Vector3:
+                return vec3(this[0], this[1], this[2]);
+            case Vector2:
+                return vec2(this[0], this[1]);
         }
         return this.clone();
     }
 }
-exports.Vector4 = Vector4;
-function vec4(x, y = x, z = x, w = x) {
+export function vec4(x, y = x, z = x, w = x) {
     return new Vector4(x, y, z, w);
 }
-exports.vec4 = vec4;
 vec4.from = (src) => {
     const [x = 0, y = 0, z = 0, w = 0] = src;
     return vec4(x, y, z, w);
@@ -135,8 +130,8 @@ vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 vec4.math = Vector4.math;
 vec4.mathNonAlloc = Vector4.mathNonAlloc;
-vec4.normalize = utils_1.wrapGlMatrix(gl_matrix_1.vec4.normalize, 1, vec4.zero);
-vec4.plus = utils_1.wrapGlMatrix((out, a, b) => {
+vec4.normalize = wrapGlMatrix(glVec4.normalize, 1, vec4.zero);
+vec4.plus = wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
         out[0] = a[0] + b;
         out[1] = a[1] + b;
@@ -151,7 +146,7 @@ vec4.plus = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec4.zero);
-vec4.minus = utils_1.wrapGlMatrix((out, a, b) => {
+vec4.minus = wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
         out[0] = a[0] - b;
         out[1] = a[1] - b;
@@ -166,7 +161,7 @@ vec4.minus = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec4.zero);
-vec4.mul = utils_1.wrapGlMatrix((out, a, b) => {
+vec4.mul = wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
         out[0] = a[0] * b;
         out[1] = a[1] * b;
@@ -181,7 +176,7 @@ vec4.mul = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec4.zero);
-vec4.div = utils_1.wrapGlMatrix((out, a, b) => {
+vec4.div = wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
         out[0] = a[0] / b;
         out[1] = a[1] / b;
@@ -196,14 +191,14 @@ vec4.div = utils_1.wrapGlMatrix((out, a, b) => {
     }
     return out;
 }, 2, vec4.zero);
-vec4.set = utils_1.wrapGlMatrix((out, v) => {
+vec4.set = wrapGlMatrix((out, v) => {
     out[0] = v[0];
     out[1] = v[1];
     out[2] = v[2];
     out[3] = v[3];
     return out;
 }, 1, vec4.zero);
-vec4.fill = utils_1.wrapGlMatrix((out, n) => {
+vec4.fill = wrapGlMatrix((out, n) => {
     out[0] = out[1] = out[2] = out[3] = n;
     return out;
 }, 1, vec4.zero);

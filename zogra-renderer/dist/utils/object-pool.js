@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ObjectPool = void 0;
-class ObjectPool {
+export class ObjectPool {
     constructor(allocator) {
         this.pool = [];
         this.allocator = allocator;
@@ -15,5 +12,4 @@ class ObjectPool {
         this.pool.push(obj);
     }
 }
-exports.ObjectPool = ObjectPool;
 //# sourceMappingURL=object-pool.js.map

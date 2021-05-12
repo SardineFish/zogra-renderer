@@ -1,15 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DebugLayerRenderer = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const zogra_renderer_2 = require("zogra-renderer");
-const zogra_renderer_3 = require("zogra-renderer");
-class DebugLayerRenderer extends zogra_renderer_1.DebugProvider {
+import { DebugProvider, Lines, FrameBuffer } from "zogra-renderer";
+import { Color } from "zogra-renderer";
+import { mat4 } from "zogra-renderer";
+export class DebugLayerRenderer extends DebugProvider {
     constructor() {
         super(...arguments);
-        this.lines = new zogra_renderer_1.Lines();
+        this.lines = new Lines();
     }
-    drawLine(from, to, color = zogra_renderer_2.Color.white) {
+    drawLine(from, to, color = Color.white) {
         const verts = this.lines.verts;
         const lines = this.lines.lines;
         const colors = this.lines.colors;
@@ -22,10 +19,9 @@ class DebugLayerRenderer extends zogra_renderer_1.DebugProvider {
         this.lines.lines = lines;
     }
     render(context, data) {
-        context.renderer.setFramebuffer(zogra_renderer_1.FrameBuffer.CanvasBuffer);
-        context.renderer.drawLines(this.lines, zogra_renderer_3.mat4.identity(), context.renderer.assets.materials.ColoredLine);
+        context.renderer.setFramebuffer(FrameBuffer.CanvasBuffer);
+        context.renderer.drawLines(this.lines, mat4.identity(), context.renderer.assets.materials.ColoredLine);
         this.lines.clear();
     }
 }
-exports.DebugLayerRenderer = DebugLayerRenderer;
 //# sourceMappingURL=debug-layer.js.map

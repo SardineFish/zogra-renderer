@@ -1,26 +1,23 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderData = exports.RenderOrder = void 0;
-const engine_1 = require("../engine/engine");
-const zogra_renderer_1 = require("zogra-renderer");
-var RenderOrder;
+import { RenderObject } from "../engine/engine";
+import { mat4 } from "zogra-renderer";
+export var RenderOrder;
 (function (RenderOrder) {
     RenderOrder[RenderOrder["NearToFar"] = 0] = "NearToFar";
     RenderOrder[RenderOrder["FarToNear"] = 1] = "FarToNear";
-})(RenderOrder = exports.RenderOrder || (exports.RenderOrder = {}));
-exports.RenderData = {
+})(RenderOrder || (RenderOrder = {}));
+export const RenderData = {
     create(camera, scene, output) {
         return {
             camera,
             scene,
             cameraOutput: output,
-            visibleObjects: scene.getEntitiesOfType(engine_1.RenderObject),
+            visibleObjects: scene.getEntitiesOfType(RenderObject),
             getVisibleObjects(renderOrder = RenderOrder.NearToFar, filter) {
                 const viewMat = this.camera.worldToLocalMatrix;
                 let objects = this.visibleObjects;
                 if (filter)
                     objects = objects.filter(filter);
-                let wrap = objects.map(obj => ({ pos: zogra_renderer_1.mat4.mulPoint(viewMat, obj.position), obj: obj }));
+                let wrap = objects.map(obj => ({ pos: mat4.mulPoint(viewMat, obj.position), obj: obj }));
                 if (renderOrder === RenderOrder.NearToFar)
                     wrap = wrap.sort((a, b) => b.pos.z - a.pos.z);
                 else

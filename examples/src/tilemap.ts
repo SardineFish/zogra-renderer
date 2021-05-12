@@ -3,13 +3,13 @@ import "./css/base.css";
 import imgCheckBoard from "./asset/img/checkboard.png";
 import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";
-import noisejs = require("noisejs");
+import { Noise as noisejs } from "noisejs";
 import { Debug } from "zogra-renderer/dist/core/global";
 
-(window as any).Noise = noisejs.Noise;
+(window as any).Noise = noisejs;
 (window as any).ZograEngine = ZograEnginePackage;
 (window as any).ZograRenderer = ZograRendererPackage;
-const Noise = new noisejs.Noise(Math.random());
+const Noise = new noisejs(Math.random());
 
 let tileGround: TileData = {
     sprite: null,

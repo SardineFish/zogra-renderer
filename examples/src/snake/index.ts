@@ -2,7 +2,7 @@ import { Bloom, Blur, Camera, Color, Default2DRenderPipeline, EventEmitter, Even
 import "../css/base.css";
 import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";
-import noisejs = require("noisejs");
+import noisejs from "noisejs";
 import { Snake } from "./snake";
 import { GameMap } from "./map";
 import { loadAssets } from "./assets";

@@ -2,6 +2,7 @@
   "name": "zogra-engine",
   "version": "1.2.0",
   "description": "A tiny render engine based on zogra-renderer",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
@@ -30,5 +31,6 @@
   "devDependencies": {
     "esbuild": "^0.9.6",
     "typescript": "^4.1.5"
-  }
+  },
+  "sideEffects": false
 }

@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ColliderBase = exports.UnknownPhysics = void 0;
-class UnknownPhysics {
+export class UnknownPhysics {
     /** @internal */
     __addCollider() { }
     /** @internal */
@@ -9,8 +6,7 @@ class UnknownPhysics {
     __getColliders() { return []; }
     update() { }
 }
-exports.UnknownPhysics = UnknownPhysics;
-class ColliderBase {
+export class ColliderBase {
     constructor() {
         this._physicsSystem = null;
         this._entity = null;
@@ -37,5 +33,4 @@ class ColliderBase {
         this._physicsSystem = null;
     }
 }
-exports.ColliderBase = ColliderBase;
 //# sourceMappingURL=physics-generic.js.map

@@ -1,14 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Keys = exports.InputManager = exports.KeyState = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const zogra_renderer_2 = require("zogra-renderer");
-const util_1 = require("../utils/util");
-var KeyState;
+import { GlobalContext, vec2 } from "zogra-renderer";
+import { minus } from "zogra-renderer";
+import { DoubleBuffer } from "../utils/util";
+export var KeyState;
 (function (KeyState) {
     KeyState[KeyState["Pressed"] = 1] = "Pressed";
     KeyState[KeyState["Released"] = 0] = "Released";
-})(KeyState = exports.KeyState || (exports.KeyState = {}));
+})(KeyState || (KeyState = {}));
 ;
 // interface InputManagerEvents extends EventDefinitions
 // {
@@ -35,21 +32,21 @@ class InputStates {
     constructor() {
         this.keyStates = new Map();
         this.keyStatesThisFrame = new Map();
-        this.mousePos = zogra_renderer_1.vec2.zero();
-        this.mouseDelta = zogra_renderer_1.vec2.zero();
+        this.mousePos = vec2.zero();
+        this.mouseDelta = vec2.zero();
         this.wheelDelta = 0;
     }
 }
-class InputManager {
+export class InputManager {
     constructor(options = {}) {
         var _a, _b, _c;
         this.preventBrowserShortcut = true;
         this.bound = null;
-        this.states = new util_1.DoubleBuffer(() => new InputStates);
+        this.states = new DoubleBuffer(() => new InputStates);
         this.renderer = null;
         this.eventTarget = options.target || window;
         this.pointerLockElement = (_a = options.pointerLockElement) !== null && _a !== void 0 ? _a : document.body;
-        this.renderer = options.renderer || zogra_renderer_1.GlobalContext().renderer;
+        this.renderer = options.renderer || GlobalContext().renderer;
         if (options.bound)
             this.bound = options.bound;
         else if ((_b = options.target) === null || _b === void 0 ? void 0 : _b.getBoundingClientRect)
@@ -73,8 +70,8 @@ class InputManager {
             var _a;
             const rect = (_a = this.bound) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
             if (rect) {
-                const offset = zogra_renderer_1.vec2(rect.left, rect === null || rect === void 0 ? void 0 : rect.top);
-                const pos = zogra_renderer_2.minus(zogra_renderer_1.vec2(e.clientX, e.clientY), offset);
+                const offset = vec2(rect.left, rect === null || rect === void 0 ? void 0 : rect.top);
+                const pos = minus(vec2(e.clientX, e.clientY), offset);
                 if (pos.x < 0 || pos.y < 0 || pos.x > rect.width || pos.y > rect.height)
                     return;
             }
@@ -86,8 +83,8 @@ class InputManager {
             var _a;
             const rect = (_a = this.bound) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
             if (rect) {
-                const offset = zogra_renderer_1.vec2(rect.left, rect === null || rect === void 0 ? void 0 : rect.top);
-                const pos = zogra_renderer_2.minus(zogra_renderer_1.vec2(e.clientX, e.clientY), offset);
+                const offset = vec2(rect.left, rect === null || rect === void 0 ? void 0 : rect.top);
+                const pos = minus(vec2(e.clientX, e.clientY), offset);
                 if (pos.x < 0 || pos.y < 0 || pos.x > rect.width || pos.y > rect.height)
                     return;
             }
@@ -97,14 +94,14 @@ class InputManager {
         this.eventTarget.addEventListener("mousemove", e => {
             var _a;
             if (!this.renderer)
-                this.renderer = zogra_renderer_1.GlobalContext().renderer;
+                this.renderer = GlobalContext().renderer;
             const bound = this.bound || ((_a = this.renderer) === null || _a === void 0 ? void 0 : _a.canvas) || windowBound;
             const rect = bound.getBoundingClientRect();
-            const pos = zogra_renderer_2.minus(zogra_renderer_1.vec2(e.clientX, e.clientY), zogra_renderer_1.vec2(rect.left, rect.top));
+            const pos = minus(vec2(e.clientX, e.clientY), vec2(rect.left, rect.top));
             if (this.renderer) {
-                pos.mul(this.renderer.canvasSize).div(zogra_renderer_1.vec2(rect.width, rect.height));
+                pos.mul(this.renderer.canvasSize).div(vec2(rect.width, rect.height));
             }
-            this.states.back.mouseDelta.plus(zogra_renderer_1.vec2(e.movementX, e.movementY));
+            this.states.back.mouseDelta.plus(vec2(e.movementX, e.movementY));
             // if (this.mouseDelta.magnitude > 100)
             //     console.log(e);
             this.states.back.mousePos = pos;
@@ -141,7 +138,7 @@ class InputManager {
     update() {
         this.states.update();
         this.states.back.keyStatesThisFrame.clear();
-        this.states.back.mouseDelta = zogra_renderer_1.vec2.zero();
+        this.states.back.mouseDelta = vec2.zero();
         this.states.back.wheelDelta = 0;
         for (const [key, value] of this.states.current.keyStates) {
             this.states.back.keyStates.set(key, value);
@@ -155,13 +152,12 @@ class InputManager {
         document.exitPointerLock();
     }
 }
-exports.InputManager = InputManager;
 function createPointerLockElement() {
     const element = document.createElement("div");
     element.classList.add("pointer-lock-element");
     return element;
 }
-var Keys;
+export var Keys;
 (function (Keys) {
     Keys[Keys["BackSpace"] = 8] = "BackSpace";
     Keys[Keys["Tab"] = 9] = "Tab";
@@ -273,5 +269,5 @@ var Keys;
     Keys[Keys["Mouse4"] = 260] = "Mouse4";
     Keys[Keys["Mouse5"] = 261] = "Mouse5";
     Keys[Keys["Mouse6"] = 262] = "Mouse6";
-})(Keys = exports.Keys || (exports.Keys = {}));
+})(Keys || (Keys = {}));
 //# sourceMappingURL=input.js.map

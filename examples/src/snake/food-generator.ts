@@ -6,7 +6,7 @@ import { Snake } from "./snake";
 import { probability, WeightedRandom } from "./utils";
 import { Food } from "./food";
 import { ColorFood } from "./color-food";
-import noisejs = require("noisejs");
+import noisejs from "noisejs";
 import { BlackHole } from "./black-hole";
 import { BoostFood } from "./boost-food";
 const { Noise } = noisejs;

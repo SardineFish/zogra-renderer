@@ -1,20 +1,17 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.materialDefine = exports.SimpleTexturedMaterial = exports.MaterialFromShader = exports.shaderProp = exports.Material = void 0;
-const shader_1 = require("./shader");
-const color_1 = require("../types/color");
-require("reflect-metadata");
-const global_1 = require("./global");
-require("reflect-metadata");
-const texture_1 = require("./texture");
-const asset_1 = require("./asset");
-const shaders_1 = require("../builtin-assets/shaders");
+import { Blending, Culling, DepthTest } from "./shader";
+import { Color } from "../types/color";
+import "reflect-metadata";
+import { GL, GlobalContext } from "./global";
+import "reflect-metadata";
+import { RenderTexture } from "./texture";
+import { Asset } from "./asset";
+import { BuiltinUniformNames } from "../builtin-assets/shaders";
 /**
  * Inicate where to get the value from material
  */
@@ -24,8 +21,8 @@ var ValueReference;
     ValueReference[ValueReference["Dynamic"] = 1] = "Dynamic";
 })(ValueReference || (ValueReference = {}));
 // export type MaterialProperties = Map<string, NumericProperty<NumericUnifromTypes> | TextureProperty<TextureUniformTypes>>;
-class Material extends asset_1.Asset {
-    constructor(shader, gl = global_1.GL()) {
+export class Material extends Asset {
+    constructor(shader, gl = GL()) {
         super();
         this.properties = {};
         this.textureCount = 0;
@@ -86,7 +83,7 @@ class Material extends asset_1.Asset {
         const gl = this.gl;
         for (let unit = 0; unit < this.boundTextures.length; unit++) {
             const texture = this.boundTextures[unit];
-            if (texture instanceof texture_1.RenderTexture) {
+            if (texture instanceof RenderTexture) {
                 texture.unbind(unit);
             }
         }
@@ -95,7 +92,7 @@ class Material extends asset_1.Asset {
     tryInit(required = false) {
         if (this.initialized)
             return true;
-        const gl = this.gl || global_1.GL();
+        const gl = this.gl || GL();
         if (!gl) {
             if (required)
                 throw new Error("Failed to intialize material without global GL context");
@@ -163,9 +160,9 @@ class Material extends asset_1.Asset {
     }
     setPipelineStateOverride(settings) {
         let blend = false;
-        let blendRGB = [shader_1.Blending.One, shader_1.Blending.Zero];
-        let blendAlpha = [shader_1.Blending.One, shader_1.Blending.OneMinusSrcAlpha];
-        if (typeof (settings.blend) === "number" && settings.blend !== shader_1.Blending.Disable) {
+        let blendRGB = [Blending.One, Blending.Zero];
+        let blendAlpha = [Blending.One, Blending.OneMinusSrcAlpha];
+        if (typeof (settings.blend) === "number" && settings.blend !== Blending.Disable) {
             blend = true;
             blendRGB = [settings.blend, settings.blend];
             blendAlpha = [settings.blend, settings.blend];
@@ -175,25 +172,25 @@ class Material extends asset_1.Asset {
             blendRGB = settings.blend;
         }
         if (settings.blendRGB) {
-            blend = settings.blend !== false && settings.blend !== shader_1.Blending.Disable;
+            blend = settings.blend !== false && settings.blend !== Blending.Disable;
             blendRGB = settings.blendRGB;
         }
         if (settings.blendAlpha) {
-            blend = settings.blend !== false && settings.blend !== shader_1.Blending.Disable;
+            blend = settings.blend !== false && settings.blend !== Blending.Disable;
             blendAlpha = settings.blendAlpha;
         }
         this.pipelineStateOverride = {
-            depth: settings.depth || shader_1.DepthTest.Less,
+            depth: settings.depth || DepthTest.Less,
             blend,
             blendRGB,
             blendAlpha,
             zWrite: settings.zWrite === false ? false : true,
-            cull: settings.cull || shader_1.Culling.Back
+            cull: settings.cull || Culling.Back
         };
     }
     setupPipelineStateOverride() {
         const gl = this.gl;
-        if (this.pipelineStateOverride.depth === shader_1.DepthTest.Disable)
+        if (this.pipelineStateOverride.depth === DepthTest.Disable)
             gl.disable(gl.DEPTH_TEST);
         else {
             gl.enable(gl.DEPTH_TEST);
@@ -208,7 +205,7 @@ class Material extends asset_1.Asset {
             gl.enable(gl.BLEND);
             gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
         }
-        if (this.pipelineStateOverride.cull === shader_1.Culling.Disable)
+        if (this.pipelineStateOverride.cull === Culling.Disable)
             gl.disable(gl.CULL_FACE);
         else {
             gl.enable(gl.CULL_FACE);
@@ -219,7 +216,7 @@ class Material extends asset_1.Asset {
     uploadUniform(prop, value) {
         var _a;
         const gl = this.gl;
-        const ctx = global_1.GlobalContext();
+        const ctx = GlobalContext();
         if (!prop.location)
             return false;
         let dirty = false;
@@ -339,50 +336,45 @@ class Material extends asset_1.Asset {
         return elementSize * valueArray.length;
     }
 }
-exports.Material = Material;
 const shaderPropMetaKey = Symbol("shaderProp");
-function shaderProp(name, type) {
+export function shaderProp(name, type) {
     return Reflect.metadata(shaderPropMetaKey, { name: name, type: type });
 }
-exports.shaderProp = shaderProp;
 function getShaderProp(target, propKey) {
     return Reflect.getMetadata(shaderPropMetaKey, target, propKey);
 }
-function MaterialFromShader(shader) {
+export function MaterialFromShader(shader) {
     return class Mat extends Material {
-        constructor(gl = global_1.GL()) {
+        constructor(gl = GL()) {
             super(shader, gl);
         }
     };
 }
-exports.MaterialFromShader = MaterialFromShader;
-function SimpleTexturedMaterial(shader) {
+export function SimpleTexturedMaterial(shader) {
     class Mat extends MaterialFromShader(shader) {
         constructor() {
             super(...arguments);
             this.texture = null;
-            this.color = new color_1.Color(1, 1, 1, 1);
+            this.color = new Color(1, 1, 1, 1);
         }
     }
     __decorate([
-        shaderProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d")
+        shaderProp(BuiltinUniformNames.mainTex, "tex2d")
     ], Mat.prototype, "texture", void 0);
     __decorate([
-        shaderProp(shaders_1.BuiltinUniformNames.color, "color")
+        shaderProp(BuiltinUniformNames.color, "color")
     ], Mat.prototype, "color", void 0);
     return Mat;
 }
-exports.SimpleTexturedMaterial = SimpleTexturedMaterial;
 /**
  *
  * @deprecated
  */
-function materialDefine(constructor) {
+export function materialDefine(constructor) {
     return class extends constructor {
         constructor(...arg) {
             super(...arg);
         }
     };
 }
-exports.materialDefine = materialDefine;
 //# sourceMappingURL=material.js.map

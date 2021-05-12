@@ -1,40 +1,37 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ZograRenderer = void 0;
-const util_1 = require("../utils/util");
-const global_1 = require("./global");
-const color_1 = require("../types/color");
-const mat4_1 = require("../types/mat4");
-const frame_buffer_1 = require("./frame-buffer");
-const texture_1 = require("./texture");
-const vec2_1 = require("../types/vec2");
-const assets_1 = require("../builtin-assets/assets");
-const rect_1 = require("../types/rect");
-const mesh_builder_1 = require("../utils/mesh-builder");
-const math_1 = require("../types/math");
-const shaders_1 = require("../builtin-assets/shaders");
-const object_pool_1 = require("../utils/object-pool");
-class ZograRenderer {
+import { panicNull } from "../utils/util";
+import { setGlobalContext, GLContext, GlobalContext } from "./global";
+import { Color } from "../types/color";
+import { mat4 } from "../types/mat4";
+import { FrameBuffer } from "./frame-buffer";
+import { RenderTexture } from "./texture";
+import { vec2 } from "../types/vec2";
+import { BuiltinAssets } from "../builtin-assets/assets";
+import { Rect } from "../types/rect";
+import { MeshBuilder } from "../utils/mesh-builder";
+import { div } from "../types/math";
+import { BuiltinUniformNames } from "../builtin-assets/shaders";
+import { ObjectPool } from "../utils/object-pool";
+export class ZograRenderer {
     constructor(canvasElement, width, height) {
-        this.viewProjectionMatrix = mat4_1.mat4.identity();
-        this.viewMatrix = mat4_1.mat4.identity();
-        this.projectionMatrix = mat4_1.mat4.identity();
-        this.target = frame_buffer_1.FrameBuffer.CanvasBuffer;
+        this.viewProjectionMatrix = mat4.identity();
+        this.viewMatrix = mat4.identity();
+        this.projectionMatrix = mat4.identity();
+        this.target = FrameBuffer.CanvasBuffer;
         this.shader = null;
         this.globalUniforms = new Map();
         this.globalTextures = new Map();
-        this.framebufferPool = new object_pool_1.ObjectPool((w, h) => new frame_buffer_1.FrameBuffer(w, h));
-        this.blitFramebuffer = [new frame_buffer_1.FrameBuffer(), new frame_buffer_1.FrameBuffer()];
+        this.framebufferPool = new ObjectPool((w, h) => new FrameBuffer(w, h));
+        this.blitFramebuffer = [new FrameBuffer(), new FrameBuffer()];
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        this.scissor = new rect_1.Rect(vec2_1.vec2.zero(), vec2_1.vec2(this.width, this.height));
-        this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
+        this.scissor = new Rect(vec2.zero(), vec2(this.width, this.height));
+        this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         this.gl.getExtension("EXT_color_buffer_float");
         this.gl.getExtension("EXT_color_buffer_half_float");
-        this.ctx = new global_1.GLContext();
+        this.ctx = new GLContext();
         Object.assign(this.ctx, {
             gl: this.gl,
             width: this.width,
@@ -42,17 +39,17 @@ class ZograRenderer {
             assets: {},
             renderer: this,
         });
-        this.assets = new assets_1.BuiltinAssets(this.ctx);
+        this.assets = new BuiltinAssets(this.ctx);
         this.ctx.assets = this.assets;
-        if (!global_1.GlobalContext())
+        if (!GlobalContext())
             this.use();
         this.helperAssets = {
-            clipBlitMesh: mesh_builder_1.MeshBuilder.ndcQuad(),
-            blitMesh: mesh_builder_1.MeshBuilder.ndcTriangle(),
+            clipBlitMesh: MeshBuilder.ndcQuad(),
+            blitMesh: MeshBuilder.ndcTriangle(),
         };
     }
     use() {
-        global_1.setGlobalContext(this.ctx);
+        setGlobalContext(this.ctx);
     }
     setSize(width, height) {
         this.canvas.width = width;
@@ -62,15 +59,15 @@ class ZograRenderer {
         this.ctx.width = width;
         this.ctx.height = height;
     }
-    get canvasSize() { return vec2_1.vec2(this.width, this.height); }
+    get canvasSize() { return vec2(this.width, this.height); }
     setViewProjection(view, projection) {
-        mat4_1.mat4.mul(this.viewProjectionMatrix, projection, view);
+        mat4.mul(this.viewProjectionMatrix, projection, view);
     }
     setFramebuffer(colorAttachments, depthAttachment) {
         let newFramebuffer;
-        if (colorAttachments === frame_buffer_1.FrameBuffer.CanvasBuffer)
-            newFramebuffer = frame_buffer_1.FrameBuffer.CanvasBuffer;
-        else if (colorAttachments instanceof frame_buffer_1.FrameBuffer) {
+        if (colorAttachments === FrameBuffer.CanvasBuffer)
+            newFramebuffer = FrameBuffer.CanvasBuffer;
+        else if (colorAttachments instanceof FrameBuffer) {
             newFramebuffer = colorAttachments;
         }
         else {
@@ -131,18 +128,18 @@ class ZograRenderer {
         // gl.bindFramebuffer(gl.FRAMEBUFFER, writeBuffer.glFBO());
         // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture.glTex(), 0);
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readBuffer.glFBO());
-        src instanceof texture_1.RenderTexture
+        src instanceof RenderTexture
             ? gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glTex(), 0)
             : gl.framebufferRenderbuffer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glBuf());
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, writeBuffer.glFBO());
-        dst instanceof texture_1.RenderTexture
+        dst instanceof RenderTexture
             ? gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glTex(), 0)
             : gl.framebufferRenderbuffer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glBuf());
         gl.blitFramebuffer(0, 0, src.width, src.height, 0, 0, dst.width, dst.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
     }
-    clear(color = color_1.Color.black, clearDepth = true) {
+    clear(color = Color.black, clearDepth = true) {
         this.gl.clearColor(color.r, color.g, color.b, color.a);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
     }
@@ -153,28 +150,28 @@ class ZograRenderer {
         const prevVP = this.viewProjectionMatrix;
         // const prevTarget = this.target;
         let mesh = this.helperAssets.blitMesh;
-        let viewport = dst === frame_buffer_1.FrameBuffer.CanvasBuffer ? new rect_1.Rect(vec2_1.vec2.zero(), this.canvasSize) : new rect_1.Rect(vec2_1.vec2.zero(), dst.size.clone());
+        let viewport = dst === FrameBuffer.CanvasBuffer ? new Rect(vec2.zero(), this.canvasSize) : new Rect(vec2.zero(), dst.size.clone());
         if (src && (srcRect || dstRect)) {
             viewport = dstRect || viewport;
             if (srcRect) {
                 mesh = this.helperAssets.clipBlitMesh;
-                let uvMin = math_1.div(srcRect.min, src.size);
-                let uvMax = math_1.div(srcRect.max, src.size);
+                let uvMin = div(srcRect.min, src.size);
+                let uvMax = div(srcRect.max, src.size);
                 mesh.uvs = [
-                    vec2_1.vec2(uvMin.x, uvMin.y),
-                    vec2_1.vec2(uvMax.x, uvMin.y),
-                    vec2_1.vec2(uvMax.x, uvMax.y),
-                    vec2_1.vec2(uvMin.x, uvMax.y),
+                    vec2(uvMin.x, uvMin.y),
+                    vec2(uvMax.x, uvMin.y),
+                    vec2(uvMax.x, uvMax.y),
+                    vec2(uvMin.x, uvMax.y),
                 ];
                 mesh.update();
             }
         }
         this.target = dst;
         this.scissor = viewport;
-        this.viewProjectionMatrix = mat4_1.mat4.identity();
+        this.viewProjectionMatrix = mat4.identity();
         if (src)
-            material.setProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d", src);
-        this.drawMesh(mesh, mat4_1.mat4.identity(), material);
+            material.setProp(BuiltinUniformNames.mainTex, "tex2d", src);
+        this.drawMesh(mesh, mat4.identity(), material);
         // this.unsetGlobalTexture(BuiltinUniformNames.mainTex);
         this.setFramebuffer(prevTarget);
         this.viewProjectionMatrix = prevVP;
@@ -190,15 +187,15 @@ class ZograRenderer {
     }
     setupTransforms(shader, transformModel) {
         const gl = this.gl;
-        const mvp = mat4_1.mat4.mul(this.viewProjectionMatrix, transformModel);
-        const mit = mat4_1.mat4.create();
-        if (mat4_1.mat4.invert(mit, transformModel))
-            mat4_1.mat4.transpose(mit, mit);
+        const mvp = mat4.mul(this.viewProjectionMatrix, transformModel);
+        const mit = mat4.create();
+        if (mat4.invert(mit, transformModel))
+            mat4.transpose(mit, mit);
         else
             mit.fill(0);
-        const mvit = mat4_1.mat4.mul(this.viewMatrix, transformModel);
-        if (mat4_1.mat4.invert(mvit, mvit))
-            mat4_1.mat4.transpose(mvit, mvit);
+        const mvit = mat4.mul(this.viewMatrix, transformModel);
+        if (mat4.invert(mvit, mvit))
+            mat4.transpose(mvit, mvit);
         else
             mvit.fill(0);
         shader.setupBuiltinUniform({
@@ -222,13 +219,13 @@ class ZograRenderer {
             assets: this.assets,
             gl: gl,
             nextTextureUnit: 0,
-            size: vec2_1.vec2(this.width, this.height),
+            size: vec2(this.width, this.height),
         };
         this.target.bind();
         this.setupScissor();
         this.useShader(material.shader);
         material.upload(data);
-        this.setupTransforms(material.shader, mat4_1.mat4.identity());
+        this.setupTransforms(material.shader, mat4.identity());
         const elementCount = mesh.bind();
         buffer.bindVertexArray(true, material.shader.attributes);
         gl.drawElementsInstanced(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0, count);
@@ -244,13 +241,13 @@ class ZograRenderer {
             assets: this.assets,
             gl: gl,
             nextTextureUnit: 0,
-            size: vec2_1.vec2(this.width, this.height),
+            size: vec2(this.width, this.height),
         };
         this.target.bind();
         this.setupScissor();
         this.useShader(material.shader);
         material.upload(data);
-        this.setupTransforms(material.shader, mat4_1.mat4.identity());
+        this.setupTransforms(material.shader, mat4.identity());
         const elementCount = mesh.bind();
         gl.drawElementsInstanced(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0, count);
         material.unbindRenderTextures();
@@ -263,7 +260,7 @@ class ZograRenderer {
             assets: this.assets,
             gl: gl,
             nextTextureUnit: 0,
-            size: vec2_1.vec2(this.width, this.height),
+            size: vec2(this.width, this.height),
         };
         this.target.bind();
         this.setupScissor();
@@ -282,7 +279,7 @@ class ZograRenderer {
             assets: this.assets,
             gl: gl,
             nextTextureUnit: 0,
-            size: vec2_1.vec2(this.width, this.height),
+            size: vec2(this.width, this.height),
         };
         this.target.bind();
         this.setupScissor();
@@ -308,5 +305,4 @@ class ZograRenderer {
         gl.viewport(this.scissor.xMin, this.scissor.yMin, this.scissor.size.x, this.scissor.size.y);
     }
 }
-exports.ZograRenderer = ZograRenderer;
 //# sourceMappingURL=renderer.js.map

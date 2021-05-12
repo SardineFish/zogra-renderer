@@ -1,15 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.mat4 = exports.Matrix4x4 = void 0;
-const gl_matrix_1 = require("gl-matrix");
-const quat_1 = require("./quat");
-const vec3_1 = require("./vec3");
-const vec4_1 = require("./vec4");
-const vec2_1 = require("./vec2");
-const utils_1 = require("./utils");
+import { mat4 as glMat4, vec4 as glVec4 } from "gl-matrix";
+import { quat } from "./quat";
+import { vec3 } from "./vec3";
+import { vec4 } from "./vec4";
+import { vec2 } from "./vec2";
+import { wrapGlMatrix } from "./utils";
 const Mat4Constructor = Array;
-const __vec4_temp = vec4_1.vec4.zero();
-class Matrix4x4 extends Mat4Constructor {
+const __vec4_temp = vec4.zero();
+export class Matrix4x4 extends Mat4Constructor {
     constructor(p_0 = 0, p_1 = 0, p_2 = 0, p_3 = 0, p_4 = 0, p_5 = 0, p_6 = 0, p_7 = 0, p_8 = 0, p_9 = 0, p_10 = 0, p_11 = 0, p_12 = 0, p_13 = 0, p_14 = 0, p_15 = 0) {
         super(p_0, p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10, p_11, p_12, p_13, p_14, p_15);
     }
@@ -18,7 +15,7 @@ class Matrix4x4 extends Mat4Constructor {
     }
     asMut() { return this; }
     set(m) {
-        return gl_matrix_1.mat4.set(this, ...m);
+        return glMat4.set(this, ...m);
     }
     fill(n) {
         return mat4.fill(this, n);
@@ -30,84 +27,82 @@ class Matrix4x4 extends Mat4Constructor {
         return mat4.equal(this, other);
     }
 }
-exports.Matrix4x4 = Matrix4x4;
-function mat4(p_0 = 0, p_1 = 0, p_2 = 0, p_3 = 0, p_4 = 0, p_5 = 0, p_6 = 0, p_7 = 0, p_8 = 0, p_9 = 0, p_10 = 0, p_11 = 0, p_12 = 0, p_13 = 0, p_14 = 0, p_15 = 0) {
+export function mat4(p_0 = 0, p_1 = 0, p_2 = 0, p_3 = 0, p_4 = 0, p_5 = 0, p_6 = 0, p_7 = 0, p_8 = 0, p_9 = 0, p_10 = 0, p_11 = 0, p_12 = 0, p_13 = 0, p_14 = 0, p_15 = 0) {
     return new Matrix4x4(p_0, p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10, p_11, p_12, p_13, p_14, p_15);
 }
-exports.mat4 = mat4;
 mat4.create = Matrix4x4.create;
-mat4.identity = utils_1.wrapGlMatrix(gl_matrix_1.mat4.identity, 0, mat4.create);
-mat4.rts = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromRotationTranslationScale, 3, mat4.create);
-mat4.translate = utils_1.wrapGlMatrix(gl_matrix_1.mat4.translate, 2, Matrix4x4.create);
-mat4.invert = utils_1.wrapGlMatrix(gl_matrix_1.mat4.invert, 1, Matrix4x4.create);
-mat4.getTranslation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.getTranslation, 1, vec3_1.vec3.zero);
-mat4.getRotation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.getRotation, 1, quat_1.quat.create);
-mat4.getScaling = utils_1.wrapGlMatrix(gl_matrix_1.mat4.getScaling, 1, vec3_1.vec3.zero);
-mat4.mulVec4 = utils_1.wrapGlMatrix((out, m, v) => gl_matrix_1.vec4.transformMat4(out, v, m), 2, vec4_1.vec4.zero);
-mat4.perspective = utils_1.wrapGlMatrix(gl_matrix_1.mat4.perspective, 4, Matrix4x4.create);
-mat4.transpose = utils_1.wrapGlMatrix(gl_matrix_1.mat4.transpose, 1, Matrix4x4.create);
-mat4.rotate = utils_1.wrapGlMatrix((out, m, axis, rad) => gl_matrix_1.mat4.rotate(out, m, rad, axis), 3, Matrix4x4.create);
-mat4.scale = utils_1.wrapGlMatrix(gl_matrix_1.mat4.scale, 2, Matrix4x4.create);
-mat4.fromTranslation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromTranslation, 1, Matrix4x4.create);
-mat4.fromRotation = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromRotation, 1, Matrix4x4.create);
-mat4.fromScaling = utils_1.wrapGlMatrix(gl_matrix_1.mat4.fromScaling, 1, Matrix4x4.create);
-mat4.mul = utils_1.wrapGlMatrix(gl_matrix_1.mat4.mul, 2, Matrix4x4.create);
-mat4.add = utils_1.wrapGlMatrix(gl_matrix_1.mat4.add, 2, mat4.create);
-mat4.sub = utils_1.wrapGlMatrix(gl_matrix_1.mat4.sub, 2, mat4.create);
+mat4.identity = wrapGlMatrix(glMat4.identity, 0, mat4.create);
+mat4.rts = wrapGlMatrix(glMat4.fromRotationTranslationScale, 3, mat4.create);
+mat4.translate = wrapGlMatrix(glMat4.translate, 2, Matrix4x4.create);
+mat4.invert = wrapGlMatrix(glMat4.invert, 1, Matrix4x4.create);
+mat4.getTranslation = wrapGlMatrix(glMat4.getTranslation, 1, vec3.zero);
+mat4.getRotation = wrapGlMatrix(glMat4.getRotation, 1, quat.create);
+mat4.getScaling = wrapGlMatrix(glMat4.getScaling, 1, vec3.zero);
+mat4.mulVec4 = wrapGlMatrix((out, m, v) => glVec4.transformMat4(out, v, m), 2, vec4.zero);
+mat4.perspective = wrapGlMatrix(glMat4.perspective, 4, Matrix4x4.create);
+mat4.transpose = wrapGlMatrix(glMat4.transpose, 1, Matrix4x4.create);
+mat4.rotate = wrapGlMatrix((out, m, axis, rad) => glMat4.rotate(out, m, rad, axis), 3, Matrix4x4.create);
+mat4.scale = wrapGlMatrix(glMat4.scale, 2, Matrix4x4.create);
+mat4.fromTranslation = wrapGlMatrix(glMat4.fromTranslation, 1, Matrix4x4.create);
+mat4.fromRotation = wrapGlMatrix(glMat4.fromRotation, 1, Matrix4x4.create);
+mat4.fromScaling = wrapGlMatrix(glMat4.fromScaling, 1, Matrix4x4.create);
+mat4.mul = wrapGlMatrix(glMat4.mul, 2, Matrix4x4.create);
+mat4.add = wrapGlMatrix(glMat4.add, 2, mat4.create);
+mat4.sub = wrapGlMatrix(glMat4.sub, 2, mat4.create);
 mat4.plus = mat4.add;
 mat4.minus = mat4.sub;
-mat4.mulVector = utils_1.wrapGlMatrix((out, m, v) => {
+mat4.mulVector = wrapGlMatrix((out, m, v) => {
     __vec4_temp[0] = v[0];
     __vec4_temp[1] = v[1];
     __vec4_temp[2] = v[2];
     __vec4_temp[3] = 0;
-    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    glVec4.transformMat4(__vec4_temp, __vec4_temp, m);
     out[0] = __vec4_temp[0];
     out[1] = __vec4_temp[1];
     out[2] = __vec4_temp[2];
     return out;
-}, 2, vec3_1.vec3.zero);
-mat4.mulPoint = utils_1.wrapGlMatrix((out, m, v) => {
+}, 2, vec3.zero);
+mat4.mulPoint = wrapGlMatrix((out, m, v) => {
     __vec4_temp[0] = v[0];
     __vec4_temp[1] = v[1];
     __vec4_temp[2] = v[2];
     __vec4_temp[3] = 1;
-    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    glVec4.transformMat4(__vec4_temp, __vec4_temp, m);
     out[0] = __vec4_temp[0];
     out[1] = __vec4_temp[1];
     out[2] = __vec4_temp[2];
     return out;
-}, 2, vec3_1.vec3.zero);
-mat4.mulPoint2 = utils_1.wrapGlMatrix((out, m, v) => {
+}, 2, vec3.zero);
+mat4.mulPoint2 = wrapGlMatrix((out, m, v) => {
     __vec4_temp[0] = v[0];
     __vec4_temp[1] = v[1];
     __vec4_temp[2] = 0;
     __vec4_temp[3] = 1;
-    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    glVec4.transformMat4(__vec4_temp, __vec4_temp, m);
     out[0] = __vec4_temp[0];
     out[1] = __vec4_temp[1];
     return out;
-}, 2, vec2_1.vec2.zero);
-mat4.mulVector2 = utils_1.wrapGlMatrix((out, m, v) => {
+}, 2, vec2.zero);
+mat4.mulVector2 = wrapGlMatrix((out, m, v) => {
     __vec4_temp[0] = v[0];
     __vec4_temp[1] = v[1];
     __vec4_temp[2] = 0;
     __vec4_temp[3] = 0;
-    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    glVec4.transformMat4(__vec4_temp, __vec4_temp, m);
     out[0] = __vec4_temp[0];
     out[1] = __vec4_temp[1];
     return out;
-}, 2, vec2_1.vec2.zero);
+}, 2, vec2.zero);
 function simpleOrthogonal(height, aspect, near, far) {
     const out = mat4.create();
-    gl_matrix_1.mat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);
+    glMat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);
     return out;
 }
 function orthogonal(...args) {
     if (args.length === 4)
         return simpleOrthogonal(...args);
     const out = mat4.create();
-    gl_matrix_1.mat4.ortho(...[out, ...args]);
+    glMat4.ortho(...[out, ...args]);
     return out;
 }
 mat4.ortho = orthogonal;
@@ -139,10 +134,10 @@ mat4.equal = (a, b) => {
         return false;
     if (!(a instanceof Array || a instanceof Float32Array) || !(b instanceof Array || b instanceof Float32Array))
         return false;
-    return gl_matrix_1.mat4.exactEquals(a, b);
+    return glMat4.exactEquals(a, b);
 };
-mat4.set = utils_1.wrapGlMatrix(gl_matrix_1.mat4.set, 1, mat4.create);
-mat4.fill = utils_1.wrapGlMatrix((out, n) => {
+mat4.set = wrapGlMatrix(glMat4.set, 1, mat4.create);
+mat4.fill = wrapGlMatrix((out, n) => {
     out[0]
         = out[1]
             = out[2]

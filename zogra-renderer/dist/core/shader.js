@@ -1,14 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Shader = exports.DefaultShaderAttributeNames = exports.Culling = exports.Blending = exports.DepthTest = void 0;
-const util_1 = require("../utils/util");
-const global_1 = require("./global");
-const shaders_1 = require("../builtin-assets/shaders");
-const util_2 = require("../utils/util");
-const asset_1 = require("./asset");
-const array_buffer_1 = require("./array-buffer");
-const mesh_1 = require("./mesh");
-var DepthTest;
+import { panic, panicNull } from "../utils/util";
+import { GL } from "./global";
+import { BuiltinUniformNames } from "../builtin-assets/shaders";
+import { getUniformsLocation } from "../utils/util";
+import { Asset } from "./asset";
+import { BufferStructureInfo } from "./array-buffer";
+import { DefaultVertexData } from "./mesh";
+export var DepthTest;
 (function (DepthTest) {
     DepthTest[DepthTest["Disable"] = -1] = "Disable";
     DepthTest[DepthTest["Always"] = WebGL2RenderingContext.ALWAYS] = "Always";
@@ -19,8 +16,8 @@ var DepthTest;
     DepthTest[DepthTest["Greater"] = WebGL2RenderingContext.GREATER] = "Greater";
     DepthTest[DepthTest["NotEqual"] = WebGL2RenderingContext.NOTEQUAL] = "NotEqual";
     DepthTest[DepthTest["GEqual"] = WebGL2RenderingContext.GEQUAL] = "GEqual";
-})(DepthTest = exports.DepthTest || (exports.DepthTest = {}));
-var Blending;
+})(DepthTest || (DepthTest = {}));
+export var Blending;
 (function (Blending) {
     Blending[Blending["Disable"] = -1] = "Disable";
     Blending[Blending["Zero"] = WebGL2RenderingContext.ZERO] = "Zero";
@@ -33,23 +30,23 @@ var Blending;
     Blending[Blending["OneMinusSrcAlpha"] = WebGL2RenderingContext.ONE_MINUS_SRC_ALPHA] = "OneMinusSrcAlpha";
     Blending[Blending["DstAlpha"] = WebGL2RenderingContext.DST_ALPHA] = "DstAlpha";
     Blending[Blending["OneMinusDstAlpha"] = WebGL2RenderingContext.ONE_MINUS_DST_ALPHA] = "OneMinusDstAlpha";
-})(Blending = exports.Blending || (exports.Blending = {}));
-var Culling;
+})(Blending || (Blending = {}));
+export var Culling;
 (function (Culling) {
     Culling[Culling["Disable"] = -1] = "Disable";
     Culling[Culling["Back"] = WebGL2RenderingContext.BACK] = "Back";
     Culling[Culling["Front"] = WebGL2RenderingContext.FRONT] = "Front";
     Culling[Culling["Both"] = WebGL2RenderingContext.FRONT_AND_BACK] = "Both";
-})(Culling = exports.Culling || (exports.Culling = {}));
-exports.DefaultShaderAttributeNames = {
+})(Culling || (Culling = {}));
+export const DefaultShaderAttributeNames = {
     vert: "aPos",
     color: "aColor",
     uv: "aUV",
     uv2: "aUV2",
     normal: "aNormal",
 };
-class Shader extends asset_1.Asset {
-    constructor(vertexShader, fragmentShader, options = {}, gl = global_1.GL()) {
+export class Shader extends Asset {
+    constructor(vertexShader, fragmentShader, options = {}, gl = GL()) {
         super(options.name);
         /** @internal */
         this.attributes = {};
@@ -67,8 +64,8 @@ class Shader extends asset_1.Asset {
         this.fragmentShaderSouce = fragmentShader;
         this.options = options;
         this.gl = gl;
-        this.vertexStruct = array_buffer_1.BufferStructureInfo.from(this.options.vertexStructure || mesh_1.DefaultVertexData);
-        this.attributeNames = Object.assign(Object.assign({}, exports.DefaultShaderAttributeNames), options.attributes);
+        this.vertexStruct = BufferStructureInfo.from(this.options.vertexStructure || DefaultVertexData);
+        this.attributeNames = Object.assign(Object.assign({}, DefaultShaderAttributeNames), options.attributes);
         this.setPipelineStateInternal(this.options);
         this.tryInit();
     }
@@ -131,25 +128,25 @@ class Shader extends asset_1.Asset {
     tryInit(required = false) {
         if (this.initialized)
             return true;
-        const gl = this.gl || global_1.GL();
+        const gl = this.gl || GL();
         if (!gl) {
             return required
-                ? util_1.panic("Failed to init shader without a global GL context")
+                ? panic("Failed to init shader without a global GL context")
                 : false;
         }
         this.gl = gl;
-        this.program = util_1.panicNull(gl.createProgram(), "Failed to create shader program");
-        this.vertexShader = util_1.panicNull(gl.createShader(gl.VERTEX_SHADER), "Failed to create vertex shader");
-        this.fragmentShader = util_1.panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
+        this.program = panicNull(gl.createProgram(), "Failed to create shader program");
+        this.vertexShader = panicNull(gl.createShader(gl.VERTEX_SHADER), "Failed to create vertex shader");
+        this.fragmentShader = panicNull(gl.createShader(gl.FRAGMENT_SHADER), "Failed to create fragment shader");
         this.compile();
         gl.useProgram(this.program);
         // const attributes = this.options.attributes || DefaultShaderAttributes;
-        const attributeNames = Object.assign(Object.assign({}, exports.DefaultShaderAttributeNames), this.options.attributes);
+        const attributeNames = Object.assign(Object.assign({}, DefaultShaderAttributeNames), this.options.attributes);
         this.attributes = {};
         for (const key in attributeNames) {
             this.attributes[key] = gl.getAttribLocation(this.program, attributeNames[key]);
         }
-        this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniformNames);
+        this.builtinUniformLocations = getUniformsLocation(gl, this.program, BuiltinUniformNames);
         this.initialized = true;
         return true;
     }
@@ -178,5 +175,4 @@ class Shader extends asset_1.Asset {
         }
     }
 }
-exports.Shader = Shader;
 //# sourceMappingURL=shader.js.map

@@ -1,6 +1,6 @@
 import { Animator, Time, Entity, BoxCollider, Light2D } from "zogra-engine";
 import { vec2, MathUtils, vec3, Color } from "zogra-renderer";
-import noisejs = require("noisejs");
+import noisejs from "noisejs";
 const { Noise } = noisejs;
 
 export class ColorFood extends Entity

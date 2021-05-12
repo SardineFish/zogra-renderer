@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DrawScene = void 0;
-const render_pass_1 = require("./render-pass");
-class DrawScene extends render_pass_1.RenderPass {
+import { RenderPass } from "./render-pass";
+export class DrawScene extends RenderPass {
     constructor(order, filter) {
         super();
         this.renderOrder = order;
@@ -17,5 +14,4 @@ class DrawScene extends render_pass_1.RenderPass {
         }
     }
 }
-exports.DrawScene = DrawScene;
 //# sourceMappingURL=draw-scene.js.map

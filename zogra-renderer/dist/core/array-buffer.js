@@ -1,9 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GLArrayBuffer = exports.BufferStructureInfo = void 0;
-const util_1 = require("../utils/util");
-const global_1 = require("./global");
-exports.BufferStructureInfo = {
+import { panic } from "../utils/util";
+import { GlobalContext } from "./global";
+export const BufferStructureInfo = {
     from(structure) {
         const valueLength = {
             float: 1,
@@ -36,8 +33,8 @@ exports.BufferStructureInfo = {
         return structInfo;
     }
 };
-class GLArrayBuffer extends Array {
-    constructor(structure, items, ctx = global_1.GlobalContext()) {
+export class GLArrayBuffer extends Array {
+    constructor(structure, items, ctx = GlobalContext()) {
         super(items);
         this.static = true;
         this.Data = null;
@@ -45,7 +42,7 @@ class GLArrayBuffer extends Array {
         this.initialized = false;
         this.glBuf = null;
         this.swapBuffer = null;
-        this.structure = exports.BufferStructureInfo.from(structure);
+        this.structure = BufferStructureInfo.from(structure);
         // this.structure = structure;
         this.ctx = ctx;
         this.buffer = null;
@@ -192,7 +189,7 @@ class GLArrayBuffer extends Array {
         var _a;
         if (this.initialized)
             return true;
-        const ctx = this.ctx || global_1.GlobalContext();
+        const ctx = this.ctx || GlobalContext();
         if (!ctx) {
             if (required)
                 throw new Error("Failed to init render buffer without a global GL context.");
@@ -200,7 +197,7 @@ class GLArrayBuffer extends Array {
         }
         this.ctx = ctx;
         const gl = ctx.gl;
-        this.glBuf = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer");
+        this.glBuf = (_a = gl.createBuffer()) !== null && _a !== void 0 ? _a : panic("Failed to create render buffer");
         gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
         gl.bufferData(gl.ARRAY_BUFFER, this.byteLength, this.static ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -208,5 +205,4 @@ class GLArrayBuffer extends Array {
         return true;
     }
 }
-exports.GLArrayBuffer = GLArrayBuffer;
 //# sourceMappingURL=array-buffer.js.map
