@@ -2,7 +2,7 @@ import { Chunk, Color, Sprite, TextureImporter, TileData, Tilemap, TilemapCollid
 import imgCheckBoard from "../asset/img/checkboard.png";
 import noisejs = require("noisejs");
 
-const Noise = new noisejs.Noise();
+let Noise = new noisejs.Noise();
 
 export class NoiseChunk extends Chunk
 {
@@ -69,8 +69,9 @@ export class GameMap extends Tilemap<NoiseChunk>
     }
 
 
-    constructor()
+    constructor(seed: number)
     {
+        Noise = new noisejs.Noise(seed);
         super(NoiseChunk);
         GameMap.instance = this;
         this.collider = new TilemapCollider();

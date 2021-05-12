@@ -1,4 +1,4 @@
-import { Bloom, Camera, Color, Default2DRenderPipeline, InputManager, Physics2D, Projection, TextureFormat, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
+import { Bloom, Camera, Color, Default2DRenderPipeline, EventEmitter, EventKeys, InputManager, Keys, Physics2D, Projection, Scene, TextureFormat, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
 import "../css/base.css";
 import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";
@@ -13,78 +13,108 @@ import { GameCamera } from "./game-camera";
 (window as any).ZograRenderer = ZograRendererPackage;
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
-const engine = new ZograEngine(canvas, Default2DRenderPipeline);
-engine.fixedDeltaTime = true;
-engine.renderPipeline.ambientIntensity = 0.2;
-engine.renderPipeline.msaa = 4;
-engine.renderPipeline.renderFormat = TextureFormat.RGBA16F;
-const input = new InputManager();
 
-engine.on("update", (time) =>
+interface GameEvents
 {
-    input.update();
-});
-engine.start();
+    gameover(length: number): void,
+}
 
-const scene = engine.scene;
-(window as any).scene = scene;
-scene.physics = new Physics2D();
-
-
-const camera = new GameCamera();
-camera.position = vec3(0, 0, 20);
-camera.projection = Projection.Orthographic;
-camera.viewHeight = 10;
-scene.add(camera);
-(window as any).camera = camera;
-
-const bloom = new Bloom();
-bloom.threshold = 1.0;
-bloom.softThreshold = 0.5;
-
-camera.postprocess.push(bloom);
-
-async function init()
+export class SnakeGame
 {
-    await GameMap.loadMapAssets();
-    await loadAssets();
-
-    const tilemap = new GameMap();
-    scene.add(tilemap);
-
-    let snake: Snake;
-    while (true)
+    static instance: SnakeGame;
+    engine: ZograEngine<Default2DRenderPipeline>;
+    input: InputManager;
+    
+    /** @internal */
+    eventEmitter = new EventEmitter<GameEvents>();
+    
+    constructor(canvas: HTMLCanvasElement)
     {
-        let pos = vec2.math(Math.floor)(vec2.math(Math.random)().mul(1000)).plus(0.5);
-        let bodies: vec2[] = [];
-        for (let i = 0; i < 10; i++)
+        SnakeGame.instance = this;
+
+        this.engine = new ZograEngine(canvas, Default2DRenderPipeline);
+        this.engine.renderPipeline.ambientIntensity = 0.2;
+        this.engine.renderPipeline.msaa = 4;
+        this.engine.renderPipeline.renderFormat = TextureFormat.RGBA16F;
+
+        this.input = new InputManager();
+        this.engine.start();
+        this.engine.on("update", () =>
         {
-            if (tilemap.getTile(pos.plus(vec2.right())) === GameMap.tileGround)
+            this.input.update();
+
+            if (this.input.getKeyDown(Keys.F2))
             {
-                if (i < 4)
-                    bodies.push(pos.clone());
+                this.reload();
             }
-            else
-                bodies = [];
-        }
-        if (bodies.length == 4)
+        });
+    }
+    async loadAssets()
+    {
+        await GameMap.loadMapAssets();
+        await loadAssets();
+    }
+    async reload()
+    {
+        this.engine.scene.destroy();
+        const scene = new Scene(Physics2D);
+        this.engine.scene = scene;
+
+        const camera = new GameCamera();
+        camera.position = vec3(0, 0, 20);
+        camera.projection = Projection.Orthographic;
+        camera.viewHeight = 10;
+        scene.add(camera);
+
+        const bloom = new Bloom();
+        bloom.threshold = 1.0;
+        bloom.softThreshold = 0.5;
+        camera.postprocess.push(bloom);
+
+        const tilemap = new GameMap(Math.random());
+        scene.add(tilemap);
+
+        let snake: Snake;
+        while (true)
         {
-            snake = new Snake(bodies, vec2.right(), camera, input);
-            camera.position = camera.position.set(pos.toVec3(camera.position.z));
-            break;
+            let pos = vec2.math(Math.floor)(vec2.math(Math.random)().mul(1000)).plus(0.5);
+            let bodies: vec2[] = [];
+            for (let i = 0; i < 10; i++)
+            {
+                if (tilemap.getTile(pos.plus(vec2.right())) === GameMap.tileGround)
+                {
+                    if (i < 4)
+                        bodies.push(pos.clone());
+                }
+                else
+                    bodies = [];
+            }
+            if (bodies.length == 4)
+            {
+                snake = new Snake(bodies, vec2.right(), camera, this.input);
+                camera.position = camera.position.set(pos.toVec3(camera.position.z));
+                break;
+            }
         }
+        scene.add(snake);
+
+        camera.followTarget = snake.headEntity;
+        camera.position = snake.headEntity.position.clone().setZ(20);
     }
-    scene.add(snake);
 
-    camera.followTarget = snake.headEntity;
-    camera.position = snake.headEntity.position.clone().setZ(20);
+    on<T extends EventKeys<GameEvents>>(event: T, listener: GameEvents[T])
+    {
+        this.eventEmitter.on(event, listener);
+    }
+    off<T extends EventKeys<GameEvents>>(event: T, listener: GameEvents[T])
+    {
+        this.eventEmitter.off(event, listener);
+    }
 }
-init();
 
-export function GameGlobals()
+(async () =>
 {
-    return {
-        engine,
-        renderPipeline: engine.renderPipeline,
-    }
-}
+    const game = new SnakeGame(canvas);
+    await game.loadAssets();
+    game.reload();
+})();

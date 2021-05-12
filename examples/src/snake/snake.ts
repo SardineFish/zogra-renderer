@@ -1,5 +1,4 @@
 import { Animator, BoxCollider, boxRaycast, Camera, Collider2D, CollisionInfo2D, Color, dot, Entity, InputManager, Keys, Light2D, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, ShadowType, Time, Timeline, vec2, vec4, Vector2 } from "zogra-engine";
-import { GameGlobals } from ".";
 import { FoodGenerator } from "./food-generator";
 import { BlackHole } from "./black-hole";
 import { ColorFood } from "./color-food";
@@ -8,6 +7,7 @@ import { GameMap } from "./map";
 import { BoostFood } from "./boost-food";
 import { GameCamera } from "./game-camera";
 import { Debug } from "zogra-renderer/dist/core/global";
+import { SnakeGame } from ".";
 
 interface SnakeGrowing
 {
@@ -65,8 +65,8 @@ export class Snake extends LineRenderer
     currentLength: number;
     actualLength: number;
 
-    get ambientIntensity() { return GameGlobals().renderPipeline.ambientIntensity }
-    set ambientIntensity(v) { GameGlobals().renderPipeline.ambientIntensity = v }
+    get ambientIntensity() { return SnakeGame.instance.engine.renderPipeline.ambientIntensity }
+    set ambientIntensity(v) { SnakeGame.instance.engine.renderPipeline.ambientIntensity = v }
 
     constructor(bodies: vec2[], headDir: vec2, camera: GameCamera, input: InputManager)
     {
@@ -166,16 +166,13 @@ export class Snake extends LineRenderer
             const range = this.initialLightRange;
             const intensity = this.initialLightIntensity;
             const ambient = this.initialAmbient;
-            // console.log("eat",colorFood.color);
             const color = colorFood.color.plus(this.light.lightColor).mul(0.5);
-            // console.log(range, intensity, ambient, color);
             this.animator.playProceduralOn(Tracks.light, 3, t =>
             {
                 this.light.lightRange = MathUtils.lerp(this.light.lightRange, range, t);
                 this.light.intensity = Math.min(this.maxLightIntensity-  this.ambientIntensity, MathUtils.lerp(this.light.intensity, intensity, t));
                 this.light.lightColor = vec4.mathNonAlloc(MathUtils.lerp)(this.light.lightColor, this.light.lightColor, color, vec4(t)) as Color;
-                GameGlobals().renderPipeline.ambientIntensity = MathUtils.lerp(GameGlobals().renderPipeline.ambientIntensity, ambient, t);
-                // console.log(this.light.lightRange, this.light.intensity, this.light.lightColor, this.ambientIntensity);
+                this.ambientIntensity = MathUtils.lerp(this.ambientIntensity, ambient, t);
             })
         }
         else if (other.entity instanceof BoostFood)
@@ -281,12 +278,12 @@ export class Snake extends LineRenderer
 
             const range = this.light.lightRange * 0.8;
             const intensity = this.light.intensity * 0.8;
-            const ambient = GameGlobals().renderPipeline.ambientIntensity * 0.2;
+            const ambient = this.ambientIntensity * 0.2;
             this.animator.playProceduralOn(Tracks.light, 2, t =>
             {
                 this.light.lightRange = MathUtils.lerp(this.light.lightRange, range, t);
                 this.light.intensity = MathUtils.lerp(this.light.intensity, intensity, t);
-                GameGlobals().renderPipeline.ambientIntensity = MathUtils.lerp(GameGlobals().renderPipeline.ambientIntensity, ambient, t);
+                this.ambientIntensity = MathUtils.lerp(this.ambientIntensity, ambient, t);
             });
         }
     }
@@ -533,6 +530,7 @@ export class Snake extends LineRenderer
         });
 
         this.camera.shake = 0;
+        SnakeGame.instance.eventEmitter.emit("gameover", this.actualLength);
     }
     get head() { return this.bodies[this.bodies.length - 1] }
     get tail() { return this.bodies[0] }

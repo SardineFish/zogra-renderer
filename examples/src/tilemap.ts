@@ -9,7 +9,7 @@ import { Debug } from "zogra-renderer/dist/core/global";
 (window as any).Noise = noisejs.Noise;
 (window as any).ZograEngine = ZograEnginePackage;
 (window as any).ZograRenderer = ZograRendererPackage;
-const Noise = new noisejs.Noise();
+const Noise = new noisejs.Noise(Math.random());
 
 let tileGround: TileData = {
     sprite: null,
