@@ -30,7 +30,7 @@ export class Light2D extends Entity
     /** In range [-1..1] */
     attenuation: number = 0;
 
-    private shadowMesh = new Mesh(Shadow2DVertStruct);
+    private shadowMesh: Mesh<typeof Shadow2DVertStruct> = null as any;
     private shadowMap?: RenderTexture;
     private shadowMat = new Shadow2DMaterial();
 
@@ -44,6 +44,8 @@ export class Light2D extends Entity
 
     getShadowMap(context: RenderContext, data: RenderData)
     {
+        if (!this.shadowMesh)
+            this.shadowMesh = new Mesh(Shadow2DVertStruct);
         if (this.shadowMesh.vertices.length <= 0)
             this.shadowMesh.resize(50, 90);
         // if (this.shadowType === false)
@@ -261,6 +263,15 @@ export class Light2D extends Entity
     private appendVerts()
     {
 
+    }
+
+    destroy()
+    {
+        if (this.destroyed)
+            return;
+        super.destroy();
+        this.shadowMesh?.destroy();
+        this.shadowMap?.destroy();
     }
 
 }

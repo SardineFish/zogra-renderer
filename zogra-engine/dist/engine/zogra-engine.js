@@ -21,6 +21,7 @@ class ZograEngine {
     set scene(value) {
         const previous = this._scene;
         this._scene = value;
+        value.engine = this;
         this.eventEmitter.emit("scene-change", value, previous);
     }
     renderScene() {

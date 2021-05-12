@@ -102,6 +102,14 @@ export class LineRenderer extends RenderObject
         
         this.dirty = false;
     }
+
+    destroy()
+    {
+        if (this.destroyed)
+            return;
+        super.destroy();
+        this.mesh.destroy();
+    }
 }
 
 // See: https://www.geogebra.org/geometry/bhhyyttg

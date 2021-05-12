@@ -28,7 +28,7 @@ class Light2D extends entity_1.Entity {
         this.intensity = 1;
         /** In range [-1..1] */
         this.attenuation = 0;
-        this.shadowMesh = new zogra_renderer_1.Mesh(exports.Shadow2DVertStruct);
+        this.shadowMesh = null;
         this.shadowMat = new Shadow2DMaterial();
         this.__tempVectors = Array.from(new Array(32)).map(() => zogra_renderer_1.vec2.zero());
         this.shadowType = shadowType;
@@ -36,6 +36,8 @@ class Light2D extends entity_1.Entity {
             this.shadowMesh.resize(5000, 9000);
     }
     getShadowMap(context, data) {
+        if (!this.shadowMesh)
+            this.shadowMesh = new zogra_renderer_1.Mesh(exports.Shadow2DVertStruct);
         if (this.shadowMesh.vertices.length <= 0)
             this.shadowMesh.resize(50, 90);
         // if (this.shadowType === false)
@@ -220,6 +222,14 @@ class Light2D extends entity_1.Entity {
         return [5, 9];
     }
     appendVerts() {
+    }
+    destroy() {
+        var _a, _b;
+        if (this.destroyed)
+            return;
+        super.destroy();
+        (_a = this.shadowMesh) === null || _a === void 0 ? void 0 : _a.destroy();
+        (_b = this.shadowMap) === null || _b === void 0 ? void 0 : _b.destroy();
     }
 }
 exports.Light2D = Light2D;

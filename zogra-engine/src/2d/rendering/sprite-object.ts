@@ -89,4 +89,12 @@ export class SpriteObject extends RenderObject
         this.material.setProp("uMainTex", "tex2d", this.sprite?.texture || null);
         context.renderer.drawMesh(this.mesh, this.localToWorldMatrix, this.material);
     }
+
+    destroy()
+    {
+        if (this.destroyed)
+            return;
+        super.destroy();
+        this.mesh.destroy();
+    }
 }

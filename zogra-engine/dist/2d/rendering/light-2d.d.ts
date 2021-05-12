@@ -32,6 +32,7 @@ export declare class Light2D extends Entity {
     private __tempVectors;
     private appendLineShadow;
     private appendVerts;
+    destroy(): void;
 }
 declare const Shadow2DMaterial_base: typeof import("zogra-renderer").MaterialType;
 export declare class Shadow2DMaterial extends Shadow2DMaterial_base {

@@ -77,6 +77,12 @@ class LineRenderer extends render_object_1.RenderObject {
         }
         this.dirty = false;
     }
+    destroy() {
+        if (this.destroyed)
+            return;
+        super.destroy();
+        this.mesh.destroy();
+    }
 }
 exports.LineRenderer = LineRenderer;
 // See: https://www.geogebra.org/geometry/bhhyyttg

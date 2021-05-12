@@ -71,6 +71,12 @@ class SpriteObject extends render_object_1.RenderObject {
         this.material.setProp("uMainTex", "tex2d", ((_a = this.sprite) === null || _a === void 0 ? void 0 : _a.texture) || null);
         context.renderer.drawMesh(this.mesh, this.localToWorldMatrix, this.material);
     }
+    destroy() {
+        if (this.destroyed)
+            return;
+        super.destroy();
+        this.mesh.destroy();
+    }
 }
 exports.SpriteObject = SpriteObject;
 //# sourceMappingURL=sprite-object.js.map

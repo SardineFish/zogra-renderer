@@ -123,6 +123,18 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
         return (signX << 31) | (Math.abs(Math.floor(x)) << 16) | (signY << 15) | Math.abs(Math.floor(y));
     }
 
+    destroy()
+    {
+        if (this.destroyed)
+            return;
+        super.destroy();
+        for (const chunk of this.chunks.values())
+        {
+            chunk.destroy();
+        }
+        this.chunks.clear();
+    }
+
     /**
      * floor in callee
      * @param pos No need to floor
@@ -198,6 +210,11 @@ export class Chunk
             this.mesh.update();
         }
         // this.mesh.uvs = uv;
+    }
+
+    destroy()
+    {
+        this.mesh.destroy();
     }
 
     /** @internal */

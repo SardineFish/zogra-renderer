@@ -1,1 +1,1 @@
-export * from "./shader/shader";
+export {};

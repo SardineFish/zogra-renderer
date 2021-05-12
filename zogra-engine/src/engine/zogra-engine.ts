@@ -37,6 +37,7 @@ export class ZograEngine<RenderPipeline extends ZograRenderPipeline = PreviewRen
     {
         const previous = this._scene;
         this._scene = value;
+        value.engine = this as any;
         this.eventEmitter.emit("scene-change", value, previous);
     }
     constructor(canvas:HTMLCanvasElement, RenderPipeline: ConstructorType<RenderPipeline, [ZograRenderer]> = PreviewRenderer as any)

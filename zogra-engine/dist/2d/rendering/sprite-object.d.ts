@@ -17,4 +17,5 @@ export declare class SpriteObject extends RenderObject {
     get sprite(): Sprite | null;
     set sprite(sprite: Sprite | null);
     render(context: RenderContext, data: RenderData): void;
+    destroy(): void;
 }

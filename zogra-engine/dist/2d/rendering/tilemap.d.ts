@@ -19,6 +19,7 @@ export declare class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject 
     private getOrCreateChunk;
     private getChunk;
     calcChunkID(chunkPos: Readonly<vec2>): number;
+    destroy(): void;
     /**
      * floor in callee
      * @param pos No need to floor
@@ -46,6 +47,7 @@ export declare class Chunk {
      * @param tile
      */
     setTile(offset: vec2, tile: TileData | null): void;
+    destroy(): void;
     private enumPolygons;
 }
 export interface TileData {
