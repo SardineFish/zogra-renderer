@@ -1,6 +1,6 @@
-import { Animator, BoxCollider, Entity, SpriteObject, Time, Timeline, vec2 } from "zogra-engine";
+import { Animator, BoxCollider, SpriteObject, Time, Timeline, vec2 } from "zogra-engine";
 import { GameAssets } from "./assets";
-import { Food, foodCountdownTimeline, foodLeaveTimeline, foodSpawnTimeline } from "./food";
+import { foodCountdownTimeline, foodLeaveTimeline, foodSpawnTimeline } from "./food";
 
 export class BoostFood extends SpriteObject
 {

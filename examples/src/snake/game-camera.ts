@@ -1,5 +1,5 @@
-import { Camera, Entity, mat4, MathUtils, minus, mul, Rect, Time, vec2, vec3 } from "zogra-engine";
 import noisejs from "noisejs";
+import { Camera, Entity, mat4, Rect, Time, vec2, vec3 } from "zogra-engine";
 import { noise_fbm } from "./utils";
 const Noise = new noisejs.Noise();
 

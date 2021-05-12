@@ -1,15 +1,13 @@
-import { Timeline, Sprite, Entity, ShadowType } from "zogra-engine";
-import { vec2, MathUtils, TextureImporter, Vector2, Color } from "zogra-renderer";
-
-import { GameMap } from "./map";
-import { Snake } from "./snake";
-import { probability, WeightedRandom } from "./utils";
-import { Food } from "./food";
-import { ColorFood } from "./color-food";
-import noisejs from "noisejs";
+import { Entity } from "zogra-engine";
+import { MathUtils, vec2, Vector2 } from "zogra-renderer";
 import { BlackHole } from "./black-hole";
 import { BoostFood } from "./boost-food";
-const { Noise } = noisejs;
+import { ColorFood } from "./color-food";
+import { Food } from "./food";
+import { GameMap } from "./map";
+import { Snake } from "./snake";
+import { WeightedRandom } from "./utils";
+
 
 const genFood = WeightedRandom([
     {

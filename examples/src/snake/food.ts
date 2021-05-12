@@ -1,4 +1,4 @@
-import { SpriteObject, Sprite, Animator, Default2DMaterial, Time, BoxCollider, Timeline } from "zogra-engine";
+import { Animator, BoxCollider, SpriteObject, Time, Timeline } from "zogra-engine";
 import { vec2, vec3 } from "zogra-renderer";
 import { GameAssets } from "./assets";
 

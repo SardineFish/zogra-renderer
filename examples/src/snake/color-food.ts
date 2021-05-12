@@ -15,14 +15,12 @@ export class ColorFood extends Entity
     {
         super();
         this.color = Color.fromHSL(360 * Math.random(), 1, 0.5);
-        console.log(this.color);
         const collider = new BoxCollider();
         collider.size = vec2(this.foodSize);
         this.collider = new BoxCollider();
     }
     async start()
     {
-        console.log(this.position);
         for (let i = 0; i < 3; i++)
         {
             this.lights[i] = new Light2D();
