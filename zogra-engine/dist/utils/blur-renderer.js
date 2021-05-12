@@ -42,13 +42,14 @@ class DownsampleBlurRenderer {
             this.steps[0].resize(texture.width, texture.height, zogra_renderer_1.TextureResizing.Discard);
     }
     blur(texture, iteration = 4, output = this.steps[0], ctx = zogra_renderer_1.GlobalContext()) {
-        if (!this.steps[0])
-            this.steps[0] = new zogra_renderer_1.RenderTexture(texture.width, texture.height, false, texture.format, texture.filterMode);
-        output = output || this.steps[0];
+        if (output == this.steps[0]) {
+            if (!this.steps[0])
+                this.steps[0] = new zogra_renderer_1.RenderTexture(texture.width, texture.height, false, texture.format, texture.filterMode);
+            this.init(texture);
+            output = this.steps[0];
+        }
         ctx.renderer.setFramebuffer(output);
         ctx.renderer.clear(zogra_renderer_1.Color.black);
-        if (this.steps[0].width !== texture.width || this.steps[0].height !== texture.height)
-            this.steps[0].resize(texture.width, texture.height, zogra_renderer_1.TextureResizing.Discard);
         this.downSample(ctx.renderer, texture, iteration);
         return this.upSample(ctx.renderer, iteration, output);
     }

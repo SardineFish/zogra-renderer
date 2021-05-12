@@ -1,4 +1,4 @@
-import { div, FilterMode, MaterialFromShader, mul, RenderTexture, Shader, shaderProp, Texture, Texture2D, TextureResizing, vec2, vec4, WrapMode, ZograRenderer, TextureFormat, GlobalContext, Color } from "zogra-renderer";
+import { div, FilterMode, MaterialFromShader, mul, RenderTexture, Shader, shaderProp, Texture, Texture2D, TextureResizing, vec2, vec4, WrapMode, ZograRenderer, TextureFormat, GlobalContext, Color, IFrameBuffer } from "zogra-renderer";
 import { ShaderSource } from "../assets";
 
 
@@ -20,7 +20,7 @@ export class DownsampleBlurRenderer
     downsampleMaterial = new MaterialBlur();
     upsampleMaterial = new MaterialBlur();
 
-    init(texture: Texture)
+    private init(texture: Texture)
     {
         if (!this.steps[0])
         {
@@ -32,17 +32,18 @@ export class DownsampleBlurRenderer
             this.steps[0].resize(texture.width, texture.height, TextureResizing.Discard);
     }
 
-    blur(texture: Texture, iteration: number = 4, output = this.steps[0], ctx = GlobalContext())
+    blur(texture: Texture, iteration: number = 4, output: RenderTexture | IFrameBuffer = this.steps[0], ctx = GlobalContext())
     {
-        if (!this.steps[0])
-            this.steps[0] = new RenderTexture(texture.width, texture.height, false, texture.format, texture.filterMode);
-        output = output || this.steps[0];
+        if (output == this.steps[0])
+        {
+            if (!this.steps[0])
+                this.steps[0] = new RenderTexture(texture.width, texture.height, false, texture.format, texture.filterMode);
+            this.init(texture);
+            output = this.steps[0];
+        }
 
-        ctx.renderer.setFramebuffer(output);
+        ctx.renderer.setFramebuffer(output as RenderTexture);
         ctx.renderer.clear(Color.black);
-
-        if (this.steps[0].width !== texture.width || this.steps[0].height !== texture.height)
-            this.steps[0].resize(texture.width, texture.height, TextureResizing.Discard);
 
         this.downSample(ctx.renderer, texture, iteration);
 
@@ -73,7 +74,7 @@ export class DownsampleBlurRenderer
         }
     }
 
-    upSample(renderer: ZograRenderer, iteration: number, finalOutput = this.steps[0])
+    upSample(renderer: ZograRenderer, iteration: number, finalOutput: RenderTexture | IFrameBuffer = this.steps[0])
     {
         let input = this.steps[iteration];
         for (let i = iteration - 1; i >= 0; i--)
@@ -92,7 +93,7 @@ export class DownsampleBlurRenderer
             this.upsampleMaterial.textureSize = vec4(input.width, input.height, 1 / input.width, 1 / input.height);
             this.upsampleMaterial.sampleOffset = 0.5;
             renderer.blit(input, output, this.upsampleMaterial);
-            input = output;
+            input = output as RenderTexture;
         }
         return input;
     }

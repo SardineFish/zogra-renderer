@@ -1,4 +1,4 @@
-import { Bloom, Camera, Color, Default2DRenderPipeline, EventEmitter, EventKeys, InputManager, Keys, Physics2D, Projection, Scene, TextureFormat, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
+import { Bloom, Blur, Camera, Color, Default2DRenderPipeline, EventEmitter, EventKeys, InputManager, Keys, Physics2D, Projection, Scene, TextureFormat, Tilemap, vec2, vec3, ZograEngine } from "zogra-engine";
 import "../css/base.css";
 import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";

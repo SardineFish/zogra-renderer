@@ -12,4 +12,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./post-process"), exports);
 __exportStar(require("./bloom"), exports);
+__exportStar(require("./blur"), exports);
 //# sourceMappingURL=index.js.map
