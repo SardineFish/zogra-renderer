@@ -1,6 +1,6 @@
 import { minus, mul, vec2 } from "zogra-renderer";
 import { Scene } from "../../engine/scene";
-import { Time } from "../../engine/zogra-engine";
+import { Time } from "../../engine/engine";
 import { ICollider, IPhysicsSystem } from "../../physics/physics-generic";
 import { Collider2D } from "./collider2d";
 

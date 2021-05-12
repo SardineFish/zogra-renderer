@@ -1,6 +1,6 @@
 import { FrameBuffer, RenderTexture, TextureFormat } from "zogra-renderer";
 import { RenderData } from "../render-data";
-import { RenderPass } from "../render-pass";
+import { RenderPass } from "../render-pass/render-pass";
 import { RenderContext } from "../render-pipeline";
 export declare abstract class PostProcess {
     create(context: RenderContext): void;

@@ -1,6 +1,6 @@
-import { Camera, RenderObject } from "../engine/engine";
+import { Camera, RenderObject } from "../engine";
 import { ZograRenderer } from "zogra-renderer";
-import { Scene } from "../engine/engine";
+import { Scene } from "../engine";
 import { Material } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
 import { RenderOrder } from "./render-data";

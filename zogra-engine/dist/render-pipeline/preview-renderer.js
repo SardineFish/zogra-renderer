@@ -5,7 +5,7 @@ import { FrameBuffer } from "zogra-renderer";
 import { RenderTexture } from "zogra-renderer";
 import { LineBuilder } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
-import { DebugLayerRenderer } from "./debug-layer";
+import { DebugLayerRenderer } from "./render-pass/debug-layer";
 export class PreviewRenderer {
     constructor(renderer) {
         this.msaa = 4;

@@ -7,7 +7,7 @@ import { ConstructorType } from "../utils/util";
 import { IAsset, AssetManager } from "zogra-renderer";
 import { IPhysicsSystem, IPhysicsSystemClass, UnknownPhysics } from "../physics/physics-generic";
 import { Physics2D } from "../2d/physics/physics-2d";
-import { Time, ZograEngine } from "./zogra-engine";
+import { Time, ZograEngine } from "./engine";
 
 interface SceneEvents extends EventDefinitions
 {

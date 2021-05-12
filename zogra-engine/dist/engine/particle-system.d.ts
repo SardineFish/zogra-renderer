@@ -1,6 +1,6 @@
 import { Color, Material, Mesh, Texture, vec2, vec3, vec4, Vector3, ShaderAttributeNames } from "zogra-renderer";
 import { RenderObject } from "./render-object";
-import { Time } from "./zogra-engine";
+import { Time } from "./engine";
 declare const ParticleMaterial_base: typeof import("zogra-renderer").MaterialType;
 export declare class ParticleMaterial extends ParticleMaterial_base {
     color: Color;

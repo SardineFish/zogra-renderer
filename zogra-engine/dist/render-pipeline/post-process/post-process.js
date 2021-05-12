@@ -1,5 +1,5 @@
 import { FilterMode, RenderTexture } from "zogra-renderer";
-import { RenderPass } from "../render-pass";
+import { RenderPass } from "../render-pass/render-pass";
 export class PostProcess {
     constructor() {
         /** @internal */

@@ -1,4 +1,4 @@
-import { Time } from "../engine/zogra-engine";
+import { Time } from "../engine/engine";
 
 export interface Into<T>
 {

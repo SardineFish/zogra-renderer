@@ -1,4 +1,4 @@
-import { RenderObject } from "../engine/engine";
+import { RenderObject } from "../engine";
 import { mat4 } from "zogra-renderer";
 export var RenderOrder;
 (function (RenderOrder) {

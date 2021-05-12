@@ -3,7 +3,7 @@ import { GLContext } from "zogra-renderer";
 import { vec2 } from "zogra-renderer";
 import { Entity, EntityEvents } from "./entity";
 import { Color } from "zogra-renderer";
-import { PostProcess, RenderContext } from "../render-pipeline/rp";
+import { PostProcess, RenderContext } from "../render-pipeline";
 import { IEventSource, EventKeys } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
 import { ray } from "zogra-renderer";

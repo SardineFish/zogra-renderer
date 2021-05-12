@@ -1,11 +1,11 @@
-import { Camera } from "../engine/engine";
-import { RenderObject } from "../engine/engine";
-import { Light } from "../engine/engine";
-import { Scene } from "../engine/engine";
+import { Camera } from "../engine";
+import { RenderObject } from "../engine";
+import { Light } from "../engine";
+import { Scene } from "../engine";
 import { FrameBuffer, IFrameBuffer, vec3, Vector3 } from "zogra-renderer";
 import { dot } from "zogra-renderer";
 import { mat4 } from "zogra-renderer";
-import { Entity } from "../engine/engine";
+import { Entity } from "../engine";
 
 export enum RenderOrder
 {

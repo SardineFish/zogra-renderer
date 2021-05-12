@@ -1,8 +1,8 @@
-import { SpriteObject } from "../2d";
-import { RenderObject } from "../engine/render-object";
-import { RenderData, RenderOrder } from "./render-data";
+import { SpriteObject } from "../../2d";
+import { RenderObject } from "../../engine/render-object";
+import { RenderData, RenderOrder } from "../render-data";
 import { RenderPass } from "./render-pass";
-import { RenderContext } from "./render-pipeline";
+import { RenderContext } from "../render-pipeline";
 
 export class DrawScene extends RenderPass
 {

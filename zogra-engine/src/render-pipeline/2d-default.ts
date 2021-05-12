@@ -1,9 +1,9 @@
 import { ZograRenderPipeline, RenderContext, MaterialReplacer } from "./render-pipeline";
-import { Camera, Projection, Scene } from "../engine/engine";
+import { Camera, Projection, Scene } from "../engine";
 import { FilterMode, mat4, RenderBuffer, TextureFormat } from "zogra-renderer";
 import { ZograRenderer, Material, Mesh, MSAASamples } from "zogra-renderer";
-import { RenderObject } from "../engine/engine";
-import { Entity } from "../engine/engine";
+import { RenderObject } from "../engine";
+import { Entity } from "../engine";
 import { RenderData, RenderOrder } from "./render-data";
 import { Color, rgba, rgb } from "zogra-renderer";
 import { FrameBuffer } from "zogra-renderer";
@@ -13,15 +13,15 @@ import { vec3 } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
 import { mul } from "zogra-renderer";
 import { vec4 } from "zogra-renderer";
-import { DebugLayerRenderer } from "./debug-layer";
+import { DebugLayerRenderer } from "./render-pass/debug-layer";
 import { Debug } from "zogra-renderer/dist/core/global";
 import { Light2D } from "../2d";
-import { RenderPass } from "./render-pass";
-import { Light2DPass } from "./2d-light-pass";
-import { DrawScene } from "./draw-scene";
+import { RenderPass } from "./render-pass/render-pass";
+import { Light2DPass } from "./render-pass/2d-light-pass";
+import { DrawScene } from "./render-pass/draw-scene";
 import { PostprocessPass } from "./post-process";
-import { FinalBlit } from "./final-blit";
-import { ClearPass } from "./clear-pass";
+import { FinalBlit } from "./render-pass/final-blit";
+import { ClearPass } from "./render-pass/clear-pass";
 
 interface CameraRenderResources
 {

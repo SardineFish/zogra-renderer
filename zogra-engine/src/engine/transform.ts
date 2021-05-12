@@ -2,7 +2,7 @@ import { mat4 } from "zogra-renderer";
 import { vec3, Vector3 } from "zogra-renderer";
 import { quat } from "zogra-renderer";
 import { Scene } from "./scene";
-import { Time } from "./zogra-engine";
+import { Time } from "./engine";
 
 export class Transform
 {

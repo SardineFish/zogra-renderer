@@ -1,8 +1,8 @@
 import { FrameBuffer, RenderBuffer, RenderTexture, TextureFormat } from "zogra-renderer";
-import { PostprocessData } from "./post-process";
-import { RenderData } from "./render-data";
+import { PostprocessData } from "../post-process";
+import { RenderData } from "../render-data";
 import { RenderPass } from "./render-pass";
-import { RenderContext } from "./render-pipeline";
+import { RenderContext } from "../render-pipeline";
 
 export class FinalBlit extends RenderPass<Partial<PostprocessData>>
 {

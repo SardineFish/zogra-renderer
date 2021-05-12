@@ -1,5 +1,5 @@
 import fbx from "./asset/model/sphere.bin.fbx";
-import { plugins, materialDefine, shaderProp, MaterialFromShader, Shader, Color, Texture, Culling } from "zogra-engine";
+import { materialDefine, shaderProp, MaterialFromShader, Shader, Color, Texture, Culling } from "zogra-engine";
 import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul } from "zogra-engine";
 import "./css/base.css";
 import vert from "./shader/default-vert.glsl";

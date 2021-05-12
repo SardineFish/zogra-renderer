@@ -1,7 +1,7 @@
 import { ConstructorType } from "zogra-renderer/dist/utils/util";
 import { Entity } from "../engine/entity";
 import { Scene } from "../engine/scene";
-import { Time } from "../engine/zogra-engine";
+import { Time } from "../engine/engine";
 import { Into } from "../utils/util";
 
 export interface IPhysicsSystem

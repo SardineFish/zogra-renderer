@@ -1,6 +1,6 @@
-import { Camera } from "../engine/engine";
-import { RenderObject } from "../engine/engine";
-import { Scene } from "../engine/engine";
+import { Camera } from "../engine";
+import { RenderObject } from "../engine";
+import { Scene } from "../engine";
 import { FrameBuffer } from "zogra-renderer";
 export declare enum RenderOrder {
     NearToFar = 0,

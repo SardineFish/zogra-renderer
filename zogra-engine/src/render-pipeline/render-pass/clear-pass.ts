@@ -1,7 +1,7 @@
-import { Camera } from "../engine/camera";
-import { RenderData } from "./render-data";
+import { Camera } from "../../engine/camera";
+import { RenderData } from "../render-data";
 import { RenderPass } from "./render-pass";
-import { RenderContext } from "./render-pipeline";
+import { RenderContext } from "../render-pipeline";
 
 export class ClearPass extends RenderPass
 {

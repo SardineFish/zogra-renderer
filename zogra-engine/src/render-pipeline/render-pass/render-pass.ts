@@ -1,6 +1,6 @@
-import { Camera } from "../engine/camera";
-import { RenderData } from "./render-data";
-import { RenderContext } from "./render-pipeline";
+import { Camera } from "../../engine/camera";
+import { RenderData } from "../render-data";
+import { RenderContext } from "../render-pipeline";
 
 
 export abstract class RenderPass<T = {}>

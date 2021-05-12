@@ -5,7 +5,7 @@ import { ShaderSource } from "../assets";
 import { RenderData } from "../render-pipeline/render-data";
 import { RenderContext } from "../render-pipeline/render-pipeline";
 import { RenderObject } from "./render-object";
-import { Time } from "./zogra-engine";
+import { Time } from "./engine";
 
 const ParticleVertStruct = VertexStruct({
     vert: "vec3",

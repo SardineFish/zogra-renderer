@@ -1,6 +1,6 @@
 import { Entity } from "../engine/entity";
 import { Scene } from "../engine/scene";
-import { Time } from "../engine/zogra-engine";
+import { Time } from "../engine/engine";
 export interface IPhysicsSystem {
     update(time: Readonly<Time>): void;
 }

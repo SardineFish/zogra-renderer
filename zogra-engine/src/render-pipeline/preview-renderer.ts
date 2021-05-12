@@ -1,5 +1,5 @@
 import { ZograRenderPipeline, RenderContext } from "./render-pipeline";
-import { Camera, Scene } from "../engine/engine";
+import { Camera, Scene } from "../engine";
 import { FilterMode, mat4, MSAASamples, RenderBuffer, TextureFormat } from "zogra-renderer";
 import { ZograRenderer, Material, Mesh } from "zogra-renderer";
 import { RenderData, RenderOrder } from "./render-data";
@@ -9,7 +9,7 @@ import { RenderTexture } from "zogra-renderer";
 import { Lines, LineBuilder } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
-import { DebugLayerRenderer } from "./debug-layer";
+import { DebugLayerRenderer } from "./render-pass/debug-layer";
 
 export class PreviewRenderer implements ZograRenderPipeline
 {

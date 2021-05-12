@@ -3,7 +3,7 @@ import { Mesh } from "zogra-renderer";
 import { Material } from "zogra-renderer";
 import { GlobalContext } from "zogra-renderer";
 import { Entity, EntityEvents } from "./entity";
-import { RenderContext, RenderData } from "../render-pipeline/rp";
+import { RenderContext, RenderData } from "../render-pipeline";
 import { EventEmitter, IEventSource, EventKeys } from "zogra-renderer";
 
 export interface RenderObjectEvents extends EntityEvents

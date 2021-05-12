@@ -1,5 +1,5 @@
 import { ZograRenderPipeline, RenderContext } from "./render-pipeline";
-import { Camera, Scene } from "../engine/engine";
+import { Camera, Scene } from "../engine";
 import { mat4, MSAASamples } from "zogra-renderer";
 import { ZograRenderer, Material, Mesh } from "zogra-renderer";
 import { RenderData } from "./render-data";
@@ -7,7 +7,7 @@ import { FrameBuffer } from "zogra-renderer";
 import { RenderTexture } from "zogra-renderer";
 import { Lines } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
-import { DebugLayerRenderer } from "./debug-layer";
+import { DebugLayerRenderer } from "./render-pass/debug-layer";
 export declare class PreviewRenderer implements ZograRenderPipeline {
     msaa: MSAASamples;
     renderer: ZograRenderer;
