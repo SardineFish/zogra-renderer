@@ -2,7 +2,7 @@ import noisejs from "noisejs";
 import * as ZograEnginePackage from "zogra-engine";
 import { Bloom, Default2DRenderPipeline, EventEmitter, EventKeys, InputManager, Keys, Physics2D, Projection, Scene, TextureFormat, vec2, vec3, ZograEngine } from "zogra-engine";
 import * as ZograRendererPackage from "zogra-renderer";
-import "../css/base.css";
+import "./style.css";
 import { loadAssets } from "./assets";
 import { GameCamera } from "./game-camera";
 import { GameMap } from "./map";
@@ -13,6 +13,9 @@ import { Snake } from "./snake";
 (window as any).ZograRenderer = ZograRendererPackage;
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
+const rect = canvas.getBoundingClientRect();
+canvas.width = rect.width;
+canvas.height = rect.height;
 
 interface GameEvents
 {
@@ -48,6 +51,12 @@ export class SnakeGame
                 this.reload();
             }
         });
+
+        window.onresize = () =>
+        {
+            const rect = canvas.getBoundingClientRect();
+            this.engine.renderer.setSize(rect.width, rect.height);
+        };
     }
     async loadAssets()
     {
