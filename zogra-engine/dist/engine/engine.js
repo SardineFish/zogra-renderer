@@ -1,23 +1,65 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./camera"), exports);
-__exportStar(require("./render-object"), exports);
-__exportStar(require("./light"), exports);
-__exportStar(require("./entity"), exports);
-__exportStar(require("./scene"), exports);
-__exportStar(require("./transform"), exports);
-__exportStar(require("./zogra-engine"), exports);
-__exportStar(require("./input"), exports);
-__exportStar(require("./animation"), exports);
-__exportStar(require("./particle-system"), exports);
+import { Scene } from "./scene";
+import { PreviewRenderer, RenderContext } from "../render-pipeline";
+import { Camera } from "./camera";
+import { ZograRenderer } from "zogra-renderer";
+import { EventEmitter } from "zogra-renderer";
+import { UnknownPhysics } from "../physics/physics-generic";
+export class ZograEngine {
+    constructor(canvas, RenderPipeline = PreviewRenderer) {
+        this.fixedDeltaTime = false;
+        this._time = { deltaTime: 0, time: 0 };
+        this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
+        this.renderPipeline = new RenderPipeline(this.renderer);
+        this._scene = new Scene(UnknownPhysics);
+        this.eventEmitter = new EventEmitter();
+    }
+    get time() { return this._time; }
+    get scene() { return this._scene; }
+    set scene(value) {
+        const previous = this._scene;
+        this._scene = value;
+        value.engine = this;
+        this.eventEmitter.emit("scene-change", value, previous);
+    }
+    renderScene() {
+        const cameras = this.scene.getEntitiesOfType(Camera);
+        this.renderPipeline.render(RenderContext.create(this.renderer), this.scene, cameras);
+    }
+    start() {
+        let previousDelay = 0;
+        let startDelay = 0;
+        let currentTime = 0;
+        const update = (delay) => {
+            if (previousDelay === 0) {
+                startDelay = previousDelay = delay;
+                requestAnimationFrame(update);
+                return;
+            }
+            if (this.fixedDeltaTime)
+                currentTime += 16;
+            else
+                currentTime = delay;
+            const time = (currentTime - startDelay) / 1000;
+            const dt = (currentTime - previousDelay) / 1000;
+            previousDelay = currentTime;
+            const t = {
+                time: time,
+                deltaTime: dt
+            };
+            this._time = t;
+            this.eventEmitter.emit("update", t);
+            this.scene.__update(t);
+            this.eventEmitter.emit("render", this.scene.getEntitiesOfType(Camera));
+            this.renderScene();
+            requestAnimationFrame(update);
+        };
+        requestAnimationFrame(update);
+    }
+    on(event, listener) {
+        this.eventEmitter.on(event, listener);
+    }
+    off(event, listener) {
+        this.eventEmitter.off(event, listener);
+    }
+}
 //# sourceMappingURL=engine.js.map

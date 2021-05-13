@@ -116,6 +116,7 @@ __exportStar(__webpack_require__(/*! ./rendering/sprite-object */ "../zogra-engi
 __exportStar(__webpack_require__(/*! ./rendering/tilemap */ "../zogra-engine/dist/2d/rendering/tilemap.js"), exports);
 __exportStar(__webpack_require__(/*! ./rendering/materials */ "../zogra-engine/dist/2d/rendering/materials.js"), exports);
 __exportStar(__webpack_require__(/*! ./rendering/line-renderer */ "../zogra-engine/dist/2d/rendering/line-renderer.js"), exports);
+__exportStar(__webpack_require__(/*! ./rendering/light-2d */ "../zogra-engine/dist/2d/rendering/light-2d.js"), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -192,6 +193,13 @@ class Collider2D extends physics_generic_1.ColliderBase {
     }
     off(event, listener) {
         this.__eventEmitter.on(event, listener);
+    }
+    /** @internal */
+    checkCollision(other, otherMotoin) {
+        return null;
+    }
+    checkContact(other) {
+        return false;
     }
 }
 exports.Collider2D = Collider2D;
@@ -333,6 +341,10 @@ class Physics2D {
             this.colliderList.length--;
         }
     }
+    /** @internal */
+    __getColliders() {
+        return this.colliderList;
+    }
     update(time) {
         var _a, _b, _c, _d, _e;
         this.updateMotion(time);
@@ -387,6 +399,36 @@ class Physics2D {
 }
 exports.Physics2D = Physics2D;
 //# sourceMappingURL=physics-2d.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/2d/physics/polygon.js":
+/*!**************************************************!*\
+  !*** ../zogra-engine/dist/2d/physics/polygon.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Polygon = void 0;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+class Polygon {
+    constructor(capacity = 0) {
+        this.bound = new zogra_renderer_1.Rect(zogra_renderer_1.vec2.zero(), zogra_renderer_1.vec2.zero());
+        this.points = new Array();
+    }
+    append(vert) {
+        this.points.push(vert);
+        this.bound.min.x = Math.min(vert.x, this.bound.min.x);
+        this.bound.min.y = Math.min(vert.y, this.bound.min.y);
+        this.bound.max.x = Math.max(vert.x, this.bound.max.x);
+        this.bound.max.y = Math.max(vert.y, this.bound.max.y);
+    }
+}
+exports.Polygon = Polygon;
+//# sourceMappingURL=polygon.js.map
 
 /***/ }),
 
@@ -451,6 +493,7 @@ exports.Rigidbody2D = Rigidbody2D;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TilemapCollider = void 0;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const tilemap_1 = __webpack_require__(/*! ../rendering/tilemap */ "../zogra-engine/dist/2d/rendering/tilemap.js");
 const box_collider_1 = __webpack_require__(/*! ./box-collider */ "../zogra-engine/dist/2d/physics/box-collider.js");
 const collider2d_1 = __webpack_require__(/*! ./collider2d */ "../zogra-engine/dist/2d/physics/collider2d.js");
@@ -481,9 +524,298 @@ class TilemapCollider extends collider2d_1.Collider2D {
         console.warn("Unimplemented contact check");
         return false;
     }
+    getPolygons(min, max) {
+        if (!this.tilemap)
+            return null;
+        const pos = zogra_renderer_1.vec2.zero();
+        const polygons = [];
+        for (let y = min.y; y < max.y + this.tilemap.chunkSize; y += this.tilemap.chunkSize) {
+            for (let x = min.x; x < max.x + this.tilemap.chunkSize; x += this.tilemap.chunkSize) {
+                pos.x = x;
+                pos.y = y;
+                const chunk = this.tilemap.getChunkAt(pos);
+                polygons.push(...chunk.getPolygons());
+            }
+        }
+        return polygons;
+    }
 }
 exports.TilemapCollider = TilemapCollider;
 //# sourceMappingURL=tilemap-collider.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/2d/rendering/light-2d.js":
+/*!*****************************************************!*\
+  !*** ../zogra-engine/dist/2d/rendering/light-2d.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Shadow2DMaterial = exports.Light2D = exports.Shadow2DVertStruct = exports.ShadowType = void 0;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const assets_1 = __webpack_require__(/*! ../../assets */ "../zogra-engine/dist/assets/index.js");
+const entity_1 = __webpack_require__(/*! ../../engine/entity */ "../zogra-engine/dist/engine/entity.js");
+const tilemap_collider_1 = __webpack_require__(/*! ../physics/tilemap-collider */ "../zogra-engine/dist/2d/physics/tilemap-collider.js");
+var ShadowType;
+(function (ShadowType) {
+    ShadowType["Soft"] = "soft";
+    ShadowType["Hard"] = "hard";
+})(ShadowType = exports.ShadowType || (exports.ShadowType = {}));
+;
+exports.Shadow2DVertStruct = zogra_renderer_1.VertexStruct(Object.assign(Object.assign({}, zogra_renderer_1.DefaultVertexData), { p0: "vec2", p1: "vec2" }));
+class Light2D extends entity_1.Entity {
+    constructor() {
+        super();
+        this.shadowType = false;
+        this.volumnRadius = 1;
+        this.lightRange = 10;
+        this.lightColor = zogra_renderer_1.Color.white;
+        this.intensity = 1;
+        /** In range [-1..1] */
+        this.attenuation = 0;
+        this.shadowMesh = new zogra_renderer_1.Mesh(exports.Shadow2DVertStruct);
+        this.shadowMat = new Shadow2DMaterial();
+        this.__tempVectors = Array.from(new Array(32)).map(() => zogra_renderer_1.vec2.zero());
+        this.shadowMesh.resize(5000, 9000);
+    }
+    getShadowMap(context, data) {
+        // if (this.shadowType === false)
+        //     return null;
+        if (!this.shadowMap)
+            this.shadowMap = new zogra_renderer_1.RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, zogra_renderer_1.TextureFormat.R8, zogra_renderer_1.FilterMode.Linear);
+        this.updateShadowMesh(context, data);
+        context.renderer.setFramebuffer(this.shadowMap);
+        context.renderer.clear(zogra_renderer_1.Color.black);
+        this.shadowMat.lightPos.set(this.position);
+        this.shadowMat.lightRange = this.lightRange;
+        this.shadowMat.volumnSize = this.volumnRadius;
+        context.renderer.drawMesh(this.shadowMesh, this.localToWorldMatrix, this.shadowMat);
+        // context.renderer.blit(this.shadowMap, FrameBuffer.CanvasBuffer);
+        return this.shadowMap;
+    }
+    updateShadowMesh(context, data) {
+        this.shadowMesh.indices.fill(0);
+        const bound = [zogra_renderer_1.vec2(-this.lightRange).plus(this.position.toVec2()), zogra_renderer_1.vec2(this.lightRange).plus(this.position.toVec2())];
+        const colliderToLight = zogra_renderer_1.mat4.identity();
+        let vertOfset = 0;
+        let indexOffset = 0;
+        for (const collider of data.scene.physics.__getColliders()) {
+            if (collider instanceof tilemap_collider_1.TilemapCollider) {
+                const polygons = collider.getPolygons(...bound);
+                if (!polygons)
+                    continue;
+                colliderToLight.set(collider.tilemap.localToWorldMatrix);
+                zogra_renderer_1.mat4.mul(colliderToLight, colliderToLight, this.worldToLocalMatrix);
+                for (const polygon of polygons) {
+                    for (let i = 0; i < polygon.points.length; i++) {
+                        const [verts, indices] = this.appendLineShadow(polygon.points[i], polygon.points[(i + 1) % polygon.points.length], colliderToLight, vertOfset, indexOffset);
+                        vertOfset += verts;
+                        indexOffset += indices;
+                    }
+                }
+            }
+        }
+        // this.appendLineShadow(vec2(1, 0), vec2(0, 0), this.worldToLocalMatrix, 0, 0);
+        this.shadowMesh.update();
+    }
+    // https://www.geogebra.org/m/keskajgx
+    appendLineShadow(pointA, pointB, objToLight, vertOffset, indexOffset) {
+        let temp = 0;
+        if (this.shadowMesh.vertices.length <= vertOffset + 5 || this.shadowMesh.indices.length <= indexOffset + 9) {
+            this.shadowMesh.resize(this.shadowMesh.vertices.length * 2, this.shadowMesh.indices.length * 2, true);
+        }
+        const r2 = this.volumnRadius * this.volumnRadius;
+        const R2 = this.lightRange * this.lightRange;
+        const p0 = zogra_renderer_1.mat4.mulPoint2(this.__tempVectors[temp++], objToLight, pointA);
+        const p1 = zogra_renderer_1.mat4.mulPoint2(this.__tempVectors[temp++], objToLight, pointB);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 0].vert, p0);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 1].vert, p1);
+        const dir = zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p1, p0).normalize();
+        // Debug().drawCircle(this.position, this.volumnRadius);
+        // Debug().drawCircle(this.position, this.lightRange, Color.yellow);
+        let tangentP0 = circleTangentThroughPoint(p0, this.volumnRadius, [this.__tempVectors[temp++], this.__tempVectors[temp++]]);
+        let tangentP1 = circleTangentThroughPoint(p1, this.volumnRadius, [this.__tempVectors[temp++], this.__tempVectors[temp++]]);
+        // Debug().drawLines([mat4.mulPoint(this.localToWorldMatrix, tangentP0[0].toVec3()),
+        //     mat4.mulPoint(this.localToWorldMatrix, tangentP0[1].toVec3()),
+        //     mat4.mulPoint(this.localToWorldMatrix, p0.toVec3())
+        // ])
+        tangentP0 = [tangentP0[1], tangentP0[0]];
+        const shadowA = this.shadowMesh.vertices[vertOffset + 4].vert;
+        const shadowB = this.shadowMesh.vertices[vertOffset + 2].vert;
+        const tan0 = [
+            zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p0, tangentP0[0]).normalize(),
+            zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p0, tangentP0[1]).normalize()
+        ];
+        const tan1 = [
+            zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p1, tangentP1[0]).normalize(),
+            zogra_renderer_1.vec2.minus(this.__tempVectors[temp++], p1, tangentP1[1]).normalize()
+        ];
+        let meshType = 0;
+        if (zogra_renderer_1.vec2.cross(dir, tan0[0]) <= 0) {
+            meshType |= 1;
+            shadowA.set(tan1[1].mul(Math.sqrt(R2 - r2)).plus(tangentP1[1]));
+        }
+        else
+            shadowA.set(tan0[0].mul(Math.sqrt(R2 - r2)).plus(tangentP0[0]));
+        if (zogra_renderer_1.vec2.cross(dir, tan1[0]) <= 0) {
+            meshType |= 2;
+            shadowB.set(tan0[1].mul(Math.sqrt(R2 - r2)).plus(tangentP0[1]));
+        }
+        else
+            shadowB.set(tan1[0].mul(Math.sqrt(R2 - r2)).plus(tangentP1[0]));
+        // console.log(meshType);
+        const OC = zogra_renderer_1.vec2.plus(this.__tempVectors[temp++], shadowA, shadowB).mul(0.5);
+        const shadowR = zogra_renderer_1.vec2.mul(this.shadowMesh.vertices[vertOffset + 3].vert, OC, R2 / OC.magnitudeSqr);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 0].p0, p0);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 0].p1, p1);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 1].p0, p0);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 1].p1, p1);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 2].p0, p0);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 2].p1, p1);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 3].p0, p0);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 3].p1, p1);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 4].p0, p0);
+        zogra_renderer_1.vec2.set(this.shadowMesh.vertices[vertOffset + 4].p1, p1);
+        switch (meshType) {
+            case 0:
+                this.shadowMesh.indices.set([
+                    vertOffset + 0,
+                    vertOffset + 3,
+                    vertOffset + 4,
+                    vertOffset + 0,
+                    vertOffset + 1,
+                    vertOffset + 3,
+                    vertOffset + 1,
+                    vertOffset + 2,
+                    vertOffset + 3,
+                ], indexOffset);
+                // Debug().drawLines([
+                //     mat4.mulPoint(this.localToWorldMatrix, p0.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, p1.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, vec3.set(shadowB)),
+                //     mat4.mulPoint(this.localToWorldMatrix, vec3.set(shadowR)),
+                //     mat4.mulPoint(this.localToWorldMatrix, vec3.set(shadowA))
+                // ]);
+                break;
+            case 1: // merge shadowA->p0 & p0->p1
+                this.shadowMesh.indices.set([
+                    vertOffset + 1,
+                    vertOffset + 2,
+                    vertOffset + 3,
+                    vertOffset + 1,
+                    vertOffset + 3,
+                    vertOffset + 4,
+                    vertOffset + 1,
+                    vertOffset + 1,
+                    vertOffset + 1,
+                ], indexOffset);
+                // return [5, 9];
+                // Debug().drawLines([
+                //     mat4.mulPoint(this.localToWorldMatrix, p1.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowB.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowR.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowA.toVec3())
+                // ]);
+                break;
+            case 2: // merge p0->p1 & p1 -> shadowB
+                this.shadowMesh.indices.set([
+                    vertOffset + 0,
+                    vertOffset + 2,
+                    vertOffset + 3,
+                    vertOffset + 0,
+                    vertOffset + 3,
+                    vertOffset + 4,
+                    vertOffset + 1,
+                    vertOffset + 1,
+                    vertOffset + 1,
+                ], indexOffset);
+                // return [5, 6];
+                // Debug().drawLines([
+                //     mat4.mulPoint(this.localToWorldMatrix, p0.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowB.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowR.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowA.toVec3())
+                // ]);
+                break;
+            case 3: // cross
+                this.shadowMesh.indices.set([
+                    vertOffset + 1,
+                    vertOffset + 3,
+                    vertOffset + 4,
+                    vertOffset + 1,
+                    vertOffset + 0,
+                    vertOffset + 3,
+                    vertOffset + 0,
+                    vertOffset + 2,
+                    vertOffset + 3,
+                ], indexOffset);
+                // Debug().drawLines([
+                //     mat4.mulPoint(this.localToWorldMatrix, p1.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, p0.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowB.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowR.toVec3()),
+                //     mat4.mulPoint(this.localToWorldMatrix, shadowA.toVec3())
+                // ]);
+                break;
+        }
+        return [5, 9];
+    }
+    appendVerts() {
+    }
+}
+exports.Light2D = Light2D;
+const _temp1 = zogra_renderer_1.vec2.zero(), _temp2 = zogra_renderer_1.vec2.zero();
+// Ref: https://en.wikipedia.org/wiki/Tangent_lines_to_circles#With_analytic_geometry
+function circleTangentThroughPoint(point, radius, out = [zogra_renderer_1.vec2.zero(), zogra_renderer_1.vec2.zero()]) {
+    const r2 = radius * radius;
+    const d2 = point.magnitudeSqr;
+    const t = _temp1;
+    t.x = -point.y;
+    t.y = point.x;
+    t.mul(radius / d2 * Math.sqrt(d2 - r2));
+    zogra_renderer_1.vec2.mul(_temp2, point, r2 / d2);
+    // const t = vec2(-point.y, point.x).mul(radius / d2 * Math.sqrt(d2 - r2));
+    out[0].set(_temp2).plus(t);
+    out[1].set(_temp2).minus(t);
+    return out;
+}
+class Shadow2DMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.shadow2D, {
+    vertexStructure: exports.Shadow2DVertStruct,
+    attributes: {
+        p0: "aP0",
+        p1: "aP1",
+    },
+    cull: zogra_renderer_1.Culling.Back,
+    blend: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.One]
+})) {
+    constructor() {
+        super(...arguments);
+        this.lightPos = zogra_renderer_1.vec2.zero();
+        this.volumnSize = 1;
+        this.lightRange = 10;
+    }
+}
+__decorate([
+    zogra_renderer_1.shaderProp("uLightPos", "vec2")
+], Shadow2DMaterial.prototype, "lightPos", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uVolumnSize", "float")
+], Shadow2DMaterial.prototype, "volumnSize", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uLightRange", "float")
+], Shadow2DMaterial.prototype, "lightRange", void 0);
+exports.Shadow2DMaterial = Shadow2DMaterial;
+//# sourceMappingURL=light-2d.js.map
 
 /***/ }),
 
@@ -737,6 +1069,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Chunk = exports.Tilemap = void 0;
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const render_object_1 = __webpack_require__(/*! ../../engine/render-object */ "../zogra-engine/dist/engine/render-object.js");
+const polygon_1 = __webpack_require__(/*! ../physics/polygon */ "../zogra-engine/dist/2d/physics/polygon.js");
 const materials_1 = __webpack_require__(/*! ./materials */ "../zogra-engine/dist/2d/rendering/materials.js");
 class Tilemap extends render_object_1.RenderObject {
     constructor(...args) {
@@ -838,6 +1171,7 @@ class Tilemap extends render_object_1.RenderObject {
 exports.Tilemap = Tilemap;
 class Chunk {
     constructor(basePos, chunkSize) {
+        this.polygons = [];
         this.dirty = false;
         this.chunkSize = chunkSize;
         this.basePos = basePos;
@@ -859,14 +1193,11 @@ class Chunk {
      * @param tile
      */
     setTile(offset, tile) {
-        // if (tile)
-        //     tile = {
-        //         collide: tile.collide,
-        //         texture_offset: tile.texture_offset.clone()
-        //     };
+        var _a;
         let idx = offset.y * this.chunkSize + offset.x;
+        if (((_a = this.tiles[idx]) === null || _a === void 0 ? void 0 : _a.collide) !== (tile === null || tile === void 0 ? void 0 : tile.collide))
+            this.dirty = true;
         this.tiles[idx] = tile;
-        // let uv = this.mesh.uvs;
         idx *= 4;
         if (tile === null || tile === void 0 ? void 0 : tile.sprite) {
             this.mesh.vertices[idx + 0].uv.set([tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMin]);
@@ -880,6 +1211,187 @@ class Chunk {
             this.mesh.update();
         }
         // this.mesh.uvs = uv;
+    }
+    /** @internal */
+    getPolygons() {
+        if (this.dirty) {
+            this.polygons = Array.from(this.enumPolygons());
+            // console.log("gen", this.polygons.reduce((sum, poly) => sum + poly.points.length, 0));
+        }
+        this.dirty = false;
+        return this.polygons;
+    }
+    *enumPolygons() {
+        const validPos = (x, y) => 0 <= x && x < this.chunkSize && 0 <= y && y < this.chunkSize;
+        const visited = new Array((this.chunkSize + 1) * (this.chunkSize + 1) * (this.chunkSize + 1) * (this.chunkSize + 1));
+        const tileAt = (x, y) => {
+            if (!validPos(x, y))
+                return null;
+            return this.tiles[y * this.chunkSize + x];
+        };
+        const getEdge = (x, y) => {
+            var _a, _b, _c, _d, _e;
+            if (!((_a = tileAt(x, y)) === null || _a === void 0 ? void 0 : _a.collide))
+                return 0;
+            if (!((_b = tileAt(x - 1, y)) === null || _b === void 0 ? void 0 : _b.collide))
+                return left;
+            if (!((_c = tileAt(x + 1, y)) === null || _c === void 0 ? void 0 : _c.collide))
+                return right;
+            if (!((_d = tileAt(x, y - 1)) === null || _d === void 0 ? void 0 : _d.collide))
+                return down;
+            if (!((_e = tileAt(x, y + 1)) === null || _e === void 0 ? void 0 : _e.collide))
+                return up;
+            return 0;
+        };
+        const idxOf = (x, y) => y * this.chunkSize + x;
+        const edgeOf = (a, b) => idxOf(a.x, a.y) * (this.chunkSize + 1) * (this.chunkSize + 1) + idxOf(b.x, b.y);
+        const searchPolygon = (start, next, dir) => {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+            const points = [start, next];
+            // visited[edgeOf(start, next)] = true;
+            let previous = start.clone();
+            let search = true;
+            while (search) {
+                let head = points[points.length - 1];
+                if (visited[edgeOf(previous, head)]) {
+                    points.length -= 1;
+                    if (points[0].equals(points[points.length - 1]))
+                        points.length -= 1;
+                    break;
+                }
+                visited[edgeOf(previous, head)] = true;
+                previous.set(head);
+                switch (dir) {
+                    /*
+                     * |---|---|
+                     * | 1 | 0 |
+                     * |---^---|
+                     * | 2 ^   |
+                     * |---^---|
+                     */
+                    case up:
+                        if ((_a = tileAt(head.x, head.y)) === null || _a === void 0 ? void 0 : _a.collide) {
+                            points.push(zogra_renderer_1.vec2(head.x + 1, head.y));
+                            dir = right;
+                        }
+                        else if ((_b = tileAt(head.x - 1, head.y)) === null || _b === void 0 ? void 0 : _b.collide)
+                            head.y += 1;
+                        else if ((_c = tileAt(head.x - 1, head.y - 1)) === null || _c === void 0 ? void 0 : _c.collide) {
+                            points.push(zogra_renderer_1.vec2(head.x - 1, head.y));
+                            dir = left;
+                        }
+                        else
+                            throw new Error("Invalid tilemap");
+                        break;
+                    /*
+                    * |---|---|
+                    * | 0 |   |
+                    * |---<<<<<
+                    * | 1 | 2 |
+                    * |---|---|
+                    */
+                    case left:
+                        if ((_d = tileAt(head.x - 1, head.y)) === null || _d === void 0 ? void 0 : _d.collide) {
+                            points.push(zogra_renderer_1.vec2(head.x, head.y + 1));
+                            dir = up;
+                        }
+                        else if ((_e = tileAt(head.x - 1, head.y - 1)) === null || _e === void 0 ? void 0 : _e.collide)
+                            head.x -= 1;
+                        else if ((_f = tileAt(head.x, head.y - 1)) === null || _f === void 0 ? void 0 : _f.collide) {
+                            points.push(zogra_renderer_1.vec2(head.x, head.y - 1));
+                            dir = down;
+                        }
+                        else
+                            throw new Error("Invalid tilemap");
+                        break;
+                    /*
+                     * |---v---|
+                     * |   v 2 |
+                     * |---v---|
+                     * | 0 | 1 |
+                     * |---|---|
+                     */
+                    case down:
+                        if ((_g = tileAt(head.x - 1, head.y - 1)) === null || _g === void 0 ? void 0 : _g.collide) {
+                            points.push(zogra_renderer_1.vec2(head.x - 1, head.y));
+                            dir = left;
+                        }
+                        else if ((_h = tileAt(head.x, head.y - 1)) === null || _h === void 0 ? void 0 : _h.collide)
+                            head.y -= 1;
+                        else if ((_j = tileAt(head.x, head.y)) === null || _j === void 0 ? void 0 : _j.collide) {
+                            points.push(zogra_renderer_1.vec2(head.x + 1, head.y));
+                            dir = right;
+                        }
+                        else
+                            throw new Error("Invalid tilemap");
+                        break;
+                    /*
+                     * |---|---|
+                     * | 2 | 1 |
+                     * >>>>>---|
+                     * |   | 0 |
+                     * |---|---|
+                     */
+                    case right:
+                        if ((_k = tileAt(head.x, head.y - 1)) === null || _k === void 0 ? void 0 : _k.collide) {
+                            points.push(zogra_renderer_1.vec2(head.x, head.y - 1));
+                            dir = down;
+                        }
+                        else if ((_l = tileAt(head.x, head.y)) === null || _l === void 0 ? void 0 : _l.collide)
+                            head.x += 1;
+                        else if ((_m = tileAt(head.x - 1, head.y)) === null || _m === void 0 ? void 0 : _m.collide) {
+                            points.push(zogra_renderer_1.vec2(head.x, head.y + 1));
+                            dir = up;
+                        }
+                        else
+                            throw new Error("Invalid tilemap");
+                        break;
+                }
+            }
+            return points;
+        };
+        const left = 1, right = 2, up = 3, down = 4;
+        // Find a bottom-left most tile and start walking from bottom-left corner to bottom-right corner
+        for (let y = 0; y < this.chunkSize; y++) {
+            for (let x = 0; x < this.chunkSize; x++) {
+                const edge = getEdge(x, y);
+                if (!edge)
+                    continue;
+                let start;
+                let next;
+                let dir;
+                switch (edge) {
+                    case left:
+                        start = zogra_renderer_1.vec2(x, y + 1);
+                        next = zogra_renderer_1.vec2(x, y);
+                        dir = down;
+                        break;
+                    case down:
+                        start = zogra_renderer_1.vec2(x, y);
+                        next = zogra_renderer_1.vec2(x + 1, y);
+                        dir = right;
+                        break;
+                    case right:
+                        start = zogra_renderer_1.vec2(x + 1, y);
+                        next = zogra_renderer_1.vec2(x + 1, y + 1);
+                        dir = up;
+                        break;
+                    case up:
+                        start = zogra_renderer_1.vec2(x + 1, y + 1);
+                        next = zogra_renderer_1.vec2(x, y + 1);
+                        dir = down;
+                        break;
+                }
+                if (!visited[edgeOf(start, next)]) {
+                    const points = searchPolygon(start, next, dir);
+                    const polygon = new polygon_1.Polygon(points.length);
+                    for (const point of points) {
+                        polygon.append(point.plus(this.basePos));
+                    }
+                    yield polygon;
+                }
+            }
+        }
     }
 }
 exports.Chunk = Chunk;
@@ -948,10 +1460,37 @@ var d_vert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3
 var d_frag_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uColor;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec4 color = texture(uMainTex, vUV.xy).rgba;\r\n    // color = color * vec3(uColor);\r\n    fragColor = color.rgba * vColor.rgba * uColor.rgba;\r\n    // fragColor = vec4(vUV.xy, 0, 1);\r\n}";
 // assets/shader/particle-vert.glsl
 var particle_vert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nin vec3 particlePos;\r\nin vec3 particleRotation;\r\nin float particleSize;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\nout vec3 vWorldPos;\r\n\r\n#define PI (3.14159265358979323846264338327950288419716939937510)\r\n\r\nvec4 from_euler(float x, float y, float z)\r\n{\r\n    float halfToRad = PI / 360.0;\r\n    x *= halfToRad;\r\n    z *= halfToRad;\r\n    y *= halfToRad;\r\n\r\n    float sx = sin(x);\r\n    float cx = cos(x);\r\n    float sy = sin(y);\r\n    float cy = cos(y);\r\n    float sz = sin(z);\r\n    float cz = cos(z);\r\n\r\n    vec4 q;\r\n    q[0] = sx * cy * cz - cx * sy * sz;\r\n    q[1] = cx * sy * cz + sx * cy * sz;\r\n    q[2] = cx * cy * sz - sx * sy * cz;\r\n    q[3] = cx * cy * cz + sx * sy * sz;\r\n    return q;\r\n}\r\n\r\nmat4 from_rts(vec4 q, vec3 v, vec3 s)\r\n{\r\n    mat4 m;\r\n    float x = q[0];\r\n    float y = q[1];\r\n    float z = q[2];\r\n    float w = q[3];\r\n    float x2 = x + x;\r\n    float y2 = y + y;\r\n    float z2 = z + z;\r\n\r\n    float xx = x * x2;\r\n    float xy = x * y2;\r\n    float xz = x * z2;\r\n    float yy = y * y2;\r\n    float yz = y * z2;\r\n    float zz = z * z2;\r\n    float wx = w * x2;\r\n    float wy = w * y2;\r\n    float wz = w * z2;\r\n    float sx = s[0];\r\n    float sy = s[1];\r\n    float sz = s[2];\r\n\r\n    m[0][0] = (1.0 - (yy + zz)) * sx;\r\n    m[0][1] = (xy + wz) * sx;\r\n    m[0][2] = (xz - wy) * sx;\r\n    m[0][3] = 0.0;\r\n    m[1][0] = (xy - wz) * sy;\r\n    m[1][1] = (1.0 - (xx + zz)) * sy;\r\n    m[1][2] = (yz + wx) * sy;\r\n    m[1][3] = 0.0;\r\n    m[2][0] = (xz + wy) * sz;\r\n    m[2][1] = (yz - wx) * sz;\r\n    m[2][2] = (1.0 - (xx + yy)) * sz;\r\n    m[2][3] = 0.0;\r\n    m[3][0] = v[0];\r\n    m[3][1] = v[1];\r\n    m[3][2] = v[2];\r\n    m[3][3] = 1.0;\r\n\r\n    return m;\r\n}\r\n\r\nvoid main()\r\n{\r\n    vec4 rotation = from_euler(particleRotation.x, particleRotation.y, particleRotation.z);\r\n    mat4 rts = from_rts(rotation, particlePos, vec3(particleSize));\r\n    mat4 mvp = uTransformMVP * rts;\r\n    gl_Position = mvp * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vWorldPos = (uTransformM * vec4(aPos, 1)).xyz;\r\n    \r\n}";
+// assets/shader/2d-shadow-vert.glsl
+var d_shadow_vert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\nin vec2 aP0;\r\nin vec2 aP1;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\nout vec3 vP;\r\nout vec2 vP0;\r\nout vec2 vP1;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vP = aPos;\r\n    vP0 = aP0;\r\n    vP1 = aP1;\r\n    \r\n}";
+// assets/shader/2d-shadow-frag.glsl
+var d_shadow_frag_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vPos;\r\nin vec2 vP0;\r\nin vec2 vP1;\r\nin vec3 vP;\r\n\r\nuniform vec2 uLightPos;\r\nuniform float uVolumnSize;\r\nuniform float uLightRange;\r\n\r\nout float fragColor;\r\n\r\n#define PI (3.14)\r\n\r\n// See: https://www.geogebra.org/geometry/ysvegxsz\r\n\r\nbool circleTangent(vec2 p, vec2 center, float radius, out vec2 p1, out vec2 p2)\r\n{\r\n    float r2 = radius * radius;\r\n    float d2 = (p.x - center.x) * (p.x - center.x) + (p.y - center.y) * (p.y - center.y);\r\n    if (d2 < r2)\r\n        return false;\r\n\r\n    vec2 p0 = p - center;\r\n    p1 = vec2(r2 / d2) * p0 + vec2(radius / d2 * sqrt(d2 - r2)) * vec2(-p0.y, p0.x);\r\n    p2 = vec2(r2 / d2) * p0 - vec2(radius / d2 * sqrt(d2 - r2)) * vec2(-p0.y, p0.x);\r\n    p1 += center;\r\n    p2 += center;\r\n    return true;\r\n}\r\n\r\nfloat cross2(vec2 u, vec2 v)\r\n{\r\n	return cross(vec3(u, 0.0), vec3(v, 0.0)).z;\r\n}\r\nfloat saturate(float x)\r\n{\r\n    return clamp(x, 0.0, 1.0);\r\n    // return min(max(x, 0.0), 1.0);\r\n    if (x <= 0.0)\r\n        return 0.0;\r\n    else if (x >= 1.0)\r\n        return 1.0;\r\n    return x;\r\n}\r\n// Fix undefined result when x > 1\r\nfloat fixacos(float x) {\r\n    if (x >= 1.0)\r\n        return 0.0;\r\n    return acos(x);\r\n}\r\n\r\nvoid main()\r\n{\r\n    vec2 p = vP.xy;\r\n    vec2 p1, p2;\r\n    // p1 = uLightPos.xy;\r\n    // p2 = uLightPos.xy;\r\n    circleTangent(p, vec2(0), uVolumnSize, p1, p2);\r\n    vec2 right = normalize(p1 - p);\r\n    vec2 left = normalize(p2 - p);\r\n    vec2 u = normalize(vP1 - p);\r\n    vec2 v = normalize(vP0 - p);\r\n    if(cross2(v, u) < 0.0)\r\n    {\r\n        vec2 t = v;\r\n        v = u;\r\n        u = t;\r\n    }\r\n    \r\n	float leftLeak = saturate(sign(cross2(u, left))) * fixacos(dot(u, left));\r\n	float rightLeak = saturate(sign(cross2(right, v))) * fixacos(dot(right, v));\r\n    float total = acos(dot(right, left));\r\n\r\n\r\n    fragColor = 1.0 - (leftLeak + rightLeak) / total;\r\n}";
+// assets/shader/2d-light-vert.glsl
+var d_light_vert_default = "// #version 300 es\r\nprecision mediump float;\r\n\r\nattribute vec3 aPos;\r\nattribute vec4 aColor;\r\nattribute vec2 aUV;\r\nattribute vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nvarying vec4 vColor;\r\nvarying vec4 vPos;\r\nvarying vec2 vUV;\r\nvarying vec3 vNormal;\r\nvarying vec3 vWorldPos;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vWorldPos = (uTransformM * vec4(aPos, 1)).xyz;\r\n    \r\n}";
+// assets/shader/2d-light-frag.glsl
+var d_light_frag_default = "// #version 300 es\r\nprecision mediump float;\r\n\r\n#define MAX_LIGHT 4\r\n\r\nvarying vec2 vUV;\r\n\r\nuniform vec4 uLightPosList[MAX_LIGHT];\r\nuniform vec4 uLightColorList[MAX_LIGHT];\r\nuniform vec4 uLightParamsList[MAX_LIGHT]; // (volumn, range, attenuation, intensity)\r\nuniform sampler2D uShadowMapList[MAX_LIGHT];\r\nuniform int uLightCount;\r\nuniform vec4 uCameraParams; // (pos.x, pos.y, viewWidth, viewHgith)\r\nuniform vec4 uAmbientLightColor;\r\n\r\n// out vec4 fragColor;\r\n\r\nfloat lightAttenuation(float r, float attenuation)\r\n{\r\n    if(attenuation <= -1.0)\r\n        return 0.0;\r\n    else if (attenuation <= 0.0)\r\n    {\r\n        float t = 1.0 / (attenuation + 1.0) - 1.0;\r\n        return exp(-r * t) - exp(-t) * r;\r\n    }\r\n    else if (attenuation < 1.0)\r\n    {\r\n        float t = 1.0 / (1.0 - attenuation) - 1.0;\r\n        r = 1.0 - r;\r\n        return 1.0 - (exp(-r * t) - exp(-t) * r);\r\n    }\r\n    else {\r\n        return r >= 1.0 ? 0.0 : 1.0;\r\n    }\r\n}\r\n\r\nvoid main()\r\n{\r\n    vec2 worldPos = (vUV - vec2(0.5)) * uCameraParams.zw + uCameraParams.xy;\r\n    for (int i = 0; i < MAX_LIGHT; i++)\r\n    {\r\n        float r = distance(uLightPosList[i].xy, worldPos);\r\n        r -= uLightParamsList[i].x;\r\n        r = r / (uLightParamsList[i].y -  uLightParamsList[i].x);\r\n        float light = lightAttenuation(clamp(r, 0.0, 1.0), uLightParamsList[i].z);\r\n        light *= uLightParamsList[i].w;\r\n        float shadow = texture2D(uShadowMapList[i], vUV.xy).r;\r\n        light *= 1.0 - shadow;\r\n        \r\n        gl_FragColor += vec4(light) * uLightColorList[i].rgba;\r\n    }\r\n    gl_FragColor += uAmbientLightColor;\r\n    \r\n}";
+// assets/shader/box-blur.glsl
+var box_blur_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uTexSize; // (w, h, 1/w, 1/h)\r\nuniform float uSampleOffset;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec2 delta = vec2(-uSampleOffset, uSampleOffset);\r\n    vec4 color = \r\n      texture(uMainTex, clamp(vUV.xy + uTexSize.zw * delta.xx, vec2(0), vec2(1)))\r\n    + texture(uMainTex, clamp(vUV.xy + uTexSize.zw * delta.yx, vec2(0), vec2(1)))\r\n    + texture(uMainTex, clamp(vUV.xy + uTexSize.zw * delta.yy, vec2(0), vec2(1)))\r\n    + texture(uMainTex, clamp(vUV.xy + uTexSize.zw * delta.xy, vec2(0), vec2(1)));\r\n\r\n    color /= vec4(4.0);\r\n\r\n    fragColor = color.rgba;\r\n}";
+// assets/shader/bloom-filter.glsl
+var bloom_filter_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec2 vUV;\r\nuniform sampler2D uMainTex;\r\nuniform float uThreshold;\r\nuniform float uSoftThreshold;\r\n\r\nout vec4 fragColor;\r\n\r\n// Ref: https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/\r\nvoid main()\r\n{\r\n    vec3 color =  texture(uMainTex, vUV).rgb;\r\n    float brightness = max(color.r, max(color.g, color.b));\r\n    float knee = uThreshold * uSoftThreshold;\r\n    float soft = brightness - uThreshold + knee;\r\n    soft = clamp(soft, 0.0, 2.0 * knee);\r\n    soft = soft * soft / (4.0 * knee + 0.00001);\r\n\r\n    float contribution = max(soft, brightness - uThreshold);\r\n	contribution /= max(brightness, 0.00001);\r\n\r\n    color = contribution * color;\r\n\r\n\r\n\r\n    fragColor = vec4(color.rgb, 1.0);\r\n}";
+// assets/shader/blit-copy.glsl
+var blit_copy_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec2 vUV;\r\nuniform sampler2D uMainTex;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = texture(uMainTex, vUV).rgba;\r\n}";
+// assets/shader/bloom-compose.glsl
+var bloom_compose_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec2 vUV;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform float uIntensity;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = vec4(texture(uMainTex, vUV).rgb * vec3(uIntensity), 1.0);\r\n}";
+// assets/shader/2d-light-simple-vert.glsl
+var d_light_simple_vert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec2 aUV;\r\nin vec4 aLightColor;\r\nin vec4 aLightParams; // (volumn, range, attenuation, intensity)\r\nin vec3 aLightPos;\r\n\r\nuniform mat4 uTransformMVP;\r\n\r\nout vec4 vLightColor;\r\nout vec4 vLightParams; \r\nout vec3 vLightPos;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos.xy * vec2(aLightParams.y) + aLightPos.xy, 0, 1);\r\n    vPos = gl_Position;\r\n    vUV = aUV;\r\n    vLightParams = aLightParams;\r\n    vLightColor = aLightColor;\r\n    vLightPos = aLightPos;\r\n}";
+// assets/shader/2d-light-simple-frag.glsl
+var d_light_simple_frag_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vLightColor;\r\nin vec4 vLightParams; // (volumn, range, attenuation, intensity)\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nout vec4 fragColor;\r\n\r\nfloat lightAttenuation(float r, float range, float volumn, float attenuation)\r\n{\r\n    r -= volumn;\r\n    r /= range - volumn;\r\n    if(attenuation <= -1.0)\r\n        return 0.0;\r\n    else if (attenuation <= 0.0)\r\n    {\r\n        float t = 1.0 / (attenuation + 1.0) - 1.0;\r\n        return exp(-r * t) - exp(-t) * r;\r\n    }\r\n    else if (attenuation < 1.0)\r\n    {\r\n        float t = 1.0 / (1.0 - attenuation) - 1.0;\r\n        r = 1.0 - r;\r\n        return 1.0 - (exp(-r * t) - exp(-t) * r);\r\n    }\r\n    else {\r\n        return r >= 1.0 ? 0.0 : 1.0;\r\n    }\r\n}\r\n\r\nvoid main()\r\n{\r\n    float r = length(vUV * vec2(2) - vec2(1)) * vLightParams.y;\r\n    float attenuation = lightAttenuation(r, vLightParams.y, vLightParams.x, vLightParams.z);\r\n    attenuation = max(attenuation, 0.0);\r\n    attenuation *= vLightParams.w;\r\n    vec3 color = vLightColor.rgb * vec3(attenuation);\r\n\r\n    fragColor = vec4(color, 1);\r\n    // fragColor = vec4(1);\r\n}";
 // assets/shader/shader.ts
 var ShaderSource = {
     default2D: [d_vert_default, d_frag_default],
-    particle2D: [particle_vert_default, d_frag_default]
+    particle2D: [particle_vert_default, d_frag_default],
+    shadow2D: [d_shadow_vert_default, d_shadow_frag_default],
+    light2D: [d_light_vert_default, d_light_frag_default],
+    light2DSimple: [d_light_simple_vert_default, d_light_simple_frag_default],
+    boxBlur: [d_vert_default, box_blur_default],
+    bloomFilter: [d_vert_default, bloom_filter_default],
+    bloomCompose: [d_vert_default, bloom_compose_default],
+    blitCopy: [d_vert_default, blit_copy_default]
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (false);
@@ -970,26 +1509,48 @@ var ShaderSource = {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Animator = void 0;
+exports.Animator = exports.AnimationPlayback = exports.Timeline = void 0;
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
-class Animator {
-    constructor(duration, timeline = null, time = 0) {
+function Timeline(timeline) {
+    const times = Object.keys(timeline.frames).map(t => ({ key: t, time: parseFloat(t) })).sort((a, b) => a.time - b.time);
+    const output = {
+        loop: timeline.loop || false,
+        duration: timeline.duration,
+        frames: []
+    };
+    for (const time of times) {
+        output.frames.push({
+            time: time.time,
+            values: timeline.frames[time.key],
+        });
+    }
+    return output;
+}
+exports.Timeline = Timeline;
+class AnimationPlayback {
+    constructor(timeline, time = 0) {
+        this.frameTime = 0;
+        this.time = 0;
         this.timeScale = 1;
-        this.callback = null;
-        this.loop = false;
+        this.updater = null;
         this.state = "stopped";
         this.currentFrame = {};
-        this.duration = duration;
-        this.time = time;
+        this.frameTime = time;
         this.timeline = timeline;
+        this.loop = timeline.loop;
+        this.duration = timeline.duration;
     }
     get playing() { return this.state === "playing" || this.state === "pending"; }
     get finished() { return this.state === "stopped"; }
     play(time = 0) {
-        this.time = time;
-        this.state = "pending";
-        if (this.timeline && this.timeline.length > 0)
-            Object.assign(this.currentFrame, this.timeline[0].keyframe);
+        return new Promise((resolve) => {
+            this.resolver = resolve;
+            this.frameTime = time;
+            this.frameTime = time;
+            this.state = "pending";
+            if (this.timeline && this.timeline.frames.length > 0)
+                Object.assign(this.currentFrame, this.timeline.frames[0].values);
+        });
     }
     stop() {
         this.state = "stopped";
@@ -1011,57 +1572,134 @@ class Animator {
         }
     }
     updateAnimation(dt) {
-        if (!this.callback)
+        if (!this.updater)
             return;
+        if (this.loop)
+            this.frameTime = this.time % this.timeline.duration;
+        else
+            this.frameTime = this.time;
         this.updateFrame();
-        this.callback({
+        this.updater({
             deltaTime: dt,
             frame: this.currentFrame,
             animator: this,
             time: this.time,
-            progress: this.time / this.duration
+            frameTime: this.frameTime,
+            progress: this.frameTime / this.duration
         });
     }
     updateFrame() {
-        if (this.timeline && this.timeline.length > 0) {
-            for (let i = 0; i < this.timeline.length; i++) {
-                if (this.timeline[i].time >= this.time) {
-                    if (i === 0 || this.timeline[i].time === this.time)
-                        Object.assign(this.currentFrame, this.timeline[i].keyframe);
+        if (this.timeline && this.timeline.frames.length > 0) {
+            for (let i = 0; i < this.timeline.frames.length; i++) {
+                if (this.timeline.frames[i].time >= this.frameTime) {
+                    if (i === 0 || this.timeline.frames[i].time === this.frameTime)
+                        Object.assign(this.currentFrame, this.timeline.frames[i].values);
                     else {
-                        this.interpolate(this.currentFrame, this.timeline[i - 1], this.timeline[i]);
+                        this.interpolate(this.currentFrame, this.timeline.frames[i - 1], this.timeline.frames[i]);
                     }
                     return this.currentFrame;
                 }
             }
             if (this.loop) {
-                this.interpolate(this.currentFrame, this.timeline[this.timeline.length - 1], this.timeline[0]);
+                this.interpolate(this.currentFrame, this.timeline.frames[this.timeline.frames.length - 1], this.timeline.frames[0]);
             }
             else {
-                Object.assign(this.currentFrame, this.timeline[this.timeline.length - 1].keyframe);
+                Object.assign(this.currentFrame, this.timeline.frames[this.timeline.frames.length - 1].values);
             }
         }
     }
     interpolate(frame, previous, next) {
-        let t = (this.time - previous.time) / (next.time - previous.time);
+        let t = (this.frameTime - previous.time) / (next.time - previous.time);
         if (next.time < previous.time)
-            t = (this.time - previous.time) / (this.duration - previous.time + next.time);
-        for (const key in previous.keyframe) {
-            frame[key] = previous.keyframe[key];
-            if (typeof (previous.keyframe[key]) === "number" && typeof (next.keyframe[key]) === "number") {
-                frame[key] = zogra_renderer_1.MathUtils.lerp(previous.keyframe[key], next.keyframe[key], t);
+            t = (this.frameTime - previous.time) / (this.timeline.duration + next.time - previous.time);
+        for (const key in previous.values) {
+            frame[key] = previous.values[key];
+            if (typeof (previous.values[key]) === "number" && typeof (next.values[key]) === "number") {
+                frame[key] = zogra_renderer_1.MathUtils.lerp(previous.values[key], next.values[key], t);
             }
         }
         return frame;
     }
     checkEnd() {
+        var _a;
         if (this.time >= this.duration) {
-            if (this.loop) {
-                this.time %= this.duration;
-            }
-            else {
-                this.time = this.duration;
-                this.state = "stopped";
+            this.time = this.duration;
+            this.state = "stopped";
+            (_a = this.resolver) === null || _a === void 0 ? void 0 : _a.call(this, this);
+        }
+    }
+}
+exports.AnimationPlayback = AnimationPlayback;
+class ProceduralPlayback {
+    constructor(time, updater) {
+        this.currentTime = 0;
+        this.state = "stopped";
+        this.totalTime = time;
+        this.updater = updater;
+    }
+    get finished() { return this.state === "stopped"; }
+    play() {
+        return new Promise(resolve => {
+            if (this.state === "stopped")
+                this.state = "pending";
+            this.resolver = resolve;
+        });
+    }
+    stop() {
+        this.resolver = undefined;
+        this.state = "stopped";
+    }
+    update(dt) {
+        var _a;
+        switch (this.state) {
+            case "stopped":
+                return;
+            case "pending":
+                this.state = "playing";
+            case "playing":
+                this.currentTime += dt;
+                this.checkEnd();
+                (_a = this.updater) === null || _a === void 0 ? void 0 : _a.call(this, this.currentTime / this.totalTime);
+                break;
+        }
+    }
+    checkEnd() {
+        var _a;
+        if (this.currentTime >= this.totalTime) {
+            this.currentTime = this.totalTime;
+            this.state = "stopped";
+            (_a = this.resolver) === null || _a === void 0 ? void 0 : _a.call(this);
+        }
+    }
+}
+class Animator {
+    constructor() {
+        this.tracks = [];
+    }
+    play(timeline, updater, playDuration = timeline.duration, loop = timeline.loop, time = 0) {
+        const playback = new AnimationPlayback(timeline, time);
+        playback.loop = loop;
+        playback.duration = playDuration;
+        playback.updater = updater;
+        const promise = playback.play(time);
+        this.tracks.push(playback);
+        return promise;
+    }
+    playProcedural(time, updater, startTime = 0) {
+        const playback = new ProceduralPlayback(time, updater);
+        playback.currentTime = startTime;
+        const promise = playback.play();
+        this.tracks.push(playback);
+        return promise;
+    }
+    update(dt) {
+        for (let i = 0; i < this.tracks.length; i++) {
+            const playback = this.tracks[i];
+            playback.update(dt);
+            if (playback.finished) {
+                this.tracks[i] = this.tracks[this.tracks.length - 1];
+                this.tracks.length--;
+                i--;
             }
         }
     }
@@ -1085,48 +1723,48 @@ exports.Camera = exports.Projection = void 0;
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_2 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_3 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
-const zogra_renderer_4 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const entity_1 = __webpack_require__(/*! ./entity */ "../zogra-engine/dist/engine/entity.js");
+const zogra_renderer_4 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_5 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_6 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_7 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_8 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_9 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
-const zogra_renderer_10 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 var Projection;
 (function (Projection) {
     Projection[Projection["Perspective"] = 0] = "Perspective";
     Projection[Projection["Orthographic"] = 1] = "Orthographic";
 })(Projection = exports.Projection || (exports.Projection = {}));
 class Camera extends entity_1.Entity {
-    constructor(ctx = zogra_renderer_3.GlobalContext()) {
+    constructor(ctx = zogra_renderer_2.GlobalContext()) {
         super();
-        this.output = zogra_renderer_2.RenderTarget.CanvasTarget;
+        this.output = null;
         this.FOV = 30;
         this.near = 0.3;
         this.far = 1000;
         this.viewHeight = 1;
         this.projection = Projection.Perspective;
-        this.clearColor = zogra_renderer_7.Color.black;
+        this.clearColor = zogra_renderer_6.Color.black;
         this.clearDepth = true;
+        this.postprocess = [];
         this.ctx = ctx;
     }
     get pixelSize() {
         if (this.output instanceof zogra_renderer_1.RenderTexture)
-            return zogra_renderer_4.vec2(this.output.width, this.output.height);
+            return zogra_renderer_3.vec2(this.output.width, this.output.height);
         else
-            return zogra_renderer_4.vec2(this.ctx.width, this.ctx.height);
+            return zogra_renderer_3.vec2(this.ctx.width, this.ctx.height);
     }
     get aspectRatio() { return this.pixelSize.x / this.pixelSize.y; }
     get viewProjectionMatrix() {
         const matView = this.worldToLocalMatrix;
         const matProjection = this.projectionMatrix;
-        return zogra_renderer_5.mat4.mul(matProjection, matView);
+        return zogra_renderer_4.mat4.mul(matProjection, matView);
     }
     get projectionMatrix() {
         return this.projection === Projection.Perspective
-            ? zogra_renderer_5.mat4.perspective(this.FOV * zogra_renderer_6.Deg2Rad, this.aspectRatio, this.near, this.far)
-            : zogra_renderer_5.mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
+            ? zogra_renderer_4.mat4.perspective(this.FOV * zogra_renderer_5.Deg2Rad, this.aspectRatio, this.near, this.far)
+            : zogra_renderer_4.mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
     }
     on(event, listener) {
         this.eventEmitter.with().on(event, listener);
@@ -1142,26 +1780,26 @@ class Camera extends entity_1.Entity {
     }
     screenToRay(pos) {
         const p = this.screenToWorld(pos);
-        return zogra_renderer_9.ray(this.position.clone(), zogra_renderer_6.minus(zogra_renderer_8.vec3(p.x, p.y, p.z), this.position));
+        return zogra_renderer_8.ray(this.position.clone(), zogra_renderer_5.minus(zogra_renderer_7.vec3(p.x, p.y, p.z), this.position));
     }
     screenToWorld(pos) {
         const w = this.projection == Projection.Perspective
             ? this.near
             : 1;
-        const ndcXY = this.screenToViewport(pos).mul(zogra_renderer_4.vec2(2, -2)).minus(zogra_renderer_4.vec2(1, -1));
-        const clip = zogra_renderer_6.mul(zogra_renderer_10.vec4(ndcXY.x, ndcXY.y, -1, 1), w);
-        const matVPInv = zogra_renderer_5.mat4.invert(this.viewProjectionMatrix);
-        const p = zogra_renderer_5.mat4.mulVec4(matVPInv, clip);
-        return zogra_renderer_8.vec3(p[0], p[1], p[2]);
+        const ndcXY = this.screenToViewport(pos).mul(zogra_renderer_3.vec2(2, -2)).minus(zogra_renderer_3.vec2(1, -1));
+        const clip = zogra_renderer_5.mul(zogra_renderer_9.vec4(ndcXY.x, ndcXY.y, -1, 1), w);
+        const matVPInv = zogra_renderer_4.mat4.invert(this.viewProjectionMatrix);
+        const p = zogra_renderer_4.mat4.mulVec4(matVPInv, clip);
+        return zogra_renderer_7.vec3(p[0], p[1], p[2]);
     }
     screenToViewport(pos) {
-        if (this.output === zogra_renderer_2.RenderTarget.CanvasTarget)
-            return zogra_renderer_6.div(pos, zogra_renderer_4.vec2(this.ctx.width, this.ctx.height));
+        if (this.output === null)
+            return zogra_renderer_5.div(pos, zogra_renderer_3.vec2(this.ctx.width, this.ctx.height));
         else if (this.output instanceof zogra_renderer_1.RenderTexture) {
-            return zogra_renderer_6.div(pos, zogra_renderer_4.vec2(this.output.width, this.output.height));
+            return zogra_renderer_5.div(pos, zogra_renderer_3.vec2(this.output.width, this.output.height));
         }
         else
-            return zogra_renderer_4.vec2.zero();
+            return zogra_renderer_3.vec2.zero();
     }
 }
 exports.Camera = Camera;
@@ -1652,22 +2290,20 @@ exports.ParticleSystem = exports.ParticleMaterial = void 0;
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const assets_1 = __webpack_require__(/*! ../assets */ "../zogra-engine/dist/assets/index.js");
 const render_object_1 = __webpack_require__(/*! ./render-object */ "../zogra-engine/dist/engine/render-object.js");
+const ParticleVertStruct = zogra_renderer_1.VertexStruct({
+    vert: "vec3",
+    color: "vec4",
+    normal: "vec3",
+    uv: "vec2",
+    uv2: "vec2",
+    pos: "vec3",
+    rotation: "vec3",
+    size: "float",
+});
+const ParticleAttributeName = Object.assign(Object.assign({}, zogra_renderer_1.DefaultShaderAttributeNames), { pos: "particlePos", rotation: "particleRotation", size: "particleSize" });
 class ParticleMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.particle2D, {
-    vertexStructure: {
-        vert: "vec3",
-        color: "vec4",
-        normal: "vec3",
-        uv: "vec2",
-        uv2: "vec2",
-        pos: "vec3",
-        rotation: "vec3",
-        size: "float",
-    },
-    attributes: {
-        pos: "particlePos",
-        rotation: "particleRotation",
-        size: "particleSize",
-    }
+    vertexStructure: ParticleVertStruct,
+    attributes: ParticleAttributeName
 })) {
     constructor() {
         super(...arguments);
@@ -1701,7 +2337,7 @@ class ParticleSystem extends render_object_1.RenderObject {
         this.lifeRotation = { x: null, y: null, z: null };
         this.lifeSpeed = null;
         this.lifeAcceleration = { x: null, y: null, z: null };
-        this.particlesBuffer = new zogra_renderer_1.RenderBuffer({
+        this.particlesBuffer = new zogra_renderer_1.GLArrayBuffer({
             pos: "vec3",
             color: "vec4",
             rotation: "vec3",
@@ -1835,7 +2471,9 @@ class ParticleSystem extends render_object_1.RenderObject {
         let speed = this.getScalarValue(this.startSpeed);
         // velocity.mul(speed);
         particle.velocity.set(velocity);
-        particle.velocity[3] = speed;
+        if (speed < 0)
+            zogra_renderer_1.vec3.negate(particle.velocity, velocity);
+        particle.velocity[3] = Math.abs(speed);
         particle.pos.set(pos);
         particle.size[0] = this.getScalarValue(this.startSize);
         particle.lifetime[0] = 0;
@@ -1897,8 +2535,21 @@ class ParticleSystem extends render_object_1.RenderObject {
             zogra_renderer_1.vec3.minus(dirOut, posOut, center).normalize();
         };
     }
+    static circleEmitter(radius) {
+        return (particleSystem, center, dirOut, posOut) => {
+            const r = Math.sqrt(Math.random()) * radius;
+            const theta = Math.random() * Math.PI * 2;
+            posOut.x = Math.cos(theta) * r;
+            posOut.y = Math.sin(theta) * r;
+            posOut.z = 0;
+            posOut.plus(center);
+            zogra_renderer_1.vec3.minus(dirOut, posOut, center).normalize();
+        };
+    }
 }
 exports.ParticleSystem = ParticleSystem;
+ParticleSystem.VertexStructure = ParticleVertStruct;
+ParticleSystem.AttributeNames = ParticleAttributeName;
 //# sourceMappingURL=particle-system.js.map
 
 /***/ }),
@@ -2198,10 +2849,7 @@ class ZograEngine {
     }
     renderScene() {
         const cameras = this.scene.getEntitiesOfType(camera_1.Camera);
-        this.renderPipeline.render({
-            renderer: this.renderer,
-            scene: this.scene
-        }, cameras);
+        this.renderPipeline.render(rp_1.RenderContext.create(this.renderer), this.scene, cameras);
     }
     start() {
         let previousDelay = 0;
@@ -2265,11 +2913,14 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BuiltinShaders = void 0;
 __exportStar(__webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js"), exports);
 __exportStar(__webpack_require__(/*! ./engine/engine */ "../zogra-engine/dist/engine/engine.js"), exports);
 __exportStar(__webpack_require__(/*! ./render-pipeline/rp */ "../zogra-engine/dist/render-pipeline/rp.js"), exports);
 __exportStar(__webpack_require__(/*! ./2d */ "../zogra-engine/dist/2d/index.js"), exports);
 __exportStar(__webpack_require__(/*! ./utils */ "../zogra-engine/dist/utils/index.js"), exports);
+const assets_1 = __webpack_require__(/*! ./assets */ "../zogra-engine/dist/assets/index.js");
+exports.BuiltinShaders = assets_1.ShaderSource;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -2290,6 +2941,7 @@ class UnknownPhysics {
     __addCollider() { }
     /** @internal */
     __removeCollider() { }
+    __getColliders() { return []; }
     update() { }
 }
 exports.UnknownPhysics = UnknownPhysics;
@@ -2336,19 +2988,33 @@ exports.ColliderBase = ColliderBase;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Default2DRenderPipeline = void 0;
-const render_data_1 = __webpack_require__(/*! ./render-data */ "../zogra-engine/dist/render-pipeline/render-data.js");
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const render_data_1 = __webpack_require__(/*! ./render-data */ "../zogra-engine/dist/render-pipeline/render-data.js");
+const zogra_renderer_2 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const zogra_renderer_3 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const zogra_renderer_4 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const debug_layer_1 = __webpack_require__(/*! ./debug-layer */ "../zogra-engine/dist/render-pipeline/debug-layer.js");
 const global_1 = __webpack_require__(/*! zogra-renderer/dist/core/global */ "../zogra-renderer/dist/core/global.js");
+const _2d_light_pass_1 = __webpack_require__(/*! ./2d-light-pass */ "../zogra-engine/dist/render-pipeline/2d-light-pass.js");
+const draw_scene_1 = __webpack_require__(/*! ./draw-scene */ "../zogra-engine/dist/render-pipeline/draw-scene.js");
+const post_process_1 = __webpack_require__(/*! ./post-process */ "../zogra-engine/dist/render-pipeline/post-process/index.js");
+const final_blit_1 = __webpack_require__(/*! ./final-blit */ "../zogra-engine/dist/render-pipeline/final-blit.js");
+const clear_pass_1 = __webpack_require__(/*! ./clear-pass */ "../zogra-engine/dist/render-pipeline/clear-pass.js");
 class Default2DRenderPipeline {
     constructor() {
+        this.msaa = 4;
+        this.renderFormat = zogra_renderer_1.TextureFormat.RGBA8;
         this.debuglayer = new debug_layer_1.DebugLayerRenderer();
+        this.ambientLightColor = new zogra_renderer_2.Color(1, 1, 1, 1);
+        this.ambientIntensity = 0.2;
+        this.perCameraResources = new Map();
         global_1.Debug(this.debuglayer);
     }
-    render(renderer, cameras) {
+    render(context, scene, cameras) {
         for (const camera of cameras) {
-            const data = new render_data_1.RenderData(camera, renderer.scene);
-            this.renderCamera(renderer, data);
+            const resource = this.getCameraResources(context, camera);
+            const data = render_data_1.RenderData.create(camera, scene, resource.outputFBO);
+            this.renderCamera(context, data);
         }
     }
     replaceMaterial(MaterialType, material) {
@@ -2357,32 +3023,217 @@ class Default2DRenderPipeline {
     renderCamera(context, data) {
         const camera = data.camera;
         camera.__preRender(context);
-        if (camera.output === zogra_renderer_1.RenderTarget.CanvasTarget)
-            context.renderer.setRenderTarget(zogra_renderer_1.RenderTarget.CanvasTarget);
-        else
-            context.renderer.setRenderTarget(camera.output);
-        context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        // context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
-        const objs = data.getVisibleObjects(render_data_1.RenderOrder.FarToNear);
-        for (const obj of objs) {
-            obj.render(context, data);
-            // const modelMatrix = obj.localToWorldMatrix;
-            // for (let i = 0; i < obj.meshes.length; i++)
-            // {
-            //     if (!obj.meshes[i])
-            //         continue;
-            //     const mat = obj.materials[i] || context.renderer.assets.materials.default;
-            //     mat.setProp("uCameraPos", "vec3", camera.position);
-            //     context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
-            // }
+        const resource = this.getCameraResources(context, camera);
+        for (const pass of resource.renderPass) {
+            pass.setup(context, data);
+            pass.render(context, data);
+        }
+        for (const pass of resource.renderPass) {
+            pass.cleanup(context, data);
         }
         this.debuglayer.render(context, data);
         camera.__postRender(context);
     }
+    getCameraResources(context, camera) {
+        let resource = this.perCameraResources.get(camera);
+        if (!resource) {
+            const fbo = new zogra_renderer_3.FrameBuffer(context.renderer.canvas.width, context.renderer.canvas.height);
+            const renderbuffer = new zogra_renderer_1.RenderBuffer(fbo.width, fbo.height, this.renderFormat, this.msaa);
+            fbo.addColorAttachment(renderbuffer);
+            const rt0 = new zogra_renderer_4.RenderTexture(context.renderer.canvas.width, context.renderer.canvas.height, false, this.renderFormat, zogra_renderer_1.FilterMode.Linear);
+            const rt1 = new zogra_renderer_4.RenderTexture(context.renderer.canvas.width, context.renderer.canvas.height, false, this.renderFormat, zogra_renderer_1.FilterMode.Linear);
+            resource = {
+                postprocessFBOs: [rt0.createFramebuffer(), rt1.createFramebuffer()],
+                outputFBO: fbo,
+                outputBuffer: renderbuffer,
+                renderPass: this.createRenderPass(context, camera),
+            };
+            this.perCameraResources.set(camera, resource);
+        }
+        return resource;
+    }
+    createRenderPass(context, camera) {
+        return [
+            new clear_pass_1.ClearPass(),
+            new draw_scene_1.DrawScene(render_data_1.RenderOrder.FarToNear),
+            new _2d_light_pass_1.Light2DPass(context, this),
+            new post_process_1.PostprocessPass(context, this.renderFormat),
+            new final_blit_1.FinalBlit(context, this.renderFormat),
+        ];
+    }
 }
 exports.Default2DRenderPipeline = Default2DRenderPipeline;
 //# sourceMappingURL=2d-default.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/render-pipeline/2d-light-pass.js":
+/*!*************************************************************!*\
+  !*** ../zogra-engine/dist/render-pipeline/2d-light-pass.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Light2DPass = void 0;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const light_2d_1 = __webpack_require__(/*! ../2d/rendering/light-2d */ "../zogra-engine/dist/2d/rendering/light-2d.js");
+const assets_1 = __webpack_require__(/*! ../assets */ "../zogra-engine/dist/assets/index.js");
+const render_pass_1 = __webpack_require__(/*! ./render-pass */ "../zogra-engine/dist/render-pipeline/render-pass.js");
+class Light2DPass extends render_pass_1.RenderPass {
+    constructor(context, pipelineSettings) {
+        super();
+        this.light2DShadowMaterial = new Light2DWithShadow();
+        this.lightComposeMaterial = new Light2DCompose();
+        this.lightInstancingMaterial = new Light2DSimpleInstancing();
+        this.lightInstancingBuffer = new zogra_renderer_1.GLArrayBuffer(Light2DInstancingStruct, 64);
+        this.settings = pipelineSettings;
+        this.lightmap = new zogra_renderer_1.RenderTexture(context.screen.width, context.screen.height, false, zogra_renderer_1.TextureFormat.RGBA16F, zogra_renderer_1.FilterMode.Linear);
+        this.simpleLightMesh = zogra_renderer_1.MeshBuilder.quad(zogra_renderer_1.vec2.zero(), zogra_renderer_1.vec2(2));
+        this.lightInstancingBuffer.static = false;
+    }
+    render(context, data) {
+        const lightList = data.scene.getEntitiesOfType(light_2d_1.Light2D);
+        const shadowLights = lightList.filter(light => light.shadowType === light_2d_1.ShadowType.Hard || light.shadowType === light_2d_1.ShadowType.Soft);
+        const simpleLights = lightList.filter(light => light.shadowType === false);
+        context.renderer.setFramebuffer(this.lightmap);
+        context.renderer.clear(zogra_renderer_1.Color.black);
+        this.drawShadowLights(context, data, shadowLights);
+        this.drawSimpleLights(context, data, simpleLights);
+        context.renderer.blit(this.lightmap, data.cameraOutput, this.lightComposeMaterial);
+    }
+    drawSimpleLights(context, data, simpleLights) {
+        if (simpleLights.length > this.lightInstancingBuffer.length)
+            this.lightInstancingBuffer.resize(this.lightInstancingBuffer.length * 2);
+        for (let i = 0; i < simpleLights.length; i++) {
+            zogra_renderer_1.vec4.set(this.lightInstancingBuffer[i].lightColor, simpleLights[i].lightColor);
+            zogra_renderer_1.vec3.set(this.lightInstancingBuffer[i].lightPos, simpleLights[i].position);
+            this.lightInstancingBuffer[i].lightParams[0] = simpleLights[i].volumnRadius;
+            this.lightInstancingBuffer[i].lightParams[1] = simpleLights[i].lightRange;
+            this.lightInstancingBuffer[i].lightParams[2] = simpleLights[i].attenuation;
+            this.lightInstancingBuffer[i].lightParams[3] = simpleLights[i].intensity;
+        }
+        context.renderer.drawMeshInstance(this.simpleLightMesh, this.lightInstancingBuffer, this.lightInstancingMaterial, simpleLights.length);
+    }
+    drawShadowLights(context, data, shadowLights) {
+        for (let i = 0; i < this.light2DShadowMaterial.lightParamsList.length; i++)
+            this.light2DShadowMaterial.lightParamsList[i].fill(0);
+        for (let i = 0; i < shadowLights.length; i++) {
+            const light = shadowLights[i];
+            this.light2DShadowMaterial.lightPosList[i] = this.light2DShadowMaterial.lightPosList[i] || zogra_renderer_1.vec4.zero();
+            zogra_renderer_1.vec4.set(this.light2DShadowMaterial.lightPosList[i], light.position);
+            this.light2DShadowMaterial.lightPosList[i].w = 1;
+            this.light2DShadowMaterial.lightParamsList[i] = this.light2DShadowMaterial.lightParamsList[i] || zogra_renderer_1.vec4.zero();
+            this.light2DShadowMaterial.lightParamsList[i].x = light.volumnRadius;
+            this.light2DShadowMaterial.lightParamsList[i].y = light.lightRange;
+            this.light2DShadowMaterial.lightParamsList[i].z = light.attenuation;
+            this.light2DShadowMaterial.lightParamsList[i].w = light.intensity;
+            this.light2DShadowMaterial.lightColorList[i] = this.light2DShadowMaterial.lightColorList[i] || zogra_renderer_1.Color.white;
+            this.light2DShadowMaterial.lightColorList[i].set(light.lightColor);
+            this.light2DShadowMaterial.shadowMapList[i] = light.getShadowMap(context, data);
+        }
+        this.light2DShadowMaterial.lightCount = shadowLights.length;
+        this.light2DShadowMaterial.cameraParams.x = data.camera.position.x;
+        this.light2DShadowMaterial.cameraParams.y = data.camera.position.y;
+        this.light2DShadowMaterial.cameraParams.z = data.camera.viewHeight * 2 * data.camera.aspectRatio;
+        this.light2DShadowMaterial.cameraParams.w = data.camera.viewHeight * 2;
+        zogra_renderer_1.vec4.mul(this.light2DShadowMaterial.ambientLightColor, this.settings.ambientLightColor, this.settings.ambientIntensity);
+        context.renderer.blit(null, this.lightmap, this.light2DShadowMaterial);
+    }
+}
+exports.Light2DPass = Light2DPass;
+class Light2DWithShadow extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.light2D, {
+    blend: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.Zero],
+    depth: zogra_renderer_1.DepthTest.Disable,
+    zWrite: false,
+})) {
+    constructor() {
+        super(...arguments);
+        this.lightPosList = [];
+        this.lightColorList = [];
+        this.lightParamsList = [];
+        this.shadowMapList = [];
+        this.lightCount = 0;
+        this.cameraParams = zogra_renderer_1.vec4.zero();
+        this.ambientLightColor = zogra_renderer_1.Color.white;
+    }
+}
+__decorate([
+    zogra_renderer_1.shaderProp("uLightPosList", "vec4[]")
+], Light2DWithShadow.prototype, "lightPosList", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uLightColorList", "color[]")
+], Light2DWithShadow.prototype, "lightColorList", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uLightParamsList", "vec4[]")
+], Light2DWithShadow.prototype, "lightParamsList", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uShadowMapList", "tex2d[]")
+], Light2DWithShadow.prototype, "shadowMapList", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uLightCount", "int")
+], Light2DWithShadow.prototype, "lightCount", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uCameraParams", "vec4")
+], Light2DWithShadow.prototype, "cameraParams", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uAmbientLightColor", "color")
+], Light2DWithShadow.prototype, "ambientLightColor", void 0);
+class Light2DCompose extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.blitCopy, {
+    blend: [zogra_renderer_1.Blending.DstColor, zogra_renderer_1.Blending.Zero],
+    depth: zogra_renderer_1.DepthTest.Disable,
+    zWrite: false,
+})) {
+}
+const Light2DInstancingStruct = zogra_renderer_1.VertexStruct({
+    lightPos: "vec3",
+    lightParams: "vec4",
+    lightColor: "vec4",
+});
+class Light2DSimpleInstancing extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.light2DSimple, {
+    vertexStructure: Object.assign(Object.assign({}, zogra_renderer_1.DefaultVertexData), Light2DInstancingStruct),
+    attributes: {
+        lightPos: "aLightPos",
+        lightColor: "aLightColor",
+        lightParams: "aLightParams",
+    },
+    blend: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.One],
+})) {
+}
+//# sourceMappingURL=2d-light-pass.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/render-pipeline/clear-pass.js":
+/*!**********************************************************!*\
+  !*** ../zogra-engine/dist/render-pipeline/clear-pass.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClearPass = void 0;
+const render_pass_1 = __webpack_require__(/*! ./render-pass */ "../zogra-engine/dist/render-pipeline/render-pass.js");
+class ClearPass extends render_pass_1.RenderPass {
+    render(context, data) {
+        const camera = data.camera;
+        context.renderer.setFramebuffer(data.cameraOutput);
+        context.renderer.clear(camera.clearColor, camera.clearDepth);
+    }
+}
+exports.ClearPass = ClearPass;
+//# sourceMappingURL=clear-pass.js.map
 
 /***/ }),
 
@@ -2418,12 +3269,259 @@ class DebugLayerRenderer extends zogra_renderer_1.DebugProvider {
         this.lines.lines = lines;
     }
     render(context, data) {
+        context.renderer.setFramebuffer(zogra_renderer_1.FrameBuffer.CanvasBuffer);
         context.renderer.drawLines(this.lines, zogra_renderer_3.mat4.identity(), context.renderer.assets.materials.ColoredLine);
         this.lines.clear();
     }
 }
 exports.DebugLayerRenderer = DebugLayerRenderer;
 //# sourceMappingURL=debug-layer.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/render-pipeline/draw-scene.js":
+/*!**********************************************************!*\
+  !*** ../zogra-engine/dist/render-pipeline/draw-scene.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DrawScene = void 0;
+const render_pass_1 = __webpack_require__(/*! ./render-pass */ "../zogra-engine/dist/render-pipeline/render-pass.js");
+class DrawScene extends render_pass_1.RenderPass {
+    constructor(order) {
+        super();
+        this.renderOrder = order;
+    }
+    render(context, data) {
+        const camera = data.camera;
+        context.renderer.setFramebuffer(data.cameraOutput);
+        const objs = data.getVisibleObjects(this.renderOrder);
+        for (const obj of objs) {
+            obj.render(context, data);
+        }
+    }
+}
+exports.DrawScene = DrawScene;
+//# sourceMappingURL=draw-scene.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/render-pipeline/final-blit.js":
+/*!**********************************************************!*\
+  !*** ../zogra-engine/dist/render-pipeline/final-blit.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FinalBlit = void 0;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const render_pass_1 = __webpack_require__(/*! ./render-pass */ "../zogra-engine/dist/render-pipeline/render-pass.js");
+class FinalBlit extends render_pass_1.RenderPass {
+    constructor(context, format) {
+        super();
+        this.tempRT = new zogra_renderer_1.RenderTexture(context.screen.width, context.screen.height, false, format);
+    }
+    render(context, data) {
+        var _a, _b;
+        const camera = data.camera;
+        if (data.postprocessOutput) {
+            context.renderer.blit(data.postprocessOutput, (_a = camera.output) !== null && _a !== void 0 ? _a : zogra_renderer_1.FrameBuffer.CanvasBuffer);
+        }
+        else if (data.cameraOutput === zogra_renderer_1.FrameBuffer.CanvasBuffer) {
+            return;
+        }
+        else if (data.cameraOutput instanceof zogra_renderer_1.FrameBuffer) {
+            if (data.cameraOutput.colorAttachments[0] instanceof zogra_renderer_1.RenderBuffer) {
+                if (camera.output instanceof zogra_renderer_1.RenderTexture)
+                    context.renderer.blitCopy(data.cameraOutput.colorAttachments[0], camera.output);
+                else {
+                    context.renderer.blitCopy(data.cameraOutput.colorAttachments[0], this.tempRT);
+                    context.renderer.blit(this.tempRT, zogra_renderer_1.FrameBuffer.CanvasBuffer);
+                }
+            }
+            else if (data.cameraOutput.colorAttachments[0] instanceof zogra_renderer_1.RenderTexture) {
+                context.renderer.blit(data.cameraOutput.colorAttachments[0], (_b = camera.output) !== null && _b !== void 0 ? _b : zogra_renderer_1.FrameBuffer.CanvasBuffer);
+            }
+        }
+    }
+}
+exports.FinalBlit = FinalBlit;
+//# sourceMappingURL=final-blit.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/render-pipeline/post-process/bloom.js":
+/*!******************************************************************!*\
+  !*** ../zogra-engine/dist/render-pipeline/post-process/bloom.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Bloom = void 0;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const assets_1 = __webpack_require__(/*! ../../assets */ "../zogra-engine/dist/assets/index.js");
+const blur_renderer_1 = __webpack_require__(/*! ../../utils/blur-renderer */ "../zogra-engine/dist/utils/blur-renderer.js");
+const post_process_1 = __webpack_require__(/*! ./post-process */ "../zogra-engine/dist/render-pipeline/post-process/post-process.js");
+class BloomFilterMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.bloomFilter, {
+    depth: zogra_renderer_1.DepthTest.Disable,
+    zWrite: false,
+})) {
+    constructor() {
+        super(...arguments);
+        this.texture = null;
+        this.threshold = 1;
+        this.softThreshold = 0.5;
+    }
+}
+__decorate([
+    zogra_renderer_1.shaderProp("uMainTex", "tex2d")
+], BloomFilterMaterial.prototype, "texture", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uThreshold", "float")
+], BloomFilterMaterial.prototype, "threshold", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uSoftThreshold", "float")
+], BloomFilterMaterial.prototype, "softThreshold", void 0);
+class BloomComposeMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.bloomCompose, {
+    blendRGB: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.One],
+    blendAlpha: [zogra_renderer_1.Blending.Zero, zogra_renderer_1.Blending.One],
+    depth: zogra_renderer_1.DepthTest.Disable,
+    zWrite: false,
+})) {
+    constructor() {
+        super(...arguments);
+        this.intensity = 1;
+    }
+}
+__decorate([
+    zogra_renderer_1.shaderProp("uIntensity", "float")
+], BloomComposeMaterial.prototype, "intensity", void 0);
+class Bloom extends post_process_1.PostProcess {
+    constructor() {
+        super(...arguments);
+        this.intensity = 1;
+        this.blurSteps = 4;
+        this.threshold = 1;
+        this.softThreshold = 0.25;
+        this.materialFilter = new BloomFilterMaterial();
+        this.materialCompose = new BloomComposeMaterial();
+        this.blurRenderer = new blur_renderer_1.DownsampleBlurRenderer();
+        this.filterOutput = null;
+    }
+    create(context) {
+        this.filterOutput = new zogra_renderer_1.RenderTexture(context.renderer.canvasSize.x, context.renderer.canvasSize.y, false, zogra_renderer_1.TextureFormat.RGBA16F);
+        this.blurRenderer.upsampleMaterial.setPipelineStateOverride({
+            blend: [zogra_renderer_1.Blending.One, zogra_renderer_1.Blending.One],
+        });
+    }
+    render(context, src, dst) {
+        // this.materialFilter.threshold = this.threshold;
+        // this.materialFilter.softThreshold = this.threshold;
+        // this.materialFilter.texture = src;
+        context.renderer.blit(src, this.filterOutput, this.materialFilter);
+        const blurOutput = this.blurRenderer.blur(this.filterOutput, this.blurSteps);
+        this.materialCompose.intensity = this.intensity;
+        context.renderer.blit(src, dst);
+        context.renderer.blit(blurOutput, dst, this.materialCompose);
+        // this.materialCompose.intensity = this.intensity;
+        // context.renderer.blit(blurOutput, dst, this.materialCompose);
+    }
+}
+exports.Bloom = Bloom;
+//# sourceMappingURL=bloom.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/render-pipeline/post-process/index.js":
+/*!******************************************************************!*\
+  !*** ../zogra-engine/dist/render-pipeline/post-process/index.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(__webpack_require__(/*! ./post-process */ "../zogra-engine/dist/render-pipeline/post-process/post-process.js"), exports);
+__exportStar(__webpack_require__(/*! ./bloom */ "../zogra-engine/dist/render-pipeline/post-process/bloom.js"), exports);
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/render-pipeline/post-process/post-process.js":
+/*!*************************************************************************!*\
+  !*** ../zogra-engine/dist/render-pipeline/post-process/post-process.js ***!
+  \*************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PostprocessPass = exports.PostProcess = void 0;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const render_pass_1 = __webpack_require__(/*! ../render-pass */ "../zogra-engine/dist/render-pipeline/render-pass.js");
+class PostProcess {
+    constructor() {
+        /** @internal */
+        this.__intialized = false;
+    }
+    create(context) { }
+}
+exports.PostProcess = PostProcess;
+class PostprocessPass extends render_pass_1.RenderPass {
+    constructor(context, renderFormat) {
+        super();
+        this.format = renderFormat;
+        this.buffers = [
+            new zogra_renderer_1.RenderTexture(context.screen.width, context.screen.height, false, this.format, zogra_renderer_1.FilterMode.Nearest).createFramebuffer(),
+            new zogra_renderer_1.RenderTexture(context.screen.width, context.screen.height, false, this.format, zogra_renderer_1.FilterMode.Nearest).createFramebuffer(),
+        ];
+    }
+    render(context, data) {
+        const camera = data.camera;
+        let [src, dst] = this.buffers;
+        const cameraBuffer = data.cameraOutput.colorAttachments[0];
+        context.renderer.blitCopy(cameraBuffer, src.colorAttachments[0]);
+        for (const postprocess of camera.postprocess) {
+            if (!postprocess.__intialized) {
+                postprocess.create(context);
+                postprocess.__intialized = true;
+            }
+            postprocess.render(context, src.colorAttachments[0], dst);
+            [src, dst] = [dst, src];
+        }
+        data.postprocessOutput = src.colorAttachments[0];
+    }
+}
+exports.PostprocessPass = PostprocessPass;
+//# sourceMappingURL=post-process.js.map
 
 /***/ }),
 
@@ -2444,51 +3542,52 @@ const zogra_renderer_2 = __webpack_require__(/*! zogra-renderer */ "../zogra-ren
 const zogra_renderer_3 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_4 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const zogra_renderer_5 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const zogra_renderer_6 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const debug_layer_1 = __webpack_require__(/*! ./debug-layer */ "../zogra-engine/dist/render-pipeline/debug-layer.js");
 class PreviewRenderer {
     constructor(renderer) {
+        this.msaa = 4;
         this.materialReplaceMap = new Map();
         this.debugLayer = new debug_layer_1.DebugLayerRenderer();
+        this.cameraOutputFBOs = new Map();
+        this.cameraOutputTextures = new Map();
         this.renderer = renderer;
         const lineColor = zogra_renderer_2.rgba(1, 1, 1, 0.1);
-        const lb = new zogra_renderer_4.LineBuilder(0, renderer.gl);
+        const lb = new zogra_renderer_5.LineBuilder(0, renderer.gl);
         const Size = 10;
         const Grid = 1;
         for (let i = -Size; i <= Size; i += Grid) {
             lb.addLine([
-                zogra_renderer_5.vec3(i, 0, -Size),
-                zogra_renderer_5.vec3(i, 0, Size),
+                zogra_renderer_6.vec3(i, 0, -Size),
+                zogra_renderer_6.vec3(i, 0, Size),
             ], lineColor);
             lb.addLine([
-                zogra_renderer_5.vec3(-Size, 0, i),
-                zogra_renderer_5.vec3(Size, 0, i)
+                zogra_renderer_6.vec3(-Size, 0, i),
+                zogra_renderer_6.vec3(Size, 0, i)
             ], lineColor);
         }
         this.grid = lb.toLines();
     }
-    render(context, cameras) {
+    render(context, scene, cameras) {
         for (let i = 0; i < cameras.length; i++) {
-            const data = new render_data_1.RenderData(cameras[i], context.scene);
+            const data = render_data_1.RenderData.create(cameras[i], scene, this.getFramebuffer(context, cameras[i]));
             this.renderCamera(context, data);
         }
     }
     setupLight(context, data) {
-        context.renderer.setGlobalUniform("uLightDir", "vec3", zogra_renderer_5.vec3(-1, 1, 0).normalize());
+        context.renderer.setGlobalUniform("uLightDir", "vec3", zogra_renderer_6.vec3(-1, 1, 0).normalize());
         context.renderer.setGlobalUniform("uAmbientSky", "color", zogra_renderer_2.rgb(.2, .2, .2));
-        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
+        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position.clone());
         context.renderer.setGlobalUniform("uLightColor", "color", zogra_renderer_2.rgb(.8, .8, .8));
     }
     renderCamera(context, data) {
-        context.renderer.clear(zogra_renderer_2.rgb(.3, .3, .3), true);
+        // context.renderer.clear(rgb(.3, .3, .3), true);
         const camera = data.camera;
         camera.__preRender(context);
-        if (camera.output === zogra_renderer_3.RenderTarget.CanvasTarget)
-            context.renderer.setRenderTarget(zogra_renderer_3.RenderTarget.CanvasTarget);
-        else
-            context.renderer.setRenderTarget(camera.output);
+        context.renderer.setFramebuffer(data.cameraOutput);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
+        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position.clone());
         this.setupLight(context, data);
         const objs = data.getVisibleObjects(render_data_1.RenderOrder.NearToFar);
         for (const obj of objs) {
@@ -2504,7 +3603,20 @@ class PreviewRenderer {
         }
         // this.debugLayer.render(context, data);
         this.renderGrid(context, data);
+        this.finalBlit(context, data);
+        // context.renderer.blitCopy(data.cameraOutput.colorAttachments[0] as RenderBuffer, camera.output);
         camera.__postRender(context);
+    }
+    finalBlit(context, data) {
+        var _a, _b, _c, _d;
+        const camera = data.camera;
+        let tex = this.cameraOutputTextures.get(camera);
+        if (!tex) {
+            tex = new zogra_renderer_4.RenderTexture((_b = (_a = data.camera.output) === null || _a === void 0 ? void 0 : _a.width) !== null && _b !== void 0 ? _b : context.renderer.canvasSize.x, (_d = (_c = data.camera.output) === null || _c === void 0 ? void 0 : _c.height) !== null && _d !== void 0 ? _d : context.renderer.canvasSize.y, false, zogra_renderer_1.TextureFormat.RGBA, zogra_renderer_1.FilterMode.Linear);
+            this.cameraOutputTextures.set(camera, tex);
+        }
+        context.renderer.blitCopy(data.cameraOutput.colorAttachments[0], tex);
+        context.renderer.blit(tex, zogra_renderer_3.FrameBuffer.CanvasBuffer);
     }
     renderGrid(context, data) {
         this.renderer.drawLines(this.grid, zogra_renderer_1.mat4.identity(), this.renderer.assets.materials.ColoredLine);
@@ -2517,6 +3629,16 @@ class PreviewRenderer {
     }
     replaceMaterial(MaterialType, material) {
         this.materialReplaceMap.set(MaterialType, material);
+    }
+    getFramebuffer(context, camera) {
+        let fbo = this.cameraOutputFBOs.get(camera);
+        if (!fbo) {
+            fbo = new zogra_renderer_3.FrameBuffer(context.renderer.canvas.width, context.renderer.canvas.height);
+            const renderbuffer = new zogra_renderer_1.RenderBuffer(fbo.width, fbo.height, zogra_renderer_1.TextureFormat.RGBA8, this.msaa);
+            fbo.addColorAttachment(renderbuffer);
+            this.cameraOutputFBOs.set(camera, fbo);
+        }
+        return fbo;
     }
 }
 exports.PreviewRenderer = PreviewRenderer;
@@ -2536,36 +3658,84 @@ exports.PreviewRenderer = PreviewRenderer;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RenderData = exports.RenderOrder = void 0;
 const engine_1 = __webpack_require__(/*! ../engine/engine */ "../zogra-engine/dist/engine/engine.js");
-const engine_2 = __webpack_require__(/*! ../engine/engine */ "../zogra-engine/dist/engine/engine.js");
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 var RenderOrder;
 (function (RenderOrder) {
     RenderOrder[RenderOrder["NearToFar"] = 0] = "NearToFar";
     RenderOrder[RenderOrder["FarToNear"] = 1] = "FarToNear";
 })(RenderOrder = exports.RenderOrder || (exports.RenderOrder = {}));
-class RenderData {
-    constructor(camera, scene) {
-        this.visibleObjects = [];
-        this.visibleLights = [];
-        this.camera = camera;
-        this.visibleLights = scene.getEntitiesOfType(engine_2.Light);
-        this.visibleObjects = scene.getEntitiesOfType(engine_1.RenderObject);
+exports.RenderData = {
+    create(camera, scene, output) {
+        return {
+            camera,
+            scene,
+            cameraOutput: output,
+            visibleObjects: scene.getEntitiesOfType(engine_1.RenderObject),
+            getVisibleObjects(renderOrder = RenderOrder.NearToFar) {
+                const viewMat = this.camera.worldToLocalMatrix;
+                let wrap = this.visibleObjects.map(obj => ({ pos: zogra_renderer_1.mat4.mulPoint(viewMat, obj.position), obj: obj }));
+                if (renderOrder === RenderOrder.NearToFar)
+                    wrap = wrap.sort((a, b) => b.pos.z - a.pos.z);
+                else
+                    wrap = wrap.sort((a, b) => a.pos.z - b.pos.z);
+                return wrap.map(t => t.obj);
+            },
+        };
     }
-    getVisibleObjects(renderOrder = RenderOrder.NearToFar) {
-        const viewMat = this.camera.worldToLocalMatrix;
-        let wrap = this.visibleObjects.map(obj => ({ pos: zogra_renderer_1.mat4.mulPoint(viewMat, obj.position), obj: obj }));
-        if (renderOrder === RenderOrder.NearToFar)
-            wrap = wrap.sort((a, b) => b.pos.z - a.pos.z);
-        else
-            wrap = wrap.sort((a, b) => a.pos.z - b.pos.z);
-        return wrap.map(t => t.obj);
+};
+// export class RenderData<Extension = {}> extends RenderDataExtension<Extension>
+// {
+//     camera: Camera;
+//     scene: Scene;
+//     cameraOutput: FrameBuffer;
+//     private visibleObjects: RenderObject[] = [];
+//     private visibleLights: Light[] = [];
+//     constructor(camera: Camera, output: FrameBuffer, scene: Scene)
+//     {
+//         this.camera = camera;
+//         this.scene = scene;
+//         this.cameraOutput = output;
+//         this.visibleLights = scene.getEntitiesOfType(Light);
+//         this.visibleObjects = scene.getEntitiesOfType(RenderObject);
+//     }
+//     getVisibleObjects(renderOrder: RenderOrder = RenderOrder.NearToFar) : ReadonlyArray<RenderObject>
+//     {
+//         const viewMat = this.camera.worldToLocalMatrix;
+//         let wrap = this.visibleObjects.map(obj => ({ pos: mat4.mulPoint(viewMat, obj.position), obj: obj }));
+//         if (renderOrder === RenderOrder.NearToFar)
+//             wrap = wrap.sort((a, b) => b.pos.z - a.pos.z);
+//         else
+//             wrap = wrap.sort((a, b) => a.pos.z - b.pos.z);
+//         return wrap.map(t => t.obj);
+//     }
+//     getVisibleLights(): ReadonlyArray<Light>
+//     {
+//         return this.visibleLights;
+//     }
+// }
+//# sourceMappingURL=render-data.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/render-pipeline/render-pass.js":
+/*!***********************************************************!*\
+  !*** ../zogra-engine/dist/render-pipeline/render-pass.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RenderPass = void 0;
+class RenderPass {
+    setup(context, data) {
     }
-    getVisibleLights() {
-        return this.visibleLights;
+    cleanup(context, data) {
     }
 }
-exports.RenderData = RenderData;
-//# sourceMappingURL=render-data.js.map
+exports.RenderPass = RenderPass;
+//# sourceMappingURL=render-pass.js.map
 
 /***/ }),
 
@@ -2579,6 +3749,18 @@ exports.RenderData = RenderData;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RenderContext = void 0;
+exports.RenderContext = {
+    create(renderer) {
+        return {
+            renderer,
+            screen: {
+                width: renderer.canvas.width,
+                height: renderer.canvas.height
+            },
+        };
+    }
+};
 //# sourceMappingURL=render-pipeline.js.map
 
 /***/ }),
@@ -2608,7 +3790,112 @@ __exportStar(__webpack_require__(/*! ./render-data */ "../zogra-engine/dist/rend
 __exportStar(__webpack_require__(/*! ./render-pipeline */ "../zogra-engine/dist/render-pipeline/render-pipeline.js"), exports);
 __exportStar(__webpack_require__(/*! ./debug-layer */ "../zogra-engine/dist/render-pipeline/debug-layer.js"), exports);
 __exportStar(__webpack_require__(/*! ./2d-default */ "../zogra-engine/dist/render-pipeline/2d-default.js"), exports);
+__exportStar(__webpack_require__(/*! ./post-process */ "../zogra-engine/dist/render-pipeline/post-process/index.js"), exports);
 //# sourceMappingURL=rp.js.map
+
+/***/ }),
+
+/***/ "../zogra-engine/dist/utils/blur-renderer.js":
+/*!***************************************************!*\
+  !*** ../zogra-engine/dist/utils/blur-renderer.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DownsampleBlurRenderer = void 0;
+const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
+const assets_1 = __webpack_require__(/*! ../assets */ "../zogra-engine/dist/assets/index.js");
+class MaterialBlur extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.boxBlur)) {
+    constructor() {
+        super(...arguments);
+        this.texture = null;
+        this.textureSize = zogra_renderer_1.vec4.one();
+        this.sampleOffset = 1;
+    }
+}
+__decorate([
+    zogra_renderer_1.shaderProp("uMainTex", "tex2d")
+], MaterialBlur.prototype, "texture", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uTexSize", "vec4")
+], MaterialBlur.prototype, "textureSize", void 0);
+__decorate([
+    zogra_renderer_1.shaderProp("uSampleOffset", "float")
+], MaterialBlur.prototype, "sampleOffset", void 0);
+class DownsampleBlurRenderer {
+    constructor() {
+        this.steps = [];
+        this.downsampleMaterial = new MaterialBlur();
+        this.upsampleMaterial = new MaterialBlur();
+    }
+    init(texture) {
+        if (!this.steps[0]) {
+            this.steps[0] = new zogra_renderer_1.RenderTexture(texture.width, texture.height, false, texture.format, texture.filterMode);
+            this.steps[0].wrapMode = zogra_renderer_1.WrapMode.Clamp;
+            this.steps[0].updateParameters();
+        }
+        if (this.steps[0].width !== texture.width || this.steps[0].height !== texture.height)
+            this.steps[0].resize(texture.width, texture.height, zogra_renderer_1.TextureResizing.Discard);
+    }
+    blur(texture, iteration = 4, output = this.steps[0], ctx = zogra_renderer_1.GlobalContext()) {
+        if (!this.steps[0])
+            this.steps[0] = new zogra_renderer_1.RenderTexture(texture.width, texture.height, false, texture.format, texture.filterMode);
+        output = output || this.steps[0];
+        ctx.renderer.setFramebuffer(output);
+        ctx.renderer.clear(zogra_renderer_1.Color.black);
+        if (this.steps[0].width !== texture.width || this.steps[0].height !== texture.height)
+            this.steps[0].resize(texture.width, texture.height, zogra_renderer_1.TextureResizing.Discard);
+        this.downSample(ctx.renderer, texture, iteration);
+        return this.upSample(ctx.renderer, iteration, output);
+    }
+    downSample(renderer, input, iteration) {
+        for (let i = 1; i <= iteration; i++) {
+            const downSize = zogra_renderer_1.vec2.floor(zogra_renderer_1.div(input.size, zogra_renderer_1.vec2(2)));
+            if (!this.steps[i]) {
+                this.steps[i] = new zogra_renderer_1.RenderTexture(downSize.x, downSize.y, false, zogra_renderer_1.TextureFormat.RGBA, zogra_renderer_1.FilterMode.Linear);
+                this.steps[i].wrapMode = zogra_renderer_1.WrapMode.Clamp;
+                this.steps[i].updateParameters();
+            }
+            const output = this.steps[i];
+            if (output.width !== downSize.x || output.height !== downSize.y)
+                output.resize(downSize.x, downSize.y, zogra_renderer_1.TextureResizing.Discard);
+            this.downsampleMaterial.texture = input;
+            this.downsampleMaterial.textureSize = zogra_renderer_1.vec4(input.width, input.height, 1 / input.width, 1 / input.height);
+            this.downsampleMaterial.sampleOffset = 1;
+            renderer.blit(input, output, this.downsampleMaterial);
+            input = output;
+        }
+    }
+    upSample(renderer, iteration, finalOutput = this.steps[0]) {
+        let input = this.steps[iteration];
+        for (let i = iteration - 1; i >= 0; i--) {
+            const upSize = zogra_renderer_1.mul(input.size, zogra_renderer_1.vec2(2));
+            if (!this.steps[i]) {
+                this.steps[i] = new zogra_renderer_1.RenderTexture(upSize.x, upSize.y, false, zogra_renderer_1.TextureFormat.RGBA, zogra_renderer_1.FilterMode.Linear);
+                this.steps[i].wrapMode = zogra_renderer_1.WrapMode.Clamp;
+                this.steps[i].updateParameters();
+            }
+            const output = i === 0 ? finalOutput : this.steps[i];
+            this.upsampleMaterial.texture = input;
+            this.upsampleMaterial.textureSize = zogra_renderer_1.vec4(input.width, input.height, 1 / input.width, 1 / input.height);
+            this.upsampleMaterial.sampleOffset = 0.5;
+            renderer.blit(input, output, this.upsampleMaterial);
+            input = output;
+        }
+        return input;
+    }
+}
+exports.DownsampleBlurRenderer = DownsampleBlurRenderer;
+//# sourceMappingURL=blur-renderer.js.map
 
 /***/ }),
 
@@ -3067,115 +4354,17 @@ exports.createDefaultTextures = createDefaultTextures;
 
 /***/ }),
 
-/***/ "../zogra-renderer/dist/core/asset.js":
-/*!********************************************!*\
-  !*** ../zogra-renderer/dist/core/asset.js ***!
-  \********************************************/
+/***/ "../zogra-renderer/dist/core/array-buffer.js":
+/*!***************************************************!*\
+  !*** ../zogra-renderer/dist/core/array-buffer.js ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AssetManager = exports.LazyInitAsset = exports.Asset = void 0;
-const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
-const event_1 = __webpack_require__(/*! ./event */ "../zogra-renderer/dist/core/event.js");
-const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/core/global.js");
-class Asset {
-    constructor(name) {
-        this.destroyed = false;
-        this.assetID = exports.AssetManager.newAssetID(this);
-        this.name = name || `Asset_${this.assetID}`;
-    }
-    destroy() {
-        this.destroyed = true;
-        exports.AssetManager.destroy(this.assetID);
-    }
-}
-exports.Asset = Asset;
-class LazyInitAsset extends Asset {
-    constructor(ctx = global_1.GlobalContext()) {
-        super();
-        this.initialzed = false;
-        this.ctx = ctx;
-    }
-    tryInit(required = false) {
-        if (this.initialzed)
-            return true;
-        const ctx = this.ctx || global_1.GlobalContext();
-        if (!ctx) {
-            if (required)
-                throw new Error("Failed to initialize GPU resource withou a global GL context.");
-            return false;
-        }
-        this.ctx = ctx;
-        if (this.init()) {
-            this.initialzed = true;
-            return true;
-        }
-        else {
-            if (required)
-                throw new Error("Failed to initialize required GPU resource.");
-            return false;
-        }
-    }
-}
-exports.LazyInitAsset = LazyInitAsset;
-class AssetManagerType {
-    constructor() {
-        this.assetsMap = new Map();
-        this.id = 1;
-        this.eventEmitter = new event_1.EventEmitter();
-    }
-    newAssetID(asset) {
-        const currentId = ++this.id;
-        this.assetsMap.set(currentId, asset);
-        util_1.setImmediate(() => this.eventEmitter.emit("asset-created", asset));
-        return asset.assetID = currentId;
-    }
-    find(id) {
-        if (typeof (id) === "number")
-            return this.assetsMap.get(id);
-        else if (typeof (id) === "string") {
-            for (const asset of this.assetsMap.values())
-                if (asset.name === id)
-                    return asset;
-        }
-        return undefined;
-    }
-    destroy(id) {
-        const asset = this.assetsMap.get(id);
-        if (!asset)
-            return;
-        this.assetsMap.delete(id);
-        util_1.setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
-    }
-    findAssetsOfType(type) {
-        return Array.from(this.assetsMap.values()).filter(asset => asset instanceof type);
-    }
-    on(event, listener) {
-        return this.eventEmitter.on(event, listener);
-    }
-    off(event, listener) {
-        return this.eventEmitter.off(event, listener);
-    }
-}
-exports.AssetManager = new AssetManagerType();
-//# sourceMappingURL=asset.js.map
-
-/***/ }),
-
-/***/ "../zogra-renderer/dist/core/buffer.js":
-/*!*********************************************!*\
-  !*** ../zogra-renderer/dist/core/buffer.js ***!
-  \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderBuffer = exports.BufferStructureInfo = void 0;
+exports.GLArrayBuffer = exports.BufferStructureInfo = void 0;
 const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
 const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/core/global.js");
 exports.BufferStructureInfo = {
@@ -3211,7 +4400,7 @@ exports.BufferStructureInfo = {
         return structInfo;
     }
 };
-class RenderBuffer extends Array {
+class GLArrayBuffer extends Array {
     constructor(structure, items, ctx = global_1.GlobalContext()) {
         super(items);
         this.static = true;
@@ -3383,8 +4572,125 @@ class RenderBuffer extends Array {
         return true;
     }
 }
-exports.RenderBuffer = RenderBuffer;
-//# sourceMappingURL=buffer.js.map
+exports.GLArrayBuffer = GLArrayBuffer;
+//# sourceMappingURL=array-buffer.js.map
+
+/***/ }),
+
+/***/ "../zogra-renderer/dist/core/asset.js":
+/*!********************************************!*\
+  !*** ../zogra-renderer/dist/core/asset.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AssetManager = exports.LazyInitAsset = exports.GPUAsset = exports.Asset = void 0;
+const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
+const event_1 = __webpack_require__(/*! ./event */ "../zogra-renderer/dist/core/event.js");
+const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/core/global.js");
+class Asset {
+    constructor(name) {
+        this.destroyed = false;
+        this.assetID = exports.AssetManager.newAssetID(this);
+        this.name = name || `Asset_${this.assetID}`;
+    }
+    destroy() {
+        this.destroyed = true;
+        exports.AssetManager.destroy(this.assetID);
+    }
+}
+exports.Asset = Asset;
+class GPUAsset extends Asset {
+    constructor(ctx = global_1.GlobalContext(), name) {
+        super(name);
+        this.initialized = false;
+        this.ctx = ctx;
+    }
+    tryInit(required = false) {
+        if (this.initialized)
+            return true;
+        if (!this.ctx)
+            this.ctx = global_1.GlobalContext();
+        const success = this.ctx && this.init();
+        if (!success && required)
+            throw new Error(`Failed to init GPU Asset '${this.name}' without global gl context.`);
+        this.initialized = success;
+        return success;
+    }
+}
+exports.GPUAsset = GPUAsset;
+class LazyInitAsset extends Asset {
+    constructor(ctx = global_1.GlobalContext()) {
+        super();
+        this.initialzed = false;
+        this.ctx = ctx;
+    }
+    tryInit(required = false) {
+        if (this.initialzed)
+            return true;
+        const ctx = this.ctx || global_1.GlobalContext();
+        if (!ctx) {
+            if (required)
+                throw new Error("Failed to initialize GPU resource withou a global GL context.");
+            return false;
+        }
+        this.ctx = ctx;
+        if (this.init()) {
+            this.initialzed = true;
+            return true;
+        }
+        else {
+            if (required)
+                throw new Error("Failed to initialize required GPU resource.");
+            return false;
+        }
+    }
+}
+exports.LazyInitAsset = LazyInitAsset;
+class AssetManagerType {
+    constructor() {
+        this.assetsMap = new Map();
+        this.id = 1;
+        this.eventEmitter = new event_1.EventEmitter();
+    }
+    newAssetID(asset) {
+        const currentId = ++this.id;
+        this.assetsMap.set(currentId, asset);
+        util_1.setImmediate(() => this.eventEmitter.emit("asset-created", asset));
+        return asset.assetID = currentId;
+    }
+    find(id) {
+        if (typeof (id) === "number")
+            return this.assetsMap.get(id);
+        else if (typeof (id) === "string") {
+            for (const asset of this.assetsMap.values())
+                if (asset.name === id)
+                    return asset;
+        }
+        return undefined;
+    }
+    destroy(id) {
+        const asset = this.assetsMap.get(id);
+        if (!asset)
+            return;
+        this.assetsMap.delete(id);
+        util_1.setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
+    }
+    findAssetsOfType(type) {
+        return Array.from(this.assetsMap.values()).filter(asset => asset instanceof type);
+    }
+    on(event, listener) {
+        return this.eventEmitter.on(event, listener);
+    }
+    off(event, listener) {
+        return this.eventEmitter.off(event, listener);
+    }
+}
+exports.AssetManager = new AssetManagerType();
+//# sourceMappingURL=asset.js.map
 
 /***/ }),
 
@@ -3418,8 +4724,9 @@ __exportStar(__webpack_require__(/*! ./texture */ "../zogra-renderer/dist/core/t
 __exportStar(__webpack_require__(/*! ./asset */ "../zogra-renderer/dist/core/asset.js"), exports);
 __exportStar(__webpack_require__(/*! ./lines */ "../zogra-renderer/dist/core/lines.js"), exports);
 __exportStar(__webpack_require__(/*! ./event */ "../zogra-renderer/dist/core/event.js"), exports);
-__exportStar(__webpack_require__(/*! ./buffer */ "../zogra-renderer/dist/core/buffer.js"), exports);
-__exportStar(__webpack_require__(/*! ./render-target */ "../zogra-renderer/dist/core/render-target.js"), exports);
+__exportStar(__webpack_require__(/*! ./array-buffer */ "../zogra-renderer/dist/core/array-buffer.js"), exports);
+__exportStar(__webpack_require__(/*! ./render-buffer */ "../zogra-renderer/dist/core/render-buffer.js"), exports);
+__exportStar(__webpack_require__(/*! ./frame-buffer */ "../zogra-renderer/dist/core/frame-buffer.js"), exports);
 __exportStar(__webpack_require__(/*! ./debug */ "../zogra-renderer/dist/core/debug.js"), exports);
 var texture_format_1 = __webpack_require__(/*! ./texture-format */ "../zogra-renderer/dist/core/texture-format.js");
 Object.defineProperty(exports, "TextureFormat", { enumerable: true, get: function () { return texture_format_1.TextureFormat; } });
@@ -3442,6 +4749,7 @@ const color_1 = __webpack_require__(/*! ../types/color */ "../zogra-renderer/dis
 const math_1 = __webpack_require__(/*! ../types/math */ "../zogra-renderer/dist/types/math.js");
 const rect_1 = __webpack_require__(/*! ../types/rect */ "../zogra-renderer/dist/types/rect.js");
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../zogra-renderer/dist/types/vec2.js");
+const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../zogra-renderer/dist/types/vec3.js");
 class DebugProvider {
     drawRay(origin, dir, distance = 1, color = color_1.Color.red) {
         this.drawLine(origin, math_1.mul(dir, distance).plus(origin), color);
@@ -3462,6 +4770,19 @@ class DebugProvider {
         this.drawLine(vec2_1.vec2(max.x, min.y).toVec3(), vec2_1.vec2(max.x, max.y).toVec3(), color);
         this.drawLine(vec2_1.vec2(max.x, max.y).toVec3(), vec2_1.vec2(min.x, max.y).toVec3(), color);
         this.drawLine(vec2_1.vec2(min.x, max.y).toVec3(), vec2_1.vec2(min.x, min.y).toVec3(), color);
+    }
+    drawLines(points, color = color_1.Color.red) {
+        for (let i = 0; i < points.length; i++) {
+            this.drawLine(points[i], points[(i + 1) % points.length], color);
+        }
+    }
+    drawCircle(center, radius, color = color_1.Color.red) {
+        const edges = 24;
+        for (let i = 0; i < edges; i++) {
+            const p0 = vec3_1.vec3(Math.cos(i * 2 * Math.PI / edges), Math.sin(i * 2 * Math.PI / edges), 0);
+            const p1 = vec3_1.vec3(Math.cos((i + 1) % edges * 2 * Math.PI / edges), Math.sin((i + 1) % edges * 2 * Math.PI / edges), 0);
+            this.drawLine(p0.mul(radius).plus(center), p1.mul(radius).plus(center), color);
+        }
     }
 }
 exports.DebugProvider = DebugProvider;
@@ -3514,6 +4835,117 @@ exports.EventEmitter = EventEmitter;
 
 /***/ }),
 
+/***/ "../zogra-renderer/dist/core/frame-buffer.js":
+/*!***************************************************!*\
+  !*** ../zogra-renderer/dist/core/frame-buffer.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FrameBuffer = void 0;
+const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/core/global.js");
+const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
+const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../zogra-renderer/dist/types/vec2.js");
+const asset_1 = __webpack_require__(/*! ./asset */ "../zogra-renderer/dist/core/asset.js");
+const FrameBufferAttachment = {
+    canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK },
+    fromRenderTexture: (rt) => ({ tex: rt.glTex() })
+};
+class CanvasBuffer {
+    get name() { return ""; }
+    get assetID() { return -1; }
+    get width() { return global_1.GlobalContext().width; }
+    get height() { return global_1.GlobalContext().height; }
+    get size() { return global_1.GlobalContext().renderer.canvasSize; }
+    bind() {
+        const gl = global_1.GlobalContext().gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, this.width, this.height);
+    }
+    destroy() { }
+}
+class FrameBuffer extends asset_1.GPUAsset {
+    constructor(width = 0, height = 0, ctx = global_1.GlobalContext()) {
+        super(ctx);
+        this.frameBuffer = null;
+        this._colorAttachments = [];
+        this._depthAttachment = null;
+        this.activeBuffers = [];
+        this.dirty = true;
+        this.size = vec2_1.vec2(Math.floor(width), Math.floor(height));
+        this.tryInit(false);
+    }
+    get width() { return this.size.x; }
+    get height() { return this.size.y; }
+    get colorAttachments() { return this._colorAttachments; }
+    get depthAttachment() { return this._depthAttachment; }
+    /** @internal */
+    glFBO() {
+        this.tryInit(true);
+        return this.frameBuffer;
+    }
+    addColorAttachment(attachment, attachPoit = this._colorAttachments.length) {
+        if (attachment.width !== this.size.x || attachment.height !== this.size.y)
+            console.warn(`Color attachment size [${attachment.width}, ${attachment.height}] missmatch with framebuffer.`);
+        this._colorAttachments[attachPoit] = attachment;
+        this.dirty = true;
+    }
+    setDepthAttachment(attachment) {
+        if (attachment.width !== this.size.x || attachment.height !== this.size.y)
+            console.warn(`Depth attachment size [${attachment.width}, ${attachment.height}] missmatch with framebuffer.`);
+        this._depthAttachment = attachment;
+        this.dirty = true;
+    }
+    reset(width = this.width, height = this.height) {
+        this.size.x = width;
+        this.size.y = height;
+        this._colorAttachments = [];
+        this._depthAttachment = null;
+        this.dirty = true;
+    }
+    init() {
+        var _a;
+        const gl = this.ctx.gl;
+        this.frameBuffer = (_a = gl.createFramebuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer object");
+        return true;
+    }
+    bind() {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        this.activeBuffers = [];
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+        for (let i = 0; i < this._colorAttachments.length; i++) {
+            if (this._colorAttachments[i]) {
+                this._colorAttachments[i].bindFramebuffer(i);
+                this.activeBuffers.push(gl.COLOR_ATTACHMENT0 + i);
+            }
+            else
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.RENDERBUFFER, null);
+        }
+        if (this._depthAttachment) {
+            this._depthAttachment.bindFramebuffer();
+            this.activeBuffers.push(gl.DEPTH_ATTACHMENT);
+        }
+        else
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
+        gl.viewport(0, 0, this.width, this.height);
+        gl.drawBuffers(this.activeBuffers);
+    }
+    destroy() {
+        super.destroy();
+        const gl = this.ctx.gl;
+        gl.deleteFramebuffer(this.frameBuffer);
+    }
+}
+exports.FrameBuffer = FrameBuffer;
+FrameBuffer.CanvasBuffer = Object.freeze(new CanvasBuffer());
+//# sourceMappingURL=frame-buffer.js.map
+
+/***/ }),
+
 /***/ "../zogra-renderer/dist/core/global.js":
 /*!*********************************************!*\
   !*** ../zogra-renderer/dist/core/global.js ***!
@@ -3539,7 +4971,7 @@ exports.GLContext = GLContext;
 let ctx;
 let debugProvider = new class EmptyDebugProvider extends debug_1.DebugProvider {
     drawLine(start, end, color) {
-        console.warn("No debug provider.");
+        // console.warn("No debug provider.");
     }
 };
 const setGlobalContext = (_ctx) => ctx = _ctx;
@@ -3718,8 +5150,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.materialDefine = exports.SimpleTexturedMaterial = exports.MaterialFromShader = exports.shaderProp = exports.Material = void 0;
+const shader_1 = __webpack_require__(/*! ./shader */ "../zogra-renderer/dist/core/shader.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../zogra-renderer/dist/types/color.js");
-const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
 __webpack_require__(/*! reflect-metadata */ "../zogra-renderer/node_modules/reflect-metadata/Reflect.js");
 const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/core/global.js");
 __webpack_require__(/*! reflect-metadata */ "../zogra-renderer/node_modules/reflect-metadata/Reflect.js");
@@ -3740,10 +5172,12 @@ class Material extends asset_1.Asset {
         super();
         this.properties = {};
         this.textureCount = 0;
+        this.boundTextures = [];
         this.initialized = false;
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
         this._shader = shader;
+        this.pipelineStateOverride = Object.assign({}, shader.pipelineStates);
     }
     get shader() { return this._shader; }
     // set shader(value)
@@ -3761,6 +5195,7 @@ class Material extends asset_1.Asset {
     // }
     upload(data) {
         this.tryInit(true);
+        this.setupPipelineStateOverride();
         for (const uniformName in this.properties) {
             const prop = this.properties[uniformName];
             const value = prop.key
@@ -3781,8 +5216,9 @@ class Material extends asset_1.Asset {
         }
         if (prop.key)
             this[prop.key] = value;
-        else
-            prop.value = util_1.cloneUniformValue(value);
+        else {
+            prop.value = value;
+        }
     }
     /**
      * Unbind all render textures from active texture slot due to avoid
@@ -3791,13 +5227,13 @@ class Material extends asset_1.Asset {
     unbindRenderTextures() {
         this.tryInit(true);
         const gl = this.gl;
-        for (const uniformName in this.properties) {
-            const prop = this.properties[uniformName];
-            if (prop.uploaded instanceof texture_1.RenderTexture) {
-                prop.uploaded.unbind(prop.textureUnit);
-                prop.uploaded = null;
+        for (let unit = 0; unit < this.boundTextures.length; unit++) {
+            const texture = this.boundTextures[unit];
+            if (texture instanceof texture_1.RenderTexture) {
+                texture.unbind(unit);
             }
         }
+        this.boundTextures.length = 0;
     }
     tryInit(required = false) {
         if (this.initialized)
@@ -3832,26 +5268,99 @@ class Material extends asset_1.Asset {
         let prop = this.properties[uniformName];
         if (prop)
             return prop;
-        switch (type) {
-            case "tex2d":
-                prop = {
-                    type: type,
-                    uploaded: undefined,
-                    location: this.shader.uniformLocation(uniformName),
-                    textureUnit: this.textureCount++,
-                };
-                break;
-            default:
-                prop = {
-                    type: type,
-                    location: this.shader.uniformLocation(uniformName),
-                    uploaded: undefined,
-                };
+        if (type === "tex2d") {
+            prop = {
+                type: type,
+                value: undefined,
+                uploaed: undefined,
+                location: this.shader.uniformLocation(uniformName),
+            };
+        }
+        else if (type === "tex2d[]") {
+            prop = {
+                type: type,
+                value: undefined,
+                uploaded: undefined,
+                location: this.shader.uniformLocation(uniformName),
+                buffer: new Array(),
+            };
+        }
+        else if (type.endsWith("[]"))
+            prop = {
+                type: type,
+                value: undefined,
+                uploaded: undefined,
+                location: this.shader.uniformLocation(uniformName),
+                buffer: new Float32Array(),
+            };
+        else {
+            prop = {
+                type: type,
+                value: undefined,
+                uploaded: undefined,
+                location: this.shader.uniformLocation(uniformName),
+            };
         }
         this.properties[uniformName] = prop;
         return prop;
     }
+    setPipelineStateOverride(settings) {
+        let blend = false;
+        let blendRGB = [shader_1.Blending.One, shader_1.Blending.Zero];
+        let blendAlpha = [shader_1.Blending.One, shader_1.Blending.OneMinusSrcAlpha];
+        if (typeof (settings.blend) === "number" && settings.blend !== shader_1.Blending.Disable) {
+            blend = true;
+            blendRGB = [settings.blend, settings.blend];
+            blendAlpha = [settings.blend, settings.blend];
+        }
+        else if (settings.blend instanceof Array) {
+            blend = true;
+            blendRGB = settings.blend;
+        }
+        if (settings.blendRGB) {
+            blend = settings.blend !== false && settings.blend !== shader_1.Blending.Disable;
+            blendRGB = settings.blendRGB;
+        }
+        if (settings.blendAlpha) {
+            blend = settings.blend !== false && settings.blend !== shader_1.Blending.Disable;
+            blendAlpha = settings.blendAlpha;
+        }
+        this.pipelineStateOverride = {
+            depth: settings.depth || shader_1.DepthTest.Less,
+            blend,
+            blendRGB,
+            blendAlpha,
+            zWrite: settings.zWrite === false ? false : true,
+            cull: settings.cull || shader_1.Culling.Back
+        };
+    }
+    setupPipelineStateOverride() {
+        const gl = this.gl;
+        if (this.pipelineStateOverride.depth === shader_1.DepthTest.Disable)
+            gl.disable(gl.DEPTH_TEST);
+        else {
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthMask(this.pipelineStateOverride.zWrite);
+            gl.depthFunc(this.pipelineStateOverride.depth);
+        }
+        if (!this.pipelineStateOverride.blend)
+            gl.disable(gl.BLEND);
+        else {
+            const [srcRGB, dstRGB] = this.pipelineStateOverride.blendRGB;
+            const [srcAlpha, dstAlpha] = this.pipelineStateOverride.blendAlpha;
+            gl.enable(gl.BLEND);
+            gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+        }
+        if (this.pipelineStateOverride.cull === shader_1.Culling.Disable)
+            gl.disable(gl.CULL_FACE);
+        else {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(this.pipelineStateOverride.cull);
+            gl.frontFace(gl.CCW);
+        }
+    }
     uploadUniform(prop, value) {
+        var _a;
         const gl = this.gl;
         const ctx = global_1.GlobalContext();
         if (!prop.location)
@@ -3875,7 +5384,11 @@ class Material extends asset_1.Asset {
         // }
         // if (!dirty)
         //     return false;
+        let uploaded = value;
         switch (prop.type) {
+            case "int":
+                gl.uniform1i(prop.location, value);
+                break;
             case "float":
                 gl.uniform1f(prop.location, value);
                 break;
@@ -3894,18 +5407,79 @@ class Material extends asset_1.Asset {
             case "mat4":
                 gl.uniformMatrix4fv(prop.location, false, value);
                 break;
-            case "tex2d":
+            case "int[]":
+                value.length && gl.uniform1iv(prop.location, value);
+                break;
+            case "float[]":
+                value.length && gl.uniform1fv(prop.location, value);
+                break;
+            case "vec2[]": {
+                const length = this.setVectorUniformBuffer(prop, 2, value);
+                length && gl.uniform2fv(prop.location, prop.buffer, 0, length);
+                break;
+            }
+            case "vec3[]": {
+                const length = this.setVectorUniformBuffer(prop, 3, value);
+                length && gl.uniform3fv(prop.location, prop.buffer, 0, length);
+                break;
+            }
+            case "color[]":
+            case "vec4[]": {
+                const length = this.setVectorUniformBuffer(prop, 4, value);
+                length && gl.uniform4fv(prop.location, prop.buffer, 0, length);
+                break;
+            }
+            case "mat4[]": {
+                const length = this.setVectorUniformBuffer(prop, 16, value);
+                length && gl.uniform4fv(prop.location, prop.buffer, 0, length);
+                break;
+            }
+            case "tex2d": {
                 // Update texture to texture unit instead of update uniform1i
                 // Due to performance issue mentioned in https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14.10
+                const texProp = prop;
                 value = value || ctx.renderer.assets.textures.default;
-                value.bind(prop.textureUnit);
-                if (!prop.uniformSet) {
-                    gl.uniform1i(prop.location, prop.textureUnit);
-                    prop.uniformSet = true;
+                let unit = this.bindNextTexture(value);
+                if (texProp.uploaded !== unit) {
+                    gl.uniform1i(texProp.location, unit);
+                    texProp.uploaded = unit;
                 }
+                uploaded = unit;
                 break;
+            }
+            case "tex2d[]": {
+                const texProp = prop;
+                const texArray = value;
+                let shouldUpload = false;
+                const uniformValues = texProp.uploaded || [];
+                for (let i = 0; i < texArray.length; i++) {
+                    const tex = texArray[i] || ctx.renderer.assets.textures.default;
+                    let unit = this.bindNextTexture(tex);
+                    if (((_a = texProp.uploaded) === null || _a === void 0 ? void 0 : _a[i]) !== unit)
+                        shouldUpload = true;
+                    uniformValues[i] = unit;
+                }
+                if (shouldUpload) {
+                    gl.uniform1iv(texProp.location, uniformValues, 0, texArray.length);
+                    texProp.uploaded = uniformValues;
+                }
+                uploaded = uniformValues;
+            }
         }
-        prop.uploaded = value;
+        prop.uploaded = uploaded;
+    }
+    bindNextTexture(texture) {
+        texture.bind(this.boundTextures.length);
+        return this.boundTextures.push(texture) - 1;
+    }
+    setVectorUniformBuffer(prop, elementSize, valueArray) {
+        if (prop.buffer.length < elementSize * valueArray.length) {
+            prop.buffer = new Float32Array(elementSize * valueArray.length);
+        }
+        for (let i = 0; i < valueArray.length; i++) {
+            prop.buffer.set(valueArray[i], i * elementSize);
+        }
+        return elementSize * valueArray.length;
     }
 }
 exports.Material = Material;
@@ -3968,7 +5542,7 @@ exports.materialDefine = materialDefine;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MeshLegacy = exports.Mesh = exports.DefaultVertexStructInfo = exports.DefaultVertexData = void 0;
+exports.MeshLegacy = exports.Mesh = exports.VertexStruct = exports.DefaultVertexStructInfo = exports.DefaultVertexData = void 0;
 const vec3_1 = __webpack_require__(/*! ../types/vec3 */ "../zogra-renderer/dist/types/vec3.js");
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../zogra-renderer/dist/types/vec2.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../zogra-renderer/dist/types/color.js");
@@ -3976,7 +5550,7 @@ const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/cor
 const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
 const math_1 = __webpack_require__(/*! ../types/math */ "../zogra-renderer/dist/types/math.js");
 const asset_1 = __webpack_require__(/*! ./asset */ "../zogra-renderer/dist/core/asset.js");
-const buffer_1 = __webpack_require__(/*! ./buffer */ "../zogra-renderer/dist/core/buffer.js");
+const array_buffer_1 = __webpack_require__(/*! ./array-buffer */ "../zogra-renderer/dist/core/array-buffer.js");
 const VertDataFloatCount = 14;
 exports.DefaultVertexData = {
     vert: "vec3",
@@ -3985,7 +5559,11 @@ exports.DefaultVertexData = {
     uv: "vec2",
     uv2: "vec2",
 };
-exports.DefaultVertexStructInfo = buffer_1.BufferStructureInfo.from(exports.DefaultVertexData);
+exports.DefaultVertexStructInfo = array_buffer_1.BufferStructureInfo.from(exports.DefaultVertexData);
+function VertexStruct(structure) {
+    return structure;
+}
+exports.VertexStruct = VertexStruct;
 class Mesh extends asset_1.Asset {
     constructor(...args) {
         super("Mesh");
@@ -3997,21 +5575,21 @@ class Mesh extends asset_1.Asset {
         this.indices = new Uint32Array();
         if (args.length === 0) {
             this.ctx = global_1.GlobalContext();
-            this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0, this.ctx);
+            this.vertices = new array_buffer_1.GLArrayBuffer(exports.DefaultVertexData, 0, this.ctx);
         }
         else if (args.length === 1) {
             if (args[0] instanceof global_1.GLContext) {
                 this.ctx = args[0];
-                this.vertices = new buffer_1.RenderBuffer(exports.DefaultVertexData, 0, this.ctx);
+                this.vertices = new array_buffer_1.GLArrayBuffer(exports.DefaultVertexData, 0, this.ctx);
             }
             else {
                 this.ctx = global_1.GlobalContext();
-                this.vertices = new buffer_1.RenderBuffer(args[0], 0, this.ctx);
+                this.vertices = new array_buffer_1.GLArrayBuffer(args[0], 0, this.ctx);
             }
         }
         else {
             this.ctx = args[1] || global_1.GlobalContext();
-            this.vertices = new buffer_1.RenderBuffer(args[0], 0, this.ctx);
+            this.vertices = new array_buffer_1.GLArrayBuffer(args[0], 0, this.ctx);
         }
         this.tryInit(false);
     }
@@ -4374,9 +5952,9 @@ exports.MeshLegacy = MeshLegacy;
 
 /***/ }),
 
-/***/ "../zogra-renderer/dist/core/render-target.js":
+/***/ "../zogra-renderer/dist/core/render-buffer.js":
 /*!****************************************************!*\
-  !*** ../zogra-renderer/dist/core/render-target.js ***!
+  !*** ../zogra-renderer/dist/core/render-buffer.js ***!
   \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -4384,93 +5962,102 @@ exports.MeshLegacy = MeshLegacy;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderTarget = void 0;
-const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/core/global.js");
-const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
+exports.DepthBuffer = exports.RenderBuffer = void 0;
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../zogra-renderer/dist/types/vec2.js");
-const FrameBufferAttachment = {
-    canvasOutput: { tex: null, attachPoint: WebGL2RenderingContext.BACK },
-    fromRenderTexture: (rt) => ({ tex: rt.glTex() })
-};
-class CanvasTarget {
-    get width() { return global_1.GlobalContext().width; }
-    get height() { return global_1.GlobalContext().height; }
-    get size() { return global_1.GlobalContext().renderer.canvasSize; }
-    bind() {
-        const gl = global_1.GlobalContext().gl;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, this.width, this.height);
+const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
+const asset_1 = __webpack_require__(/*! ./asset */ "../zogra-renderer/dist/core/asset.js");
+const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/core/global.js");
+const texture_format_1 = __webpack_require__(/*! ./texture-format */ "../zogra-renderer/dist/core/texture-format.js");
+class RenderBuffer extends asset_1.GPUAsset {
+    constructor(width, height, format = texture_format_1.TextureFormat.RGBA8, multiSampling = 0, ctx = global_1.GlobalContext()) {
+        super(ctx);
+        this.multiSampling = 0;
+        this.format = texture_format_1.TextureFormat.RGBA8;
+        this._glBuf = null;
+        this.size = vec2_1.vec2(width, height);
+        this.format = format;
+        this.multiSampling = multiSampling;
+        this.tryInit(false);
     }
-    release() { }
-}
-class RenderTarget {
-    constructor(width = 0, height = 0, ctx = global_1.GlobalContext()) {
+    get width() { return this.size.x; }
+    set width(w) { this.size.x = w; }
+    get height() { return this.size.y; }
+    set height(h) { this.size.y = h; }
+    /** @internal */
+    glBuf() {
+        this.tryInit(true);
+        return this._glBuf;
+    }
+    updateParams() {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this._glBuf);
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
+    }
+    init() {
         var _a;
-        this.colorAttachments = [];
-        this.depthAttachment = FrameBufferAttachment.canvasOutput;
-        this.isCanvasTarget = false;
-        this.width = width;
-        this.height = height;
-        if (!ctx)
-            this.frameBuffer = null;
-        else
-            this.frameBuffer = (_a = ctx.gl.createFramebuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create frame buffer");
+        const gl = this.ctx.gl;
+        this._glBuf = (_a = gl.createRenderbuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer.");
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this._glBuf);
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        return true;
     }
-    get size() { return vec2_1.vec2(this.width, this.height); }
-    addColorAttachment(rt) {
-        if (rt === null) {
-            return;
-        }
-        // this.isCanvasTarget = false;
-        if (this.width == 0 && this.height == 0) {
-            this.width = rt.width;
-            this.height = rt.height;
-        }
-        if (this.width != rt.width || this.height != rt.height)
-            throw new Error("Framebuffer attachments must in same resolution.");
-        this.colorAttachments.push(FrameBufferAttachment.fromRenderTexture(rt));
+    bindFramebuffer(attachment) {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.RENDERBUFFER, this._glBuf);
     }
-    setDepthAttachment(rt) {
-        var _a;
-        if (this.width == 0 && this.height == 0) {
-            this.width = rt.width;
-            this.height = rt.height;
-        }
-        if (this.width != rt.width || this.height != rt.height)
-            throw new Error("Framebuffer attachments must in same resolution.");
-        this.depthAttachment = { tex: (_a = rt === null || rt === void 0 ? void 0 : rt.glTex) !== null && _a !== void 0 ? _a : null, attachPoint: WebGL2RenderingContext.DEPTH_ATTACHMENT };
-    }
-    bind(ctx = global_1.GlobalContext()) {
-        const gl = ctx.gl;
-        if (this.isCanvasTarget) {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            gl.viewport(0, 0, ctx.width, ctx.height);
-        }
-        else {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-            let attachIdx = 0;
-            for (let i = 0; i < this.colorAttachments.length; i++) {
-                if (this.colorAttachments[i].tex) {
-                    this.colorAttachments[i].attachPoint = gl.COLOR_ATTACHMENT0 + attachIdx++;
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, this.colorAttachments[i].attachPoint, gl.TEXTURE_2D, this.colorAttachments[i].tex, 0);
-                }
-            }
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.depthAttachment.tex, 0);
-            gl.viewport(0, 0, this.width, this.height);
-            const buffers = this.colorAttachments.map(t => t.attachPoint);
-            gl.drawBuffers(buffers);
-        }
-    }
-    release(ctx = global_1.GlobalContext()) {
-        if (this.isCanvasTarget)
-            return;
-        const gl = ctx.gl;
-        gl.deleteFramebuffer(this.frameBuffer);
+    destroy() {
+        super.destroy();
+        const gl = this.ctx.gl;
+        gl.deleteRenderbuffer(this._glBuf);
     }
 }
-exports.RenderTarget = RenderTarget;
-RenderTarget.CanvasTarget = Object.freeze(new CanvasTarget());
-//# sourceMappingURL=render-target.js.map
+exports.RenderBuffer = RenderBuffer;
+class DepthBuffer extends asset_1.GPUAsset {
+    constructor(width, height, multiSampling = 0, ctx = global_1.GlobalContext()) {
+        super(ctx);
+        this.multiSampling = 0;
+        this.format = texture_format_1.TextureFormat.RGBA8;
+        this.glBuf = null;
+        this.size = vec2_1.vec2(width, height);
+        this.format = texture_format_1.TextureFormat.DEPTH_COMPONENT;
+        this.multiSampling = multiSampling;
+        this.tryInit(false);
+    }
+    get width() { return this.size.x; }
+    set width(w) { this.size.x = w; }
+    get height() { return this.size.y; }
+    set height(h) { this.size.y = h; }
+    updateParams() {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this.glBuf);
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
+    }
+    init() {
+        var _a;
+        const gl = this.ctx.gl;
+        this.glBuf = (_a = gl.createRenderbuffer()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create render buffer.");
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this.glBuf);
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        return true;
+    }
+    bindFramebuffer() {
+        this.tryInit(true);
+        const gl = this.ctx.gl;
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.glBuf);
+    }
+    destroy() {
+        super.destroy();
+        const gl = this.ctx.gl;
+        gl.deleteRenderbuffer(this.glBuf);
+    }
+}
+exports.DepthBuffer = DepthBuffer;
+//# sourceMappingURL=render-buffer.js.map
 
 /***/ }),
 
@@ -4489,7 +6076,7 @@ const util_1 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/
 const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/core/global.js");
 const color_1 = __webpack_require__(/*! ../types/color */ "../zogra-renderer/dist/types/color.js");
 const mat4_1 = __webpack_require__(/*! ../types/mat4 */ "../zogra-renderer/dist/types/mat4.js");
-const render_target_1 = __webpack_require__(/*! ./render-target */ "../zogra-renderer/dist/core/render-target.js");
+const frame_buffer_1 = __webpack_require__(/*! ./frame-buffer */ "../zogra-renderer/dist/core/frame-buffer.js");
 const texture_1 = __webpack_require__(/*! ./texture */ "../zogra-renderer/dist/core/texture.js");
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../zogra-renderer/dist/types/vec2.js");
 const assets_1 = __webpack_require__(/*! ../builtin-assets/assets */ "../zogra-renderer/dist/builtin-assets/assets.js");
@@ -4497,15 +6084,18 @@ const rect_1 = __webpack_require__(/*! ../types/rect */ "../zogra-renderer/dist/
 const mesh_builder_1 = __webpack_require__(/*! ../utils/mesh-builder */ "../zogra-renderer/dist/utils/mesh-builder.js");
 const math_1 = __webpack_require__(/*! ../types/math */ "../zogra-renderer/dist/types/math.js");
 const shaders_1 = __webpack_require__(/*! ../builtin-assets/shaders */ "../zogra-renderer/dist/builtin-assets/shaders.js");
+const object_pool_1 = __webpack_require__(/*! ../utils/object-pool */ "../zogra-renderer/dist/utils/object-pool.js");
 class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4_1.mat4.identity();
         this.viewMatrix = mat4_1.mat4.identity();
         this.projectionMatrix = mat4_1.mat4.identity();
-        this.target = render_target_1.RenderTarget.CanvasTarget;
+        this.target = frame_buffer_1.FrameBuffer.CanvasBuffer;
         this.shader = null;
         this.globalUniforms = new Map();
         this.globalTextures = new Map();
+        this.framebufferPool = new object_pool_1.ObjectPool((w, h) => new frame_buffer_1.FrameBuffer(w, h));
+        this.blitFramebuffer = [new frame_buffer_1.FrameBuffer(), new frame_buffer_1.FrameBuffer()];
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
@@ -4513,6 +6103,8 @@ class ZograRenderer {
         this.canvas.height = this.height;
         this.scissor = new rect_1.Rect(vec2_1.vec2.zero(), vec2_1.vec2(this.width, this.height));
         this.gl = util_1.panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
+        this.gl.getExtension("EXT_color_buffer_float");
+        this.gl.getExtension("EXT_color_buffer_half_float");
         this.ctx = new global_1.GLContext();
         Object.assign(this.ctx, {
             gl: this.gl,
@@ -4545,63 +6137,94 @@ class ZograRenderer {
     setViewProjection(view, projection) {
         mat4_1.mat4.mul(this.viewProjectionMatrix, projection, view);
     }
-    setRenderTarget(colorAttachments, depthAttachment) {
-        if (colorAttachments === render_target_1.RenderTarget.CanvasTarget) {
-            if (this.target !== colorAttachments)
-                this.target.release();
-            this.target = colorAttachments;
-        }
-        else if (colorAttachments instanceof render_target_1.RenderTarget) {
-            if (this.target !== colorAttachments)
-                this.target.release();
-            this.target = colorAttachments;
-            if (depthAttachment) {
-                this.target.setDepthAttachment(depthAttachment);
-            }
+    setFramebuffer(colorAttachments, depthAttachment) {
+        let newFramebuffer;
+        if (colorAttachments === frame_buffer_1.FrameBuffer.CanvasBuffer)
+            newFramebuffer = frame_buffer_1.FrameBuffer.CanvasBuffer;
+        else if (colorAttachments instanceof frame_buffer_1.FrameBuffer) {
+            newFramebuffer = colorAttachments;
         }
         else {
-            let target;
             if (colorAttachments instanceof Array) {
-                this.target.release();
-                target = new render_target_1.RenderTarget(colorAttachments[0].width, colorAttachments[0].height, this.ctx);
+                let width = 0, height = 0;
+                if (colorAttachments.length > 0) {
+                    width = colorAttachments[0].width;
+                    height = colorAttachments[0].height;
+                }
+                else if (depthAttachment) {
+                    width = depthAttachment.width;
+                    height = depthAttachment.height;
+                }
+                const framebuffer = this.getTempFramebuffer(width, height);
                 for (let i = 0; i < colorAttachments.length; i++)
-                    target.addColorAttachment(colorAttachments[i]);
+                    framebuffer.addColorAttachment(colorAttachments[i], i);
+                if (depthAttachment)
+                    framebuffer.setDepthAttachment(depthAttachment);
+                newFramebuffer = framebuffer;
             }
-            else if (colorAttachments instanceof texture_1.RenderTexture) {
-                this.target.release();
-                target = new render_target_1.RenderTarget(colorAttachments.width, colorAttachments.height, this.ctx);
-                target.addColorAttachment(colorAttachments);
+            else {
+                const colorAttachment = colorAttachments;
+                const framebuffer = this.getTempFramebuffer(colorAttachment.width, colorAttachment.height);
+                framebuffer.addColorAttachment(colorAttachment, 0);
+                if (depthAttachment)
+                    framebuffer.setDepthAttachment(depthAttachment);
+                newFramebuffer = framebuffer;
             }
-            else
-                throw new Error("Invalid render target");
-            if (depthAttachment)
-                target.setDepthAttachment(depthAttachment);
-            this.target = target;
         }
-        this.scissor = new rect_1.Rect(vec2_1.vec2.zero(), this.target.size);
+        if (newFramebuffer !== this.target) {
+            this.detachCurrentFramebuffer();
+            this.target = newFramebuffer;
+        }
+        this.scissor.min.set([0, 0]);
+        this.scissor.max.set(this.target.size);
         this.target.bind();
+    }
+    detachCurrentFramebuffer() {
+        if (this.target.__isTemp) {
+            this.framebufferPool.release(this.target);
+        }
+    }
+    getTempFramebuffer(width, height) {
+        const framebuffer = this.framebufferPool.get(width, height);
+        framebuffer.__isTemp = true;
+        framebuffer.reset(width, height);
+        return framebuffer;
+    }
+    blitCopy(src, dst) {
+        const gl = this.gl;
+        const [readBuffer, writeBuffer] = this.blitFramebuffer;
+        readBuffer.reset(src.width, src.height);
+        readBuffer.addColorAttachment(src);
+        readBuffer.bind();
+        writeBuffer.reset(src.width, src.height);
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, readBuffer.glFBO());
+        // gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderBuffer.glBuf());
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, writeBuffer.glFBO());
+        // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture.glTex(), 0);
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readBuffer.glFBO());
+        src instanceof texture_1.RenderTexture
+            ? gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glTex(), 0)
+            : gl.framebufferRenderbuffer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glBuf());
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, writeBuffer.glFBO());
+        dst instanceof texture_1.RenderTexture
+            ? gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glTex(), 0)
+            : gl.framebufferRenderbuffer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glBuf());
+        gl.blitFramebuffer(0, 0, src.width, src.height, 0, 0, dst.width, dst.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
     }
     clear(color = color_1.Color.black, clearDepth = true) {
         this.gl.clearColor(color.r, color.g, color.b, color.a);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
     }
     blit(src, dst, material = this.assets.materials.blitCopy, srcRect, dstRect) {
-        if (dst instanceof texture_1.RenderTexture) {
-            const target = new render_target_1.RenderTarget(dst.width, dst.height, this.ctx);
-            target.addColorAttachment(dst);
-            dst = target;
-        }
-        else if (dst instanceof Array) {
-            const target = new render_target_1.RenderTarget(0, 0, this.ctx);
-            for (let i = 0; i < dst.length; i++) {
-                target.addColorAttachment(dst[i]);
-            }
-            dst = target;
-        }
-        const prevVP = this.viewProjectionMatrix;
         const prevTarget = this.target;
+        this.setFramebuffer(dst);
+        dst = this.target;
+        const prevVP = this.viewProjectionMatrix;
+        // const prevTarget = this.target;
         let mesh = this.helperAssets.blitMesh;
-        let viewport = dst === render_target_1.RenderTarget.CanvasTarget ? new rect_1.Rect(vec2_1.vec2.zero(), this.canvasSize) : new rect_1.Rect(vec2_1.vec2.zero(), dst.size);
+        let viewport = dst === frame_buffer_1.FrameBuffer.CanvasBuffer ? new rect_1.Rect(vec2_1.vec2.zero(), this.canvasSize) : new rect_1.Rect(vec2_1.vec2.zero(), dst.size.clone());
         if (src && (srcRect || dstRect)) {
             viewport = dstRect || viewport;
             if (srcRect) {
@@ -4624,7 +6247,7 @@ class ZograRenderer {
             material.setProp(shaders_1.BuiltinUniformNames.mainTex, "tex2d", src);
         this.drawMesh(mesh, mat4_1.mat4.identity(), material);
         // this.unsetGlobalTexture(BuiltinUniformNames.mainTex);
-        this.setRenderTarget(prevTarget);
+        this.setFramebuffer(prevTarget);
         this.viewProjectionMatrix = prevVP;
     }
     useShader(shader) {
@@ -4634,7 +6257,7 @@ class ZograRenderer {
         const gl = this.gl;
         this.shader = shader;
         shader.use();
-        shader.setupPipelineStates();
+        // shader.setupPipelineStates();
     }
     setupTransforms(shader, transformModel) {
         const gl = this.gl;
@@ -4745,7 +6368,7 @@ class ZograRenderer {
         this.globalUniforms.set(name, {
             name: name,
             type: type,
-            value: util_1.cloneUniformValue(value),
+            value: value,
         });
     }
     unsetGlobalUniform(name) {
@@ -4777,7 +6400,7 @@ const global_1 = __webpack_require__(/*! ./global */ "../zogra-renderer/dist/cor
 const shaders_1 = __webpack_require__(/*! ../builtin-assets/shaders */ "../zogra-renderer/dist/builtin-assets/shaders.js");
 const util_2 = __webpack_require__(/*! ../utils/util */ "../zogra-renderer/dist/utils/util.js");
 const asset_1 = __webpack_require__(/*! ./asset */ "../zogra-renderer/dist/core/asset.js");
-const buffer_1 = __webpack_require__(/*! ./buffer */ "../zogra-renderer/dist/core/buffer.js");
+const array_buffer_1 = __webpack_require__(/*! ./array-buffer */ "../zogra-renderer/dist/core/array-buffer.js");
 const mesh_1 = __webpack_require__(/*! ./mesh */ "../zogra-renderer/dist/core/mesh.js");
 var DepthTest;
 (function (DepthTest) {
@@ -4829,7 +6452,7 @@ class Shader extends asset_1.Asset {
         this.program = null;
         this.vertexShader = null;
         this.fragmentShader = null;
-        this.pipelineStates = null;
+        this.pipelineStates = {};
         this.builtinUniformLocations = null;
         this._compiled = false;
         if (!options.name)
@@ -4838,8 +6461,9 @@ class Shader extends asset_1.Asset {
         this.fragmentShaderSouce = fragmentShader;
         this.options = options;
         this.gl = gl;
-        this.vertexStruct = buffer_1.BufferStructureInfo.from(this.options.vertexStructure || mesh_1.DefaultVertexData);
+        this.vertexStruct = array_buffer_1.BufferStructureInfo.from(this.options.vertexStructure || mesh_1.DefaultVertexData);
         this.attributeNames = Object.assign(Object.assign({}, exports.DefaultShaderAttributeNames), options.attributes);
+        this.setPipelineStateInternal(this.options);
         this.tryInit();
     }
     get compiled() { return this._compiled; }
@@ -4851,31 +6475,6 @@ class Shader extends asset_1.Asset {
         this.tryInit(true);
         this.gl.useProgram(this.program);
     }
-    setupPipelineStates() {
-        const gl = this.gl;
-        if (this.pipelineStates.depth === DepthTest.Disable)
-            gl.disable(gl.DEPTH_TEST);
-        else {
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthMask(this.pipelineStates.zWrite);
-            gl.depthFunc(this.pipelineStates.depth);
-        }
-        if (!this.pipelineStates.blend)
-            gl.disable(gl.BLEND);
-        else {
-            const [srcRGB, dstRGB] = this.pipelineStates.blendRGB;
-            const [srcAlpha, dstAlpha] = this.pipelineStates.blendAlpha;
-            gl.enable(gl.BLEND);
-            gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
-        }
-        if (this.pipelineStates.cull === Culling.Disable)
-            gl.disable(gl.CULL_FACE);
-        else {
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(this.pipelineStates.cull);
-            gl.frontFace(gl.CCW);
-        }
-    }
     setupBuiltinUniform(params) {
         this.tryInit(true);
         const gl = this.gl;
@@ -4886,11 +6485,6 @@ class Shader extends asset_1.Asset {
         this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP.asMut());
         this.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matM_IT, false, params.matM_IT.asMut());
         this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT.asMut());
-    }
-    setPipelineStates(settings) {
-        this.options = Object.assign(Object.assign({}, this.options), settings);
-        if (this.initialized)
-            this.setPipelineStateInternal(settings);
     }
     setPipelineStateInternal(settings) {
         let blend = false;
@@ -4949,7 +6543,6 @@ class Shader extends asset_1.Asset {
         for (const key in attributeNames) {
             this.attributes[key] = gl.getAttribLocation(this.program, attributeNames[key]);
         }
-        this.setPipelineStateInternal(this.options);
         this.builtinUniformLocations = util_2.getUniformsLocation(gl, this.program, shaders_1.BuiltinUniformNames);
         this.initialized = true;
         return true;
@@ -4997,37 +6590,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.mapGLFormat = exports.TextureFormat = void 0;
 var TextureFormat;
 (function (TextureFormat) {
-    TextureFormat[TextureFormat["RGB"] = 1] = "RGB";
-    TextureFormat[TextureFormat["RGBA"] = 2] = "RGBA";
-    TextureFormat[TextureFormat["LUMINANCE_ALPHA"] = 3] = "LUMINANCE_ALPHA";
-    TextureFormat[TextureFormat["LUMINANCE"] = 4] = "LUMINANCE";
-    TextureFormat[TextureFormat["ALPHA"] = 5] = "ALPHA";
-    TextureFormat[TextureFormat["R8"] = 6] = "R8";
-    TextureFormat[TextureFormat["R16F"] = 7] = "R16F";
-    TextureFormat[TextureFormat["R32F"] = 8] = "R32F";
-    TextureFormat[TextureFormat["R8UI"] = 9] = "R8UI";
-    TextureFormat[TextureFormat["RG8"] = 10] = "RG8";
-    TextureFormat[TextureFormat["RG16F"] = 11] = "RG16F";
-    TextureFormat[TextureFormat["RG32F"] = 12] = "RG32F";
-    TextureFormat[TextureFormat["RG8UI"] = 13] = "RG8UI";
-    TextureFormat[TextureFormat["RGB8"] = 14] = "RGB8";
-    TextureFormat[TextureFormat["SRGB8"] = 15] = "SRGB8";
-    TextureFormat[TextureFormat["RGB565"] = 16] = "RGB565";
-    TextureFormat[TextureFormat["R11F_G11F_B10F"] = 17] = "R11F_G11F_B10F";
-    TextureFormat[TextureFormat["RGB9_E5"] = 18] = "RGB9_E5";
-    TextureFormat[TextureFormat["RGB16F"] = 19] = "RGB16F";
-    TextureFormat[TextureFormat["RGB32F"] = 20] = "RGB32F";
-    TextureFormat[TextureFormat["RGB8UI"] = 21] = "RGB8UI";
-    TextureFormat[TextureFormat["RGBA8"] = 22] = "RGBA8";
-    TextureFormat[TextureFormat["SRGB8_ALPHA8"] = 23] = "SRGB8_ALPHA8";
-    TextureFormat[TextureFormat["RGB5_A1"] = 24] = "RGB5_A1";
-    TextureFormat[TextureFormat["RGB10_A2"] = 25] = "RGB10_A2";
-    TextureFormat[TextureFormat["RGBA4"] = 26] = "RGBA4";
-    TextureFormat[TextureFormat["RGBA16F"] = 27] = "RGBA16F";
-    TextureFormat[TextureFormat["RGBA32F"] = 28] = "RGBA32F";
-    TextureFormat[TextureFormat["RGBA8UI"] = 29] = "RGBA8UI";
-    TextureFormat[TextureFormat["DEPTH_COMPONENT"] = 30] = "DEPTH_COMPONENT";
-    TextureFormat[TextureFormat["DEPTH_STENCIL"] = 31] = "DEPTH_STENCIL";
+    TextureFormat[TextureFormat["RGB"] = WebGL2RenderingContext.RGB] = "RGB";
+    TextureFormat[TextureFormat["RGBA"] = WebGL2RenderingContext.RGBA] = "RGBA";
+    TextureFormat[TextureFormat["LUMINANCE_ALPHA"] = WebGL2RenderingContext.LUMINANCE_ALPHA] = "LUMINANCE_ALPHA";
+    TextureFormat[TextureFormat["LUMINANCE"] = WebGL2RenderingContext.LUMINANCE] = "LUMINANCE";
+    TextureFormat[TextureFormat["ALPHA"] = WebGL2RenderingContext.ALPHA] = "ALPHA";
+    TextureFormat[TextureFormat["R8"] = WebGL2RenderingContext.R8] = "R8";
+    TextureFormat[TextureFormat["R16F"] = WebGL2RenderingContext.R16F] = "R16F";
+    TextureFormat[TextureFormat["R32F"] = WebGL2RenderingContext.R32F] = "R32F";
+    TextureFormat[TextureFormat["R8UI"] = WebGL2RenderingContext.R8UI] = "R8UI";
+    TextureFormat[TextureFormat["RG8"] = WebGL2RenderingContext.RG8] = "RG8";
+    TextureFormat[TextureFormat["RG16F"] = WebGL2RenderingContext.RG16F] = "RG16F";
+    TextureFormat[TextureFormat["RG32F"] = WebGL2RenderingContext.RG32F] = "RG32F";
+    TextureFormat[TextureFormat["RG8UI"] = WebGL2RenderingContext.RG8UI] = "RG8UI";
+    TextureFormat[TextureFormat["RGB8"] = WebGL2RenderingContext.RGB8] = "RGB8";
+    TextureFormat[TextureFormat["SRGB8"] = WebGL2RenderingContext.SRGB8] = "SRGB8";
+    TextureFormat[TextureFormat["RGB565"] = WebGL2RenderingContext.RGB565] = "RGB565";
+    TextureFormat[TextureFormat["R11F_G11F_B10F"] = WebGL2RenderingContext.R11F_G11F_B10F] = "R11F_G11F_B10F";
+    TextureFormat[TextureFormat["RGB9_E5"] = WebGL2RenderingContext.RGB9_E5] = "RGB9_E5";
+    TextureFormat[TextureFormat["RGB16F"] = WebGL2RenderingContext.RGB16F] = "RGB16F";
+    TextureFormat[TextureFormat["RGB32F"] = WebGL2RenderingContext.RGB32F] = "RGB32F";
+    TextureFormat[TextureFormat["RGB8UI"] = WebGL2RenderingContext.RGB8UI] = "RGB8UI";
+    TextureFormat[TextureFormat["RGBA8"] = WebGL2RenderingContext.RGBA8] = "RGBA8";
+    TextureFormat[TextureFormat["SRGB8_ALPHA8"] = WebGL2RenderingContext.SRGB8_ALPHA8] = "SRGB8_ALPHA8";
+    TextureFormat[TextureFormat["RGB5_A1"] = WebGL2RenderingContext.RGB5_A1] = "RGB5_A1";
+    TextureFormat[TextureFormat["RGB10_A2"] = WebGL2RenderingContext.RGB10_A2] = "RGB10_A2";
+    TextureFormat[TextureFormat["RGBA4"] = WebGL2RenderingContext.RGBA4] = "RGBA4";
+    TextureFormat[TextureFormat["RGBA16F"] = WebGL2RenderingContext.RGBA16F] = "RGBA16F";
+    TextureFormat[TextureFormat["RGBA32F"] = WebGL2RenderingContext.RGBA32F] = "RGBA32F";
+    TextureFormat[TextureFormat["RGBA8UI"] = WebGL2RenderingContext.RGBA8UI] = "RGBA8UI";
+    TextureFormat[TextureFormat["DEPTH_COMPONENT"] = WebGL2RenderingContext.DEPTH_COMPONENT] = "DEPTH_COMPONENT";
+    TextureFormat[TextureFormat["DEPTH_STENCIL"] = WebGL2RenderingContext.DEPTH_STENCIL] = "DEPTH_STENCIL";
 })(TextureFormat = exports.TextureFormat || (exports.TextureFormat = {}));
 ;
 function mapGLFormat(gl, format) {
@@ -5089,6 +6682,7 @@ const asset_1 = __webpack_require__(/*! ./asset */ "../zogra-renderer/dist/core/
 const shaders_1 = __webpack_require__(/*! ../builtin-assets/shaders */ "../zogra-renderer/dist/builtin-assets/shaders.js");
 const vec2_1 = __webpack_require__(/*! ../types/vec2 */ "../zogra-renderer/dist/types/vec2.js");
 const image_sizing_1 = __webpack_require__(/*! ../utils/image-sizing */ "../zogra-renderer/dist/utils/image-sizing.js");
+const frame_buffer_1 = __webpack_require__(/*! ./frame-buffer */ "../zogra-renderer/dist/core/frame-buffer.js");
 var FilterMode;
 (function (FilterMode) {
     FilterMode[FilterMode["Linear"] = WebGL2RenderingContext.LINEAR] = "Linear";
@@ -5208,6 +6802,7 @@ class TextureBase extends asset_1.Asset {
         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, this.width, this.height, 0, format, type, null);
         this.created = true;
         this.updateParameters();
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
     setData(pixels) {
         this.create();
@@ -5267,8 +6862,10 @@ class DepthTexture extends TextureBase {
     constructor(width, height, ctx = global_1.GlobalContext()) {
         super(width, height, texture_format_1.TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
     }
-    create() {
-        super.create();
+    bindFramebuffer() {
+        this.create();
+        const gl = this.ctx.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this._glTex, 0);
     }
 }
 exports.DepthTexture = DepthTexture;
@@ -5289,6 +6886,17 @@ class RenderTexture extends TextureBase {
             return;
         (_a = this.depthTexture) === null || _a === void 0 ? void 0 : _a.destroy();
         super.destroy();
+    }
+    bindFramebuffer(attachment) {
+        this.create();
+        const gl = this.ctx.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, this._glTex, 0);
+    }
+    createFramebuffer() {
+        this.create();
+        const fbo = new frame_buffer_1.FrameBuffer(this.width, this.height);
+        fbo.addColorAttachment(this, 0);
+        return fbo;
     }
 }
 exports.RenderTexture = RenderTexture;
@@ -5316,6 +6924,7 @@ function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMo
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst, 0);
     gl.viewport(0, 0, width, height);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+    gl.disable(gl.CULL_FACE);
     const shader = ctx.assets.shaders.FlipTexture;
     shader.use();
     gl.activeTexture(gl.TEXTURE0);
@@ -5759,6 +7368,7 @@ const gl_matrix_1 = __webpack_require__(/*! gl-matrix */ "../zogra-renderer/node
 const quat_1 = __webpack_require__(/*! ./quat */ "../zogra-renderer/dist/types/quat.js");
 const vec3_1 = __webpack_require__(/*! ./vec3 */ "../zogra-renderer/dist/types/vec3.js");
 const vec4_1 = __webpack_require__(/*! ./vec4 */ "../zogra-renderer/dist/types/vec4.js");
+const vec2_1 = __webpack_require__(/*! ./vec2 */ "../zogra-renderer/dist/types/vec2.js");
 const utils_1 = __webpack_require__(/*! ./utils */ "../zogra-renderer/dist/types/utils.js");
 const Mat4Constructor = Array;
 const __vec4_temp = vec4_1.vec4.zero();
@@ -5831,6 +7441,26 @@ mat4.mulPoint = utils_1.wrapGlMatrix((out, m, v) => {
     out[2] = __vec4_temp[2];
     return out;
 }, 2, vec3_1.vec3.zero);
+mat4.mulPoint2 = utils_1.wrapGlMatrix((out, m, v) => {
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = 0;
+    __vec4_temp[3] = 1;
+    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    return out;
+}, 2, vec2_1.vec2.zero);
+mat4.mulVector2 = utils_1.wrapGlMatrix((out, m, v) => {
+    __vec4_temp[0] = v[0];
+    __vec4_temp[1] = v[1];
+    __vec4_temp[2] = 0;
+    __vec4_temp[3] = 0;
+    gl_matrix_1.vec4.transformMat4(__vec4_temp, __vec4_temp, m);
+    out[0] = __vec4_temp[0];
+    out[1] = __vec4_temp[1];
+    return out;
+}, 2, vec2_1.vec2.zero);
 function simpleOrthogonal(height, aspect, near, far) {
     const out = mat4.create();
     gl_matrix_1.mat4.ortho(out, -aspect * height, aspect * height, -height, height, near, far);
@@ -6286,7 +7916,9 @@ function wrapGlMatrix(func, argCount, allocator) {
             return func(out, ...args);
         }
         else {
-            const [out, ...rest] = args;
+            let [out, ...rest] = args;
+            if (out === undefined)
+                out = allocator();
             return func(out, ...rest);
         }
     });
@@ -6324,6 +7956,9 @@ class Vector2 extends V2Constructor {
     set y(y) { this[1] = y; }
     get magnitude() {
         return Math.hypot(...this);
+    }
+    get magnitudeSqr() {
+        return this[0] * this[0] + this[1] * this[1];
     }
     get normalized() {
         const m = this.magnitude;
@@ -6611,6 +8246,18 @@ class Vector3 extends V3Constructor {
     clone(out = vec3.zero()) {
         return out.set(this);
     }
+    setX(x) {
+        this[0] = x;
+        return this;
+    }
+    setY(y) {
+        this[1] = y;
+        return this;
+    }
+    setZ(z) {
+        this[2] = z;
+        return this;
+    }
     toVec2() {
         return vec2_1.vec2(this[0], this[1]);
     }
@@ -6656,6 +8303,8 @@ vec3.zero = Vector3.zero;
 vec3.one = Vector3.one;
 vec3.math = Vector3.math;
 vec3.normalize = utils_1.wrapGlMatrix(gl_matrix_1.vec3.normalize, 1, vec3.zero);
+vec3.inverse = utils_1.wrapGlMatrix(gl_matrix_1.vec3.inverse, 1, vec3.zero);
+vec3.negate = utils_1.wrapGlMatrix(gl_matrix_1.vec3.negate, 1, vec3.zero);
 vec3.plus = utils_1.wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
         out[0] = a[0] + b;
@@ -6832,6 +8481,15 @@ class Vector4 extends V4Constructor {
             return vec4(func(...args.map(v => v.x)), func(...args.map(v => v.y)), func(...args.map(v => v.z)), func(...args.map(v => v.w)));
         };
     }
+    static mathNonAlloc(func) {
+        return (out, ...args) => {
+            out[0] = func(...args.map(v => v[0]));
+            out[1] = func(...args.map(v => v[1]));
+            out[2] = func(...args.map(v => v[2]));
+            out[3] = func(...args.map(v => v[3]));
+            return out;
+        };
+    }
     __to(type) {
         switch (type) {
             case Vector4:
@@ -6857,6 +8515,7 @@ vec4.floor = (v) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z), Math
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 vec4.math = Vector4.math;
+vec4.mathNonAlloc = Vector4.mathNonAlloc;
 vec4.normalize = utils_1.wrapGlMatrix(gl_matrix_1.vec4.normalize, 1, vec4.zero);
 vec4.plus = utils_1.wrapGlMatrix((out, a, b) => {
     if (typeof (b) === "number") {
@@ -7406,6 +9065,36 @@ class MeshBuilderLegacy {
 }
 exports.MeshBuilderLegacy = MeshBuilderLegacy;
 //# sourceMappingURL=mesh-builder.js.map
+
+/***/ }),
+
+/***/ "../zogra-renderer/dist/utils/object-pool.js":
+/*!***************************************************!*\
+  !*** ../zogra-renderer/dist/utils/object-pool.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ObjectPool = void 0;
+class ObjectPool {
+    constructor(allocator) {
+        this.pool = [];
+        this.allocator = allocator;
+    }
+    get(...args) {
+        if (this.pool.length <= 0)
+            return this.allocator(...args);
+        return this.pool.pop();
+    }
+    release(obj) {
+        this.pool.push(obj);
+    }
+}
+exports.ObjectPool = ObjectPool;
+//# sourceMappingURL=object-pool.js.map
 
 /***/ }),
 
@@ -17407,19 +19096,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loadSnakeAssets = exports.Food = exports.FoodGenerator = void 0;
+exports.loadSnakeAssets = exports.BlackHole = exports.ColorFood = exports.Food = exports.FoodGenerator = void 0;
 const zogra_engine_1 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
 const zogra_renderer_1 = __webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js");
 const snake_food_png_1 = __importDefault(__webpack_require__(/*! ../asset/img/snake-food.png */ "./src/asset/img/snake-food.png"));
 const map_1 = __webpack_require__(/*! ./map */ "./src/snake/map.ts");
+const noisejs = __webpack_require__(/*! noisejs */ "./node_modules/noisejs/index.js");
+const { Noise } = noisejs;
 class FoodGenerator extends zogra_engine_1.Entity {
     constructor(snake) {
         super();
-        this.spawnInterval = [2, 4];
-        this.spawnRadius = 5;
-        this.foodLifetime = 5;
+        this.spawnInterval = [2, 3];
+        this.spawnCount = 2;
+        this.spawnRadius = 10;
         this.foodSize = 0.5;
-        this.foodDistance = 5;
+        this.foodDistance = 3;
+        this.foodLimit = 6;
         this.foods = [];
         this.snake = snake;
     }
@@ -17430,133 +19122,281 @@ class FoodGenerator extends zogra_engine_1.Entity {
         this.foods = this.foods.filter(food => !food.destroyed);
     }
     spawnFood() {
-        var _a;
+        const count = Math.round(zogra_renderer_1.MathUtils.lerp(1, 3, Math.pow(Math.random(), 2)));
+        for (let i = 0; i < count; i++) {
+            this.spawnOne();
+        }
+        setTimeout(this.spawnFood.bind(this), zogra_renderer_1.MathUtils.lerp(...this.spawnInterval, Math.random()) * 1000);
+    }
+    spawnOne() {
+        var _a, _b, _c;
+        if (this.foods.length >= this.foodLimit)
+            return;
+        if (Math.random() < 0.9) {
+            const pos = this.getSpawnPos(this.spawnRadius);
+            if (pos) {
+                const food = new Food(pos);
+                (_a = this.snake.scene) === null || _a === void 0 ? void 0 : _a.add(food);
+                this.foods.push(food);
+            }
+        }
+        else if (Math.random() < 0.8) {
+            const pos = this.getSpawnPos(this.spawnRadius);
+            if (pos) {
+                map_1.GameMap.instance.setTile(pos, map_1.GameMap.tileFood);
+                const food = new ColorFood();
+                food.position = pos.toVec3();
+                (_b = this.snake.scene) === null || _b === void 0 ? void 0 : _b.add(food);
+                this.foods.push(food);
+            }
+        }
+        else {
+            const pos = this.getSpawnPos(5);
+            if (pos) {
+                map_1.GameMap.instance.setTile(pos, map_1.GameMap.tileFood);
+                const food = new BlackHole();
+                food.position = pos.toVec3();
+                (_c = this.snake.scene) === null || _c === void 0 ? void 0 : _c.add(food);
+                this.foods.push(food);
+            }
+        }
+    }
+    getSpawnPos(distance) {
         let pos = zogra_renderer_1.vec2.zero();
         for (let i = 0; i < 64; i++) {
             pos = zogra_renderer_1.vec2.math(Math.floor)(zogra_renderer_1.vec2.math(Math.random)()
-                .mul(this.spawnRadius)
+                .minus(0.5)
+                .mul(2)
+                .mul(distance)
                 .plus(this.snake.head))
                 .plus(.5);
             if (this.foods.some(food => zogra_renderer_1.Vector2.distance(food.position.toVec2(), pos) < this.foodDistance))
                 continue;
             if (map_1.GameMap.instance.getTile(pos) === map_1.GameMap.tileGround) {
-                map_1.GameMap.instance.setTile(pos, map_1.GameMap.tileFood);
-                const food = new Food(pos);
-                (_a = this.snake.scene) === null || _a === void 0 ? void 0 : _a.add(food);
-                this.foods.push(food);
-                break;
+                return pos;
             }
         }
-        setTimeout(this.spawnFood.bind(this), zogra_renderer_1.MathUtils.lerp(...this.spawnInterval, Math.random()) * 1000);
+        return null;
     }
 }
 exports.FoodGenerator = FoodGenerator;
-const foodTimeline = [
-    {
-        time: 0,
-        keyframe: {
-            state: "spawn",
-        }
-    },
-    {
-        time: 0.5,
-        keyframe: {
-            state: "idle",
-        }
-    },
-    {
-        time: 3,
-        keyframe: {
-            state: "leaving",
-        }
+const timelineCountdown = zogra_engine_1.Timeline({
+    loop: true,
+    duration: 1,
+    frames: {
+        [0]: {
+            opacity: 1
+        },
+        [0.5]: {
+            opacity: 1,
+        },
+        [0.8]: {
+            opacity: 0,
+        },
     }
-];
-const timelineLeaving = [
-    {
-        time: 0,
-        keyframe: {
-            opacity: 1
-        }
-    },
-    {
-        time: 0.3,
-        keyframe: {
-            opacity: 1
-        }
-    },
-    {
-        time: 0.8,
-        keyframe: {
+});
+const timelineLeave = zogra_engine_1.Timeline({
+    duration: 0.2,
+    frames: {
+        [0]: {
+            size: 1,
+            opacity: 1,
+        },
+        [1]: {
+            size: 0,
             opacity: 0
         }
-    },
-];
-const timelineSpawn = [
-    {
-        time: 0,
-        keyframe: {
-            size: 0
+    }
+});
+const timelineSpawn = zogra_engine_1.Timeline({
+    duration: 0.5,
+    frames: {
+        [0]: {
+            size: 0,
         },
-    },
-    {
-        time: 0.5,
-        keyframe: {
-            size: 1
+        [0.5]: {
+            size: 1,
         }
     }
-];
+});
 class Food extends zogra_engine_1.SpriteObject {
     constructor(pos) {
         super();
         this.foodSize = 0.5;
-        this.animator = new zogra_engine_1.Animator(15, foodTimeline);
-        this.animatorSpawn = new zogra_engine_1.Animator(0.5, timelineSpawn);
-        this.animatorLeaving = new zogra_engine_1.Animator(1, timelineLeaving);
+        this.animator = new zogra_engine_1.Animator();
         this.sprite = Food.foodSprite;
         this.position = pos.toVec3(1);
         this.localScaling = zogra_renderer_1.vec3(this.foodSize);
         const collider = new zogra_engine_1.BoxCollider();
         collider.size = zogra_renderer_1.vec2(this.foodSize);
         this.collider = collider;
-        this.animator = new zogra_engine_1.Animator(15, foodTimeline);
-        this.animator.callback = (state) => {
-            switch (state.frame.state) {
-                case "spawn":
-                    !this.animatorSpawn.playing && this.animatorSpawn.play();
-                    break;
-                case "leaving":
-                    !this.animatorLeaving.playing && this.animatorLeaving.play();
-                    break;
-            }
-        };
-        this.animatorLeaving.loop = true;
-        this.animatorSpawn.callback = (state) => {
-            this.localScaling = zogra_renderer_1.vec3(state.frame.size * this.foodSize);
-        };
-        this.animatorLeaving.callback = (state) => {
-            this.materials[0].color.a = state.frame.opacity;
-        };
     }
-    start() {
-        this.animator.play();
+    async start() {
+        await this.animator.play(timelineSpawn, state => {
+            this.localScaling = zogra_renderer_1.vec3(state.frame.size * this.foodSize);
+        }, 5);
+        await this.animator.play(timelineCountdown, state => {
+            this.materials[0].color.a = state.frame.opacity;
+        }, 5);
+        await this.animator.play(timelineLeave, state => {
+            this.localScaling = zogra_renderer_1.vec3(state.frame.size * this.foodSize);
+            this.materials[0].color.a = state.frame.opacity;
+        });
+        this.destroy();
     }
     update(time) {
         this.animator.update(time.deltaTime);
-        this.animatorSpawn.update(time.deltaTime);
-        this.animatorLeaving.update(time.deltaTime);
-        if (this.animator.finished) {
-            this.destroy();
-        }
     }
 }
 exports.Food = Food;
 Food.foodSprite = null;
+class ColorFood extends zogra_engine_1.Entity {
+    constructor() {
+        super();
+        this.foodSize = 0.3;
+        this.lights = [];
+        this.noise = new Noise(Math.random());
+        this.animator = new zogra_engine_1.Animator();
+        this.shakeRange = 0;
+        this.color = zogra_renderer_1.Color.fromHSL(360 * Math.random(), 1, 0.5);
+        console.log(this.color);
+        const collider = new zogra_engine_1.BoxCollider();
+        collider.size = zogra_renderer_1.vec2(this.foodSize);
+        this.collider = new zogra_engine_1.BoxCollider();
+    }
+    async start() {
+        var _a;
+        console.log(this.position);
+        for (let i = 0; i < 3; i++) {
+            this.lights[i] = new zogra_engine_1.Light2D();
+            this.lights[i].lightRange = zogra_renderer_1.MathUtils.lerp(0.1, 0.2, Math.random());
+            this.lights[i].volumnRadius = 0;
+            this.lights[i].shadowType = false;
+            this.lights[i].intensity = 0;
+            this.lights[i].attenuation = 0.9;
+            this.lights[i].lightColor = this.color;
+            (_a = this.scene) === null || _a === void 0 ? void 0 : _a.add(this.lights[i], this);
+        }
+        await this.animator.playProcedural(1, (t) => {
+            this.lights.forEach(light => light.intensity = t * 0.4);
+            this.shakeRange = t * 0.4;
+        });
+        await this.animator.playProcedural(10);
+        await this.animator.playProcedural(1, (t) => {
+            this.lights.forEach(light => light.intensity = (1 - t) * 0.4);
+            this.shakeRange = zogra_renderer_1.MathUtils.lerp(0.4, 1, t);
+        });
+        this.destroy();
+    }
+    update(time) {
+        this.animator.update(time.deltaTime);
+        const speed = 1;
+        for (let i = 0; i < 3; i++) {
+            this.lights[i].localPosition = zogra_renderer_1.vec3(this.noise.perlin2(i, time.time * speed), this.noise.perlin2(time.time * speed, i), 0).mul(this.shakeRange);
+        }
+    }
+}
+exports.ColorFood = ColorFood;
+class BlackHole extends zogra_engine_1.Entity {
+    constructor() {
+        super();
+        this.animator = new zogra_engine_1.Animator();
+        this.light = new zogra_engine_1.Light2D();
+        this.light.lightColor = new zogra_renderer_1.Color(-1, -1, -1, 1);
+        this.light.lightRange = 0;
+        this.light.volumnRadius = 0;
+        this.light.attenuation = 0;
+        this.light.intensity = 0;
+        this.light.shadowType = false;
+        this.particle = new zogra_engine_1.ParticleSystem();
+        this.particle.maxCount = 32;
+        this.particle.startSpeed = [-1, -1.6];
+        this.particle.startAcceleration = { x: 0, y: 0, z: 0 };
+        this.particle.startColor = zogra_renderer_1.Color.black;
+        this.particle.lifetime = 0.3;
+        this.particle.lifeSize = [0.2, 0.05];
+        this.particle.spawnRate = 0;
+        this.particle.emitter = zogra_engine_1.ParticleSystem.circleEmitter(1);
+        const collider = new zogra_engine_1.BoxCollider();
+        collider.size = zogra_renderer_1.vec2(0.3);
+        this.collider = new zogra_engine_1.BoxCollider();
+    }
+    async start() {
+        var _a, _b;
+        (_a = this.scene) === null || _a === void 0 ? void 0 : _a.add(this.light, this);
+        (_b = this.scene) === null || _b === void 0 ? void 0 : _b.add(this.particle, this);
+        this.light.localPosition = zogra_renderer_1.vec3.zero();
+        this.particle.localPosition = zogra_renderer_1.vec3.zero();
+        this.particle.play();
+        await this.animator.play(BlackHole.timelineSpawn, (state) => {
+            this.light.lightRange = state.frame.size * 0.3;
+            this.light.intensity = state.frame.intensity;
+            this.particle.spawnRate = state.frame.rate;
+        }, 15);
+        await this.animator.play(BlackHole.timelineExit, (state) => {
+            this.light.lightRange = state.frame.size * 0.3;
+            this.light.intensity = state.frame.intensity;
+            this.particle.spawnRate = state.frame.rate;
+        });
+        this.destroy();
+    }
+    update(time) {
+        this.animator.update(time.deltaTime);
+    }
+}
+exports.BlackHole = BlackHole;
+BlackHole.timelineSpawn = zogra_engine_1.Timeline({
+    duration: 2,
+    frames: {
+        [0]: {
+            size: 0,
+            intensity: 0,
+            rate: 0
+        },
+        [0.5]: {
+            size: 0.5,
+            intensity: 0.5,
+            rate: 5
+        },
+        [1]: {
+            size: 1,
+            intensity: 1,
+            rate: 10,
+        },
+        [2]: {
+            size: 1,
+            intensity: 1,
+            rate: 30,
+        }
+    }
+});
+BlackHole.timelineExit = zogra_engine_1.Timeline({
+    duration: 2,
+    frames: {
+        [0]: {
+            size: 1,
+            intensity: 1,
+            rate: 30,
+        },
+        [0.5]: {
+            size: 1,
+            intensity: 1,
+            rate: 5
+        },
+        [1]: {
+            size: 0,
+            intensity: 0,
+            rate: 0
+        },
+    }
+});
 async function loadSnakeAssets() {
     const textureFood = await zogra_renderer_1.TextureImporter.url(snake_food_png_1.default).then(r => r.tex2d());
     // textureFood.filterMode = FilterMode.Nearest;
     textureFood.updateParameters();
     textureFood.generateMipmap();
     Food.foodSprite = new zogra_engine_1.Sprite(textureFood, zogra_renderer_1.vec2.one(), zogra_renderer_1.vec2.zero());
+    Food.foodSprite.color = new zogra_renderer_1.Color(2, 2, 2, 1);
 }
 exports.loadSnakeAssets = loadSnakeAssets;
 
@@ -17592,6 +19432,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.GameGlobals = void 0;
 const zogra_engine_1 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
 __webpack_require__(/*! ../css/base.css */ "./src/css/base.css");
 const ZograRendererPackage = __importStar(__webpack_require__(/*! zogra-renderer */ "../zogra-renderer/dist/index.js"));
@@ -17606,6 +19447,9 @@ window.ZograRenderer = ZograRendererPackage;
 const canvas = document.querySelector("#canvas");
 const engine = new zogra_engine_1.ZograEngine(canvas, zogra_engine_1.Default2DRenderPipeline);
 engine.fixedDeltaTime = true;
+engine.renderPipeline.ambientIntensity = 0.2;
+engine.renderPipeline.msaa = 4;
+engine.renderPipeline.renderFormat = zogra_engine_1.TextureFormat.RGBA16F;
 const input = new zogra_engine_1.InputManager();
 engine.on("update", (time) => {
     input.update();
@@ -17614,26 +19458,32 @@ engine.start();
 const scene = engine.scene;
 window.scene = scene;
 scene.physics = new zogra_engine_1.Physics2D();
+const camera = new zogra_engine_1.Camera();
+camera.position = zogra_engine_1.vec3(0, 0, 20);
+camera.projection = zogra_engine_1.Projection.Orthographic;
+camera.viewHeight = 10;
+scene.add(camera);
+window.camera = camera;
+const bloom = new zogra_engine_1.Bloom();
+bloom.threshold = 1.0;
+bloom.softThreshold = 0.5;
+camera.postprocess.push(bloom);
 async function init() {
     await map_1.GameMap.loadMapAssets();
     await food_1.loadSnakeAssets();
     const tilemap = new map_1.GameMap();
     scene.add(tilemap);
-    const camera = new zogra_engine_1.Camera();
-    camera.position = zogra_engine_1.vec3(0, 0, 20);
-    camera.projection = zogra_engine_1.Projection.Orthographic;
-    camera.viewHeight = 10;
-    scene.add(camera);
-    window.camera = camera;
     let snake;
     while (true) {
         let pos = zogra_engine_1.vec2.math(Math.floor)(zogra_engine_1.vec2.math(Math.random)().mul(1000)).plus(0.5);
         let bodies = [];
-        for (let i = 0; i < 4; i++) {
-            if (tilemap.getTile(pos.plus(zogra_engine_1.vec2.right())) === map_1.GameMap.tileGround)
-                bodies.push(pos.clone());
+        for (let i = 0; i < 10; i++) {
+            if (tilemap.getTile(pos.plus(zogra_engine_1.vec2.right())) === map_1.GameMap.tileGround) {
+                if (i < 4)
+                    bodies.push(pos.clone());
+            }
             else
-                break;
+                bodies = [];
         }
         if (bodies.length == 4) {
             snake = new snake_1.Snake(bodies, zogra_engine_1.vec2.right(), camera, input);
@@ -17644,6 +19494,13 @@ async function init() {
     scene.add(snake);
 }
 init();
+function GameGlobals() {
+    return {
+        engine,
+        renderPipeline: engine.renderPipeline,
+    };
+}
+exports.GameGlobals = GameGlobals;
 
 
 /***/ }),
@@ -17700,13 +19557,13 @@ class GameMap extends zogra_engine_1.Tilemap {
     static async loadMapAssets() {
         const checkboard = await zogra_engine_1.TextureImporter.url(checkboard_png_1.default).then(r => r.tex2d());
         GameMap.tileGround.sprite = new zogra_engine_1.Sprite(checkboard, zogra_engine_1.vec2(4), zogra_engine_1.vec2(0, 0));
-        GameMap.tileGround.sprite.color = zogra_engine_1.Color.fromString("#cccccc");
+        GameMap.tileGround.sprite.color = zogra_engine_1.Color.fromString("#eeeeee");
         GameMap.tileWall.sprite = new zogra_engine_1.Sprite(checkboard, zogra_engine_1.vec2(4), zogra_engine_1.vec2(0, 1));
-        GameMap.tileWall.sprite.color = zogra_engine_1.Color.fromString("#eeeeee");
+        GameMap.tileWall.sprite.color = zogra_engine_1.Color.fromString("#cccccc");
         GameMap.tileSnake.sprite = new zogra_engine_1.Sprite(checkboard, zogra_engine_1.vec2(4), zogra_engine_1.vec2(0, 2));
-        GameMap.tileSnake.sprite.color = zogra_engine_1.Color.fromString("#cccccc");
+        GameMap.tileSnake.sprite.color = zogra_engine_1.Color.fromString("#eeeeee");
         GameMap.tileFood.sprite = new zogra_engine_1.Sprite(checkboard, zogra_engine_1.vec2(4), zogra_engine_1.vec2(0, 3));
-        GameMap.tileFood.sprite.color = zogra_engine_1.Color.fromString("#cccccc");
+        GameMap.tileFood.sprite.color = zogra_engine_1.Color.fromString("#eeeeee");
     }
 }
 exports.GameMap = GameMap;
@@ -17747,11 +19604,19 @@ GameMap.tileFood = {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Snake = void 0;
 const zogra_engine_1 = __webpack_require__(/*! zogra-engine */ "../zogra-engine/dist/index.js");
+const _1 = __webpack_require__(/*! . */ "./src/snake/index.ts");
 const food_1 = __webpack_require__(/*! ./food */ "./src/snake/food.ts");
 const map_1 = __webpack_require__(/*! ./map */ "./src/snake/map.ts");
 class Snake extends zogra_engine_1.LineRenderer {
     constructor(bodies, headDir, camera, input) {
         super();
+        this.initialLightRange = 15;
+        this.initialLightIntensity = 0.4;
+        this.initialAmbient = 0.2;
+        this.maxLightIntensity = 0.6;
+        this.intensityDropRate = this.maxLightIntensity / 30;
+        this.lightRangeDropRate = this.initialLightRange / 20;
+        this.ambientDropRate = this.initialAmbient / 40;
         this.headSpeed = 3;
         this.tailSpeed = 3;
         this.width = 0.6;
@@ -17765,6 +19630,10 @@ class Snake extends zogra_engine_1.LineRenderer {
         this.tailMoveDistance = 0;
         this.growingTail = [];
         this.foodParticle = new zogra_engine_1.ParticleSystem();
+        this.light = new zogra_engine_1.Light2D();
+        this.animator = new zogra_engine_1.Animator();
+        this.actualLength = bodies.length;
+        this.color = new zogra_engine_1.Color(1.8, 1.8, 1.8, 1);
         this.bodies = bodies;
         this.headDir = headDir;
         this.camera = camera;
@@ -17776,10 +19645,17 @@ class Snake extends zogra_engine_1.LineRenderer {
         this.collider = collider;
         collider.on("onContact", this.onContact.bind(this));
         this.foodParticle.maxCount = 256;
+        this.foodParticle.startColor = () => new zogra_engine_1.Color(1, 1, 1, 1).mul(zogra_engine_1.MathUtils.lerp(1, 3, Math.random()));
         this.foodParticle.startAcceleration = { x: 0, y: 0, z: 0 };
         this.foodParticle.lifeSpeed = [10, 0];
         this.foodParticle.lifetime = [0.3, 0.4];
         this.foodParticle.lifeSize = [0.3, 0];
+        this.light.shadowType = zogra_engine_1.ShadowType.Soft;
+        this.light.lightRange = 15;
+        this.light.intensity = 0.4;
+        this.light.lightColor = new zogra_engine_1.Color(1, 1, 1, 1);
+        this.light.volumnRadius = this.width / 3;
+        this.light.attenuation = -0.8;
         for (const body of this.bodies) {
             this.points.push({
                 position: body.clone(),
@@ -17794,24 +19670,81 @@ class Snake extends zogra_engine_1.LineRenderer {
         });
         this.points[0].position = zogra_engine_1.mul(this.tailDir, -this.width / 2).plus(this.tail);
     }
+    get ambientIntensity() { return _1.GameGlobals().renderPipeline.ambientIntensity; }
+    set ambientIntensity(v) { _1.GameGlobals().renderPipeline.ambientIntensity = v; }
     onContact(other) {
         // console.log(other);
         if (other.entity instanceof map_1.GameMap) {
             this.dead();
         }
         else if (other.entity instanceof food_1.Food) {
-            this.growTail(1, 3);
+            this.growTail(1, 2);
+            this.actualLength += 1;
             this.foodParticle.emit(9, other.entity.position);
             other.entity.destroy();
+            const range = zogra_engine_1.MathUtils.lerp(this.light.lightRange, this.initialLightRange, 0.5);
+            let intensity = zogra_engine_1.MathUtils.lerp(this.light.intensity, this.maxLightIntensity, 0.5);
+            intensity = Math.min(intensity, this.maxLightIntensity - this.ambientIntensity);
+            this.animator.playProcedural(2, t => {
+                this.light.lightRange = zogra_engine_1.MathUtils.lerp(this.light.lightRange, range, t);
+                this.light.intensity = zogra_engine_1.MathUtils.lerp(this.light.intensity, intensity, t);
+            });
+        }
+        else if (other.entity instanceof food_1.ColorFood) {
+            this.growTail(2, 3);
+            this.actualLength += 3;
+            const colorFood = other.entity;
+            const originalColor = this.foodParticle.startColor;
+            // this.light.lightColor.plus(colorFood.color).mul(0.5);
+            this.foodParticle.startColor = () => zogra_engine_1.vec4.mul(zogra_engine_1.Color.white, colorFood.color, zogra_engine_1.MathUtils.lerp(0.3, 2, Math.random()));
+            this.foodParticle.emit(16, other.entity.position);
+            this.foodParticle.startColor = originalColor;
+            other.entity.destroy();
+            const range = this.initialLightRange;
+            const intensity = this.initialLightIntensity;
+            const ambient = this.initialAmbient;
+            // console.log("eat",colorFood.color);
+            const color = colorFood.color.plus(this.light.lightColor).mul(0.5);
+            // console.log(range, intensity, ambient, color);
+            this.animator.playProcedural(2, t => {
+                this.light.lightRange = zogra_engine_1.MathUtils.lerp(this.light.lightRange, range, t);
+                this.light.intensity = Math.min(this.maxLightIntensity - this.ambientIntensity, zogra_engine_1.MathUtils.lerp(this.light.intensity, intensity, t));
+                this.light.lightColor = zogra_engine_1.vec4.mathNonAlloc(zogra_engine_1.MathUtils.lerp)(this.light.lightColor, this.light.lightColor, color, zogra_engine_1.vec4(t));
+                _1.GameGlobals().renderPipeline.ambientIntensity = zogra_engine_1.MathUtils.lerp(_1.GameGlobals().renderPipeline.ambientIntensity, ambient, t);
+                // console.log(this.light.lightRange, this.light.intensity, this.light.lightColor, this.ambientIntensity);
+            });
+        }
+        else if (other.entity instanceof food_1.BlackHole) {
+            this.growTail(2 - this.actualLength, 2);
+            this.growTail(this.actualLength - 2, this.actualLength - 2);
+            const colorFood = other.entity;
+            const originalColor = this.foodParticle.startColor;
+            this.foodParticle.startColor = () => zogra_engine_1.Color.black;
+            this.foodParticle.emit(16, other.entity.position);
+            this.foodParticle.startColor = originalColor;
+            other.entity.destroy();
+            const range = this.light.lightRange * 0.8;
+            const intensity = this.light.intensity * 0.8;
+            const ambient = _1.GameGlobals().renderPipeline.ambientIntensity * 0.2;
+            this.animator.playProcedural(2, t => {
+                this.light.lightRange = zogra_engine_1.MathUtils.lerp(this.light.lightRange, range, t);
+                this.light.intensity = zogra_engine_1.MathUtils.lerp(this.light.intensity, intensity, t);
+                _1.GameGlobals().renderPipeline.ambientIntensity = zogra_engine_1.MathUtils.lerp(_1.GameGlobals().renderPipeline.ambientIntensity, ambient, t);
+            });
         }
     }
     start() {
-        var _a, _b;
+        var _a, _b, _c;
         (_a = this.scene) === null || _a === void 0 ? void 0 : _a.add(this.foodGenerator);
         (_b = this.scene) === null || _b === void 0 ? void 0 : _b.add(this.foodParticle);
+        (_c = this.scene) === null || _c === void 0 ? void 0 : _c.add(this.light);
     }
     update(time) {
-        console.log(this.bodies.length);
+        this.light.intensity = Math.max(0, this.light.intensity - this.intensityDropRate * time.deltaTime);
+        this.light.lightRange = Math.max(this.light.volumnRadius, this.light.lightRange - this.lightRangeDropRate * time.deltaTime);
+        this.ambientIntensity = Math.max(0, this.ambientIntensity - this.ambientDropRate * time.deltaTime);
+        this.animator.update(time.deltaTime);
+        // console.log(this.bodies.length);
         const collider = this.collider;
         collider.offset = zogra_engine_1.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position);
         if (this.input.getKeyDown(zogra_engine_1.Keys.A) || this.input.getKeyDown(zogra_engine_1.Keys.Left)) {
@@ -17831,6 +19764,8 @@ class Snake extends zogra_engine_1.LineRenderer {
         this.moveHead(time);
         this.moveTail(time);
         this.updateMesh();
+        this.checkHitSelf();
+        this.light.position = zogra_engine_1.vec2.mul(this.headDir, -this.width / 2).plus(this.points[this.points.length - 1].position).toVec3(0);
         this.camera.position = zogra_engine_1.vec2.math(zogra_engine_1.MathUtils.lerp)(this.camera.position.toVec2(), this.head, zogra_engine_1.vec2(0.5 * time.deltaTime, 0.7 * time.deltaTime)).toVec3(this.camera.position.z);
     }
     moveHead(time) {
@@ -17870,17 +19805,32 @@ class Snake extends zogra_engine_1.LineRenderer {
                 this.growingTail = this.growingTail.slice(1);
             }
         }
-        this.tailMoveDistance += moveDistance;
-        if (this.tailMoveDistance >= this.step) {
-            map_1.GameMap.instance.setTile(this.tail, map_1.GameMap.tileGround);
-            this.bodies = this.bodies.slice(1);
-            this.points = this.points.slice(1);
-            this.points[0].position = zogra_engine_1.mul(this.tailDir, -this.width / 2).plus(this.tail);
-            this.tailMoveDistance -= this.step;
+        while (moveDistance > 0) {
+            if (this.tailMoveDistance + moveDistance >= this.step) {
+                moveDistance -= this.step - this.tailMoveDistance;
+                this.tailMoveDistance = this.step;
+                map_1.GameMap.instance.setTile(this.tail, map_1.GameMap.tileGround);
+                this.bodies = this.bodies.slice(1);
+                this.points = this.points.slice(1);
+                this.points[0].position = zogra_engine_1.mul(this.tailDir, -this.width / 2).plus(this.tail);
+                this.tailMoveDistance -= this.step;
+            }
+            else {
+                this.tailMoveDistance += moveDistance;
+                moveDistance -= moveDistance;
+            }
+            const tailPoint = this.points[0];
+            const startPos = zogra_engine_1.mul(this.tailDir, -this.width / 2).plus(this.tail);
+            tailPoint.position.set(this.tailDir).mul(this.tailMoveDistance).plus(startPos);
         }
-        const tailPoint = this.points[0];
-        const startPos = zogra_engine_1.mul(this.tailDir, -this.width / 2).plus(this.tail);
-        tailPoint.position.set(this.tailDir).mul(this.tailMoveDistance).plus(startPos);
+    }
+    checkHitSelf() {
+        for (let i = 0; i < this.bodies.length - 1; i++) {
+            if (zogra_engine_1.Vector2.distance(this.points[this.points.length - 1].position, this.bodies[i]) < this.width / 2) {
+                this.dead();
+                return;
+            }
+        }
     }
     growTail(length, steps) {
         this.growingTail.push({
@@ -17895,11 +19845,14 @@ class Snake extends zogra_engine_1.LineRenderer {
             this.foodParticle.emit(10, body.toVec3());
         }
         this.destroy();
+        this.light.destroy();
     }
     get head() { return this.bodies[this.bodies.length - 1]; }
     get tail() { return this.bodies[0]; }
     get tailDir() {
-        return zogra_engine_1.minus(this.bodies[1], this.bodies[0]).normalize();
+        if (this.bodies.length > 1)
+            return zogra_engine_1.minus(this.bodies[1], this.bodies[0]).normalize();
+        return this.headDir;
     }
 }
 exports.Snake = Snake;

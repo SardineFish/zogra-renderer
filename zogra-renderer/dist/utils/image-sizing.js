@@ -1,9 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.imageResize = exports.ImageSizing = void 0;
-const rect_1 = require("../types/rect");
-const vec2_1 = require("../types/vec2");
-var ImageSizing;
+import { Rect } from "../types/rect";
+import { vec2 } from "../types/vec2";
+export var ImageSizing;
 (function (ImageSizing) {
     ImageSizing[ImageSizing["Stretch"] = 1] = "Stretch";
     ImageSizing[ImageSizing["Cover"] = 2] = "Cover";
@@ -11,10 +8,10 @@ var ImageSizing;
     ImageSizing[ImageSizing["KeepLower"] = 4] = "KeepLower";
     ImageSizing[ImageSizing["KeepHigher"] = 5] = "KeepHigher";
     ImageSizing[ImageSizing["Center"] = 6] = "Center";
-})(ImageSizing = exports.ImageSizing || (exports.ImageSizing = {}));
-function imageResize(srcSize, dstSize, sizing) {
-    let srcRect = new rect_1.Rect(vec2_1.vec2.zero(), srcSize);
-    let dstRect = new rect_1.Rect(vec2_1.vec2.zero(), dstSize);
+})(ImageSizing || (ImageSizing = {}));
+export function imageResize(srcSize, dstSize, sizing) {
+    let srcRect = new Rect(vec2.zero(), srcSize);
+    let dstRect = new Rect(vec2.zero(), dstSize);
     if (sizing === ImageSizing.Contain) {
         let srcAspectRatio = srcSize.x / srcSize.y;
         let dstAspectRatio = dstSize.x / dstSize.y;
@@ -115,5 +112,4 @@ function imageResize(srcSize, dstSize, sizing) {
     }
     return [srcRect, dstRect];
 }
-exports.imageResize = imageResize;
 //# sourceMappingURL=image-sizing.js.map

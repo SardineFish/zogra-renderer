@@ -1,42 +1,39 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.mapGLFormat = exports.TextureFormat = void 0;
-var TextureFormat;
+export var TextureFormat;
 (function (TextureFormat) {
-    TextureFormat[TextureFormat["RGB"] = 1] = "RGB";
-    TextureFormat[TextureFormat["RGBA"] = 2] = "RGBA";
-    TextureFormat[TextureFormat["LUMINANCE_ALPHA"] = 3] = "LUMINANCE_ALPHA";
-    TextureFormat[TextureFormat["LUMINANCE"] = 4] = "LUMINANCE";
-    TextureFormat[TextureFormat["ALPHA"] = 5] = "ALPHA";
-    TextureFormat[TextureFormat["R8"] = 6] = "R8";
-    TextureFormat[TextureFormat["R16F"] = 7] = "R16F";
-    TextureFormat[TextureFormat["R32F"] = 8] = "R32F";
-    TextureFormat[TextureFormat["R8UI"] = 9] = "R8UI";
-    TextureFormat[TextureFormat["RG8"] = 10] = "RG8";
-    TextureFormat[TextureFormat["RG16F"] = 11] = "RG16F";
-    TextureFormat[TextureFormat["RG32F"] = 12] = "RG32F";
-    TextureFormat[TextureFormat["RG8UI"] = 13] = "RG8UI";
-    TextureFormat[TextureFormat["RGB8"] = 14] = "RGB8";
-    TextureFormat[TextureFormat["SRGB8"] = 15] = "SRGB8";
-    TextureFormat[TextureFormat["RGB565"] = 16] = "RGB565";
-    TextureFormat[TextureFormat["R11F_G11F_B10F"] = 17] = "R11F_G11F_B10F";
-    TextureFormat[TextureFormat["RGB9_E5"] = 18] = "RGB9_E5";
-    TextureFormat[TextureFormat["RGB16F"] = 19] = "RGB16F";
-    TextureFormat[TextureFormat["RGB32F"] = 20] = "RGB32F";
-    TextureFormat[TextureFormat["RGB8UI"] = 21] = "RGB8UI";
-    TextureFormat[TextureFormat["RGBA8"] = 22] = "RGBA8";
-    TextureFormat[TextureFormat["SRGB8_ALPHA8"] = 23] = "SRGB8_ALPHA8";
-    TextureFormat[TextureFormat["RGB5_A1"] = 24] = "RGB5_A1";
-    TextureFormat[TextureFormat["RGB10_A2"] = 25] = "RGB10_A2";
-    TextureFormat[TextureFormat["RGBA4"] = 26] = "RGBA4";
-    TextureFormat[TextureFormat["RGBA16F"] = 27] = "RGBA16F";
-    TextureFormat[TextureFormat["RGBA32F"] = 28] = "RGBA32F";
-    TextureFormat[TextureFormat["RGBA8UI"] = 29] = "RGBA8UI";
-    TextureFormat[TextureFormat["DEPTH_COMPONENT"] = 30] = "DEPTH_COMPONENT";
-    TextureFormat[TextureFormat["DEPTH_STENCIL"] = 31] = "DEPTH_STENCIL";
-})(TextureFormat = exports.TextureFormat || (exports.TextureFormat = {}));
+    TextureFormat[TextureFormat["RGB"] = WebGL2RenderingContext.RGB] = "RGB";
+    TextureFormat[TextureFormat["RGBA"] = WebGL2RenderingContext.RGBA] = "RGBA";
+    TextureFormat[TextureFormat["LUMINANCE_ALPHA"] = WebGL2RenderingContext.LUMINANCE_ALPHA] = "LUMINANCE_ALPHA";
+    TextureFormat[TextureFormat["LUMINANCE"] = WebGL2RenderingContext.LUMINANCE] = "LUMINANCE";
+    TextureFormat[TextureFormat["ALPHA"] = WebGL2RenderingContext.ALPHA] = "ALPHA";
+    TextureFormat[TextureFormat["R8"] = WebGL2RenderingContext.R8] = "R8";
+    TextureFormat[TextureFormat["R16F"] = WebGL2RenderingContext.R16F] = "R16F";
+    TextureFormat[TextureFormat["R32F"] = WebGL2RenderingContext.R32F] = "R32F";
+    TextureFormat[TextureFormat["R8UI"] = WebGL2RenderingContext.R8UI] = "R8UI";
+    TextureFormat[TextureFormat["RG8"] = WebGL2RenderingContext.RG8] = "RG8";
+    TextureFormat[TextureFormat["RG16F"] = WebGL2RenderingContext.RG16F] = "RG16F";
+    TextureFormat[TextureFormat["RG32F"] = WebGL2RenderingContext.RG32F] = "RG32F";
+    TextureFormat[TextureFormat["RG8UI"] = WebGL2RenderingContext.RG8UI] = "RG8UI";
+    TextureFormat[TextureFormat["RGB8"] = WebGL2RenderingContext.RGB8] = "RGB8";
+    TextureFormat[TextureFormat["SRGB8"] = WebGL2RenderingContext.SRGB8] = "SRGB8";
+    TextureFormat[TextureFormat["RGB565"] = WebGL2RenderingContext.RGB565] = "RGB565";
+    TextureFormat[TextureFormat["R11F_G11F_B10F"] = WebGL2RenderingContext.R11F_G11F_B10F] = "R11F_G11F_B10F";
+    TextureFormat[TextureFormat["RGB9_E5"] = WebGL2RenderingContext.RGB9_E5] = "RGB9_E5";
+    TextureFormat[TextureFormat["RGB16F"] = WebGL2RenderingContext.RGB16F] = "RGB16F";
+    TextureFormat[TextureFormat["RGB32F"] = WebGL2RenderingContext.RGB32F] = "RGB32F";
+    TextureFormat[TextureFormat["RGB8UI"] = WebGL2RenderingContext.RGB8UI] = "RGB8UI";
+    TextureFormat[TextureFormat["RGBA8"] = WebGL2RenderingContext.RGBA8] = "RGBA8";
+    TextureFormat[TextureFormat["SRGB8_ALPHA8"] = WebGL2RenderingContext.SRGB8_ALPHA8] = "SRGB8_ALPHA8";
+    TextureFormat[TextureFormat["RGB5_A1"] = WebGL2RenderingContext.RGB5_A1] = "RGB5_A1";
+    TextureFormat[TextureFormat["RGB10_A2"] = WebGL2RenderingContext.RGB10_A2] = "RGB10_A2";
+    TextureFormat[TextureFormat["RGBA4"] = WebGL2RenderingContext.RGBA4] = "RGBA4";
+    TextureFormat[TextureFormat["RGBA16F"] = WebGL2RenderingContext.RGBA16F] = "RGBA16F";
+    TextureFormat[TextureFormat["RGBA32F"] = WebGL2RenderingContext.RGBA32F] = "RGBA32F";
+    TextureFormat[TextureFormat["RGBA8UI"] = WebGL2RenderingContext.RGBA8UI] = "RGBA8UI";
+    TextureFormat[TextureFormat["DEPTH_COMPONENT"] = WebGL2RenderingContext.DEPTH_COMPONENT] = "DEPTH_COMPONENT";
+    TextureFormat[TextureFormat["DEPTH_STENCIL"] = WebGL2RenderingContext.DEPTH_STENCIL] = "DEPTH_STENCIL";
+})(TextureFormat || (TextureFormat = {}));
 ;
-function mapGLFormat(gl, format) {
+export function mapGLFormat(gl, format) {
     const map = {
         [TextureFormat.RGB]: [gl.RGB, gl.RGB, gl.UNSIGNED_BYTE],
         [TextureFormat.RGBA]: [gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE],
@@ -72,5 +69,4 @@ function mapGLFormat(gl, format) {
     };
     return map[format];
 }
-exports.mapGLFormat = mapGLFormat;
 //# sourceMappingURL=texture-format.js.map

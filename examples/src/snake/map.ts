@@ -1,11 +1,12 @@
 import { Chunk, Color, Sprite, TextureImporter, TileData, Tilemap, TilemapCollider, vec2 } from "zogra-engine";
 import imgCheckBoard from "../asset/img/checkboard.png";
-import noisejs = require("noisejs");
+import noisejs from "noisejs";
 
-const Noise = new noisejs.Noise();
+let Noise = new noisejs.Noise();
 
 export class NoiseChunk extends Chunk
 {
+    foodCount = 0;
     constructor(basePos: vec2, chunkSize: number)
     {
         super(basePos, chunkSize);
@@ -68,8 +69,9 @@ export class GameMap extends Tilemap<NoiseChunk>
     }
 
 
-    constructor()
+    constructor(seed: number)
     {
+        Noise = new noisejs.Noise(seed);
         super(NoiseChunk);
         GameMap.instance = this;
         this.collider = new TilemapCollider();
@@ -79,12 +81,12 @@ export class GameMap extends Tilemap<NoiseChunk>
     {
         const checkboard = await TextureImporter.url(imgCheckBoard).then(r => r.tex2d());
         GameMap.tileGround.sprite = new Sprite(checkboard, vec2(4), vec2(0, 0));
-        GameMap.tileGround.sprite.color = Color.fromString("#cccccc");
+        GameMap.tileGround.sprite.color = Color.fromString("#eeeeee");
         GameMap.tileWall.sprite = new Sprite(checkboard, vec2(4), vec2(0, 1));
-        GameMap.tileWall.sprite.color = Color.fromString("#eeeeee");
+        GameMap.tileWall.sprite.color = Color.fromString("#cccccc");
         GameMap.tileSnake.sprite = new Sprite(checkboard, vec2(4), vec2(0, 2));
-        GameMap.tileSnake.sprite.color = Color.fromString("#cccccc");
+        GameMap.tileSnake.sprite.color = Color.fromString("#eeeeee");
         GameMap.tileFood.sprite = new Sprite(checkboard, vec2(4), vec2(0, 3));
-        GameMap.tileFood.sprite.color = Color.fromString("#cccccc");
+        GameMap.tileFood.sprite.color = Color.fromString("#eeeeee");
     }
 }

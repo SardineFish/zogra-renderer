@@ -6,7 +6,7 @@ import "./css/base.css";
 import seedTest from "./asset/img/dual-gun.png";
 import { RenderTexture, FilterMode, WrapMode, Texture2D } from "zogra-engine";
 import { TextureFormat } from "zogra-engine";
-import { RenderTarget } from "zogra-engine";
+import { FrameBuffer } from "zogra-engine";
 import { loadImage } from "./misc/util";
 
 const Width = 2446;
@@ -116,13 +116,13 @@ async function lifeGame()
         renderer.setGlobalUniform("uLastFrame", "tex2d", src);
         renderer.setGlobalUniform("uSize", "vec4", vec4(Width, Height, 1 / Width, 1 / Height));
 
-        renderer.setRenderTarget(dst);
+        renderer.setFramebuffer(dst);
         renderer.drawMesh(mesh, mat4.identity(), material);
     }, 1000 / FPS);
 
     return (dt: number, time: number) =>
     {
-        renderer.blit(rts[0], RenderTarget.CanvasTarget, blitMat);
+        renderer.blit(rts[0], FrameBuffer.CanvasBuffer, blitMat);
 
     };
 }

@@ -1,49 +1,43 @@
-"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ParticleSystem = exports.ParticleMaterial = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const assets_1 = require("../assets");
-const render_object_1 = require("./render-object");
-class ParticleMaterial extends zogra_renderer_1.MaterialFromShader(new zogra_renderer_1.Shader(...assets_1.ShaderSource.particle2D, {
-    vertexStructure: {
-        vert: "vec3",
-        color: "vec4",
-        normal: "vec3",
-        uv: "vec2",
-        uv2: "vec2",
-        pos: "vec3",
-        rotation: "vec3",
-        size: "float",
-    },
-    attributes: {
-        pos: "particlePos",
-        rotation: "particleRotation",
-        size: "particleSize",
-    }
+import { Color, MaterialFromShader, MathUtils, MeshBuilder, GLArrayBuffer, Shader, shaderProp, vec2, vec3, VertexStruct, DefaultShaderAttributeNames } from "zogra-renderer";
+import { ShaderSource } from "../assets";
+import { RenderObject } from "./render-object";
+const ParticleVertStruct = VertexStruct({
+    vert: "vec3",
+    color: "vec4",
+    normal: "vec3",
+    uv: "vec2",
+    uv2: "vec2",
+    pos: "vec3",
+    rotation: "vec3",
+    size: "float",
+});
+const ParticleAttributeName = Object.assign(Object.assign({}, DefaultShaderAttributeNames), { pos: "particlePos", rotation: "particleRotation", size: "particleSize" });
+export class ParticleMaterial extends MaterialFromShader(new Shader(...ShaderSource.particle2D, {
+    vertexStructure: ParticleVertStruct,
+    attributes: ParticleAttributeName
 })) {
     constructor() {
         super(...arguments);
-        this.color = zogra_renderer_1.Color.white;
+        this.color = Color.white;
         this.texture = null;
     }
 }
 __decorate([
-    zogra_renderer_1.shaderProp("uColor", "color")
+    shaderProp("uColor", "color")
 ], ParticleMaterial.prototype, "color", void 0);
 __decorate([
-    zogra_renderer_1.shaderProp("uMainTex", "tex2d")
+    shaderProp("uMainTex", "tex2d")
 ], ParticleMaterial.prototype, "texture", void 0);
-exports.ParticleMaterial = ParticleMaterial;
-class ParticleSystem extends render_object_1.RenderObject {
+export class ParticleSystem extends RenderObject {
     constructor() {
         super();
-        this.mesh = zogra_renderer_1.MeshBuilder.quad();
+        this.mesh = MeshBuilder.quad();
         this.material = new ParticleMaterial();
         this.duration = 1;
         this.lifetime = 1;
@@ -53,13 +47,13 @@ class ParticleSystem extends render_object_1.RenderObject {
         this.startRotation = { x: 0, y: 0, z: 0 };
         this.startSpeed = [5, 10];
         this.startAcceleration = { x: 0, y: -20, z: 0 };
-        this.emitter = ParticleSystem.boxEmitter(zogra_renderer_1.vec2.one());
+        this.emitter = ParticleSystem.boxEmitter(vec2.one());
         this.lifeSize = null;
         this.lifeColor = { r: null, g: null, b: null, a: null };
         this.lifeRotation = { x: null, y: null, z: null };
         this.lifeSpeed = null;
         this.lifeAcceleration = { x: null, y: null, z: null };
-        this.particlesBuffer = new zogra_renderer_1.RenderBuffer({
+        this.particlesBuffer = new GLArrayBuffer({
             pos: "vec3",
             color: "vec4",
             rotation: "vec3",
@@ -186,14 +180,16 @@ class ParticleSystem extends render_object_1.RenderObject {
         if (this.particleCount >= this.maxCount)
             return;
         let particle = this.particlesBuffer[this.particleCount++];
-        let velocity = zogra_renderer_1.vec3.zero();
-        let pos = zogra_renderer_1.vec3.zero();
+        let velocity = vec3.zero();
+        let pos = vec3.zero();
         this.emitter(this, position, velocity, pos);
         const lifetime = this.getScalarValue(this.lifetime);
         let speed = this.getScalarValue(this.startSpeed);
         // velocity.mul(speed);
         particle.velocity.set(velocity);
-        particle.velocity[3] = speed;
+        if (speed < 0)
+            vec3.negate(particle.velocity, velocity);
+        particle.velocity[3] = Math.abs(speed);
         particle.pos.set(pos);
         particle.size[0] = this.getScalarValue(this.startSize);
         particle.lifetime[0] = 0;
@@ -230,7 +226,7 @@ class ParticleSystem extends render_object_1.RenderObject {
         else if (typeof (settings) === "function")
             return settings(this);
         else if (settings instanceof Array)
-            return zogra_renderer_1.MathUtils.lerp(...settings, Math.random());
+            return MathUtils.lerp(...settings, Math.random());
         console.warn("Unknown property generator: ", settings);
         return 0;
     }
@@ -242,7 +238,7 @@ class ParticleSystem extends render_object_1.RenderObject {
         else if (typeof (settings) === "function")
             return settings(lifetime);
         else if (settings instanceof Array)
-            return zogra_renderer_1.MathUtils.lerp(...settings, lifetime);
+            return MathUtils.lerp(...settings, lifetime);
         console.log("Unknown property modifier:", settings);
         return value;
     }
@@ -252,9 +248,21 @@ class ParticleSystem extends render_object_1.RenderObject {
             posOut[1] = (Math.random() - 0.5) * size.y;
             posOut[2] = 0;
             posOut.plus(center);
-            zogra_renderer_1.vec3.minus(dirOut, posOut, center).normalize();
+            vec3.minus(dirOut, posOut, center).normalize();
+        };
+    }
+    static circleEmitter(radius) {
+        return (particleSystem, center, dirOut, posOut) => {
+            const r = Math.sqrt(Math.random()) * radius;
+            const theta = Math.random() * Math.PI * 2;
+            posOut.x = Math.cos(theta) * r;
+            posOut.y = Math.sin(theta) * r;
+            posOut.z = 0;
+            posOut.plus(center);
+            vec3.minus(dirOut, posOut, center).normalize();
         };
     }
 }
-exports.ParticleSystem = ParticleSystem;
+ParticleSystem.VertexStructure = ParticleVertStruct;
+ParticleSystem.AttributeNames = ParticleAttributeName;
 //# sourceMappingURL=particle-system.js.map

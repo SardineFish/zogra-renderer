@@ -10,14 +10,6 @@ export interface EventDefinitions
 // } extends { [_ in keyof T]: infer U } ? U : never);
 export type EventKeys<T> = keyof T;// { [key in keyof T]: T[key] extends (...args: any[]) => any ? T[key] : never };
 
-interface Foo
-{
-    update(n: number): void;
-    start(n: string): void;
-}
-type t = EventKeys<Foo>;
-type s = Foo[EventKeys<Foo>];
-
 export type EventListener = (...args: any[]) => void;
 
 export interface IEventSource<TEvents>

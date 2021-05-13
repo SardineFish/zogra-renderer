@@ -17,7 +17,7 @@ export interface CollisionInfo2D
     seperation: vec2;
 }
 
-export abstract class Collider2D extends ColliderBase<Physics2D> implements IEventSource<Collider2DEvents>
+export class Collider2D extends ColliderBase<Physics2D> implements IEventSource<Collider2DEvents>
 {
     rigidbody: Rigidbody2D | null = null;
     enabled: boolean = true;
@@ -35,7 +35,13 @@ export abstract class Collider2D extends ColliderBase<Physics2D> implements IEve
     }
 
     /** @internal */
-    abstract checkCollision(other: Collider2D, otherMotoin: vec2): CollisionInfo2D | null;
+    checkCollision(other: Collider2D, otherMotoin: vec2): CollisionInfo2D | null
+    {
+        return null;
+    }
 
-    abstract checkContact(other: Collider2D): boolean
+    checkContact(other: Collider2D): boolean
+    {
+        return false;
+    }
 }

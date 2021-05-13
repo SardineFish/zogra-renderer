@@ -34,4 +34,21 @@ export abstract class DebugProvider
         this.drawLine(vec2(max.x, max.y).toVec3(), vec2(min.x, max.y).toVec3(), color);
         this.drawLine(vec2(min.x, max.y).toVec3(), vec2(min.x, min.y).toVec3(), color);
     }
+    drawLines(points: vec3[], color = Color.red)
+    {
+        for (let i = 0; i < points.length; i++)
+        {
+            this.drawLine(points[i], points[(i + 1) % points.length], color);
+        }
+    }
+    drawCircle(center: Readonly<vec3>, radius: number, color = Color.red)
+    {
+        const edges = 24;
+        for (let i = 0; i < edges; i++)
+        {
+            const p0 = vec3(Math.cos(i * 2 * Math.PI / edges), Math.sin(i * 2 * Math.PI / edges), 0);
+            const p1 = vec3(Math.cos((i + 1) % edges * 2 * Math.PI / edges), Math.sin((i + 1) % edges * 2 * Math.PI / edges), 0);
+            this.drawLine(p0.mul(radius).plus(center), p1.mul(radius).plus(center), color);
+        }
+    }
 }

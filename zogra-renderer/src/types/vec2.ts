@@ -18,6 +18,10 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
     {
         return Math.hypot(...this);
     }
+    get magnitudeSqr()
+    {
+        return this[0] * this[0] + this[1] * this[1];
+    }
 
     get normalized(): Vector2
     {
@@ -116,6 +120,13 @@ export class Vector2 extends V2Constructor implements Vector, ZograMatrix
     {
         this[0] = -this[0];
         this[1] = -this[1];
+        return this;
+    }
+    /** 1 - this */
+    oneMinus()
+    {
+        this[0] = 1 - this[0];
+        this[1] = 1 - this[1];
         return this;
     }
 
@@ -240,6 +251,26 @@ vec2.div = wrapGlMatrix<vec2, [vec2, vec4 | vec3 | vec2 | number]>((out, a, b) =
     }
     return out;
 }, 2, vec2.zero);
+vec2.exp = wrapGlMatrix<vec2, [vec2 | number]>((out, x) =>
+{
+    if (typeof (x) === "number")
+    {
+        out[0] = Math.exp(x);
+        out[1] = Math.exp(x);
+    }
+    else
+    {
+        out[0] = Math.exp(x[0]);
+        out[1] = Math.exp(x[1]);
+    }
+    return out;
+}, 1, vec2.zero);
+vec2.inverse = wrapGlMatrix<vec2, [vec2]>((out, v) =>
+{
+    out[0] = 1 / v[0];
+    out[1] = 1 / v[1];
+    return out;
+}, 1, vec2.zero);
 vec2.dot = (a: vec2 | ArrayLike<number>, b: vec2 | ArrayLike<number>) =>
 {
     return a[0] * b[0] + a[1] * b[1];

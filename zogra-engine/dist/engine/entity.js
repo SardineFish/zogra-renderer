@@ -1,15 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.EntityManager = exports.Entity = void 0;
-const transform_1 = require("./transform");
-const zogra_renderer_1 = require("zogra-renderer");
-const zogra_renderer_2 = require("zogra-renderer");
-class Entity extends transform_1.Transform {
+import { Transform } from "./transform";
+import { AssetManager } from "zogra-renderer";
+import { EventEmitter } from "zogra-renderer";
+export class Entity extends Transform {
     constructor() {
         super(...arguments);
-        this.assetID = zogra_renderer_1.AssetManager.newAssetID(this);
+        this.assetID = AssetManager.newAssetID(this);
         this.name = `Entity_${this.assetID}`;
-        this.eventEmitter = new zogra_renderer_2.EventEmitter();
+        this.eventEmitter = new EventEmitter();
         this._destroyed = false;
         this._collider = null;
     }
@@ -34,7 +31,7 @@ class Entity extends transform_1.Transform {
         if (this.scene)
             this.scene.remove(this);
         else
-            zogra_renderer_1.AssetManager.destroy(this.assetID);
+            AssetManager.destroy(this.assetID);
     }
     start(time) { }
     update(time) { }
@@ -68,11 +65,10 @@ class Entity extends transform_1.Transform {
         this.exit(time);
         this.eventEmitter.with().emit("exit", this, time);
         if (this._destroyed)
-            zogra_renderer_1.AssetManager.destroy(this.assetID);
+            AssetManager.destroy(this.assetID);
     }
 }
-exports.Entity = Entity;
-class EntityManager {
+export class EntityManager {
     constructor() {
         this.entityMap = new Map();
         this._entities = [];
@@ -95,5 +91,4 @@ class EntityManager {
         this._entities = Array.from(this.entityMap.values());
     }
 }
-exports.EntityManager = EntityManager;
 //# sourceMappingURL=entity.js.map

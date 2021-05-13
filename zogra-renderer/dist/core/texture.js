@@ -1,28 +1,25 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderTexture = exports.DepthTexture = exports.Texture2D = exports.TextureResizing = exports.Texture = exports.WrapMode = exports.FilterMode = void 0;
-const global_1 = require("./global");
-const texture_format_1 = require("./texture-format");
-const util_1 = require("../utils/util");
-const asset_1 = require("./asset");
-const shaders_1 = require("../builtin-assets/shaders");
-const vec2_1 = require("../types/vec2");
-const image_sizing_1 = require("../utils/image-sizing");
-var FilterMode;
+import { GlobalContext } from "./global";
+import { TextureFormat, mapGLFormat } from "./texture-format";
+import { panic } from "../utils/util";
+import { Asset } from "./asset";
+import { BuiltinUniformNames } from "../builtin-assets/shaders";
+import { vec2 } from "../types/vec2";
+import { imageResize } from "../utils/image-sizing";
+import { FrameBuffer } from "./frame-buffer";
+export var FilterMode;
 (function (FilterMode) {
     FilterMode[FilterMode["Linear"] = WebGL2RenderingContext.LINEAR] = "Linear";
     FilterMode[FilterMode["Nearest"] = WebGL2RenderingContext.NEAREST] = "Nearest";
-})(FilterMode = exports.FilterMode || (exports.FilterMode = {}));
-var WrapMode;
+})(FilterMode || (FilterMode = {}));
+export var WrapMode;
 (function (WrapMode) {
     WrapMode[WrapMode["Repeat"] = WebGL2RenderingContext.REPEAT] = "Repeat";
     WrapMode[WrapMode["Clamp"] = WebGL2RenderingContext.CLAMP_TO_EDGE] = "Clamp";
     WrapMode[WrapMode["Mirror"] = WebGL2RenderingContext.MIRRORED_REPEAT] = "Mirror";
-})(WrapMode = exports.WrapMode || (exports.WrapMode = {}));
-class Texture extends asset_1.Asset {
+})(WrapMode || (WrapMode = {}));
+export class Texture extends Asset {
 }
-exports.Texture = Texture;
-var TextureResizing;
+export var TextureResizing;
 (function (TextureResizing) {
     TextureResizing[TextureResizing["Discard"] = 0] = "Discard";
     TextureResizing[TextureResizing["Stretch"] = 1] = "Stretch";
@@ -31,9 +28,9 @@ var TextureResizing;
     TextureResizing[TextureResizing["KeepLower"] = 4] = "KeepLower";
     TextureResizing[TextureResizing["KeepHigher"] = 5] = "KeepHigher";
     TextureResizing[TextureResizing["Center"] = 6] = "Center";
-})(TextureResizing = exports.TextureResizing || (exports.TextureResizing = {}));
-class TextureBase extends asset_1.Asset {
-    constructor(width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
+})(TextureResizing || (TextureResizing = {}));
+class TextureBase extends Asset {
+    constructor(width, height, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext()) {
         super();
         this.autoMipmap = true;
         this.wrapMode = WrapMode.Repeat;
@@ -48,7 +45,7 @@ class TextureBase extends asset_1.Asset {
         this.filterMode = filterMode;
         this.tryInit(false);
     }
-    get size() { return vec2_1.vec2(this.width, this.height); }
+    get size() { return vec2(this.width, this.height); }
     glTex() {
         this.create();
         return this._glTex;
@@ -90,7 +87,7 @@ class TextureBase extends asset_1.Asset {
             case TextureResizing.Discard:
                 break;
             default:
-                const [srcRect, dstrEect] = image_sizing_1.imageResize(prevSize, newTex.size, textureContent);
+                const [srcRect, dstrEect] = imageResize(prevSize, newTex.size, textureContent);
                 this.ctx.renderer.blit(oldTex, newTex, this.ctx.assets.materials.blitCopy, srcRect, dstrEect);
                 break;
         }
@@ -98,6 +95,7 @@ class TextureBase extends asset_1.Asset {
             newTex.generateMipmap();
         this._glTex = newTex._glTex;
         gl.deleteTexture(oldTex._glTex);
+        return this;
     }
     generateMipmap() {
         this.create();
@@ -123,10 +121,11 @@ class TextureBase extends asset_1.Asset {
         this.tryInit(true);
         const gl = this.ctx.gl;
         gl.bindTexture(gl.TEXTURE_2D, this._glTex);
-        const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, this.format);
+        const [internalFormat, format, type] = mapGLFormat(gl, this.format);
         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, this.width, this.height, 0, format, type, null);
         this.created = true;
         this.updateParameters();
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
     setData(pixels) {
         this.create();
@@ -138,18 +137,18 @@ class TextureBase extends asset_1.Asset {
         var _a;
         if (this.initialized)
             return true;
-        const ctx = this.ctx || global_1.GlobalContext();
+        const ctx = this.ctx || GlobalContext();
         if (!ctx) {
             if (required)
                 throw new Error("Failed to initialize texture without a global GL context");
             return false;
         }
         const gl = ctx.gl;
-        this._glTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
+        this._glTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : panic("Failed to create texture.");
         this.initialized = true;
         return true;
     }
-    static wrapGlTex(glTex, width, height, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
+    static wrapGlTex(glTex, width, height, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext()) {
         var texture = new TextureBase(width, height, format, filterMode, ctx);
         texture._glTex = glTex;
         texture.initialized = true;
@@ -157,8 +156,8 @@ class TextureBase extends asset_1.Asset {
         return texture;
     }
 }
-class Texture2D extends TextureBase {
-    constructor(width = 0, height = 0, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
+export class Texture2D extends TextureBase {
+    constructor(width = 0, height = 0, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext()) {
         super(width, height, format, filterMode, ctx);
     }
     setData(pixels) {
@@ -181,18 +180,18 @@ class Texture2D extends TextureBase {
         return tex;
     }
 }
-exports.Texture2D = Texture2D;
-class DepthTexture extends TextureBase {
-    constructor(width, height, ctx = global_1.GlobalContext()) {
-        super(width, height, texture_format_1.TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
+export class DepthTexture extends TextureBase {
+    constructor(width, height, ctx = GlobalContext()) {
+        super(width, height, TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
     }
-    create() {
-        super.create();
+    bindFramebuffer() {
+        this.create();
+        const gl = this.ctx.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this._glTex, 0);
     }
 }
-exports.DepthTexture = DepthTexture;
-class RenderTexture extends TextureBase {
-    constructor(width, height, depth = false, format = texture_format_1.TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = global_1.GlobalContext()) {
+export class RenderTexture extends TextureBase {
+    constructor(width, height, depth = false, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext()) {
         super(width, height, format, filterMode, ctx);
         this.depthTexture = null;
         if (depth) {
@@ -209,14 +208,24 @@ class RenderTexture extends TextureBase {
         (_a = this.depthTexture) === null || _a === void 0 ? void 0 : _a.destroy();
         super.destroy();
     }
+    bindFramebuffer(attachment) {
+        this.create();
+        const gl = this.ctx.gl;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.TEXTURE_2D, this._glTex, 0);
+    }
+    createFramebuffer() {
+        this.create();
+        const fbo = new FrameBuffer(this.width, this.height);
+        fbo.addColorAttachment(this, 0);
+        return fbo;
+    }
 }
-exports.RenderTexture = RenderTexture;
 function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMode, mipmapLevel) {
     var _a, _b;
     const gl = ctx.gl;
     const renderer = ctx.renderer;
-    const srcTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : util_1.panic("Failed to create texture.");
-    const [internalFormat, format, type] = texture_format_1.mapGLFormat(gl, texFormat);
+    const srcTex = (_a = gl.createTexture()) !== null && _a !== void 0 ? _a : panic("Failed to create texture.");
+    const [internalFormat, format, type] = mapGLFormat(gl, texFormat);
     gl.bindTexture(gl.TEXTURE_2D, srcTex);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -230,16 +239,17 @@ function flipTexture(ctx, dst, src, width, height, texFormat, filterMode, wrapMo
         src = src;
         gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, internalFormat, width, height, 0, format, type, src);
     }
-    const fbo = (_b = gl.createFramebuffer()) !== null && _b !== void 0 ? _b : util_1.panic("Failed to create frame buffer");
+    const fbo = (_b = gl.createFramebuffer()) !== null && _b !== void 0 ? _b : panic("Failed to create frame buffer");
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst, 0);
     gl.viewport(0, 0, width, height);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+    gl.disable(gl.CULL_FACE);
     const shader = ctx.assets.shaders.FlipTexture;
     shader.use();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, srcTex);
-    gl.uniform1i(shader.uniformLocation(shaders_1.BuiltinUniformNames.mainTex), 0);
+    gl.uniform1i(shader.uniformLocation(BuiltinUniformNames.mainTex), 0);
     const mesh = ctx.assets.meshes.screenQuad;
     mesh.bind();
     gl.drawElements(gl.TRIANGLE_STRIP, mesh.indices.length, gl.UNSIGNED_INT, 0);

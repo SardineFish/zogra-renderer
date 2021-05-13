@@ -12,6 +12,9 @@ module.exports = {
         "tilemap": "./src/tilemap.ts",
         "snake": "./src/snake/index.ts",
         "particle": "./src/particle.ts",
+        "light-2d": "./src/light-2d.ts",
+        "render-buffer": "./src/render-buffer.ts",
+        "post-process": "./src/post-process.ts",
     },
     output: {
         path: path.resolve("./dist"),
@@ -82,11 +85,30 @@ module.exports = {
             },
         ]
     },
-    plugins: ["generic", "life-game", "engine-test", "fbx-loader", "tilemap", "snake", "particle"].map(chunk => new HtmlWebpackPlugin({
-        filename: `${chunk}.html`,
-        template: "html/base.html",
-        inject: true,
-        minify: false,
-        chunks: [chunk],
-    }))
+    plugins: [
+        new HtmlWebpackPlugin({
+            filename: "snake.html",
+            template: "src/snake/index.html",
+            inject: true,
+            minify: false,
+            chunks: ["snake"],
+        }),
+        ...[
+            "generic",
+            "life-game",
+            "engine-test",
+            "fbx-loader",
+            "tilemap",
+            "particle",
+            "light-2d",
+            "render-buffer",
+            "post-process",
+        ].map(chunk => new HtmlWebpackPlugin({
+            filename: `${chunk}.html`,
+            template: "html/base.html",
+            inject: true,
+            minify: false,
+            chunks: [chunk],
+        }))
+    ]
 };

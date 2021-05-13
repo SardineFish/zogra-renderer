@@ -5,6 +5,7 @@ import "./css/base.css";
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
 engine.fixedDeltaTime = true;
+engine.renderPipeline.ambientLightColor = Color.white;
 const input = new InputManager({
 });
 engine.start();
@@ -29,7 +30,7 @@ async function init()
     particleSystem.startSpeed = [3, 16];
     particleSystem.startRotation = { x: 0, y: 0, z: () => Math.random() * 360 };
     particleSystem.startColor = () => (Color.fromHSL(Math.random() * 360, 0.8, 0.7).mul(MathUtils.lerp(0.3, 0.8, Math.random())) as Color);
-    particleSystem.material.shader.setPipelineStates({
+    particleSystem.material.setPipelineStateOverride({
         blend: [Blending.SrcAlpha, Blending.OneMinusSrcAlpha],
         depth: DepthTest.Disable,
     });

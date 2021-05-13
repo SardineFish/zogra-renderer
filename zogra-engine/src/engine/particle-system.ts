@@ -1,28 +1,33 @@
-import { Color, Material, MaterialFromShader, MathUtils, Mesh, MeshBuilder, quat, RenderBuffer, Shader, shaderProp, Texture, vec2, vec3, vec4, Vector3 } from "zogra-renderer";
+import { Color, Material, MaterialFromShader, MathUtils, Mesh, MeshBuilder, quat, FrameBuffer, GLArrayBuffer, Shader, shaderProp, Texture, vec2, vec3, vec4, Vector3, VertexStruct, ShaderAttributeNames, DefaultShaderAttributeNames } from "zogra-renderer";
 import { Debug } from "zogra-renderer/dist/core/global";
 import { Default2DMaterial } from "../2d";
 import { ShaderSource } from "../assets";
 import { RenderData } from "../render-pipeline/render-data";
 import { RenderContext } from "../render-pipeline/render-pipeline";
 import { RenderObject } from "./render-object";
-import { Time } from "./zogra-engine";
+import { Time } from "./engine";
+
+const ParticleVertStruct = VertexStruct({
+    vert: "vec3",
+    color: "vec4",
+    normal: "vec3",
+    uv: "vec2",
+    uv2: "vec2",
+    pos: "vec3",
+    rotation: "vec3",
+    size: "float",
+});
+
+const ParticleAttributeName: ShaderAttributeNames<typeof ParticleVertStruct> = {
+    ...DefaultShaderAttributeNames,
+    pos: "particlePos",
+    rotation: "particleRotation",
+    size: "particleSize",
+}
 
 export class ParticleMaterial extends MaterialFromShader(new Shader(...ShaderSource.particle2D, {
-    vertexStructure: {
-        vert: "vec3",
-        color: "vec4",
-        normal: "vec3",
-        uv: "vec2",
-        uv2: "vec2",
-        pos: "vec3",
-        rotation: "vec3",
-        size: "float",
-    },
-    attributes: {
-        pos: "particlePos",
-        rotation: "particleRotation",
-        size: "particleSize",
-    }
+    vertexStructure: ParticleVertStruct,
+    attributes: ParticleAttributeName
 })) {
     @shaderProp("uColor", "color")
     color: Color = Color.white;
@@ -54,6 +59,8 @@ export type ParticlePropertySettings<T, U> =
 
 export class ParticleSystem extends RenderObject
 {
+    static VertexStructure = ParticleVertStruct;
+    static AttributeNames = ParticleAttributeName;
     mesh: Mesh = MeshBuilder.quad();
     material: Material = new ParticleMaterial();
     duration: ParticleScalarGenerator = 1;
@@ -71,7 +78,7 @@ export class ParticleSystem extends RenderObject
     lifeSpeed: ParticleScalarModifier = null;
     lifeAcceleration: ParticlePropertySettings<vec3, ParticleScalarModifier> = { x: null, y: null, z: null };
 
-    private particlesBuffer = new RenderBuffer({
+    private particlesBuffer = new GLArrayBuffer({
         pos: "vec3",
         color: "vec4",
         rotation: "vec3",
@@ -249,7 +256,9 @@ export class ParticleSystem extends RenderObject
         let speed = this.getScalarValue(this.startSpeed);
         // velocity.mul(speed);
         particle.velocity.set(velocity);
-        particle.velocity[3] = speed;
+        if (speed < 0)
+            vec3.negate(particle.velocity, velocity);
+        particle.velocity[3] = Math.abs(speed);
         particle.pos.set(pos);
         particle.size[0] = this.getScalarValue(this.startSize);
         particle.lifetime[0] = 0;
@@ -321,6 +330,20 @@ export class ParticleSystem extends RenderObject
             posOut[0] = (Math.random() - 0.5) * size.x;
             posOut[1] = (Math.random() - 0.5) * size.y;
             posOut[2] = 0;
+            posOut.plus(center);
+            vec3.minus(dirOut, posOut, center).normalize();
+        };
+    }
+
+    static circleEmitter(radius: number): ParticleEmitter
+    {
+        return (particleSystem, center, dirOut, posOut) =>
+        {
+            const r = Math.sqrt(Math.random()) * radius;
+            const theta = Math.random() * Math.PI * 2;
+            posOut.x = Math.cos(theta) * r;
+            posOut.y = Math.sin(theta) * r;
+            posOut.z = 0;
             posOut.plus(center);
             vec3.minus(dirOut, posOut, center).normalize();
         };

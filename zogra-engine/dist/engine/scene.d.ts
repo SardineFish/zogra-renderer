@@ -20,8 +20,10 @@ export declare class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> exte
     rootEntities(): Entity[];
     getEntities(): Entity[];
     getEntitiesOfType<T>(type: ConstructorType<T>): T[];
+    withPhysics<Physics extends IPhysicsSystem>(physics: Physics): Scene<Physics>;
     on<T extends EventKeys<SceneEvents>>(event: T, listener: SceneEvents[T]): void;
     off<T extends EventKeys<SceneEvents>>(event: T, listener: SceneEvents[T]): void;
+    clearAll(): void;
     destroy(): void;
     private addPendingEntities;
     private removePendingEntites;

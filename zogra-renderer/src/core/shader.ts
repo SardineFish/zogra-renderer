@@ -4,7 +4,7 @@ import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { getUniformsLocation } from "../utils/util";
 import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";
-import { BufferStructure, BufferStructureInfo } from "./buffer";
+import { BufferStructure, BufferStructureInfo } from "./array-buffer";
 import { DefaultVertexData } from "./mesh";
 
 export type AttributeLocations<VertexStruct extends BufferStructure> =
@@ -64,7 +64,7 @@ export interface StateSettings
     cull: Culling
 }
 
-interface ShaderPipelineStateSettinsOptional
+export interface ShaderPipelineStateSettinsOptional
 {
     depth?: DepthTest,
     blend?: [Blending, Blending] | boolean | Blending;
@@ -112,7 +112,7 @@ export class Shader<VertexData extends BufferStructure = typeof DefaultVertexDat
     private vertexShader: WebGLShader = null as any;
     private fragmentShader: WebGLShader = null as any;
 
-    private pipelineStates: StateSettings = null as any;
+    pipelineStates: Readonly<StateSettings> = {} as any;
 
     private builtinUniformLocations: { [key in keyof typeof BuiltinUniformNames]: WebGLUniformLocation | null } = null as any;
 
@@ -132,6 +132,8 @@ export class Shader<VertexData extends BufferStructure = typeof DefaultVertexDat
         this.vertexStruct = BufferStructureInfo.from(this.options.vertexStructure || DefaultVertexData);
         this.attributeNames = { ...DefaultShaderAttributeNames, ...options.attributes } as ShaderAttributeNames<VertexData>;
 
+        this.setPipelineStateInternal(this.options);
+
         this.tryInit();
     }
 
@@ -147,39 +149,6 @@ export class Shader<VertexData extends BufferStructure = typeof DefaultVertexDat
         this.tryInit(true);
 
         this.gl.useProgram(this.program);
-    }
-
-    setupPipelineStates()
-    {
-        const gl = this.gl;
-
-        if (this.pipelineStates.depth === DepthTest.Disable)
-            gl.disable(gl.DEPTH_TEST);
-        else
-        {
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthMask(this.pipelineStates.zWrite);
-            gl.depthFunc(this.pipelineStates.depth);
-        }
-
-        if (!this.pipelineStates.blend)
-            gl.disable(gl.BLEND);
-        else
-        {
-            const [srcRGB, dstRGB] = this.pipelineStates.blendRGB;
-            const [srcAlpha, dstAlpha] = this.pipelineStates.blendAlpha;
-            gl.enable(gl.BLEND);
-            gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
-        }
-
-        if (this.pipelineStates.cull === Culling.Disable)
-            gl.disable(gl.CULL_FACE);
-        else
-        {
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(this.pipelineStates.cull);
-            gl.frontFace(gl.CCW);
-        }
     }
 
     setupBuiltinUniform(params: {
@@ -202,13 +171,6 @@ export class Shader<VertexData extends BufferStructure = typeof DefaultVertexDat
         this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP.asMut());
         this.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matM_IT, false, params.matM_IT.asMut());
         this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT.asMut());
-    }
-
-    public setPipelineStates(settings: ShaderPipelineStateSettinsOptional)
-    {
-        this.options = { ...this.options, ...settings };
-        if (this.initialized)
-            this.setPipelineStateInternal(settings);
     }
 
     private setPipelineStateInternal(settings: ShaderPipelineStateSettinsOptional)
@@ -289,7 +251,6 @@ export class Shader<VertexData extends BufferStructure = typeof DefaultVertexDat
             this.attributes[key as keyof AttributeLocations<VertexData>] = gl.getAttribLocation(this.program, attributeNames[key] as string);
         }
 
-        this.setPipelineStateInternal(this.options);
         
         this.builtinUniformLocations = getUniformsLocation(gl, this.program, BuiltinUniformNames);
 

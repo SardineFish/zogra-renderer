@@ -1,19 +1,29 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Default2DRenderPipeline = void 0;
-const render_data_1 = require("./render-data");
-const zogra_renderer_1 = require("zogra-renderer");
-const debug_layer_1 = require("./debug-layer");
-const global_1 = require("zogra-renderer/dist/core/global");
-class Default2DRenderPipeline {
+import { RenderBuffer, TextureFormat, vec2 } from "zogra-renderer";
+import { RenderData, RenderOrder } from "./render-data";
+import { Color } from "zogra-renderer";
+import { FrameBuffer } from "zogra-renderer";
+import { DebugLayerRenderer } from "./render-pass/debug-layer";
+import { Debug } from "zogra-renderer/dist/core/global";
+import { Light2DPass } from "./render-pass/2d-light-pass";
+import { DrawScene } from "./render-pass/draw-scene";
+import { PostprocessPass } from "./post-process";
+import { FinalBlit } from "./render-pass/final-blit";
+import { ClearPass } from "./render-pass/clear-pass";
+export class Default2DRenderPipeline {
     constructor() {
-        this.debuglayer = new debug_layer_1.DebugLayerRenderer();
-        global_1.Debug(this.debuglayer);
+        this.msaa = 4;
+        this.renderFormat = TextureFormat.RGBA8;
+        this.debuglayer = new DebugLayerRenderer();
+        this.ambientLightColor = new Color(1, 1, 1, 1);
+        this.ambientIntensity = 1;
+        this.perCameraResources = new Map();
+        Debug(this.debuglayer);
     }
-    render(renderer, cameras) {
+    render(context, scene, cameras) {
         for (const camera of cameras) {
-            const data = new render_data_1.RenderData(camera, renderer.scene);
-            this.renderCamera(renderer, data);
+            const resource = this.getCameraResources(context, camera);
+            const data = RenderData.create(camera, scene, resource.outputFBO);
+            this.renderCamera(context, data);
         }
     }
     replaceMaterial(MaterialType, material) {
@@ -22,29 +32,50 @@ class Default2DRenderPipeline {
     renderCamera(context, data) {
         const camera = data.camera;
         camera.__preRender(context);
-        if (camera.output === zogra_renderer_1.RenderTarget.CanvasTarget)
-            context.renderer.setRenderTarget(zogra_renderer_1.RenderTarget.CanvasTarget);
-        else
-            context.renderer.setRenderTarget(camera.output);
-        context.renderer.clear(camera.clearColor, camera.clearDepth);
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        // context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
-        const objs = data.getVisibleObjects(render_data_1.RenderOrder.FarToNear);
-        for (const obj of objs) {
-            obj.render(context, data);
-            // const modelMatrix = obj.localToWorldMatrix;
-            // for (let i = 0; i < obj.meshes.length; i++)
-            // {
-            //     if (!obj.meshes[i])
-            //         continue;
-            //     const mat = obj.materials[i] || context.renderer.assets.materials.default;
-            //     mat.setProp("uCameraPos", "vec3", camera.position);
-            //     context.renderer.drawMesh(obj.meshes[i], modelMatrix, mat);
-            // }
+        const resource = this.getCameraResources(context, camera);
+        for (const pass of resource.renderPass) {
+            pass.setup(context, data);
+            pass.render(context, data);
+        }
+        for (const pass of resource.renderPass) {
+            pass.cleanup(context, data);
         }
         this.debuglayer.render(context, data);
         camera.__postRender(context);
     }
+    getCameraResources(context, camera) {
+        let resource = this.perCameraResources.get(camera);
+        if (!resource) {
+            const fbo = new FrameBuffer(context.renderer.canvas.width, context.renderer.canvas.height);
+            const renderbuffer = new RenderBuffer(fbo.width, fbo.height, this.renderFormat, this.msaa);
+            fbo.addColorAttachment(renderbuffer);
+            resource = {
+                outputFBO: fbo,
+                outputBuffer: renderbuffer,
+                renderPass: this.createRenderPass(context, camera),
+            };
+            this.perCameraResources.set(camera, resource);
+        }
+        const size = camera.output === null
+            ? vec2(context.screen.width, context.screen.height)
+            : camera.output.size;
+        if (!size.equals(resource.outputFBO.size)) {
+            console.log("resize", resource.outputFBO.size, size);
+            const fbo = resource.outputFBO.colorAttachments[0].resize(size.x, size.y);
+            resource.outputFBO.reset(size.x, size.y);
+            resource.outputFBO.addColorAttachment(fbo, 0);
+        }
+        return resource;
+    }
+    createRenderPass(context, camera) {
+        return [
+            new ClearPass(),
+            new DrawScene(RenderOrder.FarToNear),
+            new Light2DPass(context, this),
+            new PostprocessPass(context, this.renderFormat),
+            new FinalBlit(context, this.renderFormat),
+        ];
+    }
 }
-exports.Default2DRenderPipeline = Default2DRenderPipeline;
 //# sourceMappingURL=2d-default.js.map

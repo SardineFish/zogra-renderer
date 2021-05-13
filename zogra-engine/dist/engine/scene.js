@@ -1,21 +1,24 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Scene = void 0;
-const entity_1 = require("./entity");
-const zogra_renderer_1 = require("zogra-renderer");
-const zogra_renderer_2 = require("zogra-renderer");
-class Scene extends entity_1.EntityManager {
+import { EntityManager } from "./entity";
+import { EventEmitter } from "zogra-renderer";
+import { AssetManager } from "zogra-renderer";
+export class Scene extends EntityManager {
     constructor(PhysicsSystem) {
         super();
         //private managers = new Map<Function, EntityManager>();
-        this.eventEmitter = new zogra_renderer_1.EventEmitter();
+        /** @internal */
+        this.engine = undefined;
+        this.eventEmitter = new EventEmitter();
         this.addsNextFrame = new Map();
         this.removesNextFrame = new Set();
-        this.assetID = zogra_renderer_2.AssetManager.newAssetID(this);
+        this.assetID = AssetManager.newAssetID(this);
         this.name = `Scene_${this.assetID}`;
         this.physics = new PhysicsSystem();
     }
     add(entity, parent = null) {
+        if (entity.destroyed) {
+            console.error("Attempt to add destroyed entity");
+            return;
+        }
         this.addsNextFrame.set(entity, parent);
         for (const child of entity.children)
             this.add(child, entity);
@@ -33,16 +36,30 @@ class Scene extends entity_1.EntityManager {
         return this.entities.filter(entity => entity instanceof type);
         // return (this.managers.get(type)?.entities ?? []) as any as T[];
     }
+    withPhysics(physics) {
+        this.physics = physics;
+        return this;
+    }
     on(event, listener) {
         this.eventEmitter.on(event, listener);
     }
     off(event, listener) {
         this.eventEmitter.off(event, listener);
     }
-    destroy() {
+    clearAll() {
+        var _a, _b;
+        const time = (_b = (_a = this.engine) === null || _a === void 0 ? void 0 : _a.time) !== null && _b !== void 0 ? _b : { time: 0, deltaTime: 0 };
+        for (const entity of this._entities) {
+            entity.destroy();
+        }
+        this.addsNextFrame.clear();
+        this.removesNextFrame.clear();
+        this.removePendingEntites(time);
         this._entities = [];
         this.entityMap.clear();
-        throw new Error("Method not implemented.");
+    }
+    destroy() {
+        this.clearAll();
     }
     /** @internal */
     __update(time) {
@@ -83,5 +100,4 @@ class Scene extends entity_1.EntityManager {
             entity.__exit(time);
     }
 }
-exports.Scene = Scene;
 //# sourceMappingURL=scene.js.map

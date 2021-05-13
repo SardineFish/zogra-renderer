@@ -1,33 +1,29 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BoxCollider = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const collider2d_1 = require("./collider2d");
-const box_box_1 = require("./collision/box-box");
-const tilemap_box_1 = require("./collision/tilemap-box");
-const tilemap_collider_1 = require("./tilemap-collider");
-class BoxCollider extends collider2d_1.Collider2D {
+import { vec2 } from "zogra-renderer";
+import { Collider2D } from "./collider2d";
+import { checkContactBoxBox } from "./collision/box-box";
+import { checkCollisionTilemapBox, checkContactTilemapBox } from "./collision/tilemap-box";
+import { TilemapCollider } from "./tilemap-collider";
+export class BoxCollider extends Collider2D {
     constructor() {
         super(...arguments);
-        this.offset = zogra_renderer_1.vec2.zero();
-        this.size = zogra_renderer_1.vec2.one();
+        this.offset = vec2.zero();
+        this.size = vec2.one();
     }
     /** @internal */
     checkCollision(other, otherMotion) {
-        if (other instanceof tilemap_collider_1.TilemapCollider)
-            return tilemap_box_1.checkCollisionTilemapBox(other, this, otherMotion.negative);
+        if (other instanceof TilemapCollider)
+            return checkCollisionTilemapBox(other, this, otherMotion.negative);
         console.warn("Unimplemented collision check");
         return null;
     }
     /** @internal */
     checkContact(other) {
-        if (other instanceof tilemap_collider_1.TilemapCollider)
-            return tilemap_box_1.checkContactTilemapBox(other, this);
+        if (other instanceof TilemapCollider)
+            return checkContactTilemapBox(other, this);
         else if (other instanceof BoxCollider)
-            return box_box_1.checkContactBoxBox(this, other);
+            return checkContactBoxBox(this, other);
         console.warn("Unimplemented collision check");
         return false;
     }
 }
-exports.BoxCollider = BoxCollider;
 //# sourceMappingURL=box-collider.js.map

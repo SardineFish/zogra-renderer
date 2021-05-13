@@ -1,10 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.BuiltinShaderSources = exports.compileBuiltinShaders = exports.BuiltinUniformNames = void 0;
-const shader_1 = require("../core/shader");
-const generated_1 = require("./generated");
-Object.defineProperty(exports, "BuiltinShaderSources", { enumerable: true, get: function () { return generated_1.BuiltinShaderSources; } });
-exports.BuiltinUniformNames = {
+import { Shader, DepthTest, Blending } from "../core/shader";
+import { BuiltinShaderSources } from "./generated";
+export const BuiltinUniformNames = {
     matM: "uTransformM",
     matM_IT: "uTransformM_IT",
     matMInv: "uTransformMInv",
@@ -15,25 +11,25 @@ exports.BuiltinUniformNames = {
     mainTex: "uMainTex",
     color: "uColor",
 };
-function compileBuiltinShaders(gl) {
+export function compileBuiltinShaders(gl) {
     return {
-        DefaultShader: new shader_1.Shader(generated_1.BuiltinShaderSources.defaultVert, generated_1.BuiltinShaderSources.defaultFrag, { name: "DefaultShader" }, gl),
-        BlitCopy: new shader_1.Shader(generated_1.BuiltinShaderSources.defaultVert, generated_1.BuiltinShaderSources.blitCopy, {
+        DefaultShader: new Shader(BuiltinShaderSources.defaultVert, BuiltinShaderSources.defaultFrag, { name: "DefaultShader" }, gl),
+        BlitCopy: new Shader(BuiltinShaderSources.defaultVert, BuiltinShaderSources.blitCopy, {
             name: "BlitCopy",
-            depth: shader_1.DepthTest.Always,
-            blend: shader_1.Blending.Disable,
+            depth: DepthTest.Always,
+            blend: Blending.Disable,
             zWrite: false
         }, gl),
-        FlipTexture: new shader_1.Shader(generated_1.BuiltinShaderSources.flipVert, generated_1.BuiltinShaderSources.blitCopy, {}, gl),
-        ColoredLine: new shader_1.Shader(generated_1.BuiltinShaderSources.colorVert, generated_1.BuiltinShaderSources.colorFrag, {
-            blend: [shader_1.Blending.SrcAlpha, shader_1.Blending.OneMinusSrcAlpha],
-            depth: shader_1.DepthTest.Disable,
+        FlipTexture: new Shader(BuiltinShaderSources.flipVert, BuiltinShaderSources.blitCopy, {}, gl),
+        ColoredLine: new Shader(BuiltinShaderSources.colorVert, BuiltinShaderSources.colorFrag, {
+            blend: [Blending.SrcAlpha, Blending.OneMinusSrcAlpha],
+            depth: DepthTest.Disable,
             zWrite: false,
         }, gl),
-        ErrorShader: new shader_1.Shader(generated_1.BuiltinShaderSources.defaultVert, generated_1.BuiltinShaderSources.texFrag, {
+        ErrorShader: new Shader(BuiltinShaderSources.defaultVert, BuiltinShaderSources.texFrag, {
             name: "Error"
         }, gl)
     };
 }
-exports.compileBuiltinShaders = compileBuiltinShaders;
+export { BuiltinShaderSources };
 //# sourceMappingURL=shaders.js.map

@@ -19,7 +19,7 @@ let debugProvider: DebugProvider = new class EmptyDebugProvider extends DebugPro
 {
     drawLine(start: Vector3, end: Vector3, color?: Color): void
     {
-        console.warn("No debug provider.");
+        // console.warn("No debug provider.");
     }
 }
 

@@ -1,16 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Rigidbody2D = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-class Rigidbody2D {
+import { vec2 } from "zogra-renderer";
+export class Rigidbody2D {
     constructor(collider) {
         this.mass = 1;
         /** @internal */
-        this._velocity = zogra_renderer_1.vec2.zero();
+        this._velocity = vec2.zero();
         /** @internal */
-        this._acceleration = zogra_renderer_1.vec2.zero();
+        this._acceleration = vec2.zero();
         /** @internal */
-        this._motion = zogra_renderer_1.vec2.zero();
+        this._motion = vec2.zero();
         this.collider = collider;
     }
     get velocity() { return this._velocity; }
@@ -35,5 +32,4 @@ class Rigidbody2D {
         this._acceleration.y = 0;
     }
 }
-exports.Rigidbody2D = Rigidbody2D;
 //# sourceMappingURL=rigidbody2d.js.map

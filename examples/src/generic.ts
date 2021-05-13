@@ -3,7 +3,7 @@ import vert from "!!raw-loader!./shader/default-vert.glsl";
 import { ZograRenderer, Mesh, vec3, MaterialFromShader, Shader, mat4, Color, shaderProp, rgb, quat, vec2, materialDefine } from "zogra-renderer";
 import "./css/base.css";
 import { RenderTexture, Texture } from "zogra-engine";
-import { RenderTarget } from "zogra-engine";
+import { FrameBuffer } from "zogra-engine";
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 
@@ -40,14 +40,14 @@ mesh.calculateNormals(0);
 
 const rt = new RenderTexture(canvas.width, canvas.height, false);
 
-renderer.setRenderTarget(rt);
+renderer.setFramebuffer(rt);
 
 renderer.setGlobalUniform("uColor", "color", Color.green);
 
 renderer.clear();
 renderer.drawMesh(mesh, mat4.rts(quat.identity(), vec3(-.5, -.5, 0), vec3(1, 1, 1)), material);
 
-renderer.setRenderTarget(RenderTarget.CanvasTarget);
+renderer.setFramebuffer(FrameBuffer.CanvasBuffer);
 
 material.texture = rt;
 

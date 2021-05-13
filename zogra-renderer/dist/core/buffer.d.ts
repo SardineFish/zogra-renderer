@@ -31,7 +31,7 @@ export interface BufferStructureInfo<Structure extends BufferStructure> {
 export declare const BufferStructureInfo: {
     from<T extends BufferStructure>(structure: T): BufferStructureInfo<T>;
 };
-export declare class RenderBuffer<T extends BufferStructure> extends Array<BufferElementView<T>> {
+export declare class ArrayBuffer<T extends BufferStructure> extends Array<BufferElementView<T>> {
     static: boolean;
     Data: BufferElementView<T>;
     private structure;

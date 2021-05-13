@@ -1,8 +1,8 @@
 import { Transform } from "./transform";
 import { IAsset, AssetManager, EventListener } from "zogra-renderer";
 import { EventDefinitions, IEventSource, EventEmitter, EventKeys } from "zogra-renderer";
-import { Time } from "./zogra-engine";
-import { RenderContext } from "../render-pipeline/rp";
+import { Time } from "./engine";
+import { RenderContext } from "../render-pipeline";
 import { ICollider } from "../physics/physics-generic";
 import { Scene } from "./scene";
 

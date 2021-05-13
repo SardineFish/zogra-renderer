@@ -6,7 +6,7 @@ import { vec3, Vector3 } from "../types/vec3";
 import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
-import { IRenderTarget, RenderTarget } from "./render-target";
+import { IFrameBuffer, FrameBuffer, ColorAttachment, DepthAttachment } from "./frame-buffer";
 import { RenderTexture, DepthTexture, Texture, Texture2D } from "./texture";
 import { vec4 } from "../types/vec4";
 import { vec2, Vector2 } from "../types/vec2";
@@ -19,7 +19,14 @@ import { Rect } from "../types/rect";
 import { MeshBuilder } from "../utils/mesh-builder";
 import { div } from "../types/math";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
-import { BufferStructure, RenderBuffer } from "./buffer";
+import { BufferStructure, GLArrayBuffer } from "./array-buffer";
+import { ObjectPool } from "../utils/object-pool";
+import { RenderBuffer } from "./render-buffer";
+
+interface TempFramebuffer extends FrameBuffer
+{
+    __isTemp: true;
+}
 
 export class ZograRenderer
 {
@@ -35,11 +42,13 @@ export class ZograRenderer
     viewMatrix = mat4.identity();
     projectionMatrix = mat4.identity();
 
-    private target: IRenderTarget = RenderTarget.CanvasTarget;
+    private target: IFrameBuffer = FrameBuffer.CanvasBuffer;
     private shader: Shader | null = null;
     private scissor: Rect;
     private globalUniforms = new Map<string, GlobalUniform>();
     private globalTextures = new Map<string, GlobalTexture>();
+    private framebufferPool = new ObjectPool<FrameBuffer, [number, number]>((w, h) => new FrameBuffer(w, h));
+    private blitFramebuffer = [new FrameBuffer(), new FrameBuffer()];
 
     private helperAssets: {
         clipBlitMesh: Mesh,
@@ -56,6 +65,8 @@ export class ZograRenderer
         this.scissor = new Rect(vec2.zero(), vec2(this.width, this.height));
 
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
+        this.gl.getExtension("EXT_color_buffer_float");
+        this.gl.getExtension("EXT_color_buffer_half_float");
 
 
         this.ctx = new GLContext();
@@ -86,6 +97,8 @@ export class ZograRenderer
 
     setSize(width: number, height: number)
     {
+        width = Math.floor(width);
+        height = Math.floor(height);
         this.canvas.width = width;
         this.canvas.height = height;
         this.width = width;
@@ -102,57 +115,112 @@ export class ZograRenderer
         mat4.mul(this.viewProjectionMatrix, projection, view);
     }
 
-    setRenderTarget(rt: IRenderTarget) : void
-    setRenderTarget(colorAttachments: RenderTexture, depthAttachment?: DepthTexture):void
-    setRenderTarget(colorAttachments: RenderTexture[], depthAttachment?: DepthTexture):void
-    setRenderTarget(colorAttachments: RenderTexture[] | RenderTexture | IRenderTarget, depthAttachment?: DepthTexture)
+    setFramebuffer(rt: IFrameBuffer) : void
+    setFramebuffer(colorAttachments: ColorAttachment, depthAttachment?: DepthAttachment):void
+    setFramebuffer(colorAttachments: ColorAttachment[], depthAttachment?: DepthAttachment):void
+    setFramebuffer(colorAttachments: ColorAttachment[] | ColorAttachment | IFrameBuffer, depthAttachment?: DepthAttachment)
     {
-        if (colorAttachments === RenderTarget.CanvasTarget)
+        let newFramebuffer: IFrameBuffer;
+        if (colorAttachments === FrameBuffer.CanvasBuffer)
+            newFramebuffer = FrameBuffer.CanvasBuffer;
+        else if (colorAttachments instanceof FrameBuffer)
         {
-            if (this.target !== colorAttachments)
-                this.target.release();
-            this.target = colorAttachments;
-        }
-        else if (colorAttachments instanceof RenderTarget)
-        {
-            if (this.target !== colorAttachments)
-                this.target.release();
-            this.target = colorAttachments;
-
-            if (depthAttachment)
-            {
-                (this.target as RenderTarget).setDepthAttachment(depthAttachment);
-            }
+            newFramebuffer = colorAttachments;
         }
         else
         {
-            let target: RenderTarget;
             if (colorAttachments instanceof Array)
             {
-                this.target.release();
-                target = new RenderTarget(colorAttachments[0].width, colorAttachments[0].height, this.ctx);
+                let width = 0, height = 0;
+                if (colorAttachments.length > 0)
+                {
+                    width = colorAttachments[0].width;
+                    height = colorAttachments[0].height;
+                }
+                else if (depthAttachment)
+                {
+                    width = depthAttachment.width;
+                    height = depthAttachment.height;
+                }
+                const framebuffer = this.getTempFramebuffer(width, height);
                 for (let i = 0; i < colorAttachments.length; i++)
-                    target.addColorAttachment(colorAttachments[i]);
-            }
-            else if (colorAttachments instanceof RenderTexture)
-            {
-                this.target.release();
-                target = new RenderTarget(colorAttachments.width, colorAttachments.height, this.ctx);
-                target.addColorAttachment(colorAttachments);
+                    framebuffer.addColorAttachment(colorAttachments[i], i);
+                if (depthAttachment)
+                    framebuffer.setDepthAttachment(depthAttachment);
+                newFramebuffer = framebuffer;
             }
             else
-                throw new Error("Invalid render target");
-
-            if (depthAttachment)
-                target.setDepthAttachment(depthAttachment);
+            {
+                const colorAttachment = colorAttachments as ColorAttachment;
+                const framebuffer = this.getTempFramebuffer(colorAttachment.width, colorAttachment.height);
+                framebuffer.addColorAttachment(colorAttachment, 0);
+                if (depthAttachment)
+                    framebuffer.setDepthAttachment(depthAttachment);
+                newFramebuffer = framebuffer;
+            }
             
-            this.target = target;
+        }
+        if (newFramebuffer !== this.target)
+        {
+            this.detachCurrentFramebuffer();
+            this.target = newFramebuffer;
         }
         
-
-        this.scissor = new Rect(vec2.zero(), this.target.size);
+        this.scissor.min.set([0, 0]);
+        this.scissor.max.set(this.target.size);
         this.target.bind();
     }
+
+    private detachCurrentFramebuffer()
+    {
+        if ((this.target as TempFramebuffer).__isTemp)
+        {
+            this.framebufferPool.release(this.target as FrameBuffer);
+        }
+    }
+
+    private getTempFramebuffer(width: number, height: number)
+    {
+        const framebuffer = this.framebufferPool.get(width, height);
+        (framebuffer as TempFramebuffer).__isTemp = true;
+        framebuffer.reset(width, height);
+        return framebuffer;
+    }
+
+    blitCopy(src: RenderBuffer | RenderTexture, dst: RenderBuffer | RenderTexture)
+    {
+        const gl = this.gl;
+        const [readBuffer, writeBuffer] = this.blitFramebuffer;
+        readBuffer.reset(src.width, src.height);
+        readBuffer.addColorAttachment(src);
+        readBuffer.bind();
+        writeBuffer.reset(src.width, src.height);
+
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, readBuffer.glFBO());
+        // gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderBuffer.glBuf());
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, writeBuffer.glFBO());
+        // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture.glTex(), 0);
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readBuffer.glFBO());
+        src instanceof RenderTexture
+            ? gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glTex(), 0)
+            : gl.framebufferRenderbuffer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glBuf());
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, writeBuffer.glFBO());
+        dst instanceof RenderTexture
+            ? gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glTex(), 0)
+            : gl.framebufferRenderbuffer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glBuf());
+
+
+        gl.blitFramebuffer(
+            0, 0, src.width, src.height,
+            0, 0, dst.width, dst.height,
+            gl.COLOR_BUFFER_BIT,
+            gl.NEAREST
+        );
+
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+    }
+
 
     clear(color = Color.black, clearDepth = true)
     {
@@ -162,32 +230,19 @@ export class ZograRenderer
 
     blit(
         src: Texture | null,
-        dst: IRenderTarget | RenderTexture | RenderTexture[],
+        dst: IFrameBuffer | RenderTexture | RenderTexture[],
         material: Material = this.assets.materials.blitCopy,
         srcRect?: Rect,
         dstRect?: Rect)
     {
-        
-        if (dst instanceof RenderTexture)
-        {
-            const target = new RenderTarget(dst.width, dst.height, this.ctx);
-            target.addColorAttachment(dst);
-            dst = target;
-        }
-        else if (dst instanceof Array)
-        {
-            const target = new RenderTarget(0, 0, this.ctx);
-            for (let i = 0; i < dst.length; i++)
-            {
-                target.addColorAttachment(dst[i]);
-            }
-            dst = target;
-        }
+        const prevTarget = this.target;
+        this.setFramebuffer(dst as IFrameBuffer);
+        dst = this.target;
 
         const prevVP = this.viewProjectionMatrix;
-        const prevTarget = this.target;
+        // const prevTarget = this.target;
         let mesh = this.helperAssets.blitMesh;
-        let viewport = dst === RenderTarget.CanvasTarget ? new Rect(vec2.zero(), this.canvasSize) : new Rect(vec2.zero(), dst.size);
+        let viewport = dst === FrameBuffer.CanvasBuffer ? new Rect(vec2.zero(), this.canvasSize) : new Rect(vec2.zero(), dst.size.clone());
 
         if (src && (srcRect || dstRect))
         {
@@ -217,7 +272,7 @@ export class ZograRenderer
 
         // this.unsetGlobalTexture(BuiltinUniformNames.mainTex);
 
-        this.setRenderTarget(prevTarget);
+        this.setFramebuffer(prevTarget);
         this.viewProjectionMatrix = prevVP;
     }
 
@@ -231,7 +286,7 @@ export class ZograRenderer
         
         this.shader = shader;
         shader.use();
-        shader.setupPipelineStates();
+        // shader.setupPipelineStates();
         
     }
 
@@ -269,7 +324,7 @@ export class ZograRenderer
         }
     }
 
-    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: RenderBuffer<T>, material: Material, count: number)
+    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: GLArrayBuffer<T>, material: Material, count: number)
     {
         if (!material)
             material = this.assets.materials.error;
@@ -376,12 +431,12 @@ export class ZograRenderer
 
     }
 
-    setGlobalUniform<T extends UniformType>(name: string, type: T, value: Readonly<UniformValueType<T>>)
+    setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>)
     {
         this.globalUniforms.set(name, {
             name: name,
             type: type,
-            value: cloneUniformValue(value),
+            value: value,
         });
     }
     unsetGlobalUniform(name: string)

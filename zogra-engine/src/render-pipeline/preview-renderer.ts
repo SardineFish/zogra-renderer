@@ -1,26 +1,25 @@
-import { ZograRenderPipeline, RenderContext, MaterialReplacer } from "./render-pipeline";
-import { Camera, Projection } from "../engine/engine";
-import { mat4 } from "zogra-renderer";
+import { ZograRenderPipeline, RenderContext } from "./render-pipeline";
+import { Camera, Scene } from "../engine";
+import { FilterMode, mat4, MSAASamples, RenderBuffer, TextureFormat } from "zogra-renderer";
 import { ZograRenderer, Material, Mesh } from "zogra-renderer";
-import { RenderObject } from "../engine/engine";
-import { Entity } from "../engine/engine";
 import { RenderData, RenderOrder } from "./render-data";
-import { Color, rgba, rgb } from "zogra-renderer";
-import { RenderTarget } from "zogra-renderer";
+import { rgba, rgb } from "zogra-renderer";
+import { FrameBuffer } from "zogra-renderer";
 import { RenderTexture } from "zogra-renderer";
 import { Lines, LineBuilder } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
-import { mul } from "zogra-renderer";
-import { vec4 } from "zogra-renderer";
-import { DebugLayerRenderer } from "./debug-layer";
+import { DebugLayerRenderer } from "./render-pass/debug-layer";
 
 export class PreviewRenderer implements ZograRenderPipeline
 {
+    msaa: MSAASamples = 4;
     renderer: ZograRenderer;
     grid: Lines;
     materialReplaceMap = new Map<Function, Material>();
     debugLayer = new DebugLayerRenderer();
+    cameraOutputFBOs = new Map<Camera, FrameBuffer>();
+    cameraOutputTextures = new Map<Camera, RenderTexture>();
 
     constructor(renderer: ZograRenderer)
     {
@@ -43,11 +42,11 @@ export class PreviewRenderer implements ZograRenderPipeline
         }
         this.grid = lb.toLines();
     }
-    render(context: RenderContext, cameras: Camera[])
+    render(context: RenderContext, scene: Scene, cameras: Camera[])
     {
         for (let i = 0; i < cameras.length; i++)
         {
-            const data = new RenderData(cameras[i], context.scene);
+            const data = RenderData.create(cameras[i], scene, this.getFramebuffer(context, cameras[i]));
             this.renderCamera(context, data);
         }
     }
@@ -56,34 +55,25 @@ export class PreviewRenderer implements ZograRenderPipeline
     {
         context.renderer.setGlobalUniform("uLightDir", "vec3", vec3(-1, 1, 0).normalize());
         context.renderer.setGlobalUniform("uAmbientSky", "color", rgb(.2, .2, .2));
-        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position);
+        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position.clone());
         context.renderer.setGlobalUniform("uLightColor", "color", rgb(.8, .8, .8));
     }
 
     renderCamera(context: RenderContext, data: RenderData)
     {
-        context.renderer.clear(rgb(.3, .3, .3), true);
+        // context.renderer.clear(rgb(.3, .3, .3), true);
 
         
 
         const camera = data.camera;
         camera.__preRender(context);
 
-        if (camera.output === RenderTarget.CanvasTarget)
-            context.renderer.setRenderTarget(RenderTarget.CanvasTarget);
-        else
-            context.renderer.setRenderTarget(camera.output as RenderTexture);
-        
-        
+        context.renderer.setFramebuffer(data.cameraOutput);
         context.renderer.clear(camera.clearColor, camera.clearDepth);
 
-
-        
-
         context.renderer.setViewProjection(camera.worldToLocalMatrix, camera.projectionMatrix);
-        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position);
+        context.renderer.setGlobalUniform("uCameraPos", "vec3", camera.position.clone());
 
-        
 
         this.setupLight(context, data);
         
@@ -105,7 +95,31 @@ export class PreviewRenderer implements ZograRenderPipeline
         // this.debugLayer.render(context, data);
 
         this.renderGrid(context, data);
+
+        this.finalBlit(context, data);
+        // context.renderer.blitCopy(data.cameraOutput.colorAttachments[0] as RenderBuffer, camera.output);
+
         camera.__postRender(context);
+    }
+
+    finalBlit(context: RenderContext, data: RenderData)
+    {
+        const camera = data.camera;
+        let tex = this.cameraOutputTextures.get(camera);
+        if (!tex)
+        {
+            tex = new RenderTexture(
+                data.camera.output?.width ?? context.renderer.canvasSize.x,
+                data.camera.output?.height ?? context.renderer.canvasSize.y,
+                false,
+                TextureFormat.RGBA,
+                FilterMode.Linear
+            );
+            this.cameraOutputTextures.set(camera, tex);
+        }
+        context.renderer.blitCopy(data.cameraOutput.colorAttachments[0] as RenderBuffer, tex);
+        context.renderer.blit(tex, FrameBuffer.CanvasBuffer);
+
     }
 
     renderGrid(context: RenderContext, data: RenderData)
@@ -124,6 +138,19 @@ export class PreviewRenderer implements ZograRenderPipeline
     replaceMaterial<T extends Material>(MaterialType: ConstructorType<T>, material: Material): void
     {
         this.materialReplaceMap.set(MaterialType, material);
+    }
+    
+    getFramebuffer(context: RenderContext, camera: Camera)
+    {
+        let fbo = this.cameraOutputFBOs.get(camera);
+        if (!fbo)
+        {
+            fbo = new FrameBuffer(context.renderer.canvas.width, context.renderer.canvas.height);
+            const renderbuffer = new RenderBuffer(fbo.width, fbo.height, TextureFormat.RGBA8, this.msaa);
+            fbo.addColorAttachment(renderbuffer);
+            this.cameraOutputFBOs.set(camera, fbo);
+        }
+        return fbo;
     }
 
 }

@@ -1,6 +1,6 @@
 import { Entity } from "../engine/entity";
 import { Scene } from "../engine/scene";
-import { Time } from "../engine/zogra-engine";
+import { Time } from "../engine/engine";
 export interface IPhysicsSystem {
     update(time: Readonly<Time>): void;
 }
@@ -8,6 +8,7 @@ export declare type IPhysicsSystemClass<T extends IPhysicsSystemClass<T>> = (new
     current(scene: Scene): InstanceType<T>;
 };
 export declare class UnknownPhysics implements IPhysicsSystem {
+    __getColliders(): never[];
     update(): void;
 }
 export interface ICollider {

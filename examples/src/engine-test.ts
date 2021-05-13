@@ -1,9 +1,9 @@
+import * as ZograEnginePackage from "zogra-engine";
+import { Camera, Color, Entity, InputManager, Keys, mat4, MaterialFromShader, mul, plus, PreviewRenderer, quat, RenderObject, rgb, Shader, shaderProp, Texture, vec3, ZograEngine } from "zogra-engine";
+import * as ZograRendererPackage from "zogra-renderer";
 import "./css/base.css";
-import { ZograEngine, Camera, vec3, RenderObject, quat, rgb, Entity, plus, InputManager, Keys, mat4, mul, PreviewRenderer, Projection, MaterialFromShader, Shader, Culling, DepthTest, MeshBuilder, Color, RenderTarget, Light, LightType, shaderProp, Texture, ZograRenderer } from "zogra-engine";
 import frag from "./shader/default-frag.glsl";
 import vert from "./shader/default-vert.glsl";
-import * as ZograRendererPackage from "zogra-renderer";
-import * as ZograEnginePackage from "zogra-engine";
 (window as any).ZograEngine = ZograEnginePackage;
 (window as any).ZograRenderer = ZograRendererPackage;
 
@@ -72,7 +72,6 @@ function initCamera()
             input.releasePointer();
         
         let look = input.pointerDelta;
-        let rotate = quat.normalize(quat.mul(quat.axisAngle(right, -sensity * look.y), quat.axisAngle(up, -sensity * look.x)));
 
         /*if (input.getKey(Keys.Space))
             rotate = quat.axis(right, -sensity * look.y);

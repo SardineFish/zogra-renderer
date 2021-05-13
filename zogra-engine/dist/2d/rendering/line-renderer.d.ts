@@ -14,4 +14,5 @@ export declare class LineRenderer extends RenderObject {
     updateMesh(): void;
     render(context: RenderContext, data: RenderData): void;
     private rebuildMesh;
+    destroy(): void;
 }

@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RenderObject = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const entity_1 = require("./entity");
-class RenderObject extends entity_1.Entity {
-    constructor(ctx = zogra_renderer_1.GlobalContext()) {
+import { GlobalContext } from "zogra-renderer";
+import { Entity } from "./entity";
+export class RenderObject extends Entity {
+    constructor(ctx = GlobalContext()) {
         super();
         this.meshes = [];
         this.materials = [];
@@ -24,5 +21,4 @@ class RenderObject extends entity_1.Entity {
         }
     }
 }
-exports.RenderObject = RenderObject;
 //# sourceMappingURL=render-object.js.map

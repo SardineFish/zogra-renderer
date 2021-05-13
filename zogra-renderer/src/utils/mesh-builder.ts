@@ -1,7 +1,7 @@
-import { vec3, vec2, Color, Vector3, mul } from "../types/types";
+import { vec3, vec2, Color, Vector3, mul } from "../types";
 import { GLContext, GlobalContext } from "../core/global";
 import { DefaultVertexData, DefaultVertexStruct, Mesh} from "../core/mesh";
-import { BufferElementValue, BufferElementView, BufferStructure } from "../core/buffer";
+import { BufferElementValue, BufferElementView, BufferStructure } from "../core/array-buffer";
 import { UniformValueType } from "../core/types";
 
 type VertexData<T extends BufferStructure> = {

@@ -1,4 +1,4 @@
-import { FilterMode, Texture2D, WrapMode } from "../../core/core";
+import { FilterMode, Texture2D, WrapMode } from "../../core";
 import { GlobalContext } from "../../core/global";
 import { TextureFormat } from "../../core/texture-format";
 import { AssetImporterPlugin, AssetsImporter } from "../assets-importer/assets-importer";

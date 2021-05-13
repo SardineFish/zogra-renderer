@@ -12,11 +12,11 @@ export interface CollisionInfo2D {
     point: vec2;
     seperation: vec2;
 }
-export declare abstract class Collider2D extends ColliderBase<Physics2D> implements IEventSource<Collider2DEvents> {
+export declare class Collider2D extends ColliderBase<Physics2D> implements IEventSource<Collider2DEvents> {
     rigidbody: Rigidbody2D | null;
     enabled: boolean;
     on<T extends EventKeys<Collider2DEvents>>(event: T, listener: Collider2DEvents[T]): void;
     off<T extends EventKeys<Collider2DEvents>>(event: T, listener: Collider2DEvents[T]): void;
-    abstract checkContact(other: Collider2D): boolean;
+    checkContact(other: Collider2D): boolean;
 }
 export {};

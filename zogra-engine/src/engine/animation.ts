@@ -1,50 +1,116 @@
-import { MathUtils } from "zogra-renderer";
+import { EventEmitter, EventKeys, MathUtils } from "zogra-renderer";
 
 export interface Keyframe<T>
 {
     time: number,
-    keyframe: T,
+    values: T,
 }
 
-interface AnimationFrameState<T>
+interface AnimationFrameState<Frame, Target>
 {
     time: number,
+    frameTime: number,
     deltaTime: number,
     progress: number,
-    frame: T,
-    animator: Animator<T>,
+    frame: Frame,
+    target?: Target,
+    animator: AnimationPlayback<Frame, Target>,
 }
 
-export type Timeline<T> = Keyframe<T>[];
-
-type AnimationCallback<T> = (frame: AnimationFrameState<T>) => void;
-
-export class Animator<T = {}>
+interface SimpleTimeline<Frame, Target = unknown>
 {
-    time: number;
-    duration: number;
-    timeScale = 1;
-    callback: AnimationCallback<T> | null = null;
-    timeline: Timeline<T> | null;
-    loop = false;
-    state: "pending" | "playing" | "stopped" = "stopped";
-    currentFrame: T = {} as any;
+    loop?: boolean,
+    duration: number,
+    frames: { [key: number]: Frame },
+    updater?: SimpleUpdater<Frame, Target>,
+}
 
-    constructor(duration: number, timeline: Timeline<T> | null = null, time = 0)
+type SimpleUpdater<Frame, Target> = (frame: Frame, target: Target) => void;
+
+export interface Timeline<Frame, Target = unknown>
+{
+    loop: boolean,
+    duration: number,
+    frames: Keyframe<Frame>[],
+    updater?: SimpleUpdater<Frame, Target>,
+}
+export function Timeline<Frame, Target = unknown>(timeline: SimpleTimeline<Frame, Target>): Timeline<Frame, Target>
+{
+    const times = Object.keys(timeline.frames).map(t => ({ key: t, time: parseFloat(t) })).sort((a, b) => a.time - b.time);
+    const output: Timeline<Frame, Target> = {
+        loop: timeline.loop || false,
+        duration: timeline.duration,
+        frames: [],
+        updater: timeline.updater,
+    };
+    for (const time of times)
     {
-        this.duration = duration;
-        this.time = time;
+        output.frames.push({
+            time: time.time,
+            values: timeline.frames[time.key as unknown as number],
+        });
+    }
+    return output;
+}
+
+type AnimationCallback<Frame, Target> = (frame: AnimationFrameState<Frame, Target>) => void;
+
+export interface IPlayback<T>
+{
+    finished: boolean;
+    play(): Promise<T>;
+    stop(): void;
+    update(dt: number): void;
+    reject(): void;
+}
+
+export class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlayback<Frame, Target>>
+{
+    frameTime: number = 0;
+    time: number = 0;
+    timeScale = 1;
+    target: Target | undefined = undefined;
+    updater: AnimationCallback<Frame, Target> | undefined = undefined; 
+    timeline: Timeline<Frame, Target>;
+    loop: boolean;
+    state: "pending" | "playing" | "stopped" = "stopped";
+    currentFrame: Frame = {} as any;
+    duration: number;
+
+    private resolver?: (t: this) => void;
+    private rejector?: () => void;
+
+    constructor(timeline: Timeline<Frame, Target>, target?: Target, updater?: AnimationCallback<Frame, Target>)
+    {
+        this.frameTime = 0;
         this.timeline = timeline;
+        this.loop = timeline.loop;
+        this.duration = timeline.duration;
+        this.target = target;
+        this.updater = updater;
+        if (!this.updater && target && timeline.updater)
+        {
+            this.updater = (frame) =>
+            {
+                (timeline.updater as SimpleUpdater<Frame, Target>)(frame.frame, target);
+            }
+        }
     }
     get playing() { return this.state === "playing" || this.state === "pending" }
     get finished() { return this.state === "stopped" }
 
-    play(time = 0)
+    play(time = 0): Promise<this>
     {
-        this.time = time;
-        this.state = "pending";
-        if (this.timeline && this.timeline.length > 0)
-            Object.assign(this.currentFrame, this.timeline[0].keyframe);
+        return new Promise((resolve, reject) =>
+        {
+            this.resolver = resolve;
+            this.rejector = reject;
+            this.frameTime = time;
+            this.frameTime = time;
+            this.state = "pending";
+            if (this.timeline && this.timeline.frames.length > 0)
+                Object.assign(this.currentFrame, this.timeline.frames[0].values);
+        })
     }
     stop()
     {
@@ -70,35 +136,47 @@ export class Animator<T = {}>
         }
     }
 
+    reject()
+    {
+        this.rejector?.();
+    }
+
     private updateAnimation(dt: number)
     {
-        if (!this.callback)
+        if (!this.updater)
             return;
+        
+        if (this.loop)
+            this.frameTime = this.time % this.timeline.duration;
+        else
+            this.frameTime = this.time;
         
         this.updateFrame();
 
-        this.callback({
+        this.updater({
             deltaTime: dt,
             frame: this.currentFrame,
             animator: this,
+            target: this.target,
             time: this.time,
-            progress: this.time / this.duration
+            frameTime: this.frameTime,
+            progress: this.frameTime / this.duration
         });
     }
 
     private updateFrame()
     {
-        if (this.timeline && this.timeline.length > 0)
+        if (this.timeline && this.timeline.frames.length > 0)
         {
-            for (let i = 0; i < this.timeline.length; i++)
+            for (let i = 0; i < this.timeline.frames.length; i++)
             {
-                if (this.timeline[i].time >= this.time)
+                if (this.timeline.frames[i].time >= this.frameTime)
                 {
-                    if (i === 0 || this.timeline[i].time === this.time)
-                        Object.assign(this.currentFrame, this.timeline[i].keyframe);
+                    if (i === 0 || this.timeline.frames[i].time === this.frameTime)
+                        Object.assign(this.currentFrame, this.timeline.frames[i].values);
                     else
                     {
-                        this.interpolate(this.currentFrame, this.timeline[i - 1], this.timeline[i]);
+                        this.interpolate(this.currentFrame, this.timeline.frames[i - 1], this.timeline.frames[i]);
                     }
 
                     return this.currentFrame;
@@ -106,26 +184,26 @@ export class Animator<T = {}>
             }
             if (this.loop)
             {
-                this.interpolate(this.currentFrame, this.timeline[this.timeline.length - 1], this.timeline[0]);
+                this.interpolate(this.currentFrame, this.timeline.frames[this.timeline.frames.length - 1], this.timeline.frames[0]);
             }
             else
             {
-                Object.assign(this.currentFrame, this.timeline[this.timeline.length - 1].keyframe);
+                Object.assign(this.currentFrame, this.timeline.frames[this.timeline.frames.length - 1].values);
             }
         }
     }
 
-    private interpolate(frame: T, previous: Keyframe<T>, next: Keyframe<T>)
+    private interpolate(frame: Frame, previous: Keyframe<Frame>, next: Keyframe<Frame>)
     {
-        let t = (this.time - previous.time) / (next.time - previous.time);
+        let t = (this.frameTime - previous.time) / (next.time - previous.time);
         if (next.time < previous.time)
-            t = (this.time - previous.time) / (this.duration - previous.time + next.time);
-        for (const key in previous.keyframe)
+            t = (this.frameTime - previous.time) / (this.timeline.duration + next.time - previous.time);
+        for (const key in previous.values)
         {
-            frame[key] = previous.keyframe[key];
-            if (typeof (previous.keyframe[key]) === "number" && typeof (next.keyframe[key]) === "number")
+            frame[key] = previous.values[key];
+            if (typeof (previous.values[key]) === "number" && typeof (next.values[key]) === "number")
             {
-                frame[key] = MathUtils.lerp(previous.keyframe[key] as any, next.keyframe[key] as any, t) as any;
+                frame[key] = MathUtils.lerp(previous.values[key] as any, next.values[key] as any, t) as any;
             }
         }
         return frame;
@@ -135,15 +213,170 @@ export class Animator<T = {}>
     {
         if (this.time >= this.duration)
         {
-            if (this.loop)
-            {
-                this.time %= this.duration;
-            }
-            else
-            {
-                this.time = this.duration;
-                this.state = "stopped";
-            }
+            this.time = this.duration;
+            this.state = "stopped";
+            this.resolver?.(this);
         }
+    }
+}
+
+class ProceduralPlayback implements IPlayback<void>
+{
+    currentTime: number = 0
+    totalTime: number;
+    state: "pending" | "playing" | "stopped" = "stopped";
+    resolver?: () => void;
+    rejector?: () => void;
+    updater?: (t: number, dt: number) => void;
+    constructor(time: number, updater?: (t: number, dt: number) => void)
+    {
+        this.totalTime = time;
+        this.updater = updater;
+    }
+
+    get finished() { return this.state === "stopped" }
+
+    play(): Promise<void>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            this.rejector = reject;
+            this.resolver = resolve;
+            if (this.state === "stopped")
+                this.state = "pending";
+        });
+    }
+    stop(): void
+    {
+        this.resolver = undefined;
+        this.state = "stopped";
+    }
+    update(dt: number): void
+    {
+        switch (this.state)
+        {
+            case "stopped":
+                return;
+            case "pending":
+                this.state = "playing";
+            case "playing":
+                this.currentTime += dt;
+                this.checkEnd();
+                this.updater?.(this.currentTime / this.totalTime, dt);
+                break;
+        }
+    }
+    reject()
+    {
+        this.rejector?.();
+    }
+
+    private checkEnd()
+    {
+        if (this.currentTime >= this.totalTime)
+        {
+            this.currentTime = this.totalTime;
+            this.state = "stopped";
+            this.resolver?.();
+        }
+    }
+
+}
+
+interface AnimatorEvent<T, Target>
+{
+    start(timeline: AnimationPlayback<T, Target>, time: number): void,
+    finish(timeline: AnimationPlayback<T, Target>): void,
+}
+
+export interface AnimationPlaybackOptions<Frame, Target = unknown>
+{
+    updater: AnimationCallback<Frame, Target>,
+    playDuration: number,
+    loop: boolean,
+    startTime: number,
+}
+
+export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
+{
+    defaultTarget: AnimatorTarget | undefined;
+    tracks: Array<IPlayback<unknown> | undefined> = [];
+
+    constructor(target?: AnimatorTarget)
+    {
+        this.defaultTarget = target;
+    }
+
+    playOn<Frame = AnimatorFrame, Target = AnimatorTarget>(
+        track: number,
+        timeline: Timeline<Frame, Target>,
+        target: Target = this.defaultTarget as unknown as Target,
+        duration: number = timeline.duration,
+        updater?: AnimationCallback<Frame, Target>
+    ): Promise<AnimationPlayback<Frame, Target>>
+    {
+        const playback = new AnimationPlayback<Frame, Target>(timeline, target, updater);
+        playback.duration = duration;
+        const promise = playback.play();
+        if (this.tracks[track])
+            (this.tracks[track] as IPlayback<unknown>).reject();
+        this.tracks[track] = playback;
+        return promise;
+    }
+
+    play<Frame = AnimatorFrame, Target = AnimatorTarget>(
+        timeline: Timeline<Frame, Target>,
+        target: Target = this.defaultTarget as unknown as Target,
+        duration: number = timeline.duration,
+        updater?: AnimationCallback<Frame, Target>
+    ): Promise<AnimationPlayback<Frame, Target>>
+    {
+        return this.playOn(this.tracks.length, timeline, target, duration, updater);
+    }
+
+    playProceduralOn(track: number, time: number, updater?: (t: number, dt: number) => void, startTime = 0): Promise<void>
+    {
+        const playback = new ProceduralPlayback(time, updater);
+        playback.currentTime = startTime;
+        const promise = playback.play();
+        if (this.tracks[track])
+            (this.tracks[track] as IPlayback<unknown>).reject();
+        this.tracks[track] = playback;
+        return promise;
+    }
+    playProcedural(time: number, updater?: (t: number, dt: number)=>void, startTime = 0): Promise<void>
+    {
+        return this.playProceduralOn(this.tracks.length, time, updater);
+    }
+
+    wait(time: number, callback: () => void)
+    {
+        const playback = new ProceduralPlayback(time);
+        const promise = playback.play();
+        this.tracks.push(playback);
+        promise.then(callback);
+    }
+
+    update(dt: number)
+    {
+        for (let i = 0; i < this.tracks.length; i++)
+        {
+            const playback = this.tracks[i];
+            if (!playback)
+                continue;
+            playback.update(dt);
+            if (playback.finished)
+            {
+                this.tracks[i] = undefined;
+            }
+
+        }
+    }
+
+    clear()
+    {
+        for (const track of this.tracks)
+            track?.reject();
+        this.tracks.length = 0;
     }
 }

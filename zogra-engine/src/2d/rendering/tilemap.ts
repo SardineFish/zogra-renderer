@@ -1,7 +1,9 @@
 import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4} from "zogra-renderer";
 import { RenderContext, RenderData, Camera } from "../..";
 import { RenderObject, RenderObjectEvents } from "../../engine/render-object";
+import { BuiltinMaterials } from "../../render-pipeline/default-materials";
 import { ConstructorType } from "../../utils/util";
+import { Polygon } from "../physics/polygon";
 import { Default2DMaterial } from "./materials";
 import { Sprite } from "./sprite";
 
@@ -18,7 +20,7 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
     constructor(...args: [] | [number] | [ConstructorType<TChunk, [vec2, number]>] | [number, ConstructorType<TChunk, [vec2, number]>])
     {
         super();
-        this.materials[0] = new Default2DMaterial();
+        this.materials[0] = BuiltinMaterials.tilemapDefault;
         if (args.length === 0)
         {
             this.chunkSize = 16;
@@ -121,6 +123,18 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
         return (signX << 31) | (Math.abs(Math.floor(x)) << 16) | (signY << 15) | Math.abs(Math.floor(y));
     }
 
+    destroy()
+    {
+        if (this.destroyed)
+            return;
+        super.destroy();
+        for (const chunk of this.chunks.values())
+        {
+            chunk.destroy();
+        }
+        this.chunks.clear();
+    }
+
     /**
      * floor in callee
      * @param pos No need to floor
@@ -145,7 +159,7 @@ export class Chunk
     mesh: Mesh;
     
     protected tiles: Array<TileData | null>;
-
+    private polygons: Polygon[] = [];
     private dirty = false;
 
     constructor(basePos: vec2, chunkSize: number)
@@ -174,18 +188,14 @@ export class Chunk
      */
     setTile(offset: vec2, tile: TileData | null)
     {
-        // if (tile)
-        //     tile = {
-        //         collide: tile.collide,
-        //         texture_offset: tile.texture_offset.clone()
-        //     };
 
         let idx = offset.y * this.chunkSize + offset.x;
+        if (this.tiles[idx]?.collide !== tile?.collide)
+            this.dirty = true;
         this.tiles[idx] = tile;
 
 
 
-        // let uv = this.mesh.uvs;
         idx *= 4;
         if (tile?.sprite)
         {
@@ -200,6 +210,222 @@ export class Chunk
             this.mesh.update();
         }
         // this.mesh.uvs = uv;
+    }
+
+    destroy()
+    {
+        this.mesh.destroy();
+    }
+
+    /** @internal */
+    getPolygons()
+    {
+        if (this.dirty)
+        {
+            this.polygons = Array.from(this.enumPolygons());
+            // console.log("gen", this.polygons.reduce((sum, poly) => sum + poly.points.length, 0));
+        }
+        this.dirty = false;
+        return this.polygons;
+    }
+
+    private *enumPolygons()
+    {
+        const validPos = (x: number, y: number) => 0 <= x && x < this.chunkSize && 0 <= y && y < this.chunkSize;
+        const visited = new Array<boolean>((this.chunkSize + 1) * (this.chunkSize + 1) * (this.chunkSize + 1) * (this.chunkSize + 1));
+        const tileAt = (x: number, y: number) =>
+        {
+            if (!validPos(x, y))
+                return null;
+            return this.tiles[y * this.chunkSize + x];
+        }
+        const getEdge = (x: number, y: number) =>
+        {
+            if (!tileAt(x, y)?.collide)
+                return 0;
+            if (!tileAt(x - 1, y)?.collide)
+                return left;
+            if (!tileAt(x + 1, y)?.collide)
+                return right;
+            if (!tileAt(x, y - 1)?.collide)
+                return down;
+            if (!tileAt(x, y + 1)?.collide)
+                return up;
+            return 0;
+        }
+        const idxOf = (x: number, y: number) => y * this.chunkSize + x;
+        const edgeOf = (a: vec2, b: vec2) => idxOf(a.x, a.y) * (this.chunkSize + 1) * (this.chunkSize + 1) + idxOf(b.x, b.y);
+        
+
+        const searchPolygon = (start: vec2, next: vec2, dir: number) =>
+        {
+            const points: vec2[] = [start, next];
+            // visited[edgeOf(start, next)] = true;
+            let previous = start.clone();
+            let search = true;
+            while (search)
+            {
+                let head = points[points.length - 1];
+                if (visited[edgeOf(previous, head)])
+                {
+                    points.length -= 1;
+                    if (points[0].equals(points[points.length - 1]))
+                        points.length -= 1;
+                    break;
+                }
+                visited[edgeOf(previous, head)] = true;
+                previous.set(head);
+                switch (dir)
+                {
+                    /*
+                     * |---|---|
+                     * | 1 | 0 |
+                     * |---^---|
+                     * | 2 ^   |
+                     * |---^---|
+                     */
+                    case up:
+                        if (tileAt(head.x, head.y)?.collide)
+                        {
+                            points.push(vec2(head.x + 1, head.y));
+                            dir = right;
+                        }
+                        else if (tileAt(head.x - 1, head.y)?.collide)
+                            head.y += 1;
+                        else if (tileAt(head.x - 1, head.y - 1)?.collide)
+                        {
+                            points.push(vec2(head.x - 1, head.y));
+                            dir = left;
+                        }
+                        else
+                            throw new Error("Invalid tilemap");
+                        break;
+                    /*
+                    * |---|---|
+                    * | 0 |   |
+                    * |---<<<<<
+                    * | 1 | 2 |
+                    * |---|---|
+                    */
+                    case left:
+                        if (tileAt(head.x - 1, head.y)?.collide)
+                        {
+                            points.push(vec2(head.x, head.y + 1));
+                            dir = up;
+                        }
+                        else if (tileAt(head.x - 1, head.y - 1)?.collide)
+                            head.x -= 1;
+                        else if (tileAt(head.x, head.y - 1)?.collide)
+                        {
+                            points.push(vec2(head.x, head.y - 1));
+                            dir = down;
+                        }
+                        else
+                            throw new Error("Invalid tilemap");
+                        break;
+                    /*
+                     * |---v---|
+                     * |   v 2 |
+                     * |---v---|
+                     * | 0 | 1 |
+                     * |---|---|
+                     */
+                    case down:
+                        if (tileAt(head.x - 1, head.y - 1)?.collide)
+                        {
+                            points.push(vec2(head.x - 1, head.y));
+                            dir = left;
+                        }
+                        else if (tileAt(head.x, head.y - 1)?.collide)
+                            head.y -= 1;
+                        else if (tileAt(head.x, head.y)?.collide)
+                        {
+                            points.push(vec2(head.x + 1, head.y));
+                            dir = right;
+                        }
+                        else
+                            throw new Error("Invalid tilemap");
+                        break;
+                    /*
+                     * |---|---|
+                     * | 2 | 1 |
+                     * >>>>>---|
+                     * |   | 0 |
+                     * |---|---|
+                     */
+                    case right:
+                        if (tileAt(head.x, head.y - 1)?.collide)
+                        {
+                            points.push(vec2(head.x, head.y - 1));
+                            dir = down;
+                        }
+                        else if (tileAt(head.x, head.y)?.collide)
+                            head.x += 1;
+                        else if (tileAt(head.x - 1, head.y)?.collide)
+                        {
+                            points.push(vec2(head.x, head.y + 1));
+                            dir = up;
+                        }
+                        else
+                            throw new Error("Invalid tilemap");
+                        break;
+                }
+            }
+
+            return points;
+        }
+
+        const left = 1, right = 2, up = 3, down = 4;
+
+        // Find a bottom-left most tile and start walking from bottom-left corner to bottom-right corner
+        for (let y = 0; y < this.chunkSize; y++)
+        {
+            for (let x = 0; x < this.chunkSize; x++)
+            {
+                const edge = getEdge(x, y);
+                if (!edge)
+                    continue;
+                let start: vec2;
+                let next: vec2;
+                let dir: number;
+                switch (edge)
+                {
+                    case left:
+                        start = vec2(x, y + 1);
+                        next = vec2(x, y);
+                        dir = down;
+                        break;
+                    case down:
+                        start = vec2(x, y);
+                        next = vec2(x + 1, y);
+                        dir = right;
+                        break;
+                    case right:
+                        start = vec2(x + 1, y);
+                        next = vec2(x + 1, y + 1);
+                        dir = up;
+                        break;
+                    case up:
+                        start = vec2(x + 1, y + 1);
+                        next = vec2(x, y + 1);
+                        dir = down;
+                        break;
+                }
+                if (!visited[edgeOf(start, next)])
+                {
+                    const points = searchPolygon(start, next, dir);
+                    const polygon = new Polygon(points.length);
+
+                    for (const point of points)
+                    {
+                        polygon.append(point.plus(this.basePos));
+                    }
+                    yield polygon;
+
+                }
+            }
+        }
+        
     }
 }
 

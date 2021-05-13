@@ -1,9 +1,9 @@
-import { IRenderTarget, RenderTexture } from "zogra-renderer";
+import { RenderTexture } from "zogra-renderer";
 import { GLContext } from "zogra-renderer";
 import { vec2 } from "zogra-renderer";
 import { Entity, EntityEvents } from "./entity";
 import { Color } from "zogra-renderer";
-import { RenderContext } from "../render-pipeline/rp";
+import { PostProcess, RenderContext } from "../render-pipeline";
 import { IEventSource, EventKeys } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
 import { ray } from "zogra-renderer";
@@ -17,7 +17,7 @@ interface CameraEvents extends EntityEvents {
 }
 export declare class Camera extends Entity implements IEventSource<CameraEvents> {
     private ctx;
-    output: RenderTexture | IRenderTarget;
+    output: RenderTexture | null;
     FOV: number;
     near: number;
     far: number;
@@ -25,6 +25,7 @@ export declare class Camera extends Entity implements IEventSource<CameraEvents>
     projection: Projection;
     clearColor: Color;
     clearDepth: boolean;
+    postprocess: PostProcess[];
     get pixelSize(): import("zogra-renderer").Vector2;
     get aspectRatio(): number;
     get viewProjectionMatrix(): import("zogra-renderer").Matrix4x4;

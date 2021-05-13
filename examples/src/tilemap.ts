@@ -3,12 +3,13 @@ import "./css/base.css";
 import imgCheckBoard from "./asset/img/checkboard.png";
 import * as ZograRendererPackage from "zogra-renderer";
 import * as ZograEnginePackage from "zogra-engine";
-import noisejs = require("noisejs");
+import { Noise as noisejs } from "noisejs";
+import { Debug } from "zogra-renderer/dist/core/global";
 
-(window as any).Noise = noisejs.Noise;
+(window as any).Noise = noisejs;
 (window as any).ZograEngine = ZograEnginePackage;
 (window as any).ZograRenderer = ZograRendererPackage;
-const Noise = new noisejs.Noise();
+const Noise = new noisejs(Math.random());
 
 let tileGround: TileData = {
     sprite: null,
@@ -16,7 +17,7 @@ let tileGround: TileData = {
 };
 let tileWall: TileData = {
     sprite: null,
-    collide: false,
+    collide: true,
 }
 
 class NoiseChunk extends Chunk
@@ -56,6 +57,7 @@ class NoiseChunk extends Chunk
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
+engine.renderPipeline.ambientLightColor = Color.white;
 const input = new InputManager({
 });
 engine.start();
@@ -103,14 +105,20 @@ async function init()
             tilemap.setTile(pos.toVec2(), tileWall);
             console.log(input.pointerPosition, pos, camera.screenToViewport(input.pointerPosition));
 
-            lineRenderer.points.push({
-                position: pos.toVec2(),
-                color: Color.white,
-                width: 1
-            });
-            lineRenderer.updateMesh();
+        }
+
+        let i = 0
+        for (const chunk of (tilemap as any).chunks.values())
+        {
+            for (const polygon of chunk.getPolygons())
+            {
+                colors[i] = colors[i] || Color.fromHSL(Math.random() * 360, 1, 0.5);
+                Debug().drawLines(polygon.points.map((p: vec2) => p.toVec3()), colors[i++]);
+            }
         }
     });
 
 }
 init();
+
+const colors: Color[] = [];

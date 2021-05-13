@@ -7,4 +7,6 @@ export declare abstract class DebugProvider {
     drawRay(origin: vec3, dir: vec3, distance?: number, color?: Color): void;
     drawRect(min: vec2, max: vec2, color?: Color): void;
     drawRect(rect: Rect, color?: Color): void;
+    drawLines(points: vec3[], color?: Color): void;
+    drawCircle(center: Readonly<vec3>, radius: number, color?: Color): void;
 }

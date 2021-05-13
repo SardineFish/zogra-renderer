@@ -1,6 +1,6 @@
-import { Color, Material, Mesh, Texture, vec2, vec3, vec4, Vector3 } from "zogra-renderer";
+import { Color, Material, Mesh, Texture, vec2, vec3, vec4, Vector3, ShaderAttributeNames } from "zogra-renderer";
 import { RenderObject } from "./render-object";
-import { Time } from "./zogra-engine";
+import { Time } from "./engine";
 declare const ParticleMaterial_base: typeof import("zogra-renderer").MaterialType;
 export declare class ParticleMaterial extends ParticleMaterial_base {
     color: Color;
@@ -36,6 +36,26 @@ export declare type ParticlePropertySettings<T, U> = T extends Color ? {
     z: U;
 } | ((lifetime: number, system: ParticleSystem) => vec2) : T extends number ? U | ((lifetime: number, system: ParticleSystem) => number) : never;
 export declare class ParticleSystem extends RenderObject {
+    static VertexStructure: {
+        vert: "vec3";
+        color: "vec4";
+        normal: "vec3";
+        uv: "vec2";
+        uv2: "vec2";
+        pos: "vec3";
+        rotation: "vec3";
+        size: "float";
+    };
+    static AttributeNames: ShaderAttributeNames<{
+        vert: "vec3";
+        color: "vec4";
+        normal: "vec3";
+        uv: "vec2";
+        uv2: "vec2";
+        pos: "vec3";
+        rotation: "vec3";
+        size: "float";
+    }>;
     mesh: Mesh;
     material: Material;
     duration: ParticleScalarGenerator;
@@ -68,5 +88,6 @@ export declare class ParticleSystem extends RenderObject {
     private getScalarValue;
     private updateScalarValue;
     static boxEmitter(size: vec2): ParticleEmitter;
+    static circleEmitter(radius: number): ParticleEmitter;
 }
 export {};

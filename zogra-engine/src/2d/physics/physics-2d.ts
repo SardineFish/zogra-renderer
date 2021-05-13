@@ -1,6 +1,6 @@
 import { minus, mul, vec2 } from "zogra-renderer";
 import { Scene } from "../../engine/scene";
-import { Time } from "../../engine/zogra-engine";
+import { Time } from "../../engine/engine";
 import { ICollider, IPhysicsSystem } from "../../physics/physics-generic";
 import { Collider2D } from "./collider2d";
 
@@ -32,6 +32,12 @@ export class Physics2D<Collider extends Collider2D = Collider2D> implements IPhy
             }
             this.colliderList.length--;
         }
+    }
+
+    /** @internal */
+    __getColliders<T extends ICollider = Collider2D>(): T[]
+    {
+        return this.colliderList as unknown as T[];
     }
 
     update(time: Time)

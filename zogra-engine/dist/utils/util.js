@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DoubleBuffer = void 0;
-class DoubleBuffer {
+export class DoubleBuffer {
     constructor(init) {
         this.currentIdx = 0;
         this.buffers = [init(), init()];
@@ -14,5 +11,4 @@ class DoubleBuffer {
         this.currentIdx++;
     }
 }
-exports.DoubleBuffer = DoubleBuffer;
 //# sourceMappingURL=util.js.map

@@ -1,9 +1,10 @@
-const process = require("process");
+import process from "process";
+import esbuild from "esbuild";
 
 const dev = process.argv.includes("--dev");
 const watch = process.argv.find(arg => arg === "-w" || arg === "--watch") !== undefined;
 
-require("esbuild").build({
+esbuild.build({
     entryPoints: [
         "./assets/index.ts",
     ],

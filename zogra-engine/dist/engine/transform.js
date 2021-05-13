@@ -1,20 +1,17 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Transform = void 0;
-const zogra_renderer_1 = require("zogra-renderer");
-const zogra_renderer_2 = require("zogra-renderer");
-const zogra_renderer_3 = require("zogra-renderer");
-class Transform {
+import { mat4 } from "zogra-renderer";
+import { vec3 } from "zogra-renderer";
+import { quat } from "zogra-renderer";
+export class Transform {
     constructor() {
         this._parent = null;
         this.children = new Set();
-        this._localPosition = zogra_renderer_2.vec3.zero();
-        this._localRotation = zogra_renderer_3.quat.identity();
-        this._localScaling = zogra_renderer_2.vec3.one();
-        this._rotation = zogra_renderer_3.quat.identity();
-        this._inv_rotation = zogra_renderer_3.quat.identity();
-        this._localToWorld = zogra_renderer_1.mat4.identity();
-        this._worldToLocal = zogra_renderer_1.mat4.identity();
+        this._localPosition = vec3.zero();
+        this._localRotation = quat.identity();
+        this._localScaling = vec3.one();
+        this._rotation = quat.identity();
+        this._inv_rotation = quat.identity();
+        this._localToWorld = mat4.identity();
+        this._worldToLocal = mat4.identity();
         this._scene = null;
     }
     get localPosition() { return this._localPosition; }
@@ -36,13 +33,13 @@ class Transform {
     get position() {
         if (!this._parent)
             return this.localPosition;
-        return zogra_renderer_1.mat4.mulPoint(this._parent.localToWorldMatrix, this.localPosition);
+        return mat4.mulPoint(this._parent.localToWorldMatrix, this.localPosition);
     }
     set position(position) {
         if (!this._parent)
             this.localPosition.set(position);
         else
-            zogra_renderer_1.mat4.mulPoint(this._localPosition, this._parent.worldToLocalMatrix, position);
+            mat4.mulPoint(this._localPosition, this._parent.worldToLocalMatrix, position);
         this.updateTransformRecursive();
     }
     get rotation() {
@@ -50,10 +47,10 @@ class Transform {
     }
     set rotation(rotation) {
         if (!this._parent)
-            zogra_renderer_3.quat.normalize(this._localRotation, rotation);
+            quat.normalize(this._localRotation, rotation);
         else {
-            zogra_renderer_3.quat.mul(this._localRotation, this._parent._inv_rotation, rotation);
-            zogra_renderer_3.quat.normalize(this._localRotation, this._localRotation);
+            quat.mul(this._localRotation, this._parent._inv_rotation, rotation);
+            quat.normalize(this._localRotation, this._localRotation);
         }
         this.updateTransformRecursive();
     }
@@ -84,7 +81,7 @@ class Transform {
         if (!this._parent)
             this.localPosition.plus(motion);
         else
-            this.localPosition.plus(zogra_renderer_1.mat4.mulVector(this._parent.worldToLocalMatrix, motion));
+            this.localPosition.plus(mat4.mulVector(this._parent.worldToLocalMatrix, motion));
         this.updateTransformRecursive();
     }
     /** @internal */
@@ -97,16 +94,15 @@ class Transform {
     }
     updateTransformRecursive() {
         this._rotation.set(this._localRotation);
-        zogra_renderer_1.mat4.rts(this._localToWorld, this._localRotation, this._localPosition, this._localScaling);
+        mat4.rts(this._localToWorld, this._localRotation, this._localPosition, this._localScaling);
         if (this._parent) {
-            zogra_renderer_1.mat4.mul(this._localToWorld, this._parent._localToWorld, this._localToWorld);
-            zogra_renderer_3.quat.mul(this._rotation, this._parent._rotation, this._rotation);
+            mat4.mul(this._localToWorld, this._parent._localToWorld, this._localToWorld);
+            quat.mul(this._rotation, this._parent._rotation, this._rotation);
         }
-        zogra_renderer_1.mat4.invert(this._worldToLocal, this._localToWorld);
-        zogra_renderer_3.quat.invert(this._inv_rotation, this._rotation);
+        mat4.invert(this._worldToLocal, this._localToWorld);
+        quat.invert(this._inv_rotation, this._rotation);
         for (const child of this.children)
             child.updateTransformRecursive();
     }
 }
-exports.Transform = Transform;
 //# sourceMappingURL=transform.js.map

@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.hsl = exports.rgb = exports.rgba = exports.Color = void 0;
-const vec4_1 = require("./vec4");
-class Color extends vec4_1.Vector4 {
+import { Vector4 } from "./vec4";
+export class Color extends Vector4 {
     get r() { return this[0]; }
     set r(r) { this[0] = r; }
     get g() { return this[1]; }
@@ -141,10 +138,7 @@ class Color extends vec4_1.Vector4 {
         throw new Error(`Invalid color string '${str}'`);
     }
 }
-exports.Color = Color;
-const rgba = (r, g, b, a = 1) => new Color(r, g, b, a);
-exports.rgba = rgba;
-const rgb = (r, g, b) => new Color(r, g, b, 1);
-exports.rgb = rgb;
-exports.hsl = Color.fromHSL;
+export const rgba = (r, g, b, a = 1) => new Color(r, g, b, a);
+export const rgb = (r, g, b) => new Color(r, g, b, 1);
+export const hsl = Color.fromHSL;
 //# sourceMappingURL=color.js.map

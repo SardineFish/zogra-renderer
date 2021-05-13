@@ -137,6 +137,17 @@ export class Vector4 extends V4Constructor implements Vector, ZograMatrix
             );
         };
     }
+    static mathNonAlloc<F extends (...args: number[]) => number>(func: F): (out: vec4, ...args: VecMathArgs<Parameters<F>, Readonly<vec4>>) => vec4
+    {
+        return (out: vec4, ...args: Readonly<vec4>[]) =>
+        {
+            out[0] = func(...args.map(v => v[0]));
+            out[1] = func(...args.map(v => v[1]));
+            out[2] = func(...args.map(v => v[2]));
+            out[3] = func(...args.map(v => v[3]));
+            return out;
+        };
+    }
 
     __to(type: Function)
     {
@@ -167,6 +178,7 @@ vec4.floor = (v: vec4) => vec4(Math.floor(v.x), Math.floor(v.y), Math.floor(v.z)
 vec4.zero = Vector4.zero;
 vec4.one = Vector4.one;
 vec4.math = Vector4.math;
+vec4.mathNonAlloc = Vector4.mathNonAlloc;
 vec4.normalize = wrapGlMatrix<vec4, [vec4]>(glVec4.normalize as any, 1, vec4.zero);
 vec4.plus = wrapGlMatrix<vec4, [vec4, vec4 | vec3 | vec2 | number]>((out, a, b) =>
 {

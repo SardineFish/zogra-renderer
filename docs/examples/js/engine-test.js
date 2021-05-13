@@ -841,7 +841,7 @@ class Chunk {
         this.dirty = false;
         this.chunkSize = chunkSize;
         this.basePos = basePos;
-        this.tiles = new Array(chunkSize * chunkSize);
+        this.tiles = 5(chunkSize * chunkSize);
         this.mesh = createChunkMesh(basePos, chunkSize);
     }
     /**

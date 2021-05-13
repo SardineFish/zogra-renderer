@@ -1,23 +1,17 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.cloneUniformValue = exports.setImmediate = exports.DoubleBuffer = exports.fillArray = exports.getUniformsLocation = exports.decorator = exports.warn = exports.panic = exports.panicNull = void 0;
-require("reflect-metadata");
-function panicNull(t, msg) {
+import "reflect-metadata";
+export function panicNull(t, msg) {
     if (t === null)
         throw new Error(msg);
     return t;
 }
-exports.panicNull = panicNull;
-function panic(msg) {
+export function panic(msg) {
     throw new Error(msg);
 }
-exports.panic = panic;
-function warn(msg) {
+export function warn(msg) {
     console.warn(msg);
     return null;
 }
-exports.warn = warn;
-function decorator(name, defaultValue = undefined, dataWrapper = v => v) {
+export function decorator(name, defaultValue = undefined, dataWrapper = v => v) {
     const metadataKey = Symbol(name);
     return [
         (value) => {
@@ -33,23 +27,20 @@ function decorator(name, defaultValue = undefined, dataWrapper = v => v) {
         }
     ];
 }
-exports.decorator = decorator;
-function getUniformsLocation(gl, program, uniforms) {
+export function getUniformsLocation(gl, program, uniforms) {
     const out = {};
     for (const key in uniforms) {
         out[key] = gl.getUniformLocation(program, uniforms[key]);
     }
     return out;
 }
-exports.getUniformsLocation = getUniformsLocation;
-function fillArray(element, count) {
+export function fillArray(element, count) {
     const arr = new Array(count);
     for (let i = 0; i < count; i++)
         arr[i] = typeof (element) === "function" ? element(i) : element;
     return arr;
 }
-exports.fillArray = fillArray;
-class DoubleBuffer {
+export class DoubleBuffer {
     constructor(init) {
         this.currentIdx = 0;
         this.buffers = [init(), init()];
@@ -62,12 +53,10 @@ class DoubleBuffer {
         this.currentIdx++;
     }
 }
-exports.DoubleBuffer = DoubleBuffer;
-function setImmediate(invoker) {
+export function setImmediate(invoker) {
     setTimeout(invoker, 0);
 }
-exports.setImmediate = setImmediate;
-function cloneUniformValue(value) {
+export function cloneUniformValue(value) {
     if (value === null)
         return null;
     if (typeof (value) === "number")
@@ -76,5 +65,4 @@ function cloneUniformValue(value) {
         return value.clone();
     return value;
 }
-exports.cloneUniformValue = cloneUniformValue;
 //# sourceMappingURL=util.js.map

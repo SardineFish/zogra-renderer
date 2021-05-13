@@ -1,18 +1,8 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("zogra-renderer"), exports);
-__exportStar(require("./engine/engine"), exports);
-__exportStar(require("./render-pipeline/rp"), exports);
-__exportStar(require("./2d"), exports);
-__exportStar(require("./utils"), exports);
+export * from "zogra-renderer";
+export * from "./engine";
+export * from "./render-pipeline";
+export * from "./2d";
+export * from "./utils";
+import { ShaderSource } from "./assets";
+export const BuiltinShaders = ShaderSource;
 //# sourceMappingURL=index.js.map

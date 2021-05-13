@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "sideEffects": false,
   "scripts": {
     "test": "npm run build:prod",
     "build": "npx webpack",
     "build:watch": "npx webpack --watch",
     "build:prod": "npx webpack --mode production --devtool none",
-    "start": "npx webpack-dev-server --open"
+    "start": "npx webpack-dev-server"
   },
   "author": "SardineFish",
   "license": "MIT",

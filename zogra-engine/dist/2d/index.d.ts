@@ -8,3 +8,4 @@ export * from "./rendering/sprite-object";
 export * from "./rendering/tilemap";
 export * from "./rendering/materials";
 export * from "./rendering/line-renderer";
+export * from "./rendering/light-2d";
