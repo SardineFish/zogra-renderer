@@ -38,7 +38,9 @@ export class Light2D extends Entity
     {
         super();
         this.shadowType = shadowType;
-        if (this.shadowType)
+        if (shadowType === ShadowType.Soft)
+            this.shadowMesh = new Mesh(Shadow2DVertStruct);
+        if (this.shadowMesh)
             this.shadowMesh.resize(5000, 9000);
     }
 

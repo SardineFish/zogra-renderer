@@ -45,6 +45,7 @@ class NoiseChunk extends Chunk
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
+engine.renderPipeline.ambientIntensity = 0.2;
 engine.start();
 const scene = engine.scene;
 scene.physics = new Physics2D();
@@ -58,7 +59,7 @@ camera.projection = Projection.Orthographic;
 camera.viewHeight = 10;
 scene.add(camera);
 
-const light = new Light2D();
+const light = new Light2D(ShadowType.Soft);
 light.lightColor = new Color(0.6, 0.6, 0.6, 1);
 scene.add(light);
 light.position = vec3(0, 3, 0);

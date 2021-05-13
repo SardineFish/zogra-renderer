@@ -29,7 +29,9 @@ export class Light2D extends Entity {
         this.shadowMat = new Shadow2DMaterial();
         this.__tempVectors = Array.from(new Array(32)).map(() => vec2.zero());
         this.shadowType = shadowType;
-        if (this.shadowType)
+        if (shadowType === ShadowType.Soft)
+            this.shadowMesh = new Mesh(Shadow2DVertStruct);
+        if (this.shadowMesh)
             this.shadowMesh.resize(5000, 9000);
     }
     getShadowMap(context, data) {

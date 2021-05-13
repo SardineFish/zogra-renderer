@@ -15,7 +15,7 @@ export class Default2DRenderPipeline {
         this.renderFormat = TextureFormat.RGBA8;
         this.debuglayer = new DebugLayerRenderer();
         this.ambientLightColor = new Color(1, 1, 1, 1);
-        this.ambientIntensity = 0.2;
+        this.ambientIntensity = 1;
         this.perCameraResources = new Map();
         Debug(this.debuglayer);
     }

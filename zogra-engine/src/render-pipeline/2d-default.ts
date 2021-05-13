@@ -36,7 +36,7 @@ export class Default2DRenderPipeline implements ZograRenderPipeline
     renderFormat: TextureFormat = TextureFormat.RGBA8;
     debuglayer = new DebugLayerRenderer();
     ambientLightColor: Color = new Color(1, 1, 1, 1);
-    ambientIntensity: number = 0.2;
+    ambientIntensity: number = 1;
     perCameraResources = new Map<Camera, CameraRenderResources>();
 
     constructor()
