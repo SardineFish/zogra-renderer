@@ -30,10 +30,7 @@ export const DefaultVertexData: DefaultVertexStruct =
 
 export const DefaultVertexStructInfo = BufferStructureInfo.from(DefaultVertexData);
 
-export function VertexStruct<T extends BufferStructure>(structure: T): T
-{
-    return structure;
-}
+export const VertexStruct = BufferStructure;
 
 export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset
 {
@@ -250,10 +247,30 @@ export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexDat
         }
     }
 
+    destroy()
+    {
+        super.destroy();
+
+        if (this.destroyed)
+            return;
+        
+        this.vertices.destroy();
+
+        const gl = this.ctx.gl;
+        gl.deleteBuffer(this.elementBuffer);
+        gl.deleteVertexArray(this.vertexArray);
+        
+        this.destroyed = true;
+        this.initialized = false;
+    }
+
     private tryInit(required = false)
     {
         if (this.initialized)
             return true;
+        
+        if (this.destroyed)
+            throw new Error("Attempt to use destroyed mesh");
         
         this.ctx = this.ctx || GlobalContext();
         if (!this.ctx)

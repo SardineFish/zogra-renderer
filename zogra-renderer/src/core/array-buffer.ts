@@ -3,13 +3,25 @@ import { vec2 } from "../types/vec2";
 import { vec3 } from "../types/vec3";
 import { vec4 } from "../types/vec4";
 import { panic } from "../utils/util";
+import { AssetManager, GPUAsset, IAsset } from "./asset";
 import { GLContext, GlobalContext } from "./global";
 import { AttributeLocations, Shader } from "./shader";
 
+
+type IntTypes = "int" | "ivec2" | "ivec3" | "ivec4";
+type FloatTypes = "float" | "vec2" | "vec3" | "vec4" | "mat4";
+type BufferElementType = IntTypes | FloatTypes;
+
+type BufferElementViewType<T extends BufferElementType> =
+    T extends IntTypes ? Int32Array
+    : T extends FloatTypes ? Float32Array
+    : never;
+
+
 export type BufferElementView<T extends BufferStructure> = {
-    [key in keyof T]: Float32Array;
+    [key in keyof T]: BufferElementViewType<T[key]>;
 };
-type BufferElementType = "float" | "vec2" | "vec3" | "vec4" | "mat4";
+
 export type BufferElementValue<T extends BufferElementType> =
     T extends "float" ? [number]
     : T extends "vec2" ? vec2
@@ -21,6 +33,22 @@ export interface BufferStructure
 {
     [key: string]: BufferElementType;
 }
+export function BufferStructure<T extends BufferStructure>(structure: T): T
+{
+    return structure;
+}
+
+const ElementLength: Record<BufferElementType, number> = {
+    float: 1,
+    vec2: 2,
+    vec3: 3,
+    vec4: 4,
+    mat4: 16,
+    int: 1,
+    ivec2: 2,
+    ivec3: 3,
+    ivec4: 4
+};
 
 export type BufferElementInfo<Structure extends BufferStructure> = {
     key: keyof Structure,
@@ -44,13 +72,6 @@ export interface BufferStructureInfo<Structure extends BufferStructure>
 export const BufferStructureInfo = {
     from<T extends BufferStructure>(structure: T)
     {
-        const valueLength = {
-            float: 1,
-            vec2: 2,
-            vec3: 3,
-            vec4: 4,
-            mat4: 16,
-        }
         const structInfo: BufferStructureInfo<T> = {
             elements: [],
             byteSize: 0,
@@ -63,7 +84,7 @@ export const BufferStructureInfo = {
                 key,
                 type: structure[key],
                 location: location,
-                length: valueLength[structure[key]],
+                length: ElementLength[structure[key]],
             } as any;
             element.byteLength = element.length * 4;
             element.offset = structInfo.totalSize;
@@ -78,7 +99,7 @@ export const BufferStructureInfo = {
     }
 };
 
-export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElementView<T>>
+export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElementView<T>> implements IAsset
 {
     public static = true;
     public Data: BufferElementView<T> = null as any;
@@ -88,6 +109,11 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
     private dirty = false;
     private ctx: GLContext;
     private initialized = false;
+    private destroyed = false;
+
+
+    assetID: number;
+    name: string;
     
     protected glBuf: WebGLBuffer = null as any;
 
@@ -107,6 +133,8 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         
         this.tryInit(false);
 
+        this.assetID = AssetManager.newAssetID(this);
+        this.name = `GLArrayBuffer_${this.assetID}`;
     }
 
     resize(length: number, keepContent = true)
@@ -134,20 +162,20 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
                 switch (element.type)
                 {
                     case "float":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 1);
-                        break;
                     case "vec2":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 2);
-                        break;
                     case "vec3":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 3);
-                        break;
                     case "vec4":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 4);
-                        break;
                     case "mat4":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 16);
+                        (elementView[element.key] as Float32Array) = new Float32Array(this.buffer.buffer, bufferOffset, ElementLength[element.type]);
                         break;
+                    case "int":
+                    case "ivec2":
+                    case "ivec3":
+                    case "ivec4":
+                        (elementView[element.key] as Int32Array) = new Int32Array(this.buffer.buffer, bufferOffset, ElementLength[element.type]);
+                        break;
+                    default:
+                        console.warn(`Unknown element type '${element.type}'`);
                 }
             }
             this[i] = elementView;
@@ -278,7 +306,6 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         }
     }
 
-
     unbind()
     {
         this.tryInit(true);
@@ -288,8 +315,23 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         gl.bindVertexArray(null);
     }
 
+    destroy(): void
+    {
+        if (this.destroyed)
+            return;
+        if (!this.initialized)
+            return;
+
+        const gl = this.ctx.gl;
+        gl.deleteBuffer(this.glBuf);
+        this.destroyed = true;
+        this.initialized = false;
+    }
+
     private tryInit(required = false)
     {
+        if (this.destroyed)
+            throw new Error("Attempt to use destroyed array buffer.");
         if (this.initialized)
             return true;
 
