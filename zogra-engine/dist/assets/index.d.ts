@@ -1,4 +1,5 @@
-export namespace ShaderSource {
+export { f as ShaderSource };
+declare namespace f {
     const default2D: string[];
     const particle2D: string[];
     const shadow2D: string[];

@@ -1,6 +1,6 @@
 {
   "name": "zogra-engine",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A tiny render engine based on zogra-renderer",
   "type": "module",
   "main": "dist/index.js",

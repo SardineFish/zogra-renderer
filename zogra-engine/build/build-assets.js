@@ -19,5 +19,5 @@ esbuild.build({
     sourcemap: true,
     outdir: "./src/assets",
     platform: "node",
-    format: "cjs",
+    format: "esm",
 })

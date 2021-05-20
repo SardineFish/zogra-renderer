@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["../../../assets/index.ts", "../../../assets/shader/shader.ts"],
-  "sourcesContent": ["export * from \"./shader/shader\";", "import defaultVert from \"./default-vert.glsl\";\r\nimport defaultFrag from \"./default-frag.glsl\";\r\nimport blitCopy from \"./blit-copy.glsl\";\r\nimport colorFrag from \"./color-frag.glsl\";\r\nimport colorVert from \"./color-vert.glsl\";\r\nimport flipVert from \"./flip-vert.glsl\";\r\nimport texFrag from \"./tex-frag.glsl\";\r\n\r\nexport const BuiltinShaderSources = {\r\n    defaultVert,\r\n    defaultFrag,\r\n    blitCopy,\r\n    colorFrag,\r\n    colorVert,\r\n    flipVert,\r\n    texFrag,\r\n};"],
-  "mappings": "gIAAA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GCQO,GAAM,GAAuB,CAChC,cACA,cACA,WACA,YACA,YACA,WACA",
+  "sources": ["../../../assets/shader/shader.ts"],
+  "sourcesContent": ["import defaultVert from \"./default-vert.glsl\";\r\nimport defaultFrag from \"./default-frag.glsl\";\r\nimport blitCopy from \"./blit-copy.glsl\";\r\nimport colorFrag from \"./color-frag.glsl\";\r\nimport colorVert from \"./color-vert.glsl\";\r\nimport flipVert from \"./flip-vert.glsl\";\r\nimport texFrag from \"./tex-frag.glsl\";\r\n\r\nexport const BuiltinShaderSources = {\r\n    defaultVert,\r\n    defaultFrag,\r\n    blitCopy,\r\n    colorFrag,\r\n    colorVert,\r\n    flipVert,\r\n    texFrag,\r\n};"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAQO,GAAM,GAAuB,CAChC,cACA,cACA,WACA,YACA,YACA,WACA",
   "names": []
 }

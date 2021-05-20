@@ -4,7 +4,7 @@ import esbuild from "esbuild";
 const dev = process.argv.includes("--dev");
 const watch = process.argv.find(arg => arg === "-w" || arg === "--watch") !== undefined;
 
-esbuild.build({
+esbuild.buildSync({
     entryPoints: [
         "./assets/index.ts",
     ],
@@ -19,5 +19,5 @@ esbuild.build({
     sourcemap: true,
     outdir: "./src/builtin-assets/generated",
     platform: "node",
-    format: "cjs",
-})
+    format: "esm",
+});
