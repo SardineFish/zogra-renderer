@@ -15,6 +15,8 @@ import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { vec4 } from "../types/vec4";
 import { mat4 } from "../types/mat4";
 import { quat } from "../types/quat";
+import { BufferStructure } from "./array-buffer";
+import { DefaultVertexData } from "./mesh";
 
 /**
  * Inicate where to get the value from material
@@ -78,10 +80,10 @@ export interface MaterialProperties
 }
 // export type MaterialProperties = Map<string, NumericProperty<NumericUnifromTypes> | TextureProperty<TextureUniformTypes>>;
 
-export class Material extends Asset
+export class Material<VertStruct extends BufferStructure = typeof DefaultVertexData> extends Asset
 {
     [key: string]: any;
-    private _shader: Shader;
+    private _shader: Shader<VertStruct>;
     properties: MaterialProperties = {};
     gl: WebGL2RenderingContext;
     pipelineStateOverride: StateSettings;
@@ -90,13 +92,14 @@ export class Material extends Asset
     private boundTextures: Texture[] = [];
     protected initialized = false;
 
-    constructor(shader: Shader, gl = GL())
+    constructor(shader: Shader<VertStruct>, gl = GL())
     {
         super();
         this.name = `Material_${this.assetID}`;
         this.gl = gl;
         this._shader = shader;
 
+        
         this.pipelineStateOverride = { ...shader.pipelineStates };
     }
 
@@ -485,15 +488,15 @@ export function shaderProp(name: string, type: UniformType)
 {
     return Reflect.metadata(shaderPropMetaKey, { name: name, type: type });
 }
-function getShaderProp(target: Material, propKey: string): { name: string, type: UniformType } | undefined
+function getShaderProp<T extends BufferStructure>(target: Material<T>, propKey: string): { name: string, type: UniformType } | undefined
 {
     return Reflect.getMetadata(shaderPropMetaKey, target, propKey);
 }
 
 
-export function MaterialFromShader(shader: Shader): typeof MaterialType
+export function MaterialFromShader<VertStruct extends BufferStructure>(shader: Shader<VertStruct>): new(gl?: WebGL2RenderingContext)=> Material<VertStruct>
 {
-    return class Mat extends Material
+    return class Mat extends Material<VertStruct>
     {
         constructor(gl = GL())
         {

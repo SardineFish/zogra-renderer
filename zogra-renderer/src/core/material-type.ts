@@ -2,6 +2,8 @@ import { Shader } from "./shader";
 import { Color } from "../types/color";
 import { Material } from "./material";
 import { Texture, Texture2D } from "./texture";
+import { BufferStructure } from "./array-buffer";
+import { DefaultVertexData } from "./mesh";
 
 export declare class SimpleTexturedMaterialClass extends Material
 {
@@ -12,12 +14,12 @@ export declare class SimpleTexturedMaterialClass extends Material
     color: Color;
 }
 
-export declare class MaterialType extends Material
+export declare class MaterialType<VertStruct extends BufferStructure = typeof DefaultVertexData> extends Material<VertStruct>
 {
     constructor(gl?:WebGL2RenderingContext)
 }
 
-export declare class DefaultMaterialType extends MaterialType
+export declare class DefaultMaterialType extends MaterialType<DefaultMaterialType>
 {
     color: Color;
 }
