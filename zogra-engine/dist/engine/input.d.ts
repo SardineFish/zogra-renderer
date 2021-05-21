@@ -1,4 +1,4 @@
-import { ZograRenderer } from "zogra-renderer";
+import { vec2, ZograRenderer } from "zogra-renderer";
 export declare enum KeyState {
     Pressed = 1,
     Released = 0
@@ -10,6 +10,10 @@ interface InputEvents {
     keyup: (e: KeyboardEvent) => void;
     mousemove: (e: MouseEvent) => void;
     wheel: (e: WheelEvent) => void;
+    touchstart: (e: TouchEvent) => void;
+    touchmove: (e: TouchEvent) => void;
+    touchend: (e: TouchEvent) => void;
+    touchcancel: (e: TouchEvent) => void;
 }
 interface InputEventTarget {
     addEventListener: <EventT extends keyof InputEvents>(event: EventT, listener: InputEvents[EventT]) => void;
@@ -28,6 +32,22 @@ interface InputManagerOptions {
     /** Specific a renderer to perform screen position convertion */
     renderer?: ZograRenderer;
 }
+export declare enum TouchState {
+    Idle = 0,
+    Started = 1,
+    Moved = 2,
+    Ended = 4,
+    Canceled = 8
+}
+interface TouchInput {
+    id: number;
+    pos: vec2;
+    state: TouchState;
+    startPos: vec2;
+}
+declare const TouchInput: {
+    equals(a: TouchInput, b: TouchInput): boolean;
+};
 export declare class InputManager {
     preventBrowserShortcut: boolean;
     private eventTarget;
@@ -39,12 +59,17 @@ export declare class InputManager {
     get pointerPosition(): import("zogra-renderer").Vector2;
     get pointerDelta(): import("zogra-renderer").Vector2;
     get wheelDelta(): number;
+    get touches(): readonly TouchInput[];
     getKey(key: Keys): boolean;
     getKeyDown(key: Keys): boolean;
     getKeyUp(key: Keys): boolean;
+    getTouchByID(id: number): TouchInput | undefined;
     update(): void;
     lockPointer(): void;
     releasePointer(): void;
+    private touchEventHandler;
+    private mapPointerMovement;
+    private mapPointerPosition;
 }
 export declare enum Keys {
     BackSpace = 8,

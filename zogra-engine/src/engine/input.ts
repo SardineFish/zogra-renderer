@@ -17,6 +17,10 @@ interface InputEvents
     keyup: (e: KeyboardEvent) => void;
     mousemove: (e: MouseEvent) => void;
     wheel: (e: WheelEvent) => void;
+    touchstart: (e: TouchEvent) => void;
+    touchmove: (e: TouchEvent) => void;
+    touchend: (e: TouchEvent) => void;
+    touchcancel: (e: TouchEvent) => void;
 }
 
 interface InputEventTarget
@@ -66,6 +70,29 @@ const windowBound: PointerBoundingElement = {
     }
 }
 
+export enum TouchState
+{
+    Idle = 0,
+    Started = 1,
+    Moved = 2,
+    Ended = 4,
+    Canceled = 8,
+}
+
+interface TouchInput
+{
+    id: number;
+    pos: vec2;
+    state: TouchState;
+    startPos: vec2;
+}
+const TouchInput = {
+    equals(a: TouchInput, b: TouchInput)
+    {
+        return a.id === b.id && a.state === b.state && a.pos.equals(b.pos);
+    }
+}
+
 class InputStates
 {
     keyStates = new Map<number, KeyState>();
@@ -73,6 +100,8 @@ class InputStates
     mousePos: vec2 = vec2.zero();
     mouseDelta: vec2 = vec2.zero();
     wheelDelta: number = 0;
+    touches = new Map<number, TouchInput>();
+    touchList: TouchInput[] = [];
 }
 
 export class InputManager
@@ -142,24 +171,22 @@ export class InputManager
         });
         this.eventTarget.addEventListener("mousemove", e =>
         {
-            if (!this.renderer)
-                this.renderer = GlobalContext().renderer;
-            const bound = this.bound || this.renderer?.canvas || windowBound;
-            const rect = bound.getBoundingClientRect();
-            const pos = minus(vec2(e.clientX, e.clientY), vec2(rect.left, rect.top));
-            if (this.renderer)
-            {
-                pos.mul(this.renderer.canvasSize).div(vec2(rect.width, rect.height));
-            }
-            this.states.back.mouseDelta.plus(vec2(e.movementX, e.movementY));
-            // if (this.mouseDelta.magnitude > 100)
-            //     console.log(e);
+            const pos = this.mapPointerPosition(e.clientX, e.clientY);
+            if (!pos)
+                return;
+            
+            this.states.back.mouseDelta.plus(this.mapPointerMovement(e.movementX, e.movementY) as vec2);
             this.states.back.mousePos = pos;
         });
         this.eventTarget.addEventListener("wheel", e =>
         {
             this.states.back.wheelDelta = e.deltaY;
         });
+        this.eventTarget.addEventListener("touchstart", this.touchEventHandler(TouchState.Started));
+        this.eventTarget.addEventListener("touchmove", this.touchEventHandler(TouchState.Moved));
+        this.eventTarget.addEventListener("touchend", this.touchEventHandler(TouchState.Ended));
+        this.eventTarget.addEventListener("touchcancel", this.touchEventHandler(TouchState.Canceled));
+
         for (const key in Keys)
         {
             if (!isNaN(key as any))
@@ -178,9 +205,10 @@ export class InputManager
             }
         });
     }
-    get pointerPosition() { return this.states.current.mousePos; }
-    get pointerDelta() { return this.states.current.mouseDelta; }
-    get wheelDelta() { return this.states.current.wheelDelta; }
+    get pointerPosition() { return this.states.current.mousePos }
+    get pointerDelta() { return this.states.current.mouseDelta }
+    get wheelDelta() { return this.states.current.wheelDelta }
+    get touches() { return this.states.current.touchList as Readonly<TouchInput[]> }
     getKey(key: Keys)
     {
         return this.states.current.keyStates.get(key) === KeyState.Pressed ? true : false;
@@ -193,17 +221,33 @@ export class InputManager
     {
         return this.states.current.keyStatesThisFrame.get(key) === KeyState.Released ? true : false;
     }
+    getTouchByID(id: number)
+    {
+        return this.states.current.touches.get(id);
+    }
     update()
     {
         this.states.update();
         this.states.back.keyStatesThisFrame.clear();
         this.states.back.mouseDelta = vec2.zero();
         this.states.back.wheelDelta = 0;
+        this.states.back.touches.clear();
         for (const [key, value] of this.states.current.keyStates)
         {
             this.states.back.keyStates.set(key, value);
         }
+        for (const [key, value] of this.states.current.touches)
+        {
+            if (!(value.state & (TouchState.Canceled | TouchState.Ended)))
+                this.states.back.touches.set(key, {
+                    id: value.id,
+                    pos: value.pos.clone(),
+                    state: TouchState.Idle,
+                    startPos: value.startPos,
+                });
+        }
         this.states.back.mousePos = this.states.current.mousePos;
+        this.states.current.touchList = Array.from(this.states.current.touches.values()).sort((a, b) => b.id - a.id);
     }
     lockPointer()
     {
@@ -212,6 +256,68 @@ export class InputManager
     releasePointer()
     {
         document.exitPointerLock();
+    }
+
+    private touchEventHandler(eventState: TouchState)
+    {
+        return (e: TouchEvent) =>
+        {
+            for (let i = 0; i < e.changedTouches.length; i++)
+            {
+                const touch = e.changedTouches.item(i) as Touch;
+                const pos = this.mapPointerPosition(touch.clientX, touch.clientY);
+                // console.log(eventState, pos);
+                if (!pos)
+                    continue;
+                let state = this.states.back.touches.get(touch.identifier);
+                if (!state)
+                {
+                    state = {
+                        id: touch.identifier,
+                        pos,
+                        state: eventState,
+                        startPos: pos.clone(),
+                    }
+                    this.states.back.touches.set(touch.identifier, state);
+                }
+                else
+                {
+                    state.state |= eventState;
+                    state.pos.set(pos);
+                }
+            }
+        };
+    }
+    private mapPointerMovement(movementX: number, movementY: number)
+    {
+        if (!this.renderer)
+            this.renderer = GlobalContext().renderer;
+        if (!this.renderer)
+            return undefined;
+        
+        const rect = this.renderer.canvas.getBoundingClientRect();
+        return vec2(movementX, movementY).mul(this.renderer.canvasSize).div(vec2(rect.width, rect.height));
+    }
+    private mapPointerPosition(clientX: number, clientY: number)
+    {
+        if (!this.renderer)
+            this.renderer = GlobalContext().renderer;
+        if (!this.renderer)
+            return undefined;
+        
+        const eventBound = this.bound || this.renderer?.canvas || windowBound;
+        const rect = eventBound.getBoundingClientRect();
+        const rendererRect = this.renderer.canvas.getBoundingClientRect();
+        const pos = minus(vec2(clientX, clientY), vec2(rect.left, rect.top));
+        if (pos.x < 0 || pos.y < 0 || pos.x >= rect.width || pos.y >= rect.height)
+        {
+            return undefined;
+        }
+        pos.x -= (rendererRect.left - rect.left);
+        pos.y -= (rendererRect.top - rect.top);
+        
+        pos.mul(this.renderer.canvasSize).div(vec2(rendererRect.width, rendererRect.height));
+        return pos;
     }
 }
 

@@ -28,6 +28,19 @@ const windowBound = {
         };
     }
 };
+export var TouchState;
+(function (TouchState) {
+    TouchState[TouchState["Idle"] = 0] = "Idle";
+    TouchState[TouchState["Started"] = 1] = "Started";
+    TouchState[TouchState["Moved"] = 2] = "Moved";
+    TouchState[TouchState["Ended"] = 4] = "Ended";
+    TouchState[TouchState["Canceled"] = 8] = "Canceled";
+})(TouchState || (TouchState = {}));
+const TouchInput = {
+    equals(a, b) {
+        return a.id === b.id && a.state === b.state && a.pos.equals(b.pos);
+    }
+};
 class InputStates {
     constructor() {
         this.keyStates = new Map();
@@ -35,6 +48,8 @@ class InputStates {
         this.mousePos = vec2.zero();
         this.mouseDelta = vec2.zero();
         this.wheelDelta = 0;
+        this.touches = new Map();
+        this.touchList = [];
     }
 }
 export class InputManager {
@@ -92,23 +107,19 @@ export class InputManager {
             this.states.back.keyStatesThisFrame.set(Keys.Mouse0 + e.button, KeyState.Released);
         });
         this.eventTarget.addEventListener("mousemove", e => {
-            var _a;
-            if (!this.renderer)
-                this.renderer = GlobalContext().renderer;
-            const bound = this.bound || ((_a = this.renderer) === null || _a === void 0 ? void 0 : _a.canvas) || windowBound;
-            const rect = bound.getBoundingClientRect();
-            const pos = minus(vec2(e.clientX, e.clientY), vec2(rect.left, rect.top));
-            if (this.renderer) {
-                pos.mul(this.renderer.canvasSize).div(vec2(rect.width, rect.height));
-            }
-            this.states.back.mouseDelta.plus(vec2(e.movementX, e.movementY));
-            // if (this.mouseDelta.magnitude > 100)
-            //     console.log(e);
+            const pos = this.mapPointerPosition(e.clientX, e.clientY);
+            if (!pos)
+                return;
+            this.states.back.mouseDelta.plus(this.mapPointerMovement(e.movementX, e.movementY));
             this.states.back.mousePos = pos;
         });
         this.eventTarget.addEventListener("wheel", e => {
             this.states.back.wheelDelta = e.deltaY;
         });
+        this.eventTarget.addEventListener("touchstart", this.touchEventHandler(TouchState.Started));
+        this.eventTarget.addEventListener("touchmove", this.touchEventHandler(TouchState.Moved));
+        this.eventTarget.addEventListener("touchend", this.touchEventHandler(TouchState.Ended));
+        this.eventTarget.addEventListener("touchcancel", this.touchEventHandler(TouchState.Canceled));
         for (const key in Keys) {
             if (!isNaN(key))
                 continue;
@@ -126,6 +137,7 @@ export class InputManager {
     get pointerPosition() { return this.states.current.mousePos; }
     get pointerDelta() { return this.states.current.mouseDelta; }
     get wheelDelta() { return this.states.current.wheelDelta; }
+    get touches() { return this.states.current.touchList; }
     getKey(key) {
         return this.states.current.keyStates.get(key) === KeyState.Pressed ? true : false;
     }
@@ -135,21 +147,86 @@ export class InputManager {
     getKeyUp(key) {
         return this.states.current.keyStatesThisFrame.get(key) === KeyState.Released ? true : false;
     }
+    getTouchByID(id) {
+        return this.states.current.touches.get(id);
+    }
     update() {
         this.states.update();
         this.states.back.keyStatesThisFrame.clear();
         this.states.back.mouseDelta = vec2.zero();
         this.states.back.wheelDelta = 0;
+        this.states.back.touches.clear();
         for (const [key, value] of this.states.current.keyStates) {
             this.states.back.keyStates.set(key, value);
         }
+        for (const [key, value] of this.states.current.touches) {
+            if (!(value.state & (TouchState.Canceled | TouchState.Ended)))
+                this.states.back.touches.set(key, {
+                    id: value.id,
+                    pos: value.pos.clone(),
+                    state: TouchState.Idle,
+                    startPos: value.startPos,
+                });
+        }
         this.states.back.mousePos = this.states.current.mousePos;
+        this.states.current.touchList = Array.from(this.states.current.touches.values()).sort((a, b) => b.id - a.id);
     }
     lockPointer() {
         this.pointerLockElement.requestPointerLock();
     }
     releasePointer() {
         document.exitPointerLock();
+    }
+    touchEventHandler(eventState) {
+        return (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches.item(i);
+                const pos = this.mapPointerPosition(touch.clientX, touch.clientY);
+                // console.log(eventState, pos);
+                if (!pos)
+                    continue;
+                let state = this.states.back.touches.get(touch.identifier);
+                if (!state) {
+                    state = {
+                        id: touch.identifier,
+                        pos,
+                        state: eventState,
+                        startPos: pos.clone(),
+                    };
+                    this.states.back.touches.set(touch.identifier, state);
+                }
+                else {
+                    state.state |= eventState;
+                    state.pos.set(pos);
+                }
+            }
+        };
+    }
+    mapPointerMovement(movementX, movementY) {
+        if (!this.renderer)
+            this.renderer = GlobalContext().renderer;
+        if (!this.renderer)
+            return undefined;
+        const rect = this.renderer.canvas.getBoundingClientRect();
+        return vec2(movementX, movementY).mul(this.renderer.canvasSize).div(vec2(rect.width, rect.height));
+    }
+    mapPointerPosition(clientX, clientY) {
+        var _a;
+        if (!this.renderer)
+            this.renderer = GlobalContext().renderer;
+        if (!this.renderer)
+            return undefined;
+        const eventBound = this.bound || ((_a = this.renderer) === null || _a === void 0 ? void 0 : _a.canvas) || windowBound;
+        const rect = eventBound.getBoundingClientRect();
+        const rendererRect = this.renderer.canvas.getBoundingClientRect();
+        const pos = minus(vec2(clientX, clientY), vec2(rect.left, rect.top));
+        if (pos.x < 0 || pos.y < 0 || pos.x >= rect.width || pos.y >= rect.height) {
+            return undefined;
+        }
+        pos.x -= (rendererRect.left - rect.left);
+        pos.y -= (rendererRect.top - rect.top);
+        pos.mul(this.renderer.canvasSize).div(vec2(rendererRect.width, rendererRect.height));
+        return pos;
     }
 }
 function createPointerLockElement() {

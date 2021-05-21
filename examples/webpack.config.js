@@ -15,6 +15,7 @@ module.exports = {
         "light-2d": "./src/light-2d.ts",
         "render-buffer": "./src/render-buffer.ts",
         "post-process": "./src/post-process.ts",
+        "touch": "./src/touch.ts",
     },
     output: {
         path: path.resolve("./dist"),
@@ -103,6 +104,7 @@ module.exports = {
             "light-2d",
             "render-buffer",
             "post-process",
+            "touch",
         ].map(chunk => new HtmlWebpackPlugin({
             filename: `${chunk}.html`,
             template: "html/base.html",
