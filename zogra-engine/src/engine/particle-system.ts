@@ -57,12 +57,12 @@ export type ParticlePropertySettings<T, U> =
     : T extends number ? U | ((lifetime: number, system: ParticleSystem) => number)
     : never;
 
-export class ParticleSystem extends RenderObject
+export class ParticleSystem extends RenderObject<typeof ParticleVertStruct>
 {
     static VertexStructure = ParticleVertStruct;
     static AttributeNames = ParticleAttributeName;
     mesh: Mesh = MeshBuilder.quad();
-    material: Material = new ParticleMaterial();
+    material: Material<typeof ParticleVertStruct> = new ParticleMaterial();
     duration: ParticleScalarGenerator = 1;
     lifetime: ParticleScalarGenerator = 1;
     spawnRate: ParticleScalarGenerator = 30;

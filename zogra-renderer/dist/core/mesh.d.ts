@@ -14,7 +14,7 @@ export interface DefaultVertexStruct extends BufferStructure {
 }
 export declare const DefaultVertexData: DefaultVertexStruct;
 export declare const DefaultVertexStructInfo: BufferStructureInfo<DefaultVertexStruct>;
-export declare function VertexStruct<T extends BufferStructure>(structure: T): T;
+export declare const VertexStruct: typeof BufferStructure;
 export declare class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexData> extends Asset {
     vertices: GLArrayBuffer<VertexStruct>;
     indices: Uint32Array;
@@ -63,6 +63,7 @@ export declare class Mesh<VertexStruct extends BufferStructure = typeof DefaultV
      * @param angleThreshold
      */
     calculateNormals(angleThreshold?: number): void;
+    destroy(): void;
     private tryInit;
 }
 /** @deprecated */

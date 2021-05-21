@@ -20,7 +20,7 @@ export declare class Light2DPass extends RenderPass {
     private drawSimpleLights;
     private drawShadowLights;
 }
-declare const Light2DWithShadow_base: typeof import("zogra-renderer").MaterialType;
+declare const Light2DWithShadow_base: new (gl?: WebGL2RenderingContext | undefined) => import("zogra-renderer").Material<import("zogra-renderer").DefaultVertexStruct>;
 declare class Light2DWithShadow extends Light2DWithShadow_base {
     lightPosList: vec4[];
     lightColorList: Color[];
@@ -30,10 +30,19 @@ declare class Light2DWithShadow extends Light2DWithShadow_base {
     cameraParams: vec4;
     ambientLightColor: Color;
 }
-declare const Light2DCompose_base: typeof import("zogra-renderer").MaterialType;
+declare const Light2DCompose_base: new (gl?: WebGL2RenderingContext | undefined) => import("zogra-renderer").Material<import("zogra-renderer").DefaultVertexStruct>;
 declare class Light2DCompose extends Light2DCompose_base {
 }
-declare const Light2DSimpleInstancing_base: typeof import("zogra-renderer").MaterialType;
+declare const Light2DSimpleInstancing_base: new (gl?: WebGL2RenderingContext | undefined) => import("zogra-renderer").Material<{
+    lightPos: "vec3";
+    lightParams: "vec4";
+    lightColor: "vec4";
+    vert: "vec3";
+    color: "vec4";
+    normal: "vec3";
+    uv: "vec2";
+    uv2: "vec2";
+}>;
 declare class Light2DSimpleInstancing extends Light2DSimpleInstancing_base {
 }
 export {};

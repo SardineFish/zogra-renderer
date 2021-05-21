@@ -46,9 +46,9 @@ export declare class ZograRenderer {
     private useShader;
     private setupTransforms;
     private setupGlobalUniforms;
-    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: GLArrayBuffer<T>, material: Material, count: number): void;
-    drawMeshProceduralInstance<T extends BufferStructure>(mesh: Mesh<T>, material: Material, count: number): void;
-    drawMesh<T extends BufferStructure>(mesh: Mesh<T>, transform: Readonly<mat4>, material: Material): void;
+    drawMeshInstance<TMesh extends BufferStructure, TInstance extends BufferStructure, KM extends keyof TMesh, KI extends keyof TInstance, TMat extends Material<Pick<TMesh & TInstance, KM | KI>>>(mesh: Mesh<TMesh>, buffer: GLArrayBuffer<TInstance>, material: TMat, count: number): KI;
+    drawMeshProceduralInstance<T extends BufferStructure, TMat extends Material<T>>(mesh: Mesh<T>, material: TMat, count: number): void;
+    drawMesh<T extends BufferStructure, TMat extends Material<T>>(mesh: Mesh<T>, transform: Readonly<mat4>, material: TMat): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
     unsetGlobalUniform(name: string): void;

@@ -5,7 +5,7 @@ import { GL, GLContext, GlobalContext } from "./global";
 import { panic, fillArray } from "../utils/util";
 import { minus, cross } from "../types/math";
 import { Asset } from "./asset";
-import { BufferStructureInfo, GLArrayBuffer } from "./array-buffer";
+import { BufferStructure, BufferStructureInfo, GLArrayBuffer } from "./array-buffer";
 const VertDataFloatCount = 14;
 export const DefaultVertexData = {
     vert: "vec3",
@@ -15,9 +15,7 @@ export const DefaultVertexData = {
     uv2: "vec2",
 };
 export const DefaultVertexStructInfo = BufferStructureInfo.from(DefaultVertexData);
-export function VertexStruct(structure) {
-    return structure;
-}
+export const VertexStruct = BufferStructure;
 export class Mesh extends Asset {
     constructor(...args) {
         super("Mesh");
@@ -172,10 +170,23 @@ export class Mesh extends Asset {
             vec3.normalize(this.vertices[i].normal, this.vertices[i].normal);
         }
     }
+    destroy() {
+        super.destroy();
+        if (this.destroyed)
+            return;
+        this.vertices.destroy();
+        const gl = this.ctx.gl;
+        gl.deleteBuffer(this.elementBuffer);
+        gl.deleteVertexArray(this.vertexArray);
+        this.destroyed = true;
+        this.initialized = false;
+    }
     tryInit(required = false) {
         var _a, _b;
         if (this.initialized)
             return true;
+        if (this.destroyed)
+            throw new Error("Attempt to use destroyed mesh");
         this.ctx = this.ctx || GlobalContext();
         if (!this.ctx) {
             if (required)

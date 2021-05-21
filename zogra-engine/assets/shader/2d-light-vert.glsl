@@ -1,5 +1,5 @@
 // #version 300 es
-precision mediump float;
+precision highp float;
 
 attribute vec3 aPos;
 attribute vec4 aColor;

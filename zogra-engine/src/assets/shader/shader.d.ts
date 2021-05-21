@@ -9,5 +9,6 @@ export declare const ShaderSource: {
     bloomFilter: ShaderPair;
     bloomCompose: ShaderPair;
     blitCopy: ShaderPair;
+    tilemapInstance: ShaderPair;
 };
 export {};

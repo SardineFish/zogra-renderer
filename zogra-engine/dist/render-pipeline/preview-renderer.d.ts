@@ -12,7 +12,7 @@ export declare class PreviewRenderer implements ZograRenderPipeline {
     msaa: MSAASamples;
     renderer: ZograRenderer;
     grid: Lines;
-    materialReplaceMap: Map<Function, Material>;
+    materialReplaceMap: Map<Function, Material<import("zogra-renderer").DefaultVertexStruct>>;
     debugLayer: DebugLayerRenderer;
     cameraOutputFBOs: Map<Camera, FrameBuffer>;
     cameraOutputTextures: Map<Camera, RenderTexture>;

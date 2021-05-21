@@ -1,14 +1,22 @@
 import { panic } from "../utils/util";
+import { AssetManager } from "./asset";
 import { GlobalContext } from "./global";
+export function BufferStructure(structure) {
+    return structure;
+}
+const ElementLength = {
+    float: 1,
+    vec2: 2,
+    vec3: 3,
+    vec4: 4,
+    mat4: 16,
+    int: 1,
+    ivec2: 2,
+    ivec3: 3,
+    ivec4: 4
+};
 export const BufferStructureInfo = {
     from(structure) {
-        const valueLength = {
-            float: 1,
-            vec2: 2,
-            vec3: 3,
-            vec4: 4,
-            mat4: 16,
-        };
         const structInfo = {
             elements: [],
             byteSize: 0,
@@ -20,7 +28,7 @@ export const BufferStructureInfo = {
                 key,
                 type: structure[key],
                 location: location,
-                length: valueLength[structure[key]],
+                length: ElementLength[structure[key]],
             };
             element.byteLength = element.length * 4;
             element.offset = structInfo.totalSize;
@@ -40,6 +48,7 @@ export class GLArrayBuffer extends Array {
         this.Data = null;
         this.dirty = false;
         this.initialized = false;
+        this.destroyed = false;
         this.glBuf = null;
         this.swapBuffer = null;
         this.structure = BufferStructureInfo.from(structure);
@@ -48,6 +57,8 @@ export class GLArrayBuffer extends Array {
         this.buffer = null;
         this.resize(items);
         this.tryInit(false);
+        this.assetID = AssetManager.newAssetID(this);
+        this.name = `GLArrayBuffer_${this.assetID}`;
     }
     get byteLength() { return this.length * this.structure.byteSize; }
     resize(length, keepContent = true) {
@@ -67,20 +78,20 @@ export class GLArrayBuffer extends Array {
                 const bufferOffset = i * this.structure.byteSize + element.byteOffset;
                 switch (element.type) {
                     case "float":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 1);
-                        break;
                     case "vec2":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 2);
-                        break;
                     case "vec3":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 3);
-                        break;
                     case "vec4":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 4);
-                        break;
                     case "mat4":
-                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, 16);
+                        elementView[element.key] = new Float32Array(this.buffer.buffer, bufferOffset, ElementLength[element.type]);
                         break;
+                    case "int":
+                    case "ivec2":
+                    case "ivec3":
+                    case "ivec4":
+                        elementView[element.key] = new Int32Array(this.buffer.buffer, bufferOffset, ElementLength[element.type]);
+                        break;
+                    default:
+                        console.warn(`Unknown element type '${element.type}'`);
                 }
             }
             this[i] = elementView;
@@ -129,26 +140,41 @@ export class GLArrayBuffer extends Array {
                 : element.location;
             if (location < 0)
                 continue;
-            if (element.type === "mat4") {
-                gl.enableVertexAttribArray(location + 0);
-                gl.enableVertexAttribArray(location + 1);
-                gl.enableVertexAttribArray(location + 2);
-                gl.enableVertexAttribArray(location + 3);
-                gl.vertexAttribPointer(location + 0, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 0);
-                gl.vertexAttribPointer(location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
-                gl.vertexAttribPointer(location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
-                gl.vertexAttribPointer(location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
-                if (instancing) {
-                    gl.vertexAttribDivisor(location + 0, 1);
-                    gl.vertexAttribDivisor(location + 1, 1);
-                    gl.vertexAttribDivisor(location + 2, 1);
-                    gl.vertexAttribDivisor(location + 3, 1);
-                }
-            }
-            else {
-                gl.enableVertexAttribArray(location);
-                gl.vertexAttribPointer(location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
-                instancing && gl.vertexAttribDivisor(location, 1);
+            switch (element.type) {
+                case "float":
+                case "vec2":
+                case "vec3":
+                case "vec4":
+                    gl.enableVertexAttribArray(location);
+                    gl.vertexAttribPointer(location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
+                    instancing && gl.vertexAttribDivisor(location, 1);
+                    break;
+                case "int":
+                case "ivec2":
+                case "ivec3":
+                case "ivec4":
+                    gl.enableVertexAttribArray(location);
+                    gl.vertexAttribIPointer(location, element.length, gl.INT, this.structure.byteSize, element.byteOffset);
+                    instancing && gl.vertexAttribDivisor(location, 1);
+                    break;
+                case "mat4":
+                    gl.enableVertexAttribArray(location + 0);
+                    gl.enableVertexAttribArray(location + 1);
+                    gl.enableVertexAttribArray(location + 2);
+                    gl.enableVertexAttribArray(location + 3);
+                    gl.vertexAttribPointer(location + 0, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 0);
+                    gl.vertexAttribPointer(location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
+                    gl.vertexAttribPointer(location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
+                    gl.vertexAttribPointer(location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
+                    if (instancing) {
+                        gl.vertexAttribDivisor(location + 0, 1);
+                        gl.vertexAttribDivisor(location + 1, 1);
+                        gl.vertexAttribDivisor(location + 2, 1);
+                        gl.vertexAttribDivisor(location + 3, 1);
+                    }
+                    break;
+                default:
+                    console.warn(`Unknown attribute type '${element.type}'`);
             }
         }
     }
@@ -185,8 +211,20 @@ export class GLArrayBuffer extends Array {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindVertexArray(null);
     }
+    destroy() {
+        if (this.destroyed)
+            return;
+        if (!this.initialized)
+            return;
+        const gl = this.ctx.gl;
+        gl.deleteBuffer(this.glBuf);
+        this.destroyed = true;
+        this.initialized = false;
+    }
     tryInit(required = false) {
         var _a;
+        if (this.destroyed)
+            throw new Error("Attempt to use destroyed array buffer.");
         if (this.initialized)
             return true;
         const ctx = this.ctx || GlobalContext();

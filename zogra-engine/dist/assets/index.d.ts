@@ -1,5 +1,4 @@
-export { f as ShaderSource };
-declare namespace f {
+export namespace ShaderSource {
     const default2D: string[];
     const particle2D: string[];
     const shadow2D: string[];
@@ -9,4 +8,5 @@ declare namespace f {
     const bloomFilter: string[];
     const bloomCompose: string[];
     const blitCopy: string[];
+    const tilemapInstance: string[];
 }

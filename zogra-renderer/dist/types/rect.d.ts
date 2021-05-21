@@ -7,6 +7,8 @@ export declare class Rect {
     get yMin(): number;
     get xMax(): number;
     get yMax(): number;
+    get width(): number;
+    get height(): number;
     get size(): import("./vec2").Vector2;
     get center(): import("./vec2").Vector2;
     shrink(thickness: number): Rect;

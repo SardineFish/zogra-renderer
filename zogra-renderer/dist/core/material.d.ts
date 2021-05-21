@@ -1,10 +1,12 @@
 import { Shader, ShaderPipelineStateSettinsOptional, StateSettings } from "./shader";
 import "reflect-metadata";
-import { MaterialType, SimpleTexturedMaterialClass } from "./material-type";
+import { SimpleTexturedMaterialClass } from "./material-type";
 import "reflect-metadata";
 import { BindingData, NumericUniformArrayTypes, NumericUnifromTypes, TextureArrayUniformTypes, TextureUniformTypes, UniformValueType } from "./types";
 import { UniformType } from "./types";
 import { Asset } from "./asset";
+import { BufferStructure } from "./array-buffer";
+import { DefaultVertexData } from "./mesh";
 declare type UniformPropertyStorageType<T extends UniformType> = T extends TextureUniformTypes | NumericUnifromTypes ? UniformValueType<T> : T extends NumericUniformArrayTypes ? Float32Array : never;
 interface FieldProperty {
     key: string;
@@ -36,7 +38,7 @@ declare type PropertyInfo<T extends UniformType = UniformType> = T extends Numer
 export interface MaterialProperties {
     [uniformName: string]: PropertyInfo;
 }
-export declare class Material extends Asset {
+export declare class Material<VertStruct extends BufferStructure = typeof DefaultVertexData> extends Asset {
     [key: string]: any;
     private _shader;
     properties: MaterialProperties;
@@ -45,8 +47,8 @@ export declare class Material extends Asset {
     private textureCount;
     private boundTextures;
     protected initialized: boolean;
-    constructor(shader: Shader, gl?: WebGL2RenderingContext);
-    get shader(): Shader<import("./mesh").DefaultVertexStruct>;
+    constructor(shader: Shader<VertStruct>, gl?: WebGL2RenderingContext);
+    get shader(): Shader<VertStruct>;
     upload(data: BindingData): void;
     setProp<T extends UniformType>(uniformName: string, type: T, value: UniformValueType<T>): void;
     /**
@@ -67,7 +69,7 @@ export declare function shaderProp(name: string, type: UniformType): {
     (target: Function): void;
     (target: Object, propertyKey: string | symbol): void;
 };
-export declare function MaterialFromShader(shader: Shader): typeof MaterialType;
+export declare function MaterialFromShader<VertStruct extends BufferStructure>(shader: Shader<VertStruct>): new (gl?: WebGL2RenderingContext) => Material<VertStruct>;
 export declare function SimpleTexturedMaterial(shader: Shader): typeof SimpleTexturedMaterialClass;
 /**
  *

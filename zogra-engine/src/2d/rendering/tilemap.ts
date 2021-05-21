@@ -1,5 +1,6 @@
-import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4} from "zogra-renderer";
+import { minus, plus, Vector2, vec2, vec3, Mesh, MeshBuilder, div, mat4, VertexStruct, DefaultVertexData, MaterialFromShader, Shader, shaderProp, Texture, BufferStructure, GLArrayBuffer, Color, vec4, Blending, DepthTest} from "zogra-renderer";
 import { RenderContext, RenderData, Camera } from "../..";
+import { ShaderSource } from "../../assets";
 import { RenderObject, RenderObjectEvents } from "../../engine/render-object";
 import { BuiltinMaterials } from "../../render-pipeline/default-materials";
 import { ConstructorType } from "../../utils/util";
@@ -7,10 +8,31 @@ import { Polygon } from "../physics/polygon";
 import { Default2DMaterial } from "./materials";
 import { Sprite } from "./sprite";
 
-export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
+const TileInstanceBufferStruct = BufferStructure({
+    tileColor: "vec4",
+    tileUV: "vec4",
+    tilePos: "ivec2",
+});
+
+const TileInstanceMeshStruct = BufferStructure({
+    vert: "ivec2",
+    uv: "vec2",
+    normal: "vec3",
+});
+
+export const TileInstanceVertexStruct = VertexStruct({
+    ...TileInstanceMeshStruct,
+    ...TileInstanceBufferStruct,
+});
+
+export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject<typeof TileInstanceVertexStruct>
 {
     private chunks = new Map<number, TChunk>();
     private ChunkType: ConstructorType<TChunk, [vec2, number]>;
+
+    private instanceMesh: Mesh<typeof TileInstanceMeshStruct>;
+    private batchBuffer?: ArrayBuffer;
+
     readonly chunkSize;
 
     constructor()
@@ -20,7 +42,7 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
     constructor(...args: [] | [number] | [ConstructorType<TChunk, [vec2, number]>] | [number, ConstructorType<TChunk, [vec2, number]>])
     {
         super();
-        this.materials[0] = BuiltinMaterials.tilemapDefault;
+        this.materials[0] = new DefaultTilemapMaterial();
         if (args.length === 0)
         {
             this.chunkSize = 16;
@@ -43,11 +65,13 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
         {
             [this.chunkSize, this.ChunkType] = args;
         }
+
+        this.instanceMesh = Tilemap.createInstanceMesh();
     }
 
     render(context: RenderContext, data: RenderData)
     {
-        this.eventEmitter.with<RenderObjectEvents>().emit("render", this, context, data);
+        this.eventEmitter.with<RenderObjectEvents<typeof TileInstanceVertexStruct>>().emit("render", this, context, data);
 
         let screenSize = vec2(data.camera.viewHeight * data.camera.aspectRatio, data.camera.viewHeight);
         let [minCorner] = this.chunkPos(minus(data.camera.position.toVec2(), screenSize));
@@ -59,7 +83,8 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
             {
                 const chunk = this.getOrCreateChunk(vec2(chunkX, chunkY));
                 // chunk.mesh.update();
-                context.renderer.drawMesh(chunk.mesh, this.localToWorldMatrix, this.materials[0]);
+                // context.renderer.drawMesh(chunk.mesh, this.localToWorldMatrix, this.materials[0]);
+                context.renderer.drawMeshInstance(this.instanceMesh, chunk.buffer, this.materials[0], chunk.buffer.length);
             }
     }
 
@@ -150,13 +175,41 @@ export class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject
         return [vec2.math(Math.floor)(div(floorPos, this.chunkSize)),
             vec2.math(floorReminder)(floorPos, vec2(this.chunkSize))];
     }
+
+    private static createInstanceMesh()
+    {
+        const mesh = new Mesh(TileInstanceMeshStruct);
+        mesh.resize(4, 6);
+        mesh.vertices[0].vert.set([0, 0]);
+        mesh.vertices[1].vert.set([1, 0]);
+        mesh.vertices[2].vert.set([1, 1]);
+        mesh.vertices[3].vert.set([0, 1]);
+
+        mesh.vertices[0].normal.set([0, 0, 1]);
+        mesh.vertices[1].normal.set([0, 0, 1]);
+        mesh.vertices[2].normal.set([0, 0, 1]);
+        mesh.vertices[3].normal.set([0, 0, 1]);
+        
+        mesh.vertices[0].uv.set([0, 0]);
+        mesh.vertices[1].uv.set([1, 0]);
+        mesh.vertices[2].uv.set([1, 1]);
+        mesh.vertices[3].uv.set([0, 1]);
+
+        mesh.indices.set([
+            0, 1, 2,
+            0, 2, 3
+        ]);
+        mesh.update();
+        return mesh;
+    }
 }
 
 export class Chunk
 {
     readonly chunkSize;
     readonly basePos: Readonly<vec2>;
-    mesh: Mesh;
+    // mesh: Mesh;
+    buffer: GLArrayBuffer<typeof TileInstanceBufferStruct>;
     
     protected tiles: Array<TileData | null>;
     private polygons: Polygon[] = [];
@@ -167,7 +220,8 @@ export class Chunk
         this.chunkSize = chunkSize;
         this.basePos = basePos;
         this.tiles = new Array(chunkSize * chunkSize);
-        this.mesh = createChunkMesh(basePos, chunkSize);
+        // this.mesh = createChunkMesh(basePos, chunkSize);
+        this.buffer = createChunkBuffer(basePos, chunkSize);
     }
 
     /**
@@ -196,25 +250,22 @@ export class Chunk
 
 
 
-        idx *= 4;
+        // idx *= 4;
         if (tile?.sprite)
         {
-            this.mesh.vertices[idx + 0].uv.set([tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMin]);
-            this.mesh.vertices[idx + 1].uv.set([tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMin]);
-            this.mesh.vertices[idx + 2].uv.set([tile.sprite.uvRect.xMax, tile.sprite.uvRect.yMax]);
-            this.mesh.vertices[idx + 3].uv.set([tile.sprite.uvRect.xMin, tile.sprite.uvRect.yMax]);
-            this.mesh.vertices[idx + 0].color.set(tile.sprite.color);
-            this.mesh.vertices[idx + 1].color.set(tile.sprite.color);
-            this.mesh.vertices[idx + 2].color.set(tile.sprite.color);
-            this.mesh.vertices[idx + 3].color.set(tile.sprite.color);
-            this.mesh.update();
+            const element = this.buffer[idx];
+            vec4.set(element.tileColor, tile.sprite.color);
+            element.tileUV[0] = tile.sprite.uvRect.xMin;
+            element.tileUV[1] = tile.sprite.uvRect.yMin;
+            element.tileUV[2] = tile.sprite.uvRect.width;
+            element.tileUV[3] = tile.sprite.uvRect.height;
         }
         // this.mesh.uvs = uv;
     }
 
     destroy()
     {
-        this.mesh.destroy();
+        this.buffer.destroy();
     }
 
     /** @internal */
@@ -442,35 +493,40 @@ function floorReminder(x: number, m: number)
         : (m + x % m) % m;
 }
 
-function createChunkMesh(basePos: Readonly<vec2>, chunkSize: number)
+function createChunkBuffer(basePos: Readonly<vec2>, chunkSize: number)
 {
-    const builder = new MeshBuilder(chunkSize * chunkSize * 4, chunkSize * chunkSize * 6);
-    const quad = [
-        {
-            vert: vec3(0),
-            uv: vec2(0, 0),
-        },
-        {
-            vert: vec3(0),
-            uv: vec2(1, 0),
-        },
-        {
-            vert: vec3(0),
-            uv: vec2(1, 1),
-        },
-        {
-            vert: vec3(0),
-            uv: vec2(0, 1),
-        }];
+    const buffer = new GLArrayBuffer(TileInstanceBufferStruct, chunkSize * chunkSize);
     for (let y = 0; y < chunkSize; y++)
         for (let x = 0; x < chunkSize; x++)
         {
-            quad[0].vert.set([x + basePos.x, y + basePos.y, 0]);
-            quad[1].vert.set([x + 1 + basePos.x, y + basePos.y, 0]);
-            quad[2].vert.set([x + 1 + basePos.x, y + 1 + basePos.y, 0]);
-            quad[3].vert.set([x + basePos.x, y + 1 + basePos.y, 0]);
-            builder.addPolygon(...quad);
+            const idx = y * chunkSize + x;
+            buffer[idx].tilePos[0] = basePos.x + x;
+            buffer[idx].tilePos[1] = basePos.y + y;
+            buffer[idx].tileColor.fill(0);
+            buffer[idx].tileUV.fill(0);
         }
     
-    return builder.toMesh();
+    return buffer;
+}
+
+export class DefaultTilemapMaterial extends MaterialFromShader(new Shader(...ShaderSource.tilemapInstance, {
+    vertexStructure: TileInstanceVertexStruct,
+    attributes: {
+        vert: "aPos",
+        uv: "aUV",
+        normal: "aNormal",
+        tileColor: "aTileColor",
+        tileUV: "aTileUV",
+        tilePos: "aTilePos",
+    },
+    blend: [Blending.SrcAlpha, Blending.OneMinusSrcAlpha],
+    zWrite: false,
+    depth: DepthTest.Disable,
+}))
+{
+    @shaderProp("uMainTex", "tex2d")
+    texture: Texture | null = null;
+
+    @shaderProp("uColor", "color")
+    color: Color = Color.white;
 }

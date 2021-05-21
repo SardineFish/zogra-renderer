@@ -1,7 +1,8 @@
 import { Camera, Chunk, Color, Default2DRenderPipeline, InputManager, Keys, Light2D, MathUtils, MeshBuilder, Physics2D, Projection, RenderObject, ShadowType, Sprite, TileData, Tilemap, TilemapCollider, vec2, vec3, ZograEngine } from "zogra-engine";
 import "./css/base.css";
-
+import './page-base';
 import noisejs from "noisejs";
+import { Debug } from "zogra-renderer/dist/core/global";
 const Noise = new noisejs.Noise();
 
 
@@ -46,6 +47,7 @@ class NoiseChunk extends Chunk
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, Default2DRenderPipeline);
 engine.renderPipeline.ambientIntensity = 0.2;
+engine.renderPipeline.msaa = 0;
 engine.start();
 const scene = engine.scene;
 scene.physics = new Physics2D();
@@ -60,7 +62,10 @@ camera.viewHeight = 10;
 scene.add(camera);
 
 const light = new Light2D(ShadowType.Soft);
-light.lightColor = new Color(0.6, 0.6, 0.6, 1);
+light.lightColor = Color.white;
+light.intensity = 0.6;
+light.attenuation = -0.8;
+light.lightRange = 15;
 scene.add(light);
 light.position = vec3(0, 3, 0);
 
@@ -109,4 +114,17 @@ engine.on("update", (time) =>
     const z = camera.position.z;
     camera.position = vec3.math(MathUtils.lerp)(camera.position, light.position, vec3(0.1)).setZ(z);
 
+
+    // let i = 0
+    // for (const chunk of (tilemap as any).chunks.values())
+    // {
+    //     for (const polygon of chunk.getPolygons())
+    //     {
+    //         colors[i] = colors[i] || Color.fromHSL(Math.random() * 360, 1, 0.5);
+    //         Debug().drawLines(polygon.points.map((p: vec2) => p.toVec3()), colors[i++]);
+    //     }
+    // }
+
 });
+
+const colors: Color[] = [];

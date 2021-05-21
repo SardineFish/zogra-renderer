@@ -1,4 +1,4 @@
-import { Camera, Chunk, Color, Default2DMaterial, Default2DRenderPipeline, dot, Entity, InputManager, Keys, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Projection, RenderObject, Sprite, Texture2D, TextureImporter, TileData, Tilemap, Time, vec2, vec3, ZograEngine } from "zogra-engine";
+import { Camera, Chunk, Color, Default2DMaterial, Default2DRenderPipeline, DefaultTilemapMaterial, dot, Entity, InputManager, Keys, LineRenderer, MathUtils, minus, mul, ParticleSystem, plus, Projection, RenderObject, Sprite, Texture2D, TextureImporter, TileData, Tilemap, Time, vec2, vec3, ZograEngine } from "zogra-engine";
 import "./css/base.css";
 import imgCheckBoard from "./asset/img/checkboard.png";
 import * as ZograRendererPackage from "zogra-renderer";
@@ -73,7 +73,7 @@ async function init()
     tileWall.sprite = new Sprite(checkboard, vec2(4), vec2(0, 1));
 
     const tilemap = new Tilemap(NoiseChunk);
-    (tilemap.materials[0] as Default2DMaterial).texture = checkboard;
+    (tilemap.materials[0] as DefaultTilemapMaterial).texture = checkboard;
     scene.add(tilemap);
 
     const camera = new Camera();

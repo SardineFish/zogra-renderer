@@ -276,7 +276,7 @@ export class ZograRenderer
         this.viewProjectionMatrix = prevVP;
     }
 
-    private useShader(shader: Shader)
+    private useShader<T extends BufferStructure>(shader: Shader<T>)
     {
         // Shader state may be modified by flip texure.
         // if (shader === this.shader)
@@ -284,13 +284,13 @@ export class ZograRenderer
         
         const gl = this.gl;
         
-        this.shader = shader;
+        (this.shader as unknown as Shader<T>) = shader;
         shader.use();
         // shader.setupPipelineStates();
         
     }
 
-    private setupTransforms(shader: Shader, transformModel: Readonly<mat4>)
+    private setupTransforms<T extends BufferStructure>(shader: Shader<T>, transformModel: Readonly<mat4>)
     {
         const gl = this.gl;
         
@@ -316,7 +316,7 @@ export class ZograRenderer
         });
     }
 
-    private setupGlobalUniforms(material: Material)
+    private setupGlobalUniforms<T extends BufferStructure, TMat extends Material<T>>(material: TMat)
     {
         for (const val of this.globalUniforms.values())
         {
@@ -324,10 +324,16 @@ export class ZograRenderer
         }
     }
 
-    drawMeshInstance<T extends BufferStructure>(mesh: Mesh, buffer: GLArrayBuffer<T>, material: Material, count: number)
+    drawMeshInstance<
+        TMesh extends BufferStructure,
+        TInstance extends BufferStructure,
+        KM extends keyof TMesh,
+        KI extends keyof TInstance,
+        TMat extends Material<Pick<TMesh & TInstance, KM | KI>>
+    > (mesh: Mesh<TMesh>, buffer: GLArrayBuffer<TInstance>, material: TMat, count: number)
     {
         if (!material)
-            material = this.assets.materials.error;
+            material = this.assets.materials.error as unknown as TMat;
         const gl = this.gl;
         const data: BindingData = {
             assets: this.assets,
@@ -344,19 +350,19 @@ export class ZograRenderer
         material.upload(data);
         this.setupTransforms(material.shader, mat4.identity());
         const elementCount = mesh.bind();
-        buffer.bindVertexArray(true, material.shader.attributes as AttributeLocations<T>);
+        buffer.bindVertexArray(true, material.shader.attributes as AttributeLocations<Pick<TInstance, KI>>);
 
         gl.drawElementsInstanced(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0, count);
 
-        buffer.unbindVertexArray(true, material.shader.attributes as AttributeLocations<T>);
+        buffer.unbindVertexArray(true, material.shader.attributes as AttributeLocations<Pick<TInstance, KI>>);
         mesh.unbind();
         material.unbindRenderTextures();
     }
 
-    drawMeshProceduralInstance<T extends BufferStructure>(mesh: Mesh<T>, material: Material, count: number)
+    drawMeshProceduralInstance<T extends BufferStructure, TMat extends Material<T>>(mesh: Mesh<T>, material: TMat, count: number)
     {
         if (!material)
-            material = this.assets.materials.error;
+            material = this.assets.materials.error as unknown as TMat;
         const gl = this.gl;
         const data: BindingData = {
             assets: this.assets,
@@ -379,10 +385,10 @@ export class ZograRenderer
         material.unbindRenderTextures();
     }
 
-    drawMesh<T extends BufferStructure>(mesh: Mesh<T>, transform: Readonly<mat4>, material: Material)
+    drawMesh<T extends BufferStructure, TMat extends Material<T>>(mesh: Mesh<T>, transform: Readonly<mat4>, material: TMat)
     {
         if (!material)
-            material = this.assets.materials.error;
+            material = this.assets.materials.error as unknown as TMat;
         const gl = this.gl;
         const data: BindingData = {
             assets: this.assets,
@@ -398,7 +404,7 @@ export class ZograRenderer
         
         material.upload(data);
         this.setupTransforms(material.shader, transform);
-        this.setupGlobalUniforms(material);
+        this.setupGlobalUniforms<T, TMat>(material);
         let elementCount = mesh.bind();
 
         gl.drawElements(gl.TRIANGLES, elementCount, gl.UNSIGNED_INT, 0);

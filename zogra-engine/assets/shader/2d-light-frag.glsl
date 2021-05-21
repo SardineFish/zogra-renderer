@@ -1,5 +1,9 @@
 // #version 300 es
-precision mediump float;
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+  precision highp float;
+#else
+  precision mediump float;
+#endif
 
 #define MAX_LIGHT 4
 

@@ -1,7 +1,26 @@
 import { Color, Material, Mesh, Texture, vec2, vec3, vec4, Vector3, ShaderAttributeNames } from "zogra-renderer";
 import { RenderObject } from "./render-object";
 import { Time } from "./engine";
-declare const ParticleMaterial_base: typeof import("zogra-renderer").MaterialType;
+declare const ParticleVertStruct: {
+    vert: "vec3";
+    color: "vec4";
+    normal: "vec3";
+    uv: "vec2";
+    uv2: "vec2";
+    pos: "vec3";
+    rotation: "vec3";
+    size: "float";
+};
+declare const ParticleMaterial_base: new (gl?: WebGL2RenderingContext | undefined) => Material<{
+    vert: "vec3";
+    color: "vec4";
+    normal: "vec3";
+    uv: "vec2";
+    uv2: "vec2";
+    pos: "vec3";
+    rotation: "vec3";
+    size: "float";
+}>;
 export declare class ParticleMaterial extends ParticleMaterial_base {
     color: Color;
     texture: Texture | null;
@@ -35,7 +54,7 @@ export declare type ParticlePropertySettings<T, U> = T extends Color ? {
     y: U;
     z: U;
 } | ((lifetime: number, system: ParticleSystem) => vec2) : T extends number ? U | ((lifetime: number, system: ParticleSystem) => number) : never;
-export declare class ParticleSystem extends RenderObject {
+export declare class ParticleSystem extends RenderObject<typeof ParticleVertStruct> {
     static VertexStructure: {
         vert: "vec3";
         color: "vec4";
@@ -57,7 +76,7 @@ export declare class ParticleSystem extends RenderObject {
         size: "float";
     }>;
     mesh: Mesh;
-    material: Material;
+    material: Material<typeof ParticleVertStruct>;
     duration: ParticleScalarGenerator;
     lifetime: ParticleScalarGenerator;
     spawnRate: ParticleScalarGenerator;

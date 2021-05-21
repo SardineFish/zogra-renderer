@@ -34,7 +34,15 @@ export declare class Light2D extends Entity {
     private appendVerts;
     destroy(): void;
 }
-declare const Shadow2DMaterial_base: typeof import("zogra-renderer").MaterialType;
+declare const Shadow2DMaterial_base: new (gl?: WebGL2RenderingContext | undefined) => import("zogra-renderer").Material<{
+    p0: "vec2";
+    p1: "vec2";
+    vert: "vec3";
+    color: "vec4";
+    normal: "vec3";
+    uv: "vec2";
+    uv2: "vec2";
+}>;
 export declare class Shadow2DMaterial extends Shadow2DMaterial_base {
     lightPos: vec2;
     volumnSize: number;

@@ -15,6 +15,8 @@ export class Rect
     get yMin() { return this.min.y }
     get xMax() { return this.max.x }
     get yMax() { return this.max.y }
+    get width() { return this.max.x - this.min.x }
+    get height() { return this.max.y - this.min.y }
     get size() { return minus(this.max, this.min) }
     get center() { return plus(this.min, this.max).mul(vec2(.5)) }
 

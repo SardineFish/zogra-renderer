@@ -228,7 +228,7 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
     }
 
-    bindVertexArray(instancing = false, attributes?: AttributeLocations<T>)
+    bindVertexArray<K extends keyof T>(instancing = false, attributes?: AttributeLocations<Pick<T, K>>)
     {
         this.tryInit(true);
         const gl = this.ctx.gl;
@@ -239,39 +239,54 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         for (const element of this.structure.elements)
         {
             const location = attributes
-                ? attributes[element.key] || -1
+                ? (attributes as AttributeLocations<T>)[element.key] || -1
                 : element.location;
             
             if (location < 0)
                 continue;
-            if (element.type === "mat4")
+            switch (element.type)
             {
-                gl.enableVertexAttribArray(location + 0);
-                gl.enableVertexAttribArray(location + 1);
-                gl.enableVertexAttribArray(location + 2);
-                gl.enableVertexAttribArray(location + 3);
-                gl.vertexAttribPointer(location + 0, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 0);
-                gl.vertexAttribPointer(location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
-                gl.vertexAttribPointer(location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
-                gl.vertexAttribPointer(location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
-                if (instancing)
-                {
-                    gl.vertexAttribDivisor(location + 0, 1);
-                    gl.vertexAttribDivisor(location + 1, 1);
-                    gl.vertexAttribDivisor(location + 2, 1);
-                    gl.vertexAttribDivisor(location + 3, 1);
-                }
-            }
-            else
-            {
-                gl.enableVertexAttribArray(location);
-                gl.vertexAttribPointer(location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
-                instancing && gl.vertexAttribDivisor(location, 1);
+                case "float":
+                case "vec2":
+                case "vec3":
+                case "vec4":
+                    gl.enableVertexAttribArray(location);
+                    gl.vertexAttribPointer(location, element.length, gl.FLOAT, false, this.structure.byteSize, element.byteOffset);
+                    instancing && gl.vertexAttribDivisor(location, 1);
+                    break;
+                case "int":
+                case "ivec2":
+                case "ivec3":
+                case "ivec4":
+                    gl.enableVertexAttribArray(location);
+                    gl.vertexAttribIPointer(location, element.length, gl.INT, this.structure.byteSize, element.byteOffset);
+                    instancing && gl.vertexAttribDivisor(location, 1);
+                    break;
+                case "mat4":
+                    gl.enableVertexAttribArray(location + 0);
+                    gl.enableVertexAttribArray(location + 1);
+                    gl.enableVertexAttribArray(location + 2);
+                    gl.enableVertexAttribArray(location + 3);
+                    gl.vertexAttribPointer(location + 0, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 0);
+                    gl.vertexAttribPointer(location + 1, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 1);
+                    gl.vertexAttribPointer(location + 2, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 2);
+                    gl.vertexAttribPointer(location + 3, 4, gl.FLOAT, false, this.structure.byteSize, element.byteOffset + 3);
+                    if (instancing)
+                    {
+                        gl.vertexAttribDivisor(location + 0, 1);
+                        gl.vertexAttribDivisor(location + 1, 1);
+                        gl.vertexAttribDivisor(location + 2, 1);
+                        gl.vertexAttribDivisor(location + 3, 1);
+                    }
+                    break;
+                default:
+                    console.warn(`Unknown attribute type '${element.type}'`)
+
             }
         }
     }
 
-    unbindVertexArray(instancing = false, attributes?: AttributeLocations<T>)
+    unbindVertexArray<K extends keyof T>(instancing = false, attributes?: AttributeLocations<Pick<T, K>>)
     {
         this.tryInit(true);
         const gl = this.ctx.gl;
@@ -279,7 +294,7 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         for (const element of this.structure.elements)
         {
             const location = attributes
-                ? attributes[element.key] || -1
+                ? (attributes as AttributeLocations<T>)[element.key] || -1
                 : element.location;
 
             if (location < 0)
