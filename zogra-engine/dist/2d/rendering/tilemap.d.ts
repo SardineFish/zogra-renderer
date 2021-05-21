@@ -20,7 +20,7 @@ export declare class Tilemap<TChunk extends Chunk = Chunk> extends RenderObject<
     private chunks;
     private ChunkType;
     private instanceMesh;
-    private batchBuffer?;
+    private batchBuffer;
     readonly chunkSize: number;
     constructor();
     constructor(chunkSize: number);

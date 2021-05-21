@@ -42,6 +42,8 @@ export class Tilemap extends RenderObject {
             [this.chunkSize, this.ChunkType] = args;
         }
         this.instanceMesh = Tilemap.createInstanceMesh();
+        this.batchBuffer = new GLArrayBuffer(TileInstanceBufferStruct, 0, false);
+        this.batchBuffer.static = false;
     }
     render(context, data) {
         this.eventEmitter.with().emit("render", this, context, data);
@@ -50,13 +52,20 @@ export class Tilemap extends RenderObject {
         let [maxCorner] = this.chunkPos(plus(data.camera.position.toVec2(), screenSize));
         // context.renderer.drawMesh(this.mesh, mat4.translate(vec3(0, 0, 0)), this.materials[0]);
         // return;
+        const batchedSize = (maxCorner.x - minCorner.x + 1) * (maxCorner.y - minCorner.y + 1) * this.chunkSize * this.chunkSize;
+        if (this.batchBuffer.length < batchedSize)
+            this.batchBuffer.resize(batchedSize, false);
+        let offset = 0;
         for (let chunkY = minCorner.y; chunkY <= maxCorner.y; chunkY++)
             for (let chunkX = minCorner.x; chunkX <= maxCorner.x; chunkX++) {
                 const chunk = this.getOrCreateChunk(vec2(chunkX, chunkY));
+                this.batchBuffer.copyFrom(chunk.buffer, offset);
+                offset += this.chunkSize * this.chunkSize;
                 // chunk.mesh.update();
                 // context.renderer.drawMesh(chunk.mesh, this.localToWorldMatrix, this.materials[0]);
-                context.renderer.drawMeshInstance(this.instanceMesh, chunk.buffer, this.materials[0], chunk.buffer.length);
+                // context.renderer.drawMeshInstance(this.instanceMesh, chunk.buffer, this.materials[0], chunk.buffer.length);
             }
+        context.renderer.drawMeshInstance(this.instanceMesh, this.batchBuffer, this.materials[0], offset);
     }
     getTile(pos) {
         let [chunkPos, offset] = this.chunkPos(vec2.math(Math.floor)(pos));

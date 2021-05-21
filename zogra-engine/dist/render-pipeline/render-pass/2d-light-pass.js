@@ -29,7 +29,7 @@ export class Light2DPass extends RenderPass {
         context.renderer.setFramebuffer(this.lightmap);
         context.renderer.clear(Color.black);
         this.drawShadowLights(context, data, shadowLights);
-        // this.drawSimpleLights(context, data, simpleLights);
+        this.drawSimpleLights(context, data, simpleLights);
         context.renderer.blit(this.lightmap, data.cameraOutput, this.lightComposeMaterial);
     }
     drawSimpleLights(context, data, simpleLights) {

@@ -54,25 +54,25 @@ export class Mesh<VertexStruct extends BufferStructure = typeof DefaultVertexDat
         if (args.length === 0)
         {
             this.ctx = GlobalContext();
-            this.vertices = new GLArrayBuffer(DefaultVertexData as unknown as VertexStruct, 0, this.ctx);
+            this.vertices = new GLArrayBuffer(DefaultVertexData as unknown as VertexStruct, 0, true, this.ctx);
         }
         else if (args.length === 1)
         {
             if (args[0] instanceof GLContext)
             {
                 this.ctx = args[0];
-                this.vertices = new GLArrayBuffer(DefaultVertexData as unknown as VertexStruct, 0, this.ctx);
+                this.vertices = new GLArrayBuffer(DefaultVertexData as unknown as VertexStruct, 0, true, this.ctx);
             }
             else
             {
                 this.ctx = GlobalContext();
-                this.vertices = new GLArrayBuffer(args[0] as VertexStruct, 0, this.ctx);
+                this.vertices = new GLArrayBuffer(args[0] as VertexStruct, 0, true, this.ctx);
             }
         }
         else
         {
             this.ctx = args[1] as GLContext || GlobalContext();
-            this.vertices = new GLArrayBuffer(args[0] as VertexStruct, 0, this.ctx);
+            this.vertices = new GLArrayBuffer(args[0] as VertexStruct, 0, true, this.ctx);
         }
 
         this.tryInit(false);

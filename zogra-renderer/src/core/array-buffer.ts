@@ -105,7 +105,7 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
     public Data: BufferElementView<T> = null as any;
 
     private structure: BufferStructureInfo<T>;
-    private buffer: Float32Array;
+    private innerBuffer: Float32Array;
     private dirty = false;
     private ctx: GLContext;
     private initialized = false;
@@ -119,17 +119,17 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
 
     get byteLength() { return this.length * this.structure.byteSize }
 
-    constructor(structure: T & BufferStructure, items: number, ctx = GlobalContext())
+    constructor(structure: T & BufferStructure, items: number, createElementView = true, ctx = GlobalContext())
     {
         super(items);
         this.structure = BufferStructureInfo.from(structure);
         // this.structure = structure;
         this.ctx = ctx;
         
-        this.buffer = null as any;
+        this.innerBuffer = null as any;
 
 
-        this.resize(items);
+        this.resize(items, createElementView);
         
         this.tryInit(false);
 
@@ -137,51 +137,66 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         this.name = `GLArrayBuffer_${this.assetID}`;
     }
 
-    resize(length: number, keepContent = true)
+    resize(length: number, keepContent = true, createElementView = true)
     {
-        const oldBuffer = this.buffer;
-        this.buffer = new Float32Array(this.structure.totalSize * length);
+        const oldBuffer = this.innerBuffer;
+        this.innerBuffer = new Float32Array(this.structure.totalSize * length);
         if (keepContent && oldBuffer)
         {
-            if (oldBuffer.length > this.buffer.length)
+            if (oldBuffer.length > this.innerBuffer.length)
             {
-                this.buffer.set(new Float32Array(oldBuffer.buffer, 0, this.buffer.length));
+                this.innerBuffer.set(new Float32Array(oldBuffer.buffer, 0, this.innerBuffer.length));
             }
             else
-                this.buffer.set(oldBuffer, 0);
+                this.innerBuffer.set(oldBuffer, 0);
         }
 
         this.length = length;
 
-        for (let i = 0; i < this.length; i++)
+        if (createElementView)
         {
-            const elementView = {} as any as BufferElementView<T>;
-            for (const element of this.structure.elements)
+            for (let i = 0; i < this.length; i++)
             {
-                const bufferOffset = i * this.structure.byteSize + element.byteOffset;
-                switch (element.type)
+                const elementView = {} as any as BufferElementView<T>;
+                for (const element of this.structure.elements)
                 {
-                    case "float":
-                    case "vec2":
-                    case "vec3":
-                    case "vec4":
-                    case "mat4":
-                        (elementView[element.key] as Float32Array) = new Float32Array(this.buffer.buffer, bufferOffset, ElementLength[element.type]);
-                        break;
-                    case "int":
-                    case "ivec2":
-                    case "ivec3":
-                    case "ivec4":
-                        (elementView[element.key] as Int32Array) = new Int32Array(this.buffer.buffer, bufferOffset, ElementLength[element.type]);
-                        break;
-                    default:
-                        console.warn(`Unknown element type '${element.type}'`);
+                    const bufferOffset = i * this.structure.byteSize + element.byteOffset;
+                    switch (element.type)
+                    {
+                        case "float":
+                        case "vec2":
+                        case "vec3":
+                        case "vec4":
+                        case "mat4":
+                            (elementView[element.key] as Float32Array) = new Float32Array(this.innerBuffer.buffer, bufferOffset, ElementLength[element.type]);
+                            break;
+                        case "int":
+                        case "ivec2":
+                        case "ivec3":
+                        case "ivec4":
+                            (elementView[element.key] as Int32Array) = new Int32Array(this.innerBuffer.buffer, bufferOffset, ElementLength[element.type]);
+                            break;
+                        default:
+                            console.warn(`Unknown element type '${element.type}'`);
+                    }
                 }
+                this[i] = elementView;
             }
-            this[i] = elementView;
         }
 
         this.dirty = true;
+    }
+
+    copyFrom(source: GLArrayBuffer<T>, selfElementOffset = 0, sourceElementOffset = 0, sourceElementLength = source.length)
+    {
+        const byteOffset = selfElementOffset * this.structure.byteSize;
+        const maxWriteSize = this.innerBuffer.buffer.byteLength - byteOffset;
+        const srcByteOffset = sourceElementOffset * source.structure.byteSize;
+        const srcSize = (sourceElementLength - sourceElementOffset) * source.structure.byteSize;
+        const writeSize = Math.min(maxWriteSize, srcSize);
+        const dstView = new Uint8Array(this.innerBuffer.buffer, byteOffset, writeSize);
+        const srcView = new Uint8Array(source.innerBuffer.buffer, srcByteOffset, writeSize);
+        dstView.set(srcView);
     }
 
     private swapBuffer: Float32Array | null = null;
@@ -192,11 +207,11 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         const offsetI = a * this.structure.byteSize;
         const offsetJ = b * this.structure.byteSize;
         let temp = this.swapBuffer;
-        let viewA = new Float32Array(this.buffer.buffer, offsetI, this.structure.totalSize);
+        let viewA = new Float32Array(this.innerBuffer.buffer, offsetI, this.structure.totalSize);
         temp.set(viewA);
-        const viewB = new Float32Array(this.buffer.buffer, offsetJ, this.structure.totalSize);
-        this.buffer.set(viewB, a * this.structure.totalSize);
-        this.buffer.set(temp, b * this.structure.totalSize);
+        const viewB = new Float32Array(this.innerBuffer.buffer, offsetJ, this.structure.totalSize);
+        this.innerBuffer.set(viewB, a * this.structure.totalSize);
+        this.innerBuffer.set(temp, b * this.structure.totalSize);
     }
 
     markDirty()
@@ -213,7 +228,7 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         const gl = this.ctx.gl;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuf);
-        gl.bufferData(gl.ARRAY_BUFFER, this.buffer, this.static ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, this.innerBuffer, this.static ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
 
         this.dirty = false;
         return true;
@@ -338,6 +353,7 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
             return;
 
         const gl = this.ctx.gl;
+        this.length = 0;
         gl.deleteBuffer(this.glBuf);
         this.destroyed = true;
         this.initialized = false;

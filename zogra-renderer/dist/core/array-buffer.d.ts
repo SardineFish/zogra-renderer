@@ -40,7 +40,7 @@ export declare class GLArrayBuffer<T extends BufferStructure> extends Array<Buff
     static: boolean;
     Data: BufferElementView<T>;
     private structure;
-    private buffer;
+    private innerBuffer;
     private dirty;
     private ctx;
     private initialized;
@@ -49,8 +49,9 @@ export declare class GLArrayBuffer<T extends BufferStructure> extends Array<Buff
     name: string;
     protected glBuf: WebGLBuffer;
     get byteLength(): number;
-    constructor(structure: T & BufferStructure, items: number, ctx?: GLContext);
-    resize(length: number, keepContent?: boolean): void;
+    constructor(structure: T & BufferStructure, items: number, createElementView?: boolean, ctx?: GLContext);
+    resize(length: number, keepContent?: boolean, createElementView?: boolean): void;
+    copyFrom(source: GLArrayBuffer<T>, selfElementOffset?: number, sourceElementOffset?: number, sourceElementLength?: number): void;
     private swapBuffer;
     swapVertices(a: number, b: number): void;
     markDirty(): void;

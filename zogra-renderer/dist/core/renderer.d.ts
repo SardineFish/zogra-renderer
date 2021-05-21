@@ -46,7 +46,7 @@ export declare class ZograRenderer {
     private useShader;
     private setupTransforms;
     private setupGlobalUniforms;
-    drawMeshInstance<TMesh extends BufferStructure, TInstance extends BufferStructure, KM extends keyof TMesh, KI extends keyof TInstance, TMat extends Material<Pick<TMesh & TInstance, KM | KI>>>(mesh: Mesh<TMesh>, buffer: GLArrayBuffer<TInstance>, material: TMat, count: number): KI;
+    drawMeshInstance<TMesh extends BufferStructure, TInstance extends BufferStructure, KM extends keyof TMesh, KI extends keyof TInstance, TMat extends Material<Pick<TMesh & TInstance, KM | KI>>>(mesh: Mesh<TMesh>, buffer: GLArrayBuffer<TInstance>, material: TMat, count: number): void;
     drawMeshProceduralInstance<T extends BufferStructure, TMat extends Material<T>>(mesh: Mesh<T>, material: TMat, count: number): void;
     drawMesh<T extends BufferStructure, TMat extends Material<T>>(mesh: Mesh<T>, transform: Readonly<mat4>, material: TMat): void;
     drawLines(lines: Lines, transform: mat4, material: Material): void;
