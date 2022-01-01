@@ -28,9 +28,10 @@
     "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
-    "fbx-importer": "file:///../fbx-importer",
+    "fbx-importer": "file:../fbx-importer",
     "noisejs": "^2.1.0",
-    "zogra-engine": "file:///../zogra-engine",
-    "zogra-renderer": "file:///../zogra-renderer"
+    "zogra-engine": "file:../zogra-engine",
+    "zogra-renderer": "file:../zogra-renderer",
+    "zogra-physics": "file:../zogra-physics"
   }
 }

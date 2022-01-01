@@ -2,21 +2,24 @@ const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 
+const entires = {
+    generic: "./src/generic.ts",
+    "life-game": "./src/life-game.ts",
+    "engine-test": "./src/engine-test.ts",
+    "fbx-loader": "./src/fbx-loader.ts",
+    "tilemap": "./src/tilemap.ts",
+    "snake": "./src/snake/index.ts",
+    "particle": "./src/particle.ts",
+    "light-2d": "./src/light-2d.ts",
+    "render-buffer": "./src/render-buffer.ts",
+    "post-process": "./src/post-process.ts",
+    "touch": "./src/touch.ts",
+    "constraint": "./src/constraint.ts",
+};
+
 module.exports = {
     // mode:"production",
-    entry: {
-        generic: "./src/generic.ts",
-        "life-game": "./src/life-game.ts",
-        "engine-test": "./src/engine-test.ts",
-        "fbx-loader": "./src/fbx-loader.ts",
-        "tilemap": "./src/tilemap.ts",
-        "snake": "./src/snake/index.ts",
-        "particle": "./src/particle.ts",
-        "light-2d": "./src/light-2d.ts",
-        "render-buffer": "./src/render-buffer.ts",
-        "post-process": "./src/post-process.ts",
-        "touch": "./src/touch.ts",
-    },
+    entry: entires,
     output: {
         path: path.resolve("./dist"),
         filename: "js/[name].js"
@@ -94,18 +97,7 @@ module.exports = {
             minify: false,
             chunks: ["snake"],
         }),
-        ...[
-            "generic",
-            "life-game",
-            "engine-test",
-            "fbx-loader",
-            "tilemap",
-            "particle",
-            "light-2d",
-            "render-buffer",
-            "post-process",
-            "touch",
-        ].map(chunk => new HtmlWebpackPlugin({
+        ...Object.keys(entires).map(chunk => new HtmlWebpackPlugin({
             filename: `${chunk}.html`,
             template: "html/base.html",
             inject: true,
