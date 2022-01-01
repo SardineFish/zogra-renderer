@@ -1,6 +1,6 @@
 import { ZograRenderPipeline, RenderContext, MaterialReplacer } from "./render-pipeline";
 import { Camera, Projection, Scene } from "../engine";
-import { FilterMode, mat4, RenderBuffer, TextureFormat, TextureResizing, vec2 } from "zogra-renderer";
+import { FilterMode, mat4, RenderBuffer, TextureFormat, TextureResizing, vec2, Debug } from "zogra-renderer";
 import { ZograRenderer, Material, Mesh, MSAASamples } from "zogra-renderer";
 import { RenderObject } from "../engine";
 import { Entity } from "../engine";
@@ -14,7 +14,6 @@ import { ConstructorType } from "../utils/util";
 import { mul } from "zogra-renderer";
 import { vec4 } from "zogra-renderer";
 import { DebugLayerRenderer } from "./render-pass/debug-layer";
-import { Debug } from "zogra-renderer/dist/core/global";
 import { Light2D } from "../2d";
 import { RenderPass } from "./render-pass/render-pass";
 import { Light2DPass } from "./render-pass/2d-light-pass";

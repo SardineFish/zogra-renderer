@@ -12,6 +12,8 @@ import bloomCompose from "./bloom-compose.glsl";
 import _2dLightSimpleVert from "./2d-light-simple-vert.glsl";
 import _2dLightSimpleFrag from "./2d-light-simple-frag.glsl";
 import tilemapVert from "./2d-tilemap-vert.glsl";
+import defaultVert from "./default-vert.glsl";
+import litLambert from "./lit-lambert.glsl";
 
 type ShaderPair = [string, string];
 
@@ -26,4 +28,6 @@ export const ShaderSource = {
     bloomCompose: [_2dVert, bloomCompose] as ShaderPair,
     blitCopy: [_2dVert, blitCopy] as ShaderPair,
     tilemapInstance: [tilemapVert, _2dFrag] as ShaderPair,
+    defaultVert: defaultVert,
+    litLambert: litLambert,
 };

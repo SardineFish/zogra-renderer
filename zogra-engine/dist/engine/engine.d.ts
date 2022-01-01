@@ -29,6 +29,7 @@ export declare class ZograEngine<RenderPipeline extends ZograRenderPipeline = Pr
     constructor(canvas: HTMLCanvasElement, RenderPipeline?: ConstructorType<RenderPipeline, [ZograRenderer]>);
     renderScene(): void;
     start(): void;
+    update(time: Readonly<Time>): void;
     on<T extends EventKeys<ZograEngineEvents>>(event: T, listener: ZograEngineEvents[T]): void;
     off<T extends EventKeys<ZograEngineEvents>>(event: T, listener: ZograEngineEvents[T]): void;
 }

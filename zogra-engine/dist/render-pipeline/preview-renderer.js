@@ -1,4 +1,4 @@
-import { FilterMode, mat4, RenderBuffer, TextureFormat } from "zogra-renderer";
+import { Debug, FilterMode, mat4, RenderBuffer, TextureFormat } from "zogra-renderer";
 import { RenderData, RenderOrder } from "./render-data";
 import { rgba, rgb } from "zogra-renderer";
 import { FrameBuffer } from "zogra-renderer";
@@ -29,6 +29,7 @@ export class PreviewRenderer {
             ], lineColor);
         }
         this.grid = lb.toLines();
+        Debug(this.debugLayer);
     }
     render(context, scene, cameras) {
         for (let i = 0; i < cameras.length; i++) {
@@ -63,9 +64,9 @@ export class PreviewRenderer {
             //     this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
             // }
         }
-        // this.debugLayer.render(context, data);
         this.renderGrid(context, data);
         this.finalBlit(context, data);
+        this.debugLayer.render(context, data);
         // context.renderer.blitCopy(data.cameraOutput.colorAttachments[0] as RenderBuffer, camera.output);
         camera.__postRender(context);
     }

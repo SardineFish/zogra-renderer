@@ -14,4 +14,6 @@ export declare const BuiltinShaders: {
     bloomCompose: [string, string];
     blitCopy: [string, string];
     tilemapInstance: [string, string];
+    defaultVert: string;
+    litLambert: string;
 };

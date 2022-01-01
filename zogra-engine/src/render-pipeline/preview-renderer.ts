@@ -1,6 +1,6 @@
 import { ZograRenderPipeline, RenderContext } from "./render-pipeline";
 import { Camera, Scene } from "../engine";
-import { FilterMode, mat4, MSAASamples, RenderBuffer, TextureFormat } from "zogra-renderer";
+import { Debug, FilterMode, mat4, MSAASamples, RenderBuffer, TextureFormat } from "zogra-renderer";
 import { ZograRenderer, Material, Mesh } from "zogra-renderer";
 import { RenderData, RenderOrder } from "./render-data";
 import { rgba, rgb } from "zogra-renderer";
@@ -41,6 +41,7 @@ export class PreviewRenderer implements ZograRenderPipeline
             ], lineColor);
         }
         this.grid = lb.toLines();
+        Debug(this.debugLayer);
     }
     render(context: RenderContext, scene: Scene, cameras: Camera[])
     {
@@ -92,11 +93,11 @@ export class PreviewRenderer implements ZograRenderPipeline
             // }
         }
         
-        // this.debugLayer.render(context, data);
 
         this.renderGrid(context, data);
 
         this.finalBlit(context, data);
+        this.debugLayer.render(context, data);
         // context.renderer.blitCopy(data.cameraOutput.colorAttachments[0] as RenderBuffer, camera.output);
 
         camera.__postRender(context);

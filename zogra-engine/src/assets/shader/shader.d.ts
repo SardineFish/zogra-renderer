@@ -10,5 +10,7 @@ export declare const ShaderSource: {
     bloomCompose: ShaderPair;
     blitCopy: ShaderPair;
     tilemapInstance: ShaderPair;
+    defaultVert: string;
+    litLambert: string;
 };
 export {};

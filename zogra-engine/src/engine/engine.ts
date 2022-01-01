@@ -77,16 +77,20 @@ export class ZograEngine<RenderPipeline extends ZograRenderPipeline = PreviewRen
                 time: time,
                 deltaTime: dt
             };
-            this._time = t;
-            this.eventEmitter.emit("update", t);
-            this.scene.__update(t);
-            this.eventEmitter.emit("render", this.scene.getEntitiesOfType(Camera));
-
-            this.renderScene();
+            this.update(t);
 
             requestAnimationFrame(update);
         };
         requestAnimationFrame(update);
+    }
+    update(time: Readonly<Time>)
+    {
+        this._time = time;
+        this.eventEmitter.emit("update", time);
+        this.scene.__update(time);
+        this.eventEmitter.emit("render", this.scene.getEntitiesOfType(Camera));
+
+        this.renderScene();
     }
     on<T extends EventKeys<ZograEngineEvents>>(event: T, listener: ZograEngineEvents[T])
     {

@@ -26,6 +26,10 @@ var d_light_simple_vert_default = "#version 300 es\r\nprecision mediump float;\r
 var d_light_simple_frag_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vLightColor;\r\nin vec4 vLightParams; // (volumn, range, attenuation, intensity)\r\nin vec4 vPos;\r\nin vec2 vUV;\r\n\r\nout vec4 fragColor;\r\n\r\nfloat lightAttenuation(float r, float range, float volumn, float attenuation)\r\n{\r\n    r -= volumn;\r\n    r /= range - volumn;\r\n    if(attenuation <= -1.0)\r\n        return 0.0;\r\n    else if (attenuation <= 0.0)\r\n    {\r\n        float t = 1.0 / (attenuation + 1.0) - 1.0;\r\n        return exp(-r * t) - exp(-t) * r;\r\n    }\r\n    else if (attenuation < 1.0)\r\n    {\r\n        float t = 1.0 / (1.0 - attenuation) - 1.0;\r\n        r = 1.0 - r;\r\n        return 1.0 - (exp(-r * t) - exp(-t) * r);\r\n    }\r\n    else {\r\n        return r >= 1.0 ? 0.0 : 1.0;\r\n    }\r\n}\r\n\r\nvoid main()\r\n{\r\n    float r = length(vUV * vec2(2) - vec2(1)) * vLightParams.y;\r\n    float attenuation = lightAttenuation(r, vLightParams.y, vLightParams.x, vLightParams.z);\r\n    attenuation = max(attenuation, 0.0);\r\n    attenuation *= vLightParams.w;\r\n    vec3 color = vLightColor.rgb * vec3(attenuation);\r\n\r\n    fragColor = vec4(color, 1);\r\n    // fragColor = vec4(1);\r\n}";
 // assets/shader/2d-tilemap-vert.glsl
 var d_tilemap_vert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\n// Mesh data\r\nin ivec2 aPos;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\n// Instancing data\r\nin vec4 aTileColor;\r\nin vec4 aTileUV;\r\nin ivec2 aTilePos;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nout vec4 vPos;\r\nout vec4 vColor;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\nout vec3 vWorldPos;\r\n\r\nvoid main()\r\n{\r\n    vec4 vertPos = vec4(aPos.xy + aTilePos.xy, 0, 1);\r\n    gl_Position = uTransformMVP * vertPos;\r\n    vPos = gl_Position;\r\n    vColor = aTileColor;\r\n    vUV = aTileUV.zw * aUV + aTileUV.xy;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vWorldPos = (uTransformM * vertPos).xyz;\r\n}";
+// assets/shader/default-vert.glsl
+var default_vert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec3 aPos;\r\nin vec4 aColor;\r\nin vec2 aUV;\r\nin vec3 aNormal;\r\n\r\nuniform mat4 uTransformM;\r\nuniform mat4 uTransformVP;\r\nuniform mat4 uTransformMVP;\r\nuniform mat4 uTransformM_IT;\r\n\r\nout vec4 vColor;\r\nout vec4 vPos;\r\nout vec2 vUV;\r\nout vec3 vNormal;\r\nout vec3 vWorldPos;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = uTransformMVP * vec4(aPos, 1);\r\n    vPos = gl_Position;\r\n    vColor = aColor;\r\n    vUV = aUV;\r\n    vNormal = (uTransformM_IT *  vec4(aNormal, 0)).xyz;\r\n    vWorldPos = (uTransformM * vec4(aPos, 1)).xyz;\r\n    \r\n}";
+// assets/shader/lit-lambert.glsl
+var lit_lambert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uColor;\r\nuniform vec3 uLightDir;\r\nuniform vec3 uLightColor;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec3 color = texture(uMainTex, vUV.xy).rgb;\r\n    float lambertian = dot(vNormal, uLightDir);\r\n    color = color * vec3(lambertian);\r\n\r\n    fragColor = vec4(color, 1);\r\n}";
 // assets/shader/shader.ts
 var ShaderSource = {
     default2D: [d_vert_default, d_frag_default],
@@ -37,7 +41,9 @@ var ShaderSource = {
     bloomFilter: [d_vert_default, bloom_filter_default],
     bloomCompose: [d_vert_default, bloom_compose_default],
     blitCopy: [d_vert_default, blit_copy_default],
-    tilemapInstance: [d_tilemap_vert_default, d_frag_default]
+    tilemapInstance: [d_tilemap_vert_default, d_frag_default],
+    defaultVert: default_vert_default,
+    litLambert: lit_lambert_default
 };
 export { ShaderSource };
 //# sourceMappingURL=index.js.map

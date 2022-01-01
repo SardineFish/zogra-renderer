@@ -1,9 +1,8 @@
-import { RenderBuffer, TextureFormat, vec2 } from "zogra-renderer";
+import { RenderBuffer, TextureFormat, vec2, Debug } from "zogra-renderer";
 import { RenderData, RenderOrder } from "./render-data";
 import { Color } from "zogra-renderer";
 import { FrameBuffer } from "zogra-renderer";
 import { DebugLayerRenderer } from "./render-pass/debug-layer";
-import { Debug } from "zogra-renderer/dist/core/global";
 import { Light2DPass } from "./render-pass/2d-light-pass";
 import { DrawScene } from "./render-pass/draw-scene";
 import { PostprocessPass } from "./post-process";
