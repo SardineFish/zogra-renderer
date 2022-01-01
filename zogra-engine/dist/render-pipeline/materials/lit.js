@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { Color, MaterialFromShader, Shader, shaderProp } from "zogra-renderer";
 import { ShaderSource } from "../../assets";
-export class LitLambertian extends MaterialFromShader(new Shader(ShaderSource.defaultVert, ShaderSource.litLambert)) {
+export class LitLambertian extends MaterialFromShader(new Shader(ShaderSource.defaultVert, ShaderSource.litLambert, {})) {
     constructor() {
         super(...arguments);
         this.color = Color.white;

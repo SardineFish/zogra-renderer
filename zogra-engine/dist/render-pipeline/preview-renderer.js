@@ -1,4 +1,4 @@
-import { Debug, FilterMode, mat4, RenderBuffer, TextureFormat } from "zogra-renderer";
+import { Debug, DepthBuffer, FilterMode, mat4, RenderBuffer, TextureFormat } from "zogra-renderer";
 import { RenderData, RenderOrder } from "./render-data";
 import { rgba, rgb } from "zogra-renderer";
 import { FrameBuffer } from "zogra-renderer";
@@ -38,10 +38,10 @@ export class PreviewRenderer {
         }
     }
     setupLight(context, data) {
-        context.renderer.setGlobalUniform("uLightDir", "vec3", vec3(-1, 1, 0).normalize());
+        context.renderer.setGlobalUniform("uLightDir", "vec4[]", [data.camera.position.toVec4(1)]);
+        context.renderer.setGlobalUniform("uLightCount", "int", 1);
         context.renderer.setGlobalUniform("uAmbientSky", "color", rgb(.2, .2, .2));
-        context.renderer.setGlobalUniform("uLightPos", "vec3", data.camera.position.clone());
-        context.renderer.setGlobalUniform("uLightColor", "color", rgb(.8, .8, .8));
+        context.renderer.setGlobalUniform("uLightColor", "color[]", [rgb(.8, .8, .8)]);
     }
     renderCamera(context, data) {
         // context.renderer.clear(rgb(.3, .3, .3), true);
@@ -98,7 +98,9 @@ export class PreviewRenderer {
         if (!fbo) {
             fbo = new FrameBuffer(context.renderer.canvas.width, context.renderer.canvas.height);
             const renderbuffer = new RenderBuffer(fbo.width, fbo.height, TextureFormat.RGBA8, this.msaa);
+            const depthBuffer = new DepthBuffer(fbo.width, fbo.height, this.msaa);
             fbo.addColorAttachment(renderbuffer);
+            fbo.setDepthAttachment(depthBuffer);
             this.cameraOutputFBOs.set(camera, fbo);
         }
         return fbo;

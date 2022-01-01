@@ -101,6 +101,9 @@ export class Vector3 extends V3Constructor {
     toVec2() {
         return vec2(this[0], this[1]);
     }
+    toVec4(w = 0) {
+        return vec4(this[0], this[1], this[2], w);
+    }
     equals(v) {
         if (v === undefined)
             return false;
