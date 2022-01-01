@@ -22,7 +22,7 @@ export declare class DepthBuffer extends GPUAsset implements DepthAttachment {
     size: vec2;
     multiSampling: MSAASamples;
     format: TextureFormat;
-    protected glBuf: WebGLRenderbuffer;
+    protected _glBuf: WebGLRenderbuffer;
     constructor(width: number, height: number, multiSampling?: MSAASamples, ctx?: GLContext);
     get width(): number;
     set width(w: number);

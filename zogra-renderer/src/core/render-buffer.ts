@@ -93,9 +93,9 @@ export class DepthBuffer extends GPUAsset implements DepthAttachment
 {
     size: vec2;
     multiSampling: MSAASamples = 0;
-    format: TextureFormat = TextureFormat.RGBA8;
+    format: TextureFormat = TextureFormat.DEPTH_COMPONENT;
 
-    protected glBuf: WebGLRenderbuffer = null as any;
+    protected _glBuf: WebGLRenderbuffer = null as any;
 
     constructor(width: number, height: number, multiSampling: MSAASamples = 0, ctx = GlobalContext())
     {
@@ -107,6 +107,14 @@ export class DepthBuffer extends GPUAsset implements DepthAttachment
         this.tryInit(false);
     }
 
+    /** @internal */
+    glBuf()
+    {
+        this.tryInit(true);
+        return this._glBuf;
+    }
+
+
     get width() { return this.size.x }
     set width(w) { this.size.x = w }
     get height() { return this.size.y }
@@ -117,17 +125,17 @@ export class DepthBuffer extends GPUAsset implements DepthAttachment
         this.tryInit(true);
         const gl = this.ctx.gl;
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, this.glBuf);
-        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this._glBuf);
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, WebGL2RenderingContext.DEPTH_COMPONENT32F, this.size.x, this.size.y);
     }
 
     init()
     {
         const gl = this.ctx.gl;
 
-        this.glBuf = gl.createRenderbuffer() ?? panic("Failed to create render buffer.");
-        gl.bindRenderbuffer(gl.RENDERBUFFER, this.glBuf);
-        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, this.format, this.size.x, this.size.y);
+        this._glBuf = gl.createRenderbuffer() ?? panic("Failed to create render buffer.");
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this._glBuf);
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, this.multiSampling, WebGL2RenderingContext.DEPTH_COMPONENT32F, this.size.x, this.size.y);
         gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
         return true;
@@ -138,13 +146,13 @@ export class DepthBuffer extends GPUAsset implements DepthAttachment
         this.tryInit(true);
         const gl = this.ctx.gl;
 
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.glBuf);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this._glBuf);
     }
 
     destroy()
     {
         super.destroy()
         const gl = this.ctx.gl;
-        gl.deleteRenderbuffer(this.glBuf);
+        gl.deleteRenderbuffer(this._glBuf);
     }
 }

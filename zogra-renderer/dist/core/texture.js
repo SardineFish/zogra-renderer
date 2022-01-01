@@ -182,12 +182,13 @@ export class Texture2D extends TextureBase {
 }
 export class DepthTexture extends TextureBase {
     constructor(width, height, ctx = GlobalContext()) {
-        super(width, height, TextureFormat.DEPTH_COMPONENT, FilterMode.Nearest, ctx);
+        super(width, height, TextureFormat.DEPTH_COMPONENT32F, FilterMode.Nearest, ctx);
+        this.autoMipmap = false;
     }
     bindFramebuffer() {
         this.create();
         const gl = this.ctx.gl;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this._glTex, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_COMPONENT32F, gl.TEXTURE_2D, this._glTex, 0);
     }
 }
 export class RenderTexture extends TextureBase {

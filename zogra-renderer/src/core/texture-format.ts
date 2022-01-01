@@ -33,8 +33,13 @@ export enum TextureFormat
     RGBA8UI = WebGL2RenderingContext.RGBA8UI,
     DEPTH_COMPONENT = WebGL2RenderingContext.DEPTH_COMPONENT,
     DEPTH_STENCIL = WebGL2RenderingContext.DEPTH_STENCIL,
+    DEPTH24_STENCIL8 = WebGL2RenderingContext.DEPTH24_STENCIL8,
+    DEPTH32F_STENCIL8 = WebGL2RenderingContext.DEPTH32F_STENCIL8,
+    DEPTH_COMPONENT24 = WebGL2RenderingContext.DEPTH_COMPONENT24,
+    DEPTH_COMPONENT32F = WebGL2RenderingContext.DEPTH_COMPONENT32F,
 };
 
+// Reference: https://www.khronos.org/registry/webgl/specs/latest/2.0/#TEXTURE_TYPES_FORMATS_FROM_DOM_ELEMENTS_TABLE
 export function mapGLFormat(gl: WebGL2RenderingContext, format: TextureFormat): [GLenum, GLenum, GLenum]
 {
     const map: { [key in TextureFormat]: [GLenum, GLenum, GLenum] } = {
@@ -69,6 +74,8 @@ export function mapGLFormat(gl: WebGL2RenderingContext, format: TextureFormat): 
         [TextureFormat.RGBA8UI]: [gl.RGBA8UI, gl.RGBA_INTEGER, gl.UNSIGNED_BYTE],
         [TextureFormat.DEPTH_COMPONENT]: [gl.DEPTH_COMPONENT, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT],
         [TextureFormat.DEPTH_STENCIL]: [gl.DEPTH_STENCIL, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT],
+        [TextureFormat.DEPTH_COMPONENT24]: [gl.DEPTH_COMPONENT24, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT],
+        [TextureFormat.DEPTH_COMPONENT32F]: [gl.DEPTH_COMPONENT32F, gl.DEPTH_COMPONENT, gl.FLOAT],
     };
     return map[format];
 }

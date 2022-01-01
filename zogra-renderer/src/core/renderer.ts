@@ -22,6 +22,7 @@ import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { BufferStructure, GLArrayBuffer } from "./array-buffer";
 import { ObjectPool } from "../utils/object-pool";
 import { RenderBuffer } from "./render-buffer";
+import { DepthBuffer } from ".";
 
 interface TempFramebuffer extends FrameBuffer
 {
@@ -53,6 +54,7 @@ export class ZograRenderer
     private helperAssets: {
         clipBlitMesh: Mesh,
         blitMesh: Mesh,
+        depthBlitTex: DepthTexture,
     };
 
     constructor(canvasElement: HTMLCanvasElement, width?: number, height?: number)
@@ -67,6 +69,9 @@ export class ZograRenderer
         this.gl = panicNull(this.canvas.getContext("webgl2"), "WebGL2 is not support on current device.");
         this.gl.getExtension("EXT_color_buffer_float");
         this.gl.getExtension("EXT_color_buffer_half_float");
+        this.gl.getExtension("WEBGL_depth_texture");
+        console.log(this.gl.getExtension('WEBGL_depth_texture') || this.gl.getExtension('MOZ_WEBGL_depth_texture') || this.gl.getExtension('WEBKIT_WEBGL_depth_texture'));
+        console.log(this.gl.getSupportedExtensions());
 
 
         this.ctx = new GLContext();
@@ -87,6 +92,7 @@ export class ZograRenderer
         this.helperAssets = {
             clipBlitMesh: MeshBuilder.ndcQuad(),
             blitMesh: MeshBuilder.ndcTriangle(),
+            depthBlitTex: new DepthTexture(this.width, this.height),
         };
     }
 
@@ -204,6 +210,7 @@ export class ZograRenderer
         src instanceof RenderTexture
             ? gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glTex(), 0)
             : gl.framebufferRenderbuffer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, src.glBuf());
+        
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, writeBuffer.glFBO());
         dst instanceof RenderTexture
             ? gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dst.glTex(), 0)
@@ -221,11 +228,49 @@ export class ZograRenderer
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
     }
 
+    blitCopyDepth(src: DepthBuffer | DepthTexture, dst: RenderTexture)
+    {
+        const gl = this.gl;
+        if (src instanceof DepthBuffer)
+        {
+            const depthTex = this.helperAssets.depthBlitTex;
+            depthTex.resize(src.width, src.height);
+
+            const [readBuffer, writeBuffer] = this.blitFramebuffer;
+            readBuffer.reset(src.width, src.height);
+            readBuffer.bind();
+            writeBuffer.reset(src.width, src.height);
+            writeBuffer.bind();
+
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, readBuffer.glFBO());
+            gl.framebufferRenderbuffer(gl.READ_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, src.glBuf());
+
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, writeBuffer.glFBO());
+            gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTex.glTex(), 0);
+
+            gl.blitFramebuffer(
+                0, 0, src.width, src.height,
+                0, 0, dst.width, dst.height,
+                gl.DEPTH_BUFFER_BIT,
+                gl.NEAREST
+            );
+
+            src = depthTex;
+        }
+
+        this.blit(src as Texture, dst);
+    }
+
 
     clear(color = Color.black, clearDepth = true)
     {
+        this.target.bind();
+        this.setupScissor();
+
         this.gl.clearColor(color.r, color.g, color.b, color.a);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | (clearDepth ? this.gl.DEPTH_BUFFER_BIT : 0));
+        this.gl.clearDepth(1.0);
+        this.gl.depthMask(clearDepth);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
     }
 
     blit(

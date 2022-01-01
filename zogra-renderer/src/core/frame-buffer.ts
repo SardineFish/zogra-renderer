@@ -141,7 +141,6 @@ export class FrameBuffer extends GPUAsset implements IFrameBuffer
         if (this._depthAttachment)
         {
             this._depthAttachment.bindFramebuffer();
-            this.activeBuffers.push(gl.DEPTH_ATTACHMENT);
         }
         else
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);

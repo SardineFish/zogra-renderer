@@ -265,6 +265,65 @@ export class MeshBuilder<VertexStruct extends BufferStructure = typeof DefaultVe
         mesh.name = "mesh_cube";
         return mesh;
     }
+
+    static sphereNormalizedCube(center = vec3.zero(), radius = 0.5, segments: number = 12, ctx = GlobalContext())
+    {
+        // There are actually duplicated vertices at the edge of each surface
+        const totalVerts = 6 * (segments + 1) * (segments + 1);
+        const totalIndices = segments * segments * 3 * 2 * 6;
+        let mesh = new Mesh();
+        mesh.resize(totalVerts, totalIndices);
+        let vertIdx = 0;
+        let indexIdx = 0;
+        for (let f = 0; f < 6; ++f)
+        {
+            for (let i = 0; i <= segments; ++i)
+            {
+                for (let j = 0; j <= segments; ++j)
+                {
+                    let u = (j / segments);
+                    let v = (i / segments);
+                    let x = u * 2.0 - 1.0;
+                    let y = v * 2.0 - 1.0;
+                    let p = [
+                        () => vec3(1, x, y),
+                        () => vec3(-1, x, -y),
+                        () => vec3(x, y, 1),
+                        () => vec3(x, -y, -1),
+                        () => vec3(x, 1, -y),
+                        () => vec3(x, -1, y),
+                    ][f]().normalize();
+
+                    vec3.mul(mesh.vertices[vertIdx].vert, p, radius);
+                    // vec3.plus(mesh.vertices[vertIdx].vert, mesh.vertices[vertIdx].vert, center);
+                    mesh.vertices[vertIdx].normal.set(p);
+                    mesh.vertices[vertIdx].color.set([1, 1, 1, 1]);
+                    mesh.vertices[vertIdx].uv.set([u, v]);
+                    mesh.vertices[vertIdx].uv2.set([u, v]);
+                    vertIdx++;
+                }
+            }
+
+            for (let i = 0; i < segments; ++i)
+            {
+                for (let j = 0; j < segments; ++j)
+                {
+                    let u = (f * (segments + 1) * (segments + 1) + i * (segments + 1) + j);
+                    let v = u + (segments + 1);
+
+                    mesh.indices[indexIdx++] = v + 0;
+                    mesh.indices[indexIdx++] = u + 0;
+                    mesh.indices[indexIdx++] = u + 1;
+
+                    mesh.indices[indexIdx++] = v + 0;
+                    mesh.indices[indexIdx++] = u + 1;
+                    mesh.indices[indexIdx++] = v + 1;
+                }
+            }
+        }
+
+        return mesh;
+    }
 }
 
 /** @deprecated */

@@ -4,7 +4,7 @@ import { Material } from "./material";
 import { Color } from "../types/color";
 import { mat4 } from "../types/mat4";
 import { IFrameBuffer, ColorAttachment, DepthAttachment } from "./frame-buffer";
-import { RenderTexture, Texture } from "./texture";
+import { RenderTexture, DepthTexture, Texture } from "./texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinAssets } from "../builtin-assets/assets";
 import { UniformType, UniformValueType } from "./types";
@@ -12,6 +12,7 @@ import { Lines } from "./lines";
 import { Rect } from "../types/rect";
 import { BufferStructure, GLArrayBuffer } from "./array-buffer";
 import { RenderBuffer } from "./render-buffer";
+import { DepthBuffer } from ".";
 export declare class ZograRenderer {
     canvas: HTMLCanvasElement;
     gl: WebGL2RenderingContext;
@@ -41,6 +42,7 @@ export declare class ZograRenderer {
     private detachCurrentFramebuffer;
     private getTempFramebuffer;
     blitCopy(src: RenderBuffer | RenderTexture, dst: RenderBuffer | RenderTexture): void;
+    blitCopyDepth(src: DepthBuffer | DepthTexture, dst: RenderTexture): void;
     clear(color?: Color, clearDepth?: boolean): void;
     blit(src: Texture | null, dst: IFrameBuffer | RenderTexture | RenderTexture[], material?: Material, srcRect?: Rect, dstRect?: Rect): void;
     private useShader;

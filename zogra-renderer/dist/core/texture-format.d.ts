@@ -29,6 +29,10 @@ export declare enum TextureFormat {
     RGBA32F,
     RGBA8UI,
     DEPTH_COMPONENT,
-    DEPTH_STENCIL
+    DEPTH_STENCIL,
+    DEPTH24_STENCIL8,
+    DEPTH32F_STENCIL8,
+    DEPTH_COMPONENT24,
+    DEPTH_COMPONENT32F
 }
 export declare function mapGLFormat(gl: WebGL2RenderingContext, format: TextureFormat): [GLenum, GLenum, GLenum];
