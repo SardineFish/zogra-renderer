@@ -1,12 +1,15 @@
 import { Vector3 } from "zogra-renderer";
-import { PositionalConstraint } from ".";
-import { PhysicalParticle } from "..";
-export declare class DistanceConstraint implements PositionalConstraint<[PhysicalParticle, PhysicalParticle]> {
-    p0: PhysicalParticle;
-    p1: PhysicalParticle;
+import { IXPBDConstraint } from "./interface";
+import { IPositionEntity } from "../entity";
+export declare class DistanceConstraint implements IXPBDConstraint {
+    p0: IPositionEntity;
+    p1: IPositionEntity;
     distance: number;
-    constructor(p1: PhysicalParticle, p2: PhysicalParticle, distance: number);
-    gradients: [(positions_0: Readonly<Vector3>, positions_1: Readonly<Vector3>) => Vector3, (positions_0: Readonly<Vector3>, positions_1: Readonly<Vector3>) => Vector3];
+    compliance: number;
+    multiplier: number;
+    constructor(p1: IPositionEntity, p2: IPositionEntity, distance: number);
+    gradientP0(p0: Readonly<Vector3>, p1: Readonly<Vector3>): Vector3;
+    gradientP1(p0: Readonly<Vector3>, p1: Readonly<Vector3>): Vector3;
     evaluate(p0: Readonly<Vector3>, p1: Readonly<Vector3>): number;
     solve(dt: number): void;
 }
