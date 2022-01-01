@@ -109,7 +109,7 @@ export class MeshBuilder<VertexStruct extends BufferStructure = typeof DefaultVe
         return mesh;
     }
 
-    static cube(center = vec3.zero(), size = vec3.one(), ctx: GLContext)
+    static cube(center = vec3.zero(), size = vec3.one(), ctx: GLContext = GlobalContext())
     {
         const verts = [
             vec3(-.5, -.5, -.5).mul(size).plus(center),

@@ -80,7 +80,7 @@ export class MeshBuilder {
         mesh.name = "mesh_ndc_triangle";
         return mesh;
     }
-    static cube(center = vec3.zero(), size = vec3.one(), ctx) {
+    static cube(center = vec3.zero(), size = vec3.one(), ctx = GlobalContext()) {
         const verts = [
             vec3(-.5, -.5, -.5).mul(size).plus(center),
             vec3(.5, -.5, -.5).mul(size).plus(center),

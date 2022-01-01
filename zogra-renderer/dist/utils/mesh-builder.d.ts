@@ -15,7 +15,7 @@ export declare class MeshBuilder<VertexStruct extends BufferStructure = typeof D
     static quad(center?: import("../types").Vector2, size?: import("../types").Vector2, ctx?: GLContext): Mesh<DefaultVertexStruct>;
     static ndcQuad(ctx?: GLContext): Mesh<DefaultVertexStruct>;
     static ndcTriangle(ctx?: GLContext): Mesh<DefaultVertexStruct>;
-    static cube(center: Vector3 | undefined, size: Vector3 | undefined, ctx: GLContext): Mesh<DefaultVertexStruct>;
+    static cube(center?: Vector3, size?: Vector3, ctx?: GLContext): Mesh<DefaultVertexStruct>;
 }
 /** @deprecated */
 export declare class MeshBuilderLegacy {
