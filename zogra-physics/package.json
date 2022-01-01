@@ -1,0 +1,28 @@
+{
+  "name": "zogra-physics",
+  "version": "0.1.0",
+  "description": "An XPBD physics system for zogra-engine",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SardineFish/zogra-renderer.git"
+  },
+  "keywords": [
+    "physics",
+    "xpbd",
+    "zogra",
+    "engine"
+  ],
+  "author": "SardineFish",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SardineFish/zogra-renderer/issues"
+  },
+  "homepage": "https://github.com/SardineFish/zogra-renderer#readme",
+  "dependencies": {
+    "zogra-renderer": "file:../zogra-renderer"
+  }
+}
