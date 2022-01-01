@@ -1,5 +1,5 @@
 import { Vector3 } from "zogra-renderer";
-import { IXPBDConstraint } from "./constraint";
+import { IXPBDConstraint } from "./constraint/xpbd";
 import { PhysicalParticle } from "./entity";
 export declare class PhysicsSystem {
     particles: PhysicalParticle[];

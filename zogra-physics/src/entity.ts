@@ -1,6 +1,8 @@
 import { Quaternion, Vector3 } from "zogra-renderer";
 
-export interface IPositionEntity
+export interface PhysicsEntity { }
+
+export interface IPositionEntity extends PhysicsEntity
 {
     position: Vector3,
     prevPosition: Vector3,
@@ -8,7 +10,7 @@ export interface IPositionEntity
     invMass: number,
 }
 
-export interface IOrientationEntity
+export interface IOrientationEntity extends PhysicsEntity
 {
     orientation: Quaternion,
     prevOrientation: Quaternion,

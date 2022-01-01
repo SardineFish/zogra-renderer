@@ -1,15 +1,17 @@
 import { Vector3 } from "zogra-renderer";
-import { IXPBDConstraint } from "./interface";
 import { IPositionEntity } from "../entity";
-export declare class DistanceConstraint implements IXPBDConstraint {
+import { XPBDPositionalConstraint } from "./xpbd";
+export declare class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Vector3]> {
     p0: IPositionEntity;
     p1: IPositionEntity;
     distance: number;
     compliance: number;
     multiplier: number;
+    gradients: [(this: this) => Vector3, (this: this) => Vector3];
+    entites: [IPositionEntity, IPositionEntity];
     constructor(p1: IPositionEntity, p2: IPositionEntity, distance: number);
-    gradientP0(p0: Readonly<Vector3>, p1: Readonly<Vector3>): Vector3;
-    gradientP1(p0: Readonly<Vector3>, p1: Readonly<Vector3>): Vector3;
-    evaluate(p0: Readonly<Vector3>, p1: Readonly<Vector3>): number;
+    gradientP0(): Vector3;
+    gradientP1(): Vector3;
+    evaluate(): number;
     solve(dt: number): void;
 }
