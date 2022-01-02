@@ -1,10 +1,13 @@
-import { ZograEngine, PreviewRenderer, InputManager, Camera, rgb, Entity, vec3, Keys, mat4, mul, plus, quat, RenderObject, MeshBuilder, LitLambertian, Deg2Rad } from "zogra-engine";
-import { DistanceConstraint, PhysicsSystem, Plane, Sphere } from "zogra-physics";
+import { ZograEngine, PreviewRenderer, InputManager, Camera, rgb, Entity, vec3, Keys, mat4, mul, plus, quat, RenderObject, MeshBuilder, LitLambertian, Deg2Rad, Debug, Color } from "zogra-engine";
+import { Constraint, DistanceConstraint, PhysicsSystem, Plane, Sphere } from "zogra-physics";
 import "./css/base.css";
 
 const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
 const engine = new ZograEngine(canvas, PreviewRenderer);
 const input = new InputManager();
+const camera = new Camera();
+
+let physics = new PhysicsSystem();
 
 function initCamera()
 {
@@ -12,7 +15,6 @@ function initCamera()
     engine.scene.add(wrapper);
     wrapper.position = vec3(0, 6, 20);
     
-    const camera = new Camera();
 
     camera.clearColor = rgb(.3, .3, .3);
     camera.FOV = 60;
@@ -62,10 +64,44 @@ function initCamera()
 initCamera();
 engine.on('update', () => input.update());
 
+function initManipulator()
+{
+    let constraint: Constraint | null = null;
+    const particle = physics.addParticle(vec3.zero(), 0);
+    let distance = 0;
+
+    engine.on("update", () =>
+    {
+        if (input.getKeyDown(Keys.Mouse0))
+        {
+            const ray = camera.screenToRay(input.pointerPosition);
+            const result = physics.raycast(ray.origin, ray.direction);
+            if (result)
+            {
+                Debug().drawRay(result.point, result.normal, 1, Color.red);
+                
+                constraint = physics.addConstraint(new DistanceConstraint(result.entity, particle, 0, 1));
+                distance = result.distance;
+            }
+        }
+        else if (input.getKeyUp(Keys.Mouse0) && constraint)
+        {
+            physics.removeConstraint(constraint);
+            constraint = null;
+        }
+
+        if (constraint)
+        {
+            const ray = camera.screenToRay(input.pointerPosition)
+            const pos = vec3.mul(ray.direction, distance).plus(ray.origin);
+            particle.position.set(pos);
+        }
+    });
+}
+
 
 function createConstraint()
 {
-    let physics = new PhysicsSystem();
     const entities: Entity[] = [];
     const transform = mat4.rts(quat.axisAngle(vec3.one().normalize(), Deg2Rad * 45), vec3(0, 3, 0), vec3.one());
     for (let x = 0; x < 2; ++x)
@@ -93,7 +129,7 @@ function createConstraint()
     {
         if (p0 === p1)
             return;
-        physics.addConstraint(new DistanceConstraint(p0, p1, vec3.minus(p0.position, p1.position).magnitude));
+        physics.addConstraint(new DistanceConstraint(p0, p1, vec3.minus(p0.position, p1.position).magnitude, 30));
     }))
 
     // for (let i = 0; i < 7; ++i)
@@ -134,6 +170,8 @@ function createConstraint()
 }
 createConstraint();
 engine.start();
+
+initManipulator();
 
 let _totalTime = 0;
 // window.addEventListener("keydown", e =>
