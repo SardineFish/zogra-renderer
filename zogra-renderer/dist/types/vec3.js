@@ -13,6 +13,9 @@ export class Vector3 extends V3Constructor {
     get magnitude() {
         return Math.hypot(...this);
     }
+    get magnitudeSqr() {
+        return this[0] * this[0] + this[1] * this[1] + this[2] * this[2];
+    }
     get normalized() {
         const m = this.magnitude;
         return m == 0 ? vec3.zero() : this.clone().div(vec3(m, m, m));

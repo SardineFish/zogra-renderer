@@ -21,6 +21,11 @@ export class Vector3 extends V3Constructor implements Vector, ZograMatrix
         return Math.hypot(...this);
     }
 
+    get magnitudeSqr()
+    {
+        return this[0] * this[0] + this[1] * this[1] + this[2] * this[2];
+    }
+
     get normalized(): Vector3
     {
         const m = this.magnitude;

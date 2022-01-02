@@ -11,6 +11,7 @@ export declare class Vector3 extends V3Constructor implements Vector, ZograMatri
     get z(): number;
     set z(z: number);
     get magnitude(): number;
+    get magnitudeSqr(): number;
     get normalized(): Vector3;
     get negative(): Vector3;
     get inversed(): Vector3;
