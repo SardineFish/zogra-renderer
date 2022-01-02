@@ -116,6 +116,7 @@ export declare namespace vec3 {
         (args_0: number): Vector3;
         (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
     };
+    var distance: (u: Vector3, v: Vector3) => number;
 }
 export declare function vec3(x: number, y: number, z: number): Vector3;
 export declare namespace vec3 {
@@ -186,5 +187,6 @@ export declare namespace vec3 {
         (args_0: number): Vector3;
         (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
     };
+    var distance: (u: Vector3, v: Vector3) => number;
 }
 export {};

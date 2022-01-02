@@ -35,7 +35,7 @@ export class ContactConstraint implements XPBDPositionalConstraint<[Vector3, Vec
 
     solve(dt: number): void
     {
-        solvePositionalXPBD(this);
+        solvePositionalXPBD(this, dt);
     }
     
 }

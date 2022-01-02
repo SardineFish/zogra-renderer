@@ -47,7 +47,7 @@ export class DistanceConstraint {
         // const dp1 = this.gradientP1().mul(this.multiplier * this.p1.invMass);
         // this.p0.position.plus(dp0);
         // this.p1.position.plus(dp1);
-        solvePositionalXPBD(this);
+        solvePositionalXPBD(this, dt);
     }
 }
 //# sourceMappingURL=distance.js.map

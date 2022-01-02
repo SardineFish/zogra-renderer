@@ -214,6 +214,8 @@ export class MeshBuilder {
         let indexIdx = 0;
         const uniqueVerts = [];
         const uniqueVertsMap = [];
+        // first we build a cube surface, each vertex is unique at location (x, y, z)
+        // Map from cube surface location to sphere vertex
         for (let f = 0; f < 6; ++f) {
             for (let i = 0; i <= segments; ++i) {
                 for (let j = 0; j <= segments; ++j) {

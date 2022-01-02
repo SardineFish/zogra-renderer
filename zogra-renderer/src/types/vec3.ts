@@ -290,3 +290,4 @@ vec3.fill = wrapGlMatrix<vec3, [number]>((out, n) =>
     out[0] = out[1] = out[2] = n;
     return out;
 }, 1, vec3.zero);
+vec3.distance = (u: vec3, v: vec3) => Math.hypot(u.x - v.x, u.y - v.y, u.z - v.z);

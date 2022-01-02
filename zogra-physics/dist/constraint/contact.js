@@ -17,7 +17,7 @@ export class ContactConstraint {
         return this.contact.normal.negative;
     }
     solve(dt) {
-        solvePositionalXPBD(this);
+        solvePositionalXPBD(this, dt);
     }
 }
 //# sourceMappingURL=contact.js.map

@@ -15,5 +15,5 @@ export interface XPBDPositionalConstraint<T extends Vector3[]> extends IXPBDCons
         [key in keyof T]: IPositionEntity;
     };
 }
-export declare function solvePositionalXPBD<T extends XPBDPositionalConstraint<Vector3[]>>(constraint: T): void;
+export declare function solvePositionalXPBD<T extends XPBDPositionalConstraint<Vector3[]>>(constraint: T, dt: number): void;
 export {};

@@ -211,4 +211,5 @@ vec3.fill = wrapGlMatrix((out, n) => {
     out[0] = out[1] = out[2] = n;
     return out;
 }, 1, vec3.zero);
+vec3.distance = (u, v) => Math.hypot(u.x - v.x, u.y - v.y, u.z - v.z);
 //# sourceMappingURL=vec3.js.map

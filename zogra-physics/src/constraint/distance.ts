@@ -69,6 +69,6 @@ export class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Ve
 
         // this.p0.position.plus(dp0);
         // this.p1.position.plus(dp1);
-        solvePositionalXPBD(this);
+        solvePositionalXPBD(this, dt);
     }
 } 
