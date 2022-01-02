@@ -16,4 +16,5 @@ export declare const BuiltinShaders: {
     tilemapInstance: [string, string];
     defaultVert: string;
     litLambert: string;
+    unlitColor: [string, string];
 };

@@ -10,14 +10,15 @@ import { Lines, LineBuilder } from "zogra-renderer";
 import { vec3 } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
 import { DebugLayerRenderer } from "./render-pass/debug-layer";
+import { GridRenderer } from "./render-pass/grid";
 
 export class PreviewRenderer implements ZograRenderPipeline
 {
     msaa: MSAASamples = 4;
     renderer: ZograRenderer;
-    grid: Lines;
     materialReplaceMap = new Map<Function, Material>();
     debugLayer = new DebugLayerRenderer();
+    grid = new GridRenderer();
     cameraOutputFBOs = new Map<Camera, FrameBuffer>();
     cameraOutputTextures = new Map<Camera, RenderTexture>();
 
@@ -25,22 +26,6 @@ export class PreviewRenderer implements ZograRenderPipeline
     {
         this.renderer = renderer;
 
-        const lineColor = rgba(1, 1, 1, 0.1);
-        const lb = new LineBuilder(0, renderer.gl);
-        const Size = 10;
-        const Grid = 1;
-        for (let i = -Size; i <= Size; i+=Grid)
-        {
-            lb.addLine([
-                vec3(i, 0, -Size),
-                vec3(i, 0, Size),
-            ], lineColor);
-            lb.addLine([
-                vec3(-Size, 0, i),
-                vec3(Size, 0, i)
-            ], lineColor);
-        }
-        this.grid = lb.toLines();
         Debug(this.debugLayer);
     }
     render(context: RenderContext, scene: Scene, cameras: Camera[])
@@ -94,10 +79,10 @@ export class PreviewRenderer implements ZograRenderPipeline
         }
         
 
-        this.renderGrid(context, data);
+        this.grid.render(context, data);
+        this.debugLayer.render(context, data);
 
         this.finalBlit(context, data);
-        this.debugLayer.render(context, data);
         // context.renderer.blitCopy(data.cameraOutput.colorAttachments[0] as RenderBuffer, camera.output);
 
         camera.__postRender(context);
@@ -121,11 +106,6 @@ export class PreviewRenderer implements ZograRenderPipeline
         context.renderer.blitCopy(data.cameraOutput.colorAttachments[0] as RenderBuffer, tex);
         context.renderer.blit(tex, FrameBuffer.CanvasBuffer);
 
-    }
-
-    renderGrid(context: RenderContext, data: RenderData)
-    {
-        this.renderer.drawLines(this.grid, mat4.identity(), this.renderer.assets.materials.ColoredLine);
     }
 
     drawWithMaterial(mesh: Mesh, transform: Readonly<mat4>, material: Material)

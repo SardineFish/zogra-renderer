@@ -12,5 +12,6 @@ export declare const ShaderSource: {
     tilemapInstance: ShaderPair;
     defaultVert: string;
     litLambert: string;
+    unlitColor: ShaderPair;
 };
 export {};

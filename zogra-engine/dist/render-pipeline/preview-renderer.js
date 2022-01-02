@@ -1,34 +1,19 @@
-import { Debug, DepthBuffer, FilterMode, mat4, RenderBuffer, TextureFormat } from "zogra-renderer";
+import { Debug, DepthBuffer, FilterMode, RenderBuffer, TextureFormat } from "zogra-renderer";
 import { RenderData, RenderOrder } from "./render-data";
-import { rgba, rgb } from "zogra-renderer";
+import { rgb } from "zogra-renderer";
 import { FrameBuffer } from "zogra-renderer";
 import { RenderTexture } from "zogra-renderer";
-import { LineBuilder } from "zogra-renderer";
-import { vec3 } from "zogra-renderer";
 import { DebugLayerRenderer } from "./render-pass/debug-layer";
+import { GridRenderer } from "./render-pass/grid";
 export class PreviewRenderer {
     constructor(renderer) {
         this.msaa = 4;
         this.materialReplaceMap = new Map();
         this.debugLayer = new DebugLayerRenderer();
+        this.grid = new GridRenderer();
         this.cameraOutputFBOs = new Map();
         this.cameraOutputTextures = new Map();
         this.renderer = renderer;
-        const lineColor = rgba(1, 1, 1, 0.1);
-        const lb = new LineBuilder(0, renderer.gl);
-        const Size = 10;
-        const Grid = 1;
-        for (let i = -Size; i <= Size; i += Grid) {
-            lb.addLine([
-                vec3(i, 0, -Size),
-                vec3(i, 0, Size),
-            ], lineColor);
-            lb.addLine([
-                vec3(-Size, 0, i),
-                vec3(Size, 0, i)
-            ], lineColor);
-        }
-        this.grid = lb.toLines();
         Debug(this.debugLayer);
     }
     render(context, scene, cameras) {
@@ -64,9 +49,9 @@ export class PreviewRenderer {
             //     this.drawWithMaterial(obj.meshes[i], modelMatrix, mat);
             // }
         }
-        this.renderGrid(context, data);
-        this.finalBlit(context, data);
+        this.grid.render(context, data);
         this.debugLayer.render(context, data);
+        this.finalBlit(context, data);
         // context.renderer.blitCopy(data.cameraOutput.colorAttachments[0] as RenderBuffer, camera.output);
         camera.__postRender(context);
     }
@@ -80,9 +65,6 @@ export class PreviewRenderer {
         }
         context.renderer.blitCopy(data.cameraOutput.colorAttachments[0], tex);
         context.renderer.blit(tex, FrameBuffer.CanvasBuffer);
-    }
-    renderGrid(context, data) {
-        this.renderer.drawLines(this.grid, mat4.identity(), this.renderer.assets.materials.ColoredLine);
     }
     drawWithMaterial(mesh, transform, material) {
         if (this.materialReplaceMap.has(material.constructor))

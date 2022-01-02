@@ -11,6 +11,7 @@ export namespace ShaderSource {
     export const tilemapInstance: string[];
     export { default_vert_default as defaultVert };
     export { lit_lambert_default as litLambert };
+    export const unlitColor: string[];
 }
 declare var default_vert_default: string;
 declare var lit_lambert_default: string;

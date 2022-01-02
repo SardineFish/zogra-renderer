@@ -46,6 +46,9 @@ var default_vert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\ni
 // assets/shader/lit-lambert.glsl
 var lit_lambert_default = "#version 300 es\r\nprecision mediump float;\r\n\r\n#define MAX_LIGHTS 8\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\nin vec2 vUV;\r\nin vec3 vNormal;\r\nin vec3 vWorldPos;\r\n\r\nuniform sampler2D uMainTex;\r\nuniform vec4 uColor;\r\nuniform vec4 uLightDir[MAX_LIGHTS];\r\nuniform int uLightCount;\r\nuniform vec4 uLightColor[MAX_LIGHTS];\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    vec4 color = uColor * vColor * texture(uMainTex, vUV.xy).rgba;\r\n\r\n    vec3 light = vec3(0);\r\n    for (int i = 0; i < uLightCount; ++i)\r\n    {\r\n        vec3 lightDir = normalize(uLightDir[i].xyz - vWorldPos.xyz * vec3(uLightDir[i].w));\r\n        float lambertian = max(dot(vNormal, lightDir), 0.0);\r\n        light += vec3(lambertian) * uLightColor[i].rgb;\r\n    }\r\n\r\n    color.rgb *= light.rgb;\r\n\r\n    fragColor = color;\r\n}";
 
+// assets/shader/unlit-color.glsl
+var unlit_color_default = "#version 300 es\r\nprecision mediump float;\r\n\r\nin vec4 vColor;\r\nin vec4 vPos;\r\n\r\nout vec4 fragColor;\r\n\r\nvoid main()\r\n{\r\n    fragColor = vColor;\r\n}";
+
 // assets/shader/shader.ts
 var ShaderSource = {
   default2D: [d_vert_default, d_frag_default],
@@ -59,7 +62,8 @@ var ShaderSource = {
   blitCopy: [d_vert_default, blit_copy_default],
   tilemapInstance: [d_tilemap_vert_default, d_frag_default],
   defaultVert: default_vert_default,
-  litLambert: lit_lambert_default
+  litLambert: lit_lambert_default,
+  unlitColor: [default_vert_default, unlit_color_default]
 };
 export {
   ShaderSource

@@ -14,6 +14,7 @@ import _2dLightSimpleFrag from "./2d-light-simple-frag.glsl";
 import tilemapVert from "./2d-tilemap-vert.glsl";
 import defaultVert from "./default-vert.glsl";
 import litLambert from "./lit-lambert.glsl";
+import UnlitColor from "./unlit-color.glsl";
 
 type ShaderPair = [string, string];
 
@@ -30,4 +31,5 @@ export const ShaderSource = {
     tilemapInstance: [tilemapVert, _2dFrag] as ShaderPair,
     defaultVert: defaultVert,
     litLambert: litLambert,
+    unlitColor: [defaultVert, UnlitColor] as ShaderPair,
 };
