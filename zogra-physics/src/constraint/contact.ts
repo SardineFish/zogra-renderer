@@ -19,7 +19,7 @@ export class ContactConstraint implements XPBDPositionalConstraint<[Vector3, Vec
 
     evaluate(): number
     {
-        return -this.contact.seperation;
+        return -this.contact.separation;
     }
 
     gradientSelf(): Vector3

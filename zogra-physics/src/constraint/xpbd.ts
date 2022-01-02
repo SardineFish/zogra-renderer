@@ -19,8 +19,10 @@ export interface XPBDPositionalConstraint<T extends Vector3[]> extends IXPBDCons
 
 export function solvePositionalXPBD<T extends XPBDPositionalConstraint<Vector3[]>>(constraint: T)
 {
-    const gradients = constraint.gradients.map(g => g.call(constraint));
     const c = constraint.evaluate();
+    if (c >= 0)
+        return;
+    const gradients = constraint.gradients.map(g => g.call(constraint));
     constraint.multiplier += (-c - constraint.compliance * constraint.multiplier)
         / (constraint.compliance + sum(constraint.entites, (entity, idx) => constraint.gradients[idx].call(constraint).magnitudeSqr * entity.invMass));
     

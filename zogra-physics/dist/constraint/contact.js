@@ -8,7 +8,7 @@ export class ContactConstraint {
         this.entites = contact.entites;
     }
     evaluate() {
-        return -this.contact.seperation;
+        return -this.contact.separation;
     }
     gradientSelf() {
         return this.contact.normal.clone();

@@ -1,4 +1,4 @@
-import { minus } from "zogra-renderer";
+import { minus, Debug, Color } from "zogra-renderer";
 import { solvePositionalXPBD } from "./xpbd";
 export class DistanceConstraint {
     constructor(p1, p2, distance) {
@@ -37,6 +37,7 @@ export class DistanceConstraint {
         return d - this.distance;
     }
     solve(dt) {
+        Debug().drawLine(this.p0.position, this.p1.position, Color.yellow);
         // const p0 = this.p0.position;
         // const p1 = this.p1.position;
         // const c = this.evaluate();

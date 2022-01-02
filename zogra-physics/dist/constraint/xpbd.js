@@ -1,6 +1,8 @@
 export function solvePositionalXPBD(constraint) {
-    const gradients = constraint.gradients.map(g => g.call(constraint));
     const c = constraint.evaluate();
+    if (c >= 0)
+        return;
+    const gradients = constraint.gradients.map(g => g.call(constraint));
     constraint.multiplier += (-c - constraint.compliance * constraint.multiplier)
         / (constraint.compliance + sum(constraint.entites, (entity, idx) => constraint.gradients[idx].call(constraint).magnitudeSqr * entity.invMass));
     const dPos = gradients.map((g, idx) => g.mul(constraint.entites[idx].invMass * constraint.multiplier));

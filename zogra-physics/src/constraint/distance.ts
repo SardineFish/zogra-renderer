@@ -56,6 +56,7 @@ export class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Ve
 
     solve(dt: number): void
     {
+        Debug().drawLine(this.p0.position, this.p1.position, Color.yellow);
         // const p0 = this.p0.position;
         // const p1 = this.p1.position;
         // const c = this.evaluate();
