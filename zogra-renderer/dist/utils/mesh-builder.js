@@ -211,47 +211,78 @@ export class MeshBuilder {
         const totalIndices = segments * segments * 3 * 2 * 6;
         let mesh = new Mesh();
         mesh.resize(totalVerts, totalIndices);
-        let vertIdx = 0;
         let indexIdx = 0;
+        const uniqueVerts = [];
+        const uniqueVertsMap = [];
         for (let f = 0; f < 6; ++f) {
             for (let i = 0; i <= segments; ++i) {
                 for (let j = 0; j <= segments; ++j) {
-                    let u = (j / segments);
-                    let v = (i / segments);
-                    let x = u * 2.0 - 1.0;
-                    let y = v * 2.0 - 1.0;
-                    let p = [
-                        () => vec3(1, x, y),
-                        () => vec3(-1, x, -y),
-                        () => vec3(x, y, 1),
-                        () => vec3(x, -y, -1),
-                        () => vec3(x, 1, -y),
-                        () => vec3(x, -1, y),
-                    ][f]().normalize();
-                    vec3.mul(mesh.vertices[vertIdx].vert, p, radius);
-                    // vec3.plus(mesh.vertices[vertIdx].vert, mesh.vertices[vertIdx].vert, center);
-                    mesh.vertices[vertIdx].normal.set(p);
-                    mesh.vertices[vertIdx].color.set([1, 1, 1, 1]);
-                    mesh.vertices[vertIdx].uv.set([u, v]);
-                    mesh.vertices[vertIdx].uv2.set([u, v]);
-                    vertIdx++;
+                    let idx = [
+                        () => vec3(0, i, j),
+                        () => vec3(segments, i, j),
+                        () => vec3(i, j, 0),
+                        () => vec3(i, j, segments),
+                        () => vec3(i, 0, j),
+                        () => vec3(i, segments, j),
+                    ][f]();
+                    let x = uniqueVertsMap[idx.x] || (uniqueVertsMap[idx.x] = []);
+                    let y = x[idx.y] || (x[idx.y] = []);
+                    let z = y[idx.z];
+                    if (z === undefined) {
+                        y[idx.z] = uniqueVerts.length;
+                        uniqueVerts.push(idx);
+                    }
+                }
+            }
+        }
+        mesh.resize(uniqueVerts.length, totalIndices);
+        uniqueVerts.forEach((vertIdx, idx) => {
+            let normal = vec3.div(vertIdx, segments).mul(2).minus(1).normalize();
+            let pos = vec3.mul(normal, radius);
+            const [_, theta, phi] = sphericalCoord(pos);
+            const uv = [phi / (Math.PI * 2), theta / Math.PI];
+            mesh.vertices[idx].vert.set(pos);
+            mesh.vertices[idx].normal.set(normal);
+            mesh.vertices[idx].color.set(Color.white);
+            mesh.vertices[idx].uv.set(uv);
+            mesh.vertices[idx].uv2.set(uv);
+        });
+        const usedVerts = [];
+        for (let f = 0; f < 6; ++f) {
+            for (let i = 0; i <= segments; ++i) {
+                for (let j = 0; j <= segments; ++j) {
+                    let vertIdx = [
+                        () => vec3(segments, i, j),
+                        () => vec3(0, i, segments - j),
+                        () => vec3(i, j, segments),
+                        () => vec3(i, segments - j, 0),
+                        () => vec3(i, segments, segments - j),
+                        () => vec3(i, 0, j),
+                    ][f]();
+                    usedVerts.push(uniqueVertsMap[vertIdx.x][vertIdx.y][vertIdx.z]);
                 }
             }
             for (let i = 0; i < segments; ++i) {
                 for (let j = 0; j < segments; ++j) {
                     let u = (f * (segments + 1) * (segments + 1) + i * (segments + 1) + j);
                     let v = u + (segments + 1);
-                    mesh.indices[indexIdx++] = v + 0;
-                    mesh.indices[indexIdx++] = u + 0;
-                    mesh.indices[indexIdx++] = u + 1;
-                    mesh.indices[indexIdx++] = v + 0;
-                    mesh.indices[indexIdx++] = u + 1;
-                    mesh.indices[indexIdx++] = v + 1;
+                    mesh.indices[indexIdx++] = usedVerts[v + 0];
+                    mesh.indices[indexIdx++] = usedVerts[u + 1];
+                    mesh.indices[indexIdx++] = usedVerts[u + 0];
+                    mesh.indices[indexIdx++] = usedVerts[v + 0];
+                    mesh.indices[indexIdx++] = usedVerts[v + 1];
+                    mesh.indices[indexIdx++] = usedVerts[u + 1];
                 }
             }
         }
         return mesh;
     }
+}
+function sphericalCoord(p) {
+    const r = p.magnitude;
+    const theta = Math.acos(p.y / r);
+    const phi = Math.atan2(p.z, p.x);
+    return [r, theta, phi];
 }
 /** @deprecated */
 export class MeshBuilderLegacy {
