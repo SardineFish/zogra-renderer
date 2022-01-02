@@ -1,4 +1,5 @@
-export * from "./physics-system";
-export * from "./constraint";
 export * from "./shape";
+export * from "./constraint";
+export * from "./query";
+export * from "./physics-system";
 //# sourceMappingURL=index.js.map

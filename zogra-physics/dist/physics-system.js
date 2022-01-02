@@ -3,6 +3,7 @@ import { NarrowPhase } from "./collision";
 import { ContactConstraint } from "./constraint/contact";
 import { Particle, PhysicsEntityBuffer, Rigidbody } from "./entity";
 import { ShapeBuffer } from "./entity-buffer";
+import { WorldQuery } from "./query/query";
 import { AllShapes } from "./shape";
 export class PhysicsSystem {
     constructor() {
@@ -35,6 +36,23 @@ export class PhysicsSystem {
     addShape(entity, type, shape) {
         const shapeExt = this.shapes[type.id].push(Object.assign(Object.assign({}, shape), { entity }));
         entity.shapes.push(shapeExt);
+    }
+    raycast(origin, dir) {
+        let nearest = Number.MAX_VALUE;
+        let nearestResult = null;
+        this.shapes.forEach(shapeBuf => {
+            const query = WorldQuery[shapeBuf.type.id];
+            if (!query)
+                return;
+            shapeBuf.buffer.forEach(shape => {
+                const result = query.raycast(shape, shape.entity, origin, dir);
+                if (result && result.distance < nearest) {
+                    nearest = result.distance;
+                    nearestResult = result;
+                }
+            });
+        });
+        return nearestResult;
     }
     generateContact() {
         this.contacts = [];

@@ -1,10 +1,11 @@
-import { Color, Debug, quat, Quaternion, vec3, Vector3 } from "zogra-renderer";
+import { Color, Debug, quat, Quaternion, ray, vec3, Vector3 } from "zogra-renderer";
 import { Contact, NarrowPhase } from "./collision";
 import { IConstraint } from "./constraint";
 import { ContactConstraint } from "./constraint/contact";
 import { IXPBDConstraint } from "./constraint/xpbd";
 import { EntityData, EntityType, IPositionEntity, Particle, PhysicsEntity, PhysicsEntityBuffer, Rigidbody } from "./entity";
 import { EntityBuffer, ShapeBuffer, ShapeExt } from "./entity-buffer";
+import { RaycastHit, WorldQuery } from "./query/query";
 import { AllShapes, Plane, Shape, ShapeType, Sphere } from "./shape";
 
 export class PhysicsSystem
@@ -49,6 +50,31 @@ export class PhysicsSystem
     {
         const shapeExt: ShapeExt = this.shapes[type.id].push({ ...shape, entity, });
         entity.shapes.push(shapeExt);
+    }
+
+    raycast(origin: Readonly<Vector3>, dir: Readonly<Vector3>): RaycastHit | null
+    {
+        let nearest = Number.MAX_VALUE;
+        let nearestResult: RaycastHit | null = null;
+
+        this.shapes.forEach(shapeBuf =>
+        {
+            const query = WorldQuery[shapeBuf.type.id];
+            if (!query)
+                return;
+
+            shapeBuf.buffer.forEach(shape =>
+            {
+                const result = query.raycast(shape, shape.entity as Rigidbody | Particle, origin, dir);
+                if (result && result.distance < nearest)
+                {
+                    nearest = result.distance;
+                    nearestResult = result;
+                }
+            });
+        });
+
+        return nearestResult;
     }
 
     private generateContact()

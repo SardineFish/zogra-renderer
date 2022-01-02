@@ -12,6 +12,6 @@ export interface NarrowPhase<Self extends Shape, Other extends Shape> {
     generateContact(self: Self, selfEntity: Particle | Rigidbody, other: Other, otherEntity: Particle | Rigidbody): Contact | null;
 }
 export declare const NarrowPhase: {
-    [x: number]: NarrowPhase<Sphere, Sphere> | NarrowPhase<Sphere, Plane>;
+    [x: number]: NarrowPhase<Sphere, Plane> | NarrowPhase<Sphere, Sphere>;
     get<Self extends Shape, Other extends Shape>(shape1: ShapeType<Self>, shape2: ShapeType<Other>): NarrowPhase<Self, Other> | undefined;
 };
