@@ -9,7 +9,7 @@ export declare class DistanceConstraint implements XPBDPositionalConstraint<[Vec
     multiplier: number;
     gradients: [(this: this) => Vector3, (this: this) => Vector3];
     entites: [IPositionEntity, IPositionEntity];
-    constructor(p1: IPositionEntity, p2: IPositionEntity, distance: number);
+    constructor(p1: IPositionEntity, p2: IPositionEntity, distance: number, compliance?: number);
     gradientP0(): Vector3;
     gradientP1(): Vector3;
     evaluate(): number;

@@ -7,7 +7,7 @@ import { QuerySphere } from "./sphere";
 export interface RaycastHit
 {
     collider: Shape,
-    entity: PhysicsEntity,
+    entity: Rigidbody | Particle,
     point: Vector3,
     normal: Vector3,
     distance: number,

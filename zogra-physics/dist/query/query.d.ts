@@ -1,9 +1,9 @@
 import { Vector3 } from "zogra-renderer";
 import { Shape } from "..";
-import { Particle, PhysicsEntity, Rigidbody } from "../entity";
+import { Particle, Rigidbody } from "../entity";
 export interface RaycastHit {
     collider: Shape;
-    entity: PhysicsEntity;
+    entity: Rigidbody | Particle;
     point: Vector3;
     normal: Vector3;
     distance: number;

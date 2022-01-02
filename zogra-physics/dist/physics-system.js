@@ -2,7 +2,7 @@ import { Color, Debug, quat, vec3 } from "zogra-renderer";
 import { NarrowPhase } from "./collision";
 import { ContactConstraint } from "./constraint/contact";
 import { Particle, PhysicsEntityBuffer, Rigidbody } from "./entity";
-import { ShapeBuffer } from "./entity-buffer";
+import { EntityBuffer, ShapeBuffer } from "./entity-buffer";
 import { WorldQuery } from "./query/query";
 import { AllShapes } from "./shape";
 export class PhysicsSystem {
@@ -10,7 +10,7 @@ export class PhysicsSystem {
         this.particles = new PhysicsEntityBuffer();
         this.rigidbodies = new PhysicsEntityBuffer();
         this.shapes = AllShapes.map(shape => new ShapeBuffer(shape));
-        this.constantConstraints = [];
+        this.constantConstraints = new EntityBuffer();
         this.dynamicConstraints = [];
         this.gravity = vec3(0, -9.8, 0);
         this.contacts = [];
@@ -31,7 +31,10 @@ export class PhysicsSystem {
         return this.rigidbodies.push(new Rigidbody(position, orientation, invMass, invInertia));
     }
     addConstraint(constraint) {
-        this.constantConstraints.push(constraint);
+        return this.constantConstraints.push(constraint);
+    }
+    removeConstraint(constraint) {
+        this.constantConstraints.swapRemove(constraint);
     }
     addShape(entity, type, shape) {
         const shapeExt = this.shapes[type.id].push(Object.assign(Object.assign({}, shape), { entity }));
@@ -93,7 +96,7 @@ export class PhysicsSystem {
             constraint.multiplier = 0;
             constraint.solve(deltaTime);
         }
-        for (const constraint of this.constantConstraints) {
+        for (const constraint of this.constantConstraints.buffer) {
             constraint.multiplier = 0;
             constraint.solve(deltaTime);
         }

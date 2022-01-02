@@ -1,7 +1,7 @@
 import { minus, Debug, Color } from "zogra-renderer";
 import { solvePositionalXPBD } from "./xpbd";
 export class DistanceConstraint {
-    constructor(p1, p2, distance) {
+    constructor(p1, p2, distance, compliance = 0) {
         this.compliance = 30;
         this.multiplier = 0;
         this.gradients = [this.gradientP0, this.gradientP1];
@@ -9,6 +9,7 @@ export class DistanceConstraint {
         this.p1 = p2;
         this.distance = distance;
         this.entites = [p1, p2];
+        this.compliance = compliance;
     }
     gradientP0() {
         const p0 = this.p0.position;

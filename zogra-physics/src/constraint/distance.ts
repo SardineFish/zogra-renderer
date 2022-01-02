@@ -14,12 +14,13 @@ export class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Ve
     gradients: [(this: this) => Vector3, (this: this) => Vector3] = [this.gradientP0, this.gradientP1];
     entites: [IPositionEntity, IPositionEntity];
 
-    constructor(p1: IPositionEntity, p2: IPositionEntity, distance: number)
+    constructor(p1: IPositionEntity, p2: IPositionEntity, distance: number, compliance = 0)
     {
         this.p0 = p1;
         this.p1 = p2;
         this.distance = distance;
         this.entites = [p1, p2];
+        this.compliance = compliance;
     }
 
     gradientP0(): Vector3

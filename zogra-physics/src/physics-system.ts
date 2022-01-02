@@ -4,9 +4,11 @@ import { IConstraint } from "./constraint";
 import { ContactConstraint } from "./constraint/contact";
 import { IXPBDConstraint } from "./constraint/xpbd";
 import { EntityData, EntityType, IPositionEntity, Particle, PhysicsEntity, PhysicsEntityBuffer, Rigidbody } from "./entity";
-import { EntityBuffer, ShapeBuffer, ShapeExt } from "./entity-buffer";
+import { BufferedEntity, EntityBuffer, ShapeBuffer, ShapeExt } from "./entity-buffer";
 import { RaycastHit, WorldQuery } from "./query/query";
 import { AllShapes, Plane, Shape, ShapeType, Sphere } from "./shape";
+
+export type Constraint = BufferedEntity<IXPBDConstraint>;
 
 export class PhysicsSystem
 {
@@ -14,7 +16,7 @@ export class PhysicsSystem
     rigidbodies = new PhysicsEntityBuffer<Rigidbody>();
     shapes: ShapeBuffer[] = AllShapes.map(shape => new ShapeBuffer(shape));
 
-    constantConstraints: IXPBDConstraint[] = [];
+    constantConstraints = new EntityBuffer<IXPBDConstraint>();
     dynamicConstraints: IXPBDConstraint[] = [];
     gravity: Vector3 = vec3(0, -9.8, 0);
     contacts: Contact[] = [];
@@ -41,9 +43,14 @@ export class PhysicsSystem
         return this.rigidbodies.push(new Rigidbody(position, orientation, invMass, invInertia));
     }
 
-    addConstraint(constraint: IXPBDConstraint)
+    addConstraint(constraint: IXPBDConstraint): Constraint
     {
-        this.constantConstraints.push(constraint);
+        return this.constantConstraints.push(constraint);
+    }
+
+    removeConstraint(constraint: BufferedEntity<IXPBDConstraint>)
+    {
+        this.constantConstraints.swapRemove(constraint);
     }
 
     addShape<T extends Shape>(entity: PhysicsEntity & EntityData, type: ShapeType<T>, shape: T)
@@ -132,7 +139,7 @@ export class PhysicsSystem
             constraint.multiplier = 0;
             constraint.solve(deltaTime);
         }
-        for (const constraint of this.constantConstraints)
+        for (const constraint of this.constantConstraints.buffer)
         {
             constraint.multiplier = 0;
             constraint.solve(deltaTime);
