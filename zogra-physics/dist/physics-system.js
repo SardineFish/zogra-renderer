@@ -22,6 +22,7 @@ export class PhysicsSystem {
             this.generateContact();
             this.solveParticlesConstraint(dt);
             this.updateParticleVelocity(dt);
+            this.restoreParticlePosition();
         }
     }
     addParticle(position, invMass) {
@@ -83,11 +84,12 @@ export class PhysicsSystem {
     }
     integrateParticles(deltaTime) {
         for (const particle of this.particles.buffer) {
-            particle.prevPosition.set(particle.position);
+            particle.updateCenter();
+            particle.prevCenter.set(particle.center);
             if (particle.invMass > 0) {
-                particle.position.x += particle.velocity.x * deltaTime + this.gravity.x * deltaTime * deltaTime;
-                particle.position.y += particle.velocity.y * deltaTime + this.gravity.y * deltaTime * deltaTime;
-                particle.position.z += particle.velocity.z * deltaTime + this.gravity.z * deltaTime * deltaTime;
+                particle.center.x += particle.velocity.x * deltaTime + this.gravity.x * deltaTime * deltaTime;
+                particle.center.y += particle.velocity.y * deltaTime + this.gravity.y * deltaTime * deltaTime;
+                particle.center.z += particle.velocity.z * deltaTime + this.gravity.z * deltaTime * deltaTime;
             }
         }
     }
@@ -103,9 +105,14 @@ export class PhysicsSystem {
     }
     updateParticleVelocity(deltaTime) {
         for (const particle of this.particles.buffer) {
-            particle.velocity.x = (particle.position.x - particle.prevPosition.x) / deltaTime;
-            particle.velocity.y = (particle.position.y - particle.prevPosition.y) / deltaTime;
-            particle.velocity.z = (particle.position.z - particle.prevPosition.z) / deltaTime;
+            particle.velocity.x = (particle.center.x - particle.prevCenter.x) / deltaTime;
+            particle.velocity.y = (particle.center.y - particle.prevCenter.y) / deltaTime;
+            particle.velocity.z = (particle.center.z - particle.prevCenter.z) / deltaTime;
+        }
+    }
+    restoreParticlePosition() {
+        for (const particle of this.particles.buffer) {
+            particle.updatePosition();
         }
     }
 }

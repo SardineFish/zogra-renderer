@@ -25,8 +25,8 @@ export class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Ve
 
     gradientP0(): Vector3
     {
-        const p0 = this.p0.position;
-        const p1 = this.p1.position;
+        const p0 = this.p0.center;
+        const p1 = this.p1.center;
         const d = Math.sqrt((p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y) + (p0.z - p1.z) * (p0.z - p1.z));
         if (d > this.distance)
             return minus(p1, p0).div(d);
@@ -36,8 +36,8 @@ export class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Ve
 
     gradientP1(): Vector3
     {
-        const p0 = this.p0.position;
-        const p1 = this.p1.position;
+        const p0 = this.p0.center;
+        const p1 = this.p1.center;
         const d = Math.sqrt((p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y) + (p0.z - p1.z) * (p0.z - p1.z));
         if (d > this.distance)
             return minus(p0, p1).div(d);
@@ -47,8 +47,8 @@ export class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Ve
 
     evaluate(): number
     {
-        const p0 = this.p0.position;
-        const p1 = this.p1.position;
+        const p0 = this.p0.center;
+        const p1 = this.p1.center;
         const d = Math.sqrt((p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y) + (p0.z - p1.z) * (p0.z - p1.z));
         if (d > this.distance)
             return this.distance - d;
@@ -57,7 +57,7 @@ export class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Ve
 
     solve(dt: number): void
     {
-        Debug().drawLine(this.p0.position, this.p1.position, Color.yellow);
+        Debug().drawLine(this.p0.center, this.p1.center, Color.yellow);
         // const p0 = this.p0.position;
         // const p1 = this.p1.position;
         // const c = this.evaluate();

@@ -12,8 +12,8 @@ export class DistanceConstraint {
         this.compliance = compliance;
     }
     gradientP0() {
-        const p0 = this.p0.position;
-        const p1 = this.p1.position;
+        const p0 = this.p0.center;
+        const p1 = this.p1.center;
         const d = Math.sqrt((p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y) + (p0.z - p1.z) * (p0.z - p1.z));
         if (d > this.distance)
             return minus(p1, p0).div(d);
@@ -21,8 +21,8 @@ export class DistanceConstraint {
             return minus(p0, p1).div(d);
     }
     gradientP1() {
-        const p0 = this.p0.position;
-        const p1 = this.p1.position;
+        const p0 = this.p0.center;
+        const p1 = this.p1.center;
         const d = Math.sqrt((p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y) + (p0.z - p1.z) * (p0.z - p1.z));
         if (d > this.distance)
             return minus(p0, p1).div(d);
@@ -30,15 +30,15 @@ export class DistanceConstraint {
             return minus(p1, p0).div(d);
     }
     evaluate() {
-        const p0 = this.p0.position;
-        const p1 = this.p1.position;
+        const p0 = this.p0.center;
+        const p1 = this.p1.center;
         const d = Math.sqrt((p0.x - p1.x) * (p0.x - p1.x) + (p0.y - p1.y) * (p0.y - p1.y) + (p0.z - p1.z) * (p0.z - p1.z));
         if (d > this.distance)
             return this.distance - d;
         return d - this.distance;
     }
     solve(dt) {
-        Debug().drawLine(this.p0.position, this.p1.position, Color.yellow);
+        Debug().drawLine(this.p0.center, this.p1.center, Color.yellow);
         // const p0 = this.p0.position;
         // const p1 = this.p1.position;
         // const c = this.evaluate();

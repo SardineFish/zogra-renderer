@@ -30,7 +30,7 @@ export function solvePositionalXPBD<T extends XPBDPositionalConstraint<Vector3[]
         / (compliance + sum(constraint.entites, (entity, idx) => constraint.gradients[idx].call(constraint).magnitudeSqr * entity.invMass));
     
     const dPos = gradients.map((g, idx) => g.mul(constraint.entites[idx].invMass * constraint.multiplier));
-    constraint.entites.forEach((entity, idx) => entity.position.plus(dPos[idx]));
+    constraint.entites.forEach((entity, idx) => entity.center.plus(dPos[idx]));
 }
 
 function sum<T>(arr: T[], selector: (value: T, idx: number) => number): number

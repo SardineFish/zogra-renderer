@@ -16,7 +16,9 @@ export interface PhysicsEntity
 export interface IPositionEntity extends PhysicsEntity
 {
     position: Vector3,
-    prevPosition: Vector3,
+    /** Position of center-of-mass in world space */
+    center: Vector3,
+    prevCenter: Vector3,
     velocity: Vector3,
     invMass: number,
 }
@@ -24,6 +26,8 @@ export interface IPositionEntity extends PhysicsEntity
 export interface IOrientationEntity extends PhysicsEntity
 {
     orientation: Quaternion,
+    /** Position of center-of-mass in world space */
+    center: Vector3,
     prevOrientation: Quaternion,
     angularVelocity: Quaternion,
     invInertia: Vector3,
@@ -33,7 +37,9 @@ export class Particle implements IPositionEntity, EntityData
 {
     readonly type: EntityType.Particle = EntityType.Particle;
     position: Vector3;
-    prevPosition: Vector3;
+    center: Vector3;
+    localCenter: Vector3;
+    prevCenter: Vector3;
     velocity: Vector3 = vec3.zero();
     invMass: number;
 
@@ -43,8 +49,22 @@ export class Particle implements IPositionEntity, EntityData
     constructor(position = vec3.zero(), invMass = 0)
     {
         this.position = position;
-        this.prevPosition = position.clone();
+        this.center = position.clone();
+        this.localCenter = vec3.zero();
+        this.prevCenter = position.clone();
         this.invMass = invMass;
+    }
+
+    /** @internal */
+    updateCenter()
+    {
+        vec3.plus(this.center, this.position, this.localCenter);
+    }
+
+    /** @internal */
+    updatePosition()
+    {
+        vec3.minus(this.position, this.center, this.localCenter);
     }
 }
 
@@ -52,7 +72,8 @@ export class Rigidbody implements IPositionEntity, IOrientationEntity, EntityDat
 {
     readonly type: EntityType.Rigidbody = EntityType.Rigidbody;
     position: Vector3;
-    prevPosition: Vector3;
+    center: Vector3;
+    prevCenter: Vector3;
     velocity: Vector3;
     invMass: number;
     orientation: Quaternion;
@@ -66,8 +87,9 @@ export class Rigidbody implements IPositionEntity, IOrientationEntity, EntityDat
     constructor(position = vec3.zero(), orientation = quat.identity(), invMass: number = 0, invInertia = vec3.zero())
     {
         this.position = position;
+        this.center = position.clone();
         this.orientation = orientation;
-        this.prevPosition = position.clone();
+        this.prevCenter = position.clone();
         this.prevOrientation = orientation.clone();
         this.invMass = invMass;
         this.invInertia = invInertia;

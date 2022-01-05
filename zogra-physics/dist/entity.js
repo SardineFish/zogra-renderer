@@ -12,8 +12,18 @@ export class Particle {
         /**@internal */
         this.shapes = [];
         this.position = position;
-        this.prevPosition = position.clone();
+        this.center = position.clone();
+        this.localCenter = vec3.zero();
+        this.prevCenter = position.clone();
         this.invMass = invMass;
+    }
+    /** @internal */
+    updateCenter() {
+        vec3.plus(this.center, this.position, this.localCenter);
+    }
+    /** @internal */
+    updatePosition() {
+        vec3.minus(this.position, this.center, this.localCenter);
     }
 }
 export class Rigidbody {
@@ -22,8 +32,9 @@ export class Rigidbody {
         /**@internal */
         this.shapes = [];
         this.position = position;
+        this.center = position.clone();
         this.orientation = orientation;
-        this.prevPosition = position.clone();
+        this.prevCenter = position.clone();
         this.prevOrientation = orientation.clone();
         this.invMass = invMass;
         this.invInertia = invInertia;

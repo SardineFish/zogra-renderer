@@ -28,4 +28,5 @@ export declare class PhysicsSystem {
     private integrateParticles;
     private solveParticlesConstraint;
     private updateParticleVelocity;
+    private restoreParticlePosition;
 }
