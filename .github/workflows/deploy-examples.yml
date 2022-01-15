@@ -40,6 +40,7 @@ jobs:
     - name: Build examples
       run: |
         cd examples
+        npm i
         npm run build
     - name: Deploy examples
       run: |
