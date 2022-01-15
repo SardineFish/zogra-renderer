@@ -1,0 +1,41 @@
+name: Deploy Examples
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+    - name: Prepare dist directory
+      run: |
+        git config --global user.email ${{ secrets.GIT_EMAIL }}
+        git config --global user.name "SardineFish"
+        git subtree add --prefix example/dist origin gh-pages
+    - name: Build zogra-renderer
+      run: |
+        cd zogra-renderer
+        ls -lah
+        npm i
+        npm run build
+    - name: Build zogra-physics
+      run: cd zogra-physics && npm i && npm run build
+    - name: Build zogra-engine
+      run: cd zogra-engine && npm i && npm run build
+    - name: Build examples
+      run: cd examples && npm run build
+    - name: Deploy examples
+      run: |
+        git add .
+        git commit -sm 'Build examples'
+        git subtree push --prefix example/dist origin gh-pages
