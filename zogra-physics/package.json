@@ -4,7 +4,7 @@
   "description": "An XPBD physics system for zogra-engine",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npx tsc && npm run build:assets",
+    "build": "npx tsc",
     "build:watch": "npx tsc -w"
   },
   "repository": {
