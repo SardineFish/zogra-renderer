@@ -25,15 +25,22 @@ jobs:
     - name: Build zogra-renderer
       run: |
         cd zogra-renderer
-        ls -lah
         npm i
         npm run build
     - name: Build zogra-physics
-      run: cd zogra-physics && npm i && npm run build
+      run: |
+        cd zogra-physics
+        npm i
+        npm run build
     - name: Build zogra-engine
-      run: cd zogra-engine && npm i && npm run build
+      run: |
+        cd zogra-engine
+        npm i
+        npm run build
     - name: Build examples
-      run: cd examples && npm run build
+      run: |
+        cd examples
+        npm run build
     - name: Deploy examples
       run: |
         git add -f example/dist
