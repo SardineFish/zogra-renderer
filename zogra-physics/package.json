@@ -25,5 +25,8 @@
   "homepage": "https://github.com/SardineFish/zogra-renderer#readme",
   "dependencies": {
     "zogra-renderer": "file:../zogra-renderer"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.4"
   }
 }
