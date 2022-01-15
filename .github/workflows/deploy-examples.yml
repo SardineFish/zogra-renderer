@@ -36,6 +36,6 @@ jobs:
       run: cd examples && npm run build
     - name: Deploy examples
       run: |
-        git add .
+        git add -f example/dist
         git commit -sm 'Build examples'
         git subtree push --prefix example/dist origin gh-pages
