@@ -22,8 +22,33 @@ function createConstraint()
     const mesh = MeshBuilder.sphereNormalizedCube(vec3.zero(), 0.2);
     const material = new LitLambertian();
     const sphereParticles: Particle[] = [];
+    const particles: Particle[] = [];
 
     const SIZE = 10;
+
+    const hangHeight = 20;
+
+    for (let y = 0; y < SIZE; ++y)
+    {
+        for (let x = 0; x < SIZE; ++x)
+        {
+            const particle = physics.addParticle(vec3(x - SIZE / 2, hangHeight - y, 0), 1);
+
+            const entity = new RenderObject();
+            entity.meshes[0] = mesh;
+            entity.materials[0] = material;
+            entity.on("update", () =>
+            {
+                entity.position = particle.position;
+            });
+
+            engine.scene.add(entity);
+
+            sphereParticles.push(particle);
+        }
+    }
+
+
 
     for (let y = 0; y < SIZE; ++y)
     {
