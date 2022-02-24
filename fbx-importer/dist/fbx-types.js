@@ -24,7 +24,7 @@ class FBXTransform {
         if (!this.parent)
             this.localPosition = position;
         else
-            this.localPosition = utils_1.mulPoint(this.localPosition, this.parent.localToWorldMatrix, this.localPosition);
+            this.localPosition = (0, utils_1.mulPoint)(this.localPosition, this.parent.localToWorldMatrix, this.localPosition);
     }
     get rotation() {
         if (!this.parent)

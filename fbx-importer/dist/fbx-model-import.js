@@ -124,7 +124,7 @@ function importGeometry(node) {
         const materialPolygons = new Map();
         const mappingInfoType = prop(matNode, "MappingInformationType");
         const refInfoType = prop(matNode, "ReferenceInformationType");
-        const materials = (_e = prop(matNode, "Materials")) !== null && _e !== void 0 ? _e : utils_1.panic("Missing materials.");
+        const materials = (_e = prop(matNode, "Materials")) !== null && _e !== void 0 ? _e : (0, utils_1.panic)("Missing materials.");
         if (mappingInfoType === "AllSame") {
             return [{
                     id: geometryID,
@@ -140,7 +140,7 @@ function importGeometry(node) {
                 }];
         }
         if (mappingInfoType === "ByPolygon" && refInfoType === "IndexToDirect") {
-            utils_2.assert(materials.length === polygons.length, "length of Material list missmatch.");
+            (0, utils_2.assert)(materials.length === polygons.length, "length of Material list missmatch.");
             for (let i = 0; i < materials.length; i++) {
                 if (!materialPolygons.has(materials[i]))
                     materialPolygons.set(materials[i], []);
@@ -200,22 +200,22 @@ function importGeometry(node) {
 }
 function extractVertexData(node, propName, polygons, verts, dataWrapper) {
     var _a, _b, _c;
-    const dataProp = (_a = prop(node, propName)) !== null && _a !== void 0 ? _a : utils_1.panic(`Invalid data format of '${propName}'.`);
+    const dataProp = (_a = prop(node, propName)) !== null && _a !== void 0 ? _a : (0, utils_1.panic)(`Invalid data format of '${propName}'.`);
     const dataSet = dataWrapper(dataProp);
     let vertexDataSet = new Array(verts.length);
     const mappingInfoType = prop(node, "MappingInformationType");
     const refInfoType = prop(node, "ReferenceInformationType");
     if (mappingInfoType === "ByPolygon") {
         if (refInfoType === "Direct") {
-            utils_2.assert(dataSet.length === polygons.length, "Invalid length of normal list.");
+            (0, utils_2.assert)(dataSet.length === polygons.length, "Invalid length of normal list.");
             for (let i = 0; i < dataSet.length; i++) {
                 for (let j = 0; j < polygons.length; j++)
                     vertexDataSet[polygons[i][j]] = dataSet[i];
             }
         }
         else if (refInfoType === "IndexToDirect") {
-            const dataIndex = (_b = prop(node, `${propName}Index`)) !== null && _b !== void 0 ? _b : utils_1.panic(`${propName}Index missing.`);
-            utils_2.assert(dataIndex.length === verts.length, `Length of ${propName}Index missmatch.`);
+            const dataIndex = (_b = prop(node, `${propName}Index`)) !== null && _b !== void 0 ? _b : (0, utils_1.panic)(`${propName}Index missing.`);
+            (0, utils_2.assert)(dataIndex.length === verts.length, `Length of ${propName}Index missmatch.`);
             for (let i = 0; i < polygons.length; i++) {
                 for (let j = 0; j < polygons[i].length; j++)
                     vertexDataSet[polygons[i][j]] = dataSet[dataIndex[i]];
@@ -224,12 +224,12 @@ function extractVertexData(node, propName, polygons, verts, dataWrapper) {
     }
     else if (mappingInfoType === "ByPolygonVertex") {
         if (refInfoType === "Direct") {
-            utils_2.assert(dataSet.length === verts.length, `Invalid length of ${propName}`);
+            (0, utils_2.assert)(dataSet.length === verts.length, `Invalid length of ${propName}`);
             vertexDataSet = dataSet;
         }
         else if (refInfoType === "IndexToDirect") {
-            const dataIndex = (_c = prop(node, `${propName}Index`)) !== null && _c !== void 0 ? _c : utils_1.panic(`${propName}Index missing.`);
-            utils_2.assert(dataIndex.length === verts.length, `Length of ${propName}Index missmatch.`);
+            const dataIndex = (_c = prop(node, `${propName}Index`)) !== null && _c !== void 0 ? _c : (0, utils_1.panic)(`${propName}Index missing.`);
+            (0, utils_2.assert)(dataIndex.length === verts.length, `Length of ${propName}Index missmatch.`);
             for (let i = 0; i < dataIndex.length; i++)
                 vertexDataSet[i] = dataSet[dataIndex[i]];
         }
@@ -248,7 +248,7 @@ function extractVertexData(node, propName, polygons, verts, dataWrapper) {
     return vertexDataSet;
 }
 function vec3Wrapper(data) {
-    utils_2.assert(data.length % 3 === 0, "Invalid data length for vec3 array.");
+    (0, utils_2.assert)(data.length % 3 === 0, "Invalid data length for vec3 array.");
     const list = new Array(data.length / 3);
     for (let i = 0; i < data.length; i += 3) {
         list[i / 3] = gl_matrix_1.vec3.fromValues(data[i], data[i + 1], data[i + 2]);
@@ -256,7 +256,7 @@ function vec3Wrapper(data) {
     return list;
 }
 function vec2Wrapper(data) {
-    utils_2.assert(data.length % 2 === 0, "Invalid data length for vec2 array.");
+    (0, utils_2.assert)(data.length % 2 === 0, "Invalid data length for vec2 array.");
     const list = new Array(data.length / 2);
     for (let i = 0; i < data.length; i += 2)
         list[i / 2] = gl_matrix_1.vec2.fromValues(data[i], data[i + 1]);

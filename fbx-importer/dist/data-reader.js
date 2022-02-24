@@ -72,7 +72,7 @@ class DataReader {
         return String.fromCharCode(chr);
     }
     readString(byteLength) {
-        const str = utils_1.readString(this.buffer, this.position, byteLength);
+        const str = (0, utils_1.readString)(this.buffer, this.position, byteLength);
         this.position += byteLength;
         return str;
     }

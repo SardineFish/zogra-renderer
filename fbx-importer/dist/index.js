@@ -10,7 +10,7 @@ const zogra_engine_7 = require("zogra-engine");
 const zogra_engine_8 = require("zogra-engine");
 const fbx_binary_parser_1 = require("./fbx-binary-parser");
 const fbx_model_import_1 = require("./fbx-model-import");
-function toManagedAssets(resource, ctx = zogra_engine_2.GlobalContext()) {
+function toManagedAssets(resource, ctx = (0, zogra_engine_2.GlobalContext)()) {
     const pack = new zogra_engine_1.AssetsPack();
     const resourceMap = new Map();
     const meshConverter = convertMesh(ctx);
@@ -20,7 +20,7 @@ function toManagedAssets(resource, ctx = zogra_engine_2.GlobalContext()) {
         mat.color = getColor(fbxMat, "DiffuseColor", mat.color);
         mat.emission = getColor(fbxMat, "Emissive", mat.emission);
         mat.specular = getColor(fbxMat, "Specular", mat.specular);
-        mat.emission.mul(zogra_engine_4.vec4(getFloat(fbxMat, "EmissiveFactor", 1)));
+        mat.emission.mul((0, zogra_engine_4.vec4)(getFloat(fbxMat, "EmissiveFactor", 1)));
         resourceMap.set(fbxMat.id, mat);
         pack.add(mat.name, mat);
     }
@@ -28,7 +28,7 @@ function toManagedAssets(resource, ctx = zogra_engine_2.GlobalContext()) {
         const obj = new zogra_engine_5.RenderObject(ctx);
         obj.name = model.name;
         obj.localPosition = zogra_engine_6.vec3.from(model.transform.localPosition);
-        obj.localRotation = zogra_engine_1.quat(...model.transform.localRotation);
+        obj.localRotation = (0, zogra_engine_1.quat)(...model.transform.localRotation);
         obj.localScaling = zogra_engine_6.vec3.from(model.transform.localScaling);
         obj.meshes = model.meshes.map(meshConverter);
         obj.meshes.forEach((m, i) => pack.add(`${obj.name}_${i}`, m));
@@ -100,9 +100,9 @@ function convertMesh(ctx) {
     };
 }
 const FBXModelImporter = {
-    async import(buffer, options, ctx = zogra_engine_2.GlobalContext()) {
-        const data = fbx_binary_parser_1.parseFBX(buffer);
-        const assets = fbx_model_import_1.extractFBXAssets(data);
+    async import(buffer, options, ctx = (0, zogra_engine_2.GlobalContext)()) {
+        const data = (0, fbx_binary_parser_1.parseFBX)(buffer);
+        const assets = (0, fbx_model_import_1.extractFBXAssets)(data);
         return toManagedAssets(assets, ctx);
     }
 };

@@ -30,13 +30,20 @@ module.exports = {
     devtool: "source-map",
     mode: "development",
     devServer: {
-        contentBase: "./dist",
-        writeToDisk: true,
-        open: false,
-        host: "0.0.0.0",
+        static: {
+            directory: path.join(__dirname, 'dist'),
+        },
+        compress: true,
+        port: 9000,
     },
     module: {
         rules: [
+            {
+                test: /\.m?js/,
+                resolve: {
+                    fullySpecified: false
+                }
+            },
             {
                 test: /\.tsx?$/,
                 loader: "ts-loader",
@@ -54,11 +61,11 @@ module.exports = {
             },
             {
                 test: /\.s[ac]ss$/i,
-                loaders: ['style-loader', 'css-loader', 'sass-loader']
+                use: ['style-loader', 'css-loader', 'sass-loader']
             },
             {
                 test: /\.css$/i,
-                loaders: ['style-loader', 'css-loader']
+                use: ['style-loader', 'css-loader']
             },
             {
                 test: /\.glsl$/i,
@@ -90,13 +97,6 @@ module.exports = {
         ]
     },
     plugins: [
-        new HtmlWebpackPlugin({
-            filename: "snake.html",
-            template: "src/snake/index.html",
-            inject: true,
-            minify: false,
-            chunks: ["snake"],
-        }),
         ...Object.keys(entires).map(chunk => new HtmlWebpackPlugin({
             filename: `${chunk}.html`,
             template: "html/base.html",
