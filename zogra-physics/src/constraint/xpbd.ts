@@ -1,12 +1,15 @@
-import { vec3, Vector3 } from "zogra-renderer";
+import { Color, Debug, vec3, Vector3 } from "zogra-renderer";
 import { IConstraint } from ".";
 import { IPositionEntity } from "../entity";
+
+type MapArray<T extends any[], M> = { [key in keyof T]: M };
 
 type GradientFn<T> = (this: T) => Vector3;
 
 export interface IXPBDConstraint extends IConstraint
 {
     compliance: number,
+    resetMultiplier(): void,
 }
 
 export interface XPBDPositionalConstraint<T extends Vector3[]> extends IXPBDConstraint
@@ -48,6 +51,34 @@ export function solvePositionalXPBD<T extends XPBDPositionalConstraint<Vector3[]
     const corrections = gradients.map((g, idx) => g.mul(constraint.entites[idx].invMass * deltaMultiplier));
 
     constraint.entites.forEach((entity, idx) => entity.center.plus(corrections[idx]));
+}
+
+export const XPBDPositionalConstraint = {
+    damped<T extends Vector3[], C extends XPBDPositionalConstraint<T>>(constraint: C, damping: number): XPBDDampedPositionalConstraint<T>
+    {
+        const dampedConstraint: XPBDDampedPositionalConstraint<T> = {
+            ...constraint,
+            gradients: constraint.gradients as any as MapArray<T, GradientFn<XPBDDampedPositionalConstraint<T>>>,
+            damping,
+            multipliers: constraint.entites.map(() => 0) as MapArray<T, number>,
+            accumulateMultipliers(delta: MapArray<T, number>)
+            {
+                this.multipliers = this.multipliers.map((mul, i) => mul + delta[i]) as MapArray<T, number>;
+            },
+            resetMultiplier()
+            {
+                this.multipliers.fill(0);
+            },
+            solve(dt: number)
+            {
+                this.entites.forEach(a => this.entites.forEach(b => Debug().drawLine(a.center, b.center, Color.yellow)));
+
+                solveDampedPositionalXPBD(this, dt);
+            }
+        };
+        (dampedConstraint as any).__proto__ = (constraint as any).__proto__;
+        return dampedConstraint;
+    }
 }
 
 export function solveDampedPositionalXPBD<T extends XPBDDampedPositionalConstraint<Vector3[]>>(constraint: T, dt: number)

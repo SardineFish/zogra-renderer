@@ -37,5 +37,9 @@ export class ContactConstraint implements XPBDPositionalConstraint<[Vector3, Vec
     {
         solvePositionalXPBD(this, dt);
     }
+
+    resetMultiplier(): void {
+        this.multiplier = 0;
+    }
     
 }

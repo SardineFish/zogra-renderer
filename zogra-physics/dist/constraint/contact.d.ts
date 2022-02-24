@@ -13,4 +13,5 @@ export declare class ContactConstraint implements XPBDPositionalConstraint<[Vect
     gradientSelf(): Vector3;
     gradientOther(): Vector3;
     solve(dt: number): void;
+    resetMultiplier(): void;
 }

@@ -23,6 +23,10 @@ export class DistanceConstraint implements XPBDPositionalConstraint<[Vector3, Ve
         this.compliance = compliance;
     }
 
+    resetMultiplier(): void {
+        this.multiplier = 0;
+    }
+
     gradientP0(): Vector3
     {
         const p0 = this.p0.center;

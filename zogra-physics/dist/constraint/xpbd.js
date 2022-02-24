@@ -1,4 +1,4 @@
-import { vec3 } from "zogra-renderer";
+import { Color, Debug, vec3 } from "zogra-renderer";
 export function solvePositionalXPBD(constraint, dt) {
     const c = constraint.evaluate();
     if (c >= 0)
@@ -11,6 +11,22 @@ export function solvePositionalXPBD(constraint, dt) {
     const corrections = gradients.map((g, idx) => g.mul(constraint.entites[idx].invMass * deltaMultiplier));
     constraint.entites.forEach((entity, idx) => entity.center.plus(corrections[idx]));
 }
+export const XPBDPositionalConstraint = {
+    damped(constraint, damping) {
+        const dampedConstraint = Object.assign(Object.assign({}, constraint), { gradients: constraint.gradients, damping, multipliers: constraint.entites.map(() => 0), accumulateMultipliers(delta) {
+                this.multipliers = this.multipliers.map((mul, i) => mul + delta[i]);
+            },
+            resetMultiplier() {
+                this.multipliers.fill(0);
+            },
+            solve(dt) {
+                this.entites.forEach(a => this.entites.forEach(b => Debug().drawLine(a.center, b.center, Color.yellow)));
+                solveDampedPositionalXPBD(this, dt);
+            } });
+        dampedConstraint.__proto__ = constraint.__proto__;
+        return dampedConstraint;
+    }
+};
 export function solveDampedPositionalXPBD(constraint, dt) {
     const c = constraint.evaluate();
     if (c >= 0)

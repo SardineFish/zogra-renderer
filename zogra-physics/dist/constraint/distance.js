@@ -11,6 +11,9 @@ export class DistanceConstraint {
         this.entites = [p1, p2];
         this.compliance = compliance;
     }
+    resetMultiplier() {
+        this.multiplier = 0;
+    }
     gradientP0() {
         const p0 = this.p0.center;
         const p1 = this.p1.center;

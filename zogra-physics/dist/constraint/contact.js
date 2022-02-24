@@ -19,5 +19,8 @@ export class ContactConstraint {
     solve(dt) {
         solvePositionalXPBD(this, dt);
     }
+    resetMultiplier() {
+        this.multiplier = 0;
+    }
 }
 //# sourceMappingURL=contact.js.map

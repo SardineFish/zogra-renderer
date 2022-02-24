@@ -1,5 +1,6 @@
 import { ZograEngine, PreviewRenderer, InputManager, Camera, rgb, Entity, vec3, Keys, mat4, mul, plus, quat, RenderObject, MeshBuilder, LitLambertian, Deg2Rad, Debug, Color } from "zogra-engine";
 import { Constraint, DistanceConstraint, PhysicsSystem, Plane, Sphere } from "zogra-physics";
+import { XPBDPositionalConstraint } from "zogra-physics/dist/constraint/xpbd";
 import { Particle } from "../../zogra-physics/dist/entity";
 import { initBaseControl } from "./base-control";
 import "./css/base.css";
@@ -45,7 +46,7 @@ function createConstraint()
 
         sphereParticles.push(particle);
 
-        physics.addConstraint(new DistanceConstraint(center, particle, vec3.distance(center.position, pos), 0.001));
+        physics.addConstraint(XPBDPositionalConstraint.damped(new DistanceConstraint(center, particle, vec3.distance(center.position, pos), 0.001), 0.9));
     }
 
     for (let i = 0; i < sphere.indices.length; i += 3)
@@ -54,9 +55,9 @@ function createConstraint()
         const p1 = sphereParticles[sphere.indices[i + 1]];
         const p2 = sphereParticles[sphere.indices[i + 2]];
 
-        physics.addConstraint(new DistanceConstraint(p0, p1, vec3.distance(p0.position, p1.position), 0.001));
-        physics.addConstraint(new DistanceConstraint(p1, p2, vec3.distance(p1.position, p2.position), 0.001));
-        physics.addConstraint(new DistanceConstraint(p0, p2, vec3.distance(p0.position, p2.position), 0.001));
+        physics.addConstraint(XPBDPositionalConstraint.damped(new DistanceConstraint(p0, p1, vec3.distance(p0.position, p1.position), 0.001), 0.9));
+        physics.addConstraint(XPBDPositionalConstraint.damped(new DistanceConstraint(p1, p2, vec3.distance(p1.position, p2.position), 0.001), 0.9));
+        physics.addConstraint(XPBDPositionalConstraint.damped(new DistanceConstraint(p0, p2, vec3.distance(p0.position, p2.position), 0.001), 0.9));
     }
 
     // for (let x = 0; x < 2; ++x)

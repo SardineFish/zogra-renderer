@@ -138,12 +138,12 @@ export class PhysicsSystem
     {
         for (const constraint of this.dynamicConstraints)
         {
-            constraint.multiplier = 0;
+            constraint.resetMultiplier();
             constraint.solve(deltaTime);
         }
         for (const constraint of this.constantConstraints.buffer)
         {
-            constraint.multiplier = 0;
+            constraint.resetMultiplier();
             constraint.solve(deltaTime);
         }
     }
