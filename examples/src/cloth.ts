@@ -21,18 +21,36 @@ function createConstraint()
     const sphere = MeshBuilder.sphereNormalizedCube(vec3.zero(), 2, 4);
     const mesh = MeshBuilder.sphereNormalizedCube(vec3.zero(), 0.2);
     const material = new LitLambertian();
-    const sphereParticles: Particle[] = [];
-    const particles: Particle[] = [];
+    const particles: Particle[][] = [];
 
     const SIZE = 10;
+    const DISTANCE = 1;
 
-    const hangHeight = 20;
+    const VERTICAL_COMPLIANCE = 0.005;
+    const VERTICAL_DAMPING = 0.4;
 
-    for (let y = 0; y < SIZE; ++y)
+    const HORIZONTAL_COMPLIANCE = 0.004;
+    const HORIZONTAL_DAMPING = 0.4;
+
+    const SHEAR_COMPLIANCE = 0.004;
+    const SHEAR_DAMPING = 0.4;
+
+    const BEND_COMPLIANCE = 0.01;
+    const BEND_DAMPING = 0.4;
+
+    const hangHeight = 10;
+
+    // Spawn particles
+    for (let y = 0; y <= SIZE; ++y)
     {
-        for (let x = 0; x < SIZE; ++x)
+        particles.push([]);
+        for (let x = 0; x <= SIZE; ++x)
         {
-            const particle = physics.addParticle(vec3(x - SIZE / 2, hangHeight - y, 0), 1);
+            const particle = physics.addParticle(vec3(x - SIZE / 2, hangHeight, -y).mul(DISTANCE), 1);
+            physics.addShape(particle, Sphere, {
+                offset: vec3.zero(),
+                radius: 0.2
+            });
 
             const entity = new RenderObject();
             entity.meshes[0] = mesh;
@@ -44,104 +62,89 @@ function createConstraint()
 
             engine.scene.add(entity);
 
-            sphereParticles.push(particle);
+            particles[y].push(particle);
         }
     }
 
-
-
-    for (let y = 0; y < SIZE; ++y)
+    for (let y = 0; y <= SIZE; ++y)
     {
-        for (let x = 0; x < SIZE; ++x)
+        for (let x = 0; x <= SIZE; ++x)
         {
+            // Horizontal constraint
+            if (x < SIZE)
+            {
+                physics.addConstraint(new DistanceConstraint(
+                    particles[y][x],
+                    particles[y][x + 1],
+                    DISTANCE,
+                    HORIZONTAL_COMPLIANCE
+                )
+                    .damped(HORIZONTAL_DAMPING));
+            }
+
+            // Horizontal bend constraint
+            if (x < SIZE - 1)
+            {
+                physics.addConstraint(new DistanceConstraint(
+                    particles[y][x],
+                    particles[y][x + 2],
+                    DISTANCE * 2,
+                    BEND_COMPLIANCE
+                )
+                    .damped(BEND_DAMPING));
+            }
+
+            // Vertical constraint
+            if (y < SIZE)
+            {
+                physics.addConstraint(new DistanceConstraint(
+                    particles[y][x],
+                    particles[y + 1][x],
+                    DISTANCE,
+                    VERTICAL_COMPLIANCE
+                )
+                    .damped(VERTICAL_DAMPING));
+            }
+
+            // Vertical bend constraint
+            if (y < SIZE - 1)
+            {
+                physics.addConstraint(new DistanceConstraint(
+                    particles[y][x],
+                    particles[y + 2][x],
+                    DISTANCE * 2,
+                    BEND_COMPLIANCE
+                )
+                    .damped(BEND_DAMPING));
+            }
             
+            if (x < SIZE && y < SIZE)
+            {
+                // Shear constraint
+                physics.addConstraint(new DistanceConstraint(
+                    particles[y][x],
+                    particles[y + 1][x + 1],
+                    vec3.distance(particles[y][x].center, particles[y + 1][x + 1].center),
+                    SHEAR_COMPLIANCE
+                )
+                    .damped(SHEAR_DAMPING));
+                physics.addConstraint(new DistanceConstraint(
+                    particles[y][x + 1],
+                    particles[y + 1][x],
+                    vec3.distance(particles[y][x + 1].center, particles[y + 1][x].center),
+                    SHEAR_COMPLIANCE
+                )
+                    .damped(SHEAR_DAMPING));
+            }
         }
     }
 
-    const center = physics.addParticle(mat4.mulPoint(transform, vec3.zero()), 0.1);
 
-    for (const vertex of sphere.vertices)
-    {
-        const pos = mat4.mulPoint(transform, vertex.vert);
-        const particle = physics.addParticle(pos, 1);
-        const entity = new RenderObject();
-        entity.meshes[0] = mesh;
-        entity.materials[0] = material;
+    particles[0][0].invMass = 0;
+    particles[0][0].position = vec3(-4, hangHeight + 1, 0);
+    particles[0][SIZE].invMass = 0;
+    particles[0][SIZE].position = vec3(4, hangHeight + 1, 0);
 
-        entity.on("update", () =>
-        {
-            entity.position = particle.position;
-        });
-        physics.addShape(particle, Sphere, {
-            offset: vec3.zero(),
-            radius: 0.2
-        });
-
-        engine.scene.add(entity);
-
-        sphereParticles.push(particle);
-
-        physics.addConstraint(new DistanceConstraint(center, particle, vec3.distance(center.position, pos), 0.001));
-    }
-
-    for (let i = 0; i < sphere.indices.length; i += 3)
-    {
-        const p0 = sphereParticles[sphere.indices[i]];
-        const p1 = sphereParticles[sphere.indices[i + 1]];
-        const p2 = sphereParticles[sphere.indices[i + 2]];
-
-        physics.addConstraint(new DistanceConstraint(p0, p1, vec3.distance(p0.position, p1.position), 0.001));
-        physics.addConstraint(new DistanceConstraint(p1, p2, vec3.distance(p1.position, p2.position), 0.001));
-        physics.addConstraint(new DistanceConstraint(p0, p2, vec3.distance(p0.position, p2.position), 0.001));
-    }
-
-    // for (let x = 0; x < 2; ++x)
-    // {
-    //     for (let y = 0; y < 2; ++y)
-    //     {
-    //         for (let z = 0; z < 2; ++z)
-    //         {
-    //             const entity = new RenderObject();
-    //             entities.push(entity);
-    //             engine.scene.add(entity);
-    //             entity.position = mat4.mulPoint(transform, vec3(x, y + 3, z));
-    //             entity.meshes[0] = MeshBuilder.sphereNormalizedCube(vec3.zero(), 0.2);
-    //             entity.materials[0] = new LitLambertian();
-
-    //             const particle = physics.addParticle(entity.position, 1);
-    //             physics.addShape(particle, Sphere, {
-    //                 radius: 0.2,
-    //                 offset: vec3.zero(),
-    //             });
-    //         }
-    //     }
-    // }
-    // physics.particles.buffer.forEach(p0 => physics.particles.buffer.forEach(p1 =>
-    // {
-    //     if (p0 === p1)
-    //         return;
-    //     physics.addConstraint(new DistanceConstraint(p0, p1, vec3.minus(p0.position, p1.position).magnitude, 30));
-    // }))
-
-    // for (let i = 0; i < 7; ++i)
-    // {
-    //     const entity = new RenderObject();
-    //     entities.push(entity);
-    //     engine.scene.add(entity);
-    //     entity.position = vec3(i * 1, 3, 0);
-    //     entity.meshes[0] = MeshBuilder.sphereNormalizedCube();
-    //     entity.materials[0] = new LitLambertian();
-
-    //     const particle = physics.addParticle(entity.position, i === 0 ? 0 : 1);
-    //     if (i > 0)
-    //     {
-    //         physics.addConstraint(new DistanceConstraint(physics.particles.getUnchecked(i - 1), physics.particles.getUnchecked(i), 1));
-    //         physics.addShape(particle, Sphere, {
-    //             offset: vec3.zero(),
-    //             radius: 0.5
-    //         });
-    //     }
-    // }
 
     const plane = physics.addRigidbody();
     physics.addShape(plane, Plane, {
@@ -149,9 +152,27 @@ function createConstraint()
         offset: 0
     });
 
+    {
+        const body = physics.addParticle(vec3(0, 3, -3), 0.001);
+        physics.addShape(body, Sphere, {
+            offset: vec3.zero(),
+            radius: 2
+        });
+
+        const entity = new RenderObject();
+        entity.meshes[0] = MeshBuilder.sphereNormalizedCube(vec3.zero(), 2);
+        entity.materials[0] = material;
+        engine.scene.add(entity);
+
+        entity.on("update", () =>
+        {
+            entity.position = body.position;
+        });
+    }
+
     engine.on("update", (time) =>
     {
-        physics.simulate(1 / 60, 1);
+        physics.simulate(1 / 60, 2);
 
         for (let i = 0; i < entities.length; ++i)
         {

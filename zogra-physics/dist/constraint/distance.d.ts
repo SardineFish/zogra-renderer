@@ -15,4 +15,5 @@ export declare class DistanceConstraint implements XPBDPositionalConstraint<[Vec
     gradientP1(): Vector3;
     evaluate(): number;
     solve(dt: number): void;
+    damped(damping: number): import("./xpbd").XPBDDampedPositionalConstraint<Vector3[]>;
 }

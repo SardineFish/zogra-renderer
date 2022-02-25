@@ -1,5 +1,5 @@
 import { minus, Debug, Color } from "zogra-renderer";
-import { solvePositionalXPBD } from "./xpbd";
+import { solvePositionalXPBD, XPBDPositionalConstraint } from "./xpbd";
 export class DistanceConstraint {
     constructor(p1, p2, distance, compliance = 0) {
         this.compliance = 30;
@@ -51,6 +51,9 @@ export class DistanceConstraint {
         // this.p0.position.plus(dp0);
         // this.p1.position.plus(dp1);
         solvePositionalXPBD(this, dt);
+    }
+    damped(damping) {
+        return XPBDPositionalConstraint.damped(this, damping);
     }
 }
 //# sourceMappingURL=distance.js.map

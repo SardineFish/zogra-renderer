@@ -15,6 +15,7 @@ const entires = {
     "post-process": "./src/post-process.ts",
     "touch": "./src/touch.ts",
     "constraint": "./src/constraint.ts",
+    "cloth": "./src/cloth.ts",
 };
 
 module.exports = {
