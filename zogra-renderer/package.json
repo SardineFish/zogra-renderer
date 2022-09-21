@@ -1,6 +1,6 @@
 {
   "name": "zogra-renderer",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "core renderer module of zogra-renderer",
   "type": "module",
   "main": "dist/index.js",
