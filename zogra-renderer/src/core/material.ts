@@ -413,7 +413,7 @@ export class Material<VertStruct extends BufferStructure = typeof DefaultVertexD
                 break;
             }
             case "mat4[]": {
-                const length = this.setVectorUniformBuffer(prop as PropertyInfo<"vec4[]">, 16, value as mat4[]);
+                const length = this.setVectorUniformBuffer(prop as any as PropertyInfo<"vec4[]">, 16, value as mat4[]);
                 length && gl.uniform4fv(prop.location, (prop as PropertyInfo<"mat4[]">).buffer, 0, length);
                 break;
             }

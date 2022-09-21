@@ -2,10 +2,11 @@ import { Shader } from "../core/shader";
 import { compileBuiltinShaders } from "./shaders";
 import { MaterialFromShader, materialDefine, shaderProp, Material } from "../core/material";
 import { Color } from "../types/color";
-import { MaterialType } from "../core/material-type";
 import { Texture } from "../core/texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinTextures } from "./textures";
+import { BufferStructure } from "../core/array-buffer";
+import { DefaultVertexData } from "../core";
 
 export function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>, shaders: ReturnType<typeof compileBuiltinShaders>, textures: BuiltinTextures)
 {
@@ -65,6 +66,11 @@ export function createBuiltinMaterialTypes(gl: WebGL2RenderingContext, builtinTe
         BlitCopy: BlitCopy as typeof BlitCopyType,
         DefaultLit: DefaultLit as typeof DefaultLitType,
     };
+}
+
+declare class MaterialType<VertStruct extends BufferStructure = typeof DefaultVertexData> extends Material<VertStruct>
+{
+    constructor(gl?: WebGL2RenderingContext)
 }
 
 declare class DefaultMaterialType extends MaterialType

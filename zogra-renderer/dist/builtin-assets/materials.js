@@ -6,7 +6,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { MaterialFromShader, materialDefine, shaderProp, Material } from "../core/material";
 import { Color } from "../types/color";
-import { MaterialType } from "../core/material-type";
 import { vec2 } from "../types/vec2";
 export function createBuiltinMaterial(gl, types, shaders, textures) {
     const errorMat = new Material(shaders.ErrorShader, gl);

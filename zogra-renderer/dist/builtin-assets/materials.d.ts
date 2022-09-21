@@ -1,21 +1,25 @@
 import { compileBuiltinShaders } from "./shaders";
 import { Material } from "../core/material";
 import { Color } from "../types/color";
-import { MaterialType } from "../core/material-type";
 import { Texture } from "../core/texture";
 import { vec2 } from "../types/vec2";
 import { BuiltinTextures } from "./textures";
+import { BufferStructure } from "../core/array-buffer";
+import { DefaultVertexData } from "../core";
 export declare function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>, shaders: ReturnType<typeof compileBuiltinShaders>, textures: BuiltinTextures): {
-    error: Material<import("..").DefaultVertexStruct>;
+    error: Material<import("../core").DefaultVertexStruct>;
     default: DefaultMaterialType;
     blitCopy: BlitCopyType;
-    ColoredLine: Material<import("..").DefaultVertexStruct>;
+    ColoredLine: Material<import("../core").DefaultVertexStruct>;
 };
 export declare function createBuiltinMaterialTypes(gl: WebGL2RenderingContext, builtinTexs: BuiltinTextures, shaders: ReturnType<typeof compileBuiltinShaders>): {
     DefaultMaterial: typeof DefaultMaterialType;
     BlitCopy: typeof BlitCopyType;
     DefaultLit: typeof DefaultLitType;
 };
+declare class MaterialType<VertStruct extends BufferStructure = typeof DefaultVertexData> extends Material<VertStruct> {
+    constructor(gl?: WebGL2RenderingContext);
+}
 declare class DefaultMaterialType extends MaterialType {
     color: Color;
     mainTexture: Texture;
