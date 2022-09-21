@@ -139,6 +139,14 @@ class AssetManagerType implements IEventSource<AssetManagerEvents>
         
         // setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
     }
+    destroyAll()
+    {
+        for (const [id, asset] of this.assetsMap)
+        {
+            asset.destroy();
+        }
+        this.assetsMap = new Map();
+    }
     findAssetsOfType<T extends IAsset>(type: ConstructorType<T>): T[]
     {
         return Array.from(this.assetsMap.values()).filter(asset => asset instanceof type) as T[];

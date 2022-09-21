@@ -11,7 +11,7 @@ import { MeshBuilder } from "../utils/mesh-builder";
 import { div } from "../types/math";
 import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { ObjectPool } from "../utils/object-pool";
-import { DepthBuffer } from ".";
+import { AssetManager, DepthBuffer } from ".";
 export class ZograRenderer {
     constructor(canvasElement, width, height) {
         this.viewProjectionMatrix = mat4.identity();
@@ -22,7 +22,6 @@ export class ZograRenderer {
         this.globalUniforms = new Map();
         this.globalTextures = new Map();
         this.framebufferPool = new ObjectPool((w, h) => new FrameBuffer(w, h));
-        this.blitFramebuffer = [new FrameBuffer(), new FrameBuffer()];
         this.canvas = canvasElement;
         this.width = width === undefined ? canvasElement.width : width;
         this.height = height === undefined ? canvasElement.height : height;
@@ -45,6 +44,7 @@ export class ZograRenderer {
         });
         this.assets = new BuiltinAssets(this.ctx);
         this.ctx.assets = this.assets;
+        this.blitFramebuffer = [new FrameBuffer(0, 0, this.ctx), new FrameBuffer(0, 0, this.ctx)];
         if (!GlobalContext())
             this.use();
         this.helperAssets = {
@@ -329,6 +329,11 @@ export class ZograRenderer {
     }
     unsetGlobalUniform(name) {
         this.globalUniforms.delete(name);
+    }
+    /** Destroy GL context and all assets allocated with GL context */
+    destroy() {
+        AssetManager.destroyAll();
+        setGlobalContext(null);
     }
     setupScissor() {
         const gl = this.gl;

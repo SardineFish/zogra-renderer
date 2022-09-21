@@ -40,6 +40,7 @@ declare class AssetManagerType implements IEventSource<AssetManagerEvents> {
     find(name: string): IAsset | undefined;
     find(id: number): IAsset | undefined;
     destroy(id: number): void;
+    destroyAll(): void;
     findAssetsOfType<T extends IAsset>(type: ConstructorType<T>): T[];
     on<T extends EventKeys<AssetManagerEvents>>(event: T, listener: import("./event").EventListener): void;
     off<T extends EventKeys<AssetManagerEvents>>(event: T, listener: import("./event").EventListener): void;

@@ -22,7 +22,7 @@ import { BuiltinUniformNames } from "../builtin-assets/shaders";
 import { BufferStructure, GLArrayBuffer } from "./array-buffer";
 import { ObjectPool } from "../utils/object-pool";
 import { RenderBuffer } from "./render-buffer";
-import { DepthBuffer } from ".";
+import { AssetManager, DepthBuffer } from ".";
 
 interface TempFramebuffer extends FrameBuffer
 {
@@ -49,7 +49,7 @@ export class ZograRenderer
     private globalUniforms = new Map<string, GlobalUniform>();
     private globalTextures = new Map<string, GlobalTexture>();
     private framebufferPool = new ObjectPool<FrameBuffer, [number, number]>((w, h) => new FrameBuffer(w, h));
-    private blitFramebuffer = [new FrameBuffer(), new FrameBuffer()];
+    private blitFramebuffer: [FrameBuffer, FrameBuffer];
 
     private helperAssets: {
         clipBlitMesh: Mesh,
@@ -85,6 +85,7 @@ export class ZograRenderer
 
         this.assets = new BuiltinAssets(this.ctx);
         this.ctx.assets = this.assets;
+        this.blitFramebuffer = [new FrameBuffer(0, 0, this.ctx), new FrameBuffer(0, 0, this.ctx)];
 
         if (!GlobalContext())
             this.use();
@@ -493,6 +494,13 @@ export class ZograRenderer
     unsetGlobalUniform(name: string)
     {
         this.globalUniforms.delete(name);
+    }
+
+    /** Destroy GL context and all assets allocated with GL context */
+    destroy()
+    {
+        AssetManager.destroyAll();
+        setGlobalContext(null as any);
     }
 
     private setupScissor()

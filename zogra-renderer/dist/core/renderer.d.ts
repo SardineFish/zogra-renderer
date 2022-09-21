@@ -54,5 +54,7 @@ export declare class ZograRenderer {
     drawLines(lines: Lines, transform: mat4, material: Material): void;
     setGlobalUniform<T extends UniformType>(name: string, type: T, value: UniformValueType<T>): void;
     unsetGlobalUniform(name: string): void;
+    /** Destroy GL context and all assets allocated with GL context */
+    destroy(): void;
     private setupScissor;
 }

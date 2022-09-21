@@ -85,6 +85,12 @@ class AssetManagerType {
         this.assetsMap.delete(id);
         // setImmediate(() => this.eventEmitter.emit("asset-destroyed", asset));
     }
+    destroyAll() {
+        for (const [id, asset] of this.assetsMap) {
+            asset.destroy();
+        }
+        this.assetsMap = new Map();
+    }
     findAssetsOfType(type) {
         return Array.from(this.assetsMap.values()).filter(asset => asset instanceof type);
     }
