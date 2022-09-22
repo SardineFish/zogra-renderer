@@ -5,6 +5,7 @@ export interface IAsset {
     assetID: number;
     name: string;
     destroy(): void;
+    valid(): boolean;
 }
 export declare class Asset implements IAsset {
     assetID: number;
@@ -12,6 +13,7 @@ export declare class Asset implements IAsset {
     protected destroyed: boolean;
     constructor(name?: string);
     destroy(): void;
+    valid(): boolean;
 }
 export declare abstract class GPUAsset extends Asset {
     protected ctx: GLContext;

@@ -7,6 +7,7 @@ export interface IAsset
     assetID: number;
     name: string;
     destroy(): void;
+    valid(): boolean;
 }
 export class Asset implements IAsset
 {
@@ -22,6 +23,10 @@ export class Asset implements IAsset
     {
         this.destroyed = true;
         AssetManager.destroy(this.assetID);
+    }
+    valid(): boolean
+    {
+        return !this.destroyed;
     }
 }
 export abstract class GPUAsset extends Asset

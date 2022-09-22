@@ -494,12 +494,15 @@ function getShaderProp<T extends BufferStructure>(target: Material<T>, propKey: 
 }
 
 
-export function MaterialFromShader<VertStruct extends BufferStructure>(shader: Shader<VertStruct>): new(gl?: WebGL2RenderingContext)=> Material<VertStruct>
+export function MaterialFromShader<VertStruct extends BufferStructure>(base_shader: Shader<VertStruct>): new(gl?: WebGL2RenderingContext)=> Material<VertStruct>
 {
+    let shader = base_shader.clone();
     return class Mat extends Material<VertStruct>
     {
         constructor(gl = GL())
         {
+            if (!shader.valid())
+                shader = base_shader.clone();
             super(shader, gl);
         }
     };

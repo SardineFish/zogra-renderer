@@ -343,9 +343,12 @@ export function shaderProp(name, type) {
 function getShaderProp(target, propKey) {
     return Reflect.getMetadata(shaderPropMetaKey, target, propKey);
 }
-export function MaterialFromShader(shader) {
+export function MaterialFromShader(base_shader) {
+    let shader = base_shader.clone();
     return class Mat extends Material {
         constructor(gl = GL()) {
+            if (!shader.valid())
+                shader = base_shader.clone();
             super(shader, gl);
         }
     };

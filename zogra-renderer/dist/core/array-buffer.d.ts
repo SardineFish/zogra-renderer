@@ -50,6 +50,7 @@ export declare class GLArrayBuffer<T extends BufferStructure> extends Array<Buff
     protected glBuf: WebGLBuffer;
     get byteLength(): number;
     constructor(structure: T & BufferStructure, items: number, createElementView?: boolean, ctx?: GLContext);
+    valid(): boolean;
     resize(length: number, keepContent?: boolean, createElementView?: boolean): void;
     copyFrom(source: GLArrayBuffer<T>, selfElementOffset?: number, sourceElementOffset?: number, sourceElementLength?: number): void;
     private swapBuffer;

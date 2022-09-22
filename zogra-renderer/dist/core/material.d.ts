@@ -69,7 +69,7 @@ export declare function shaderProp(name: string, type: UniformType): {
     (target: Function): void;
     (target: Object, propertyKey: string | symbol): void;
 };
-export declare function MaterialFromShader<VertStruct extends BufferStructure>(shader: Shader<VertStruct>): new (gl?: WebGL2RenderingContext) => Material<VertStruct>;
+export declare function MaterialFromShader<VertStruct extends BufferStructure>(base_shader: Shader<VertStruct>): new (gl?: WebGL2RenderingContext) => Material<VertStruct>;
 export declare function SimpleTexturedMaterial(shader: Shader): typeof SimpleTexturedMaterialClass;
 /**
  *

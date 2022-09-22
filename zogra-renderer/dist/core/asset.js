@@ -10,6 +10,9 @@ export class Asset {
         this.destroyed = true;
         AssetManager.destroy(this.assetID);
     }
+    valid() {
+        return !this.destroyed;
+    }
 }
 export class GPUAsset extends Asset {
     constructor(ctx = GlobalContext(), name) {

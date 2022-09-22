@@ -89,6 +89,9 @@ export class Shader extends Asset {
         this.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matM_IT, false, params.matM_IT.asMut());
         this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT.asMut());
     }
+    clone() {
+        return new Shader(this.vertexShaderSource, this.fragmentShaderSouce, this.options);
+    }
     setPipelineStateInternal(settings) {
         let blend = false;
         let blendRGB = [Blending.One, Blending.Zero];

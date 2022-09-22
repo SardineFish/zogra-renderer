@@ -61,11 +61,11 @@ interface ShaderSettingsOptional<VertexData extends BufferStructure> extends Sha
 }
 export declare const DefaultShaderAttributeNames: ShaderAttributeNames<typeof DefaultVertexData>;
 export declare class Shader<VertexData extends BufferStructure = typeof DefaultVertexData> extends Asset {
-    vertexShaderSource: string;
-    fragmentShaderSouce: string;
+    private readonly vertexShaderSource;
+    private readonly fragmentShaderSouce;
+    private readonly options;
     private vertexStruct;
     private attributeNames;
-    private options;
     private initialized;
     private gl;
     private program;
@@ -85,6 +85,7 @@ export declare class Shader<VertexData extends BufferStructure = typeof DefaultV
         matM_IT: Readonly<mat4>;
         matMV_IT: Readonly<mat4>;
     }): void;
+    clone(): Shader<VertexData>;
     private setPipelineStateInternal;
     _internal(): {
         options: ShaderSettingsOptional<VertexData>;

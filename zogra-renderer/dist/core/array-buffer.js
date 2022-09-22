@@ -61,6 +61,9 @@ export class GLArrayBuffer extends Array {
         this.name = `GLArrayBuffer_${this.assetID}`;
     }
     get byteLength() { return this.length * this.structure.byteSize; }
+    valid() {
+        return !this.destroyed;
+    }
     resize(length, keepContent = true, createElementView = true) {
         const oldBuffer = this.innerBuffer;
         this.innerBuffer = new Float32Array(this.structure.totalSize * length);

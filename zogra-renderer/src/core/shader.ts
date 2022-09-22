@@ -92,8 +92,9 @@ export const DefaultShaderAttributeNames: ShaderAttributeNames<typeof DefaultVer
 
 export class Shader<VertexData extends BufferStructure = typeof DefaultVertexData> extends Asset
 {
-    vertexShaderSource: string;
-    fragmentShaderSouce: string;
+    private readonly vertexShaderSource: string;
+    private readonly fragmentShaderSouce: string;
+    private readonly options: ShaderSettingsOptional<VertexData>;
 
     // private attributes: AttributeLocations<VertexData> = null as any;
     private vertexStruct: BufferStructureInfo<VertexData>;
@@ -102,7 +103,6 @@ export class Shader<VertexData extends BufferStructure = typeof DefaultVertexDat
     /** @internal */
     attributes: AttributeLocations<VertexData> = {} as any;
 
-    private options: ShaderSettingsOptional<VertexData>;
     
     private initialized = false;
 
@@ -171,6 +171,11 @@ export class Shader<VertexData extends BufferStructure = typeof DefaultVertexDat
         this.builtinUniformLocations.matMVP && gl.uniformMatrix4fv(this.builtinUniformLocations.matMVP, false, params.matMVP.asMut());
         this.builtinUniformLocations.matM_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matM_IT, false, params.matM_IT.asMut());
         this.builtinUniformLocations.matMV_IT && gl.uniformMatrix4fv(this.builtinUniformLocations.matMV_IT, false, params.matMV_IT.asMut());
+    }
+
+    clone()
+    {
+        return new Shader(this.vertexShaderSource, this.fragmentShaderSouce, this.options);
     }
 
     private setPipelineStateInternal(settings: ShaderPipelineStateSettinsOptional)

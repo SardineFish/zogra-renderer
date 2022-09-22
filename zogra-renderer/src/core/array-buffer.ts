@@ -136,6 +136,11 @@ export class GLArrayBuffer<T extends BufferStructure> extends Array<BufferElemen
         this.assetID = AssetManager.newAssetID(this);
         this.name = `GLArrayBuffer_${this.assetID}`;
     }
+    
+    valid(): boolean
+    {
+        return !this.destroyed;
+    }
 
     resize(length: number, keepContent = true, createElementView = true)
     {
