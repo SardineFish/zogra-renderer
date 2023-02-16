@@ -27,9 +27,11 @@ A simple WebGL2 renderer.
 - Input system.
 - Simple phyiscally-based shading.
 - FBX import.
+- ...
 
 ## Demo
-- [Editor](https://sardinefish.github.io/zogra-renderer/editor/)
-- [Basic 3D Rendering](https://sardinefish.github.io/zogra-renderer/examples/engine-test.html)
-- [Game of Life](https://sardinefish.github.io/zogra-renderer/examples/life-game.html?fps=30)
-- [Snake Game](https://sardinefish.github.io/zogra-renderer/examples/snake.html)
+- [Snake Game](https://sardinefish.github.io/snake-remake/) A simple 2D game demo. Eat more foods before running out of lights :)
+- [Game of Life](https://sardinefish.github.io/zogra-renderer/life-game.html?fps=30) Large scale game of life powered by WebGL
+- [XPBD soft-body sphere](https://sardinefish.github.io/zogra-renderer/constraint.html)
+- [Particle system and bloom](https://sardinefish.github.io/zogra-renderer/post-process.html)
+- [Editor](https://sardinefish.github.io/zogra-renderer/editor/) [WIP] A simple web-based scene editor
