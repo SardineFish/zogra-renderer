@@ -11,4 +11,4 @@ export declare class GLContext {
 export declare const setGlobalContext: (_ctx: GLContext) => GLContext;
 export declare const GlobalContext: () => GLContext;
 export declare const GL: () => WebGL2RenderingContext;
-export declare const Debug: (provider?: DebugProvider | undefined) => DebugProvider;
+export declare const Debug: (provider?: DebugProvider) => DebugProvider;

@@ -15,6 +15,20 @@ interface CameraEvents extends EntityEvents {
     "prerender": (camera: Camera, context: RenderContext) => void;
     "postrender": (camera: Camera, contect: RenderContext) => void;
 }
+/**
+ * ```
+ *       ^ Y-axis (up)
+ *       |
+ *       |
+ *       |
+ *       |
+ *       *---------> X-axis (right)
+ *      /
+ *     /
+ *    v
+ * Z-axis (back)
+ * ```
+ */
 export declare class Camera extends Entity implements IEventSource<CameraEvents> {
     private ctx;
     output: RenderTexture | null;

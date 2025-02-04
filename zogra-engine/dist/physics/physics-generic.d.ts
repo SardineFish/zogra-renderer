@@ -4,10 +4,10 @@ import { Time } from "../engine/engine";
 export interface IPhysicsSystem {
     update(time: Readonly<Time>): void;
 }
-export declare type IPhysicsSystemClass<T extends IPhysicsSystemClass<T>> = (new (...args: any[]) => IPhysicsSystem) & {
+export type IPhysicsSystemClass<T extends IPhysicsSystemClass<T>> = (new (...args: any[]) => IPhysicsSystem) & {
     current(scene: Scene): InstanceType<T>;
 };
-export declare class UnknownPhysics implements IPhysicsSystem {
+export declare class NoPhysics implements IPhysicsSystem {
     __getColliders(): never[];
     update(): void;
 }

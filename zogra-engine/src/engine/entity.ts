@@ -28,6 +28,7 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     protected _destroyed: boolean = false;
 
     private _collider: ICollider | null = null;
+    private _valid: boolean = true;
 
     get collider() { return this._collider }
     set collider(value: ICollider | null)
@@ -40,6 +41,11 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     }
     get destroyed(): boolean { return this._destroyed };
 
+    valid(): boolean
+    {
+        return this._valid;
+    }
+
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void
     {
         return this.eventEmitter.on(event, listener);
@@ -50,6 +56,7 @@ export class Entity extends Transform implements IAsset, IEventSource<EntityEven
     }
     destroy()
     {
+        this._valid = false;
         this._destroyed = true;
         if (this.scene)
             this.scene.remove(this);

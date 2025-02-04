@@ -1,7 +1,7 @@
 export interface Into<T> {
     into<T>(): T;
 }
-export declare type ConstructorType<T, TArgs extends any[] = any[]> = new (...args: TArgs) => T;
+export type ConstructorType<T, TArgs extends any[] = any[]> = new (...args: TArgs) => T;
 export declare class DoubleBuffer<T> {
     private currentIdx;
     private buffers;

@@ -2,7 +2,7 @@ export interface Keyframe<T> {
     time: number;
     values: T;
 }
-interface AnimationFrameState<Frame, Target> {
+interface AnimationFrameState<Frame extends {}, Target> {
     time: number;
     frameTime: number;
     deltaTime: number;
@@ -19,7 +19,7 @@ interface SimpleTimeline<Frame, Target = unknown> {
     };
     updater?: SimpleUpdater<Frame, Target>;
 }
-declare type SimpleUpdater<Frame, Target> = (frame: Frame, target: Target) => void;
+type SimpleUpdater<Frame, Target> = (frame: Frame, target: Target) => void;
 export interface Timeline<Frame, Target = unknown> {
     loop: boolean;
     duration: number;
@@ -27,7 +27,7 @@ export interface Timeline<Frame, Target = unknown> {
     updater?: SimpleUpdater<Frame, Target>;
 }
 export declare function Timeline<Frame, Target = unknown>(timeline: SimpleTimeline<Frame, Target>): Timeline<Frame, Target>;
-declare type AnimationCallback<Frame, Target> = (frame: AnimationFrameState<Frame, Target>) => void;
+type AnimationCallback<Frame extends {}, Target> = (frame: AnimationFrameState<Frame, Target>) => void;
 export interface IPlayback<T> {
     finished: boolean;
     play(): Promise<T>;
@@ -35,7 +35,7 @@ export interface IPlayback<T> {
     update(dt: number): void;
     reject(): void;
 }
-export declare class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlayback<Frame, Target>> {
+export declare class AnimationPlayback<Frame extends {}, Target> implements IPlayback<AnimationPlayback<Frame, Target>> {
     frameTime: number;
     time: number;
     timeScale: number;
@@ -60,18 +60,18 @@ export declare class AnimationPlayback<Frame, Target> implements IPlayback<Anima
     private interpolate;
     private checkEnd;
 }
-export interface AnimationPlaybackOptions<Frame, Target = unknown> {
+export interface AnimationPlaybackOptions<Frame extends {}, Target = unknown> {
     updater: AnimationCallback<Frame, Target>;
     playDuration: number;
     loop: boolean;
     startTime: number;
 }
-export declare class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined> {
+export declare class Animator<AnimatorFrame extends {} = any, AnimatorTarget = undefined> {
     defaultTarget: AnimatorTarget | undefined;
     tracks: Array<IPlayback<unknown> | undefined>;
     constructor(target?: AnimatorTarget);
-    playOn<Frame = AnimatorFrame, Target = AnimatorTarget>(track: number, timeline: Timeline<Frame, Target>, target?: Target, duration?: number, updater?: AnimationCallback<Frame, Target>): Promise<AnimationPlayback<Frame, Target>>;
-    play<Frame = AnimatorFrame, Target = AnimatorTarget>(timeline: Timeline<Frame, Target>, target?: Target, duration?: number, updater?: AnimationCallback<Frame, Target>): Promise<AnimationPlayback<Frame, Target>>;
+    playOn<Frame extends {} = AnimatorFrame, Target = AnimatorTarget>(track: number, timeline: Timeline<Frame, Target>, target?: Target, duration?: number, updater?: AnimationCallback<Frame, Target>): Promise<AnimationPlayback<Frame, Target>>;
+    play<Frame extends {} = AnimatorFrame, Target = AnimatorTarget>(timeline: Timeline<Frame, Target>, target?: Target, duration?: number, updater?: AnimationCallback<Frame, Target>): Promise<AnimationPlayback<Frame, Target>>;
     playProceduralOn(track: number, time: number, updater?: (t: number, dt: number) => void, startTime?: number): Promise<void>;
     playProcedural(time: number, updater?: (t: number, dt: number) => void, startTime?: number): Promise<void>;
     wait(time: number, callback: () => void): void;

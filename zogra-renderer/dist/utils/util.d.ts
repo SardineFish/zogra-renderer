@@ -8,11 +8,11 @@ import { vec4 } from "../types/vec4";
 export declare function panicNull<T>(t: T | null, msg?: string): T;
 export declare function panic(msg?: string): never;
 export declare function warn(msg: string): never;
-declare type DecoratorFunc<T> = (value?: T) => {
+type DecoratorFunc<T> = (value?: T) => {
     (target: Function): void;
     (target: Object, propertyKey: string | symbol): void;
 };
-declare type MetadataFunc<T, S> = (target: T, propKey?: string) => S | null;
+type MetadataFunc<T, S> = (target: T, propKey?: string) => S | null;
 export declare function decorator<T, TargetT = any, S = T>(name: string, defaultValue?: T | undefined, dataWrapper?: (value?: T) => S | T | undefined): [DecoratorFunc<T>, MetadataFunc<TargetT, S>];
 export declare function getUniformsLocation<U extends {
     [key: string]: string;
@@ -21,7 +21,7 @@ export declare function getUniformsLocation<U extends {
 };
 export declare function fillArray<T>(element: (idx: number) => T, count: number): T[];
 export declare function fillArray<T>(element: T, count: number): T[];
-export declare type ConstructorType<T> = {
+export type ConstructorType<T> = {
     prototype: T;
 } & Function;
 export declare class DoubleBuffer<T> {

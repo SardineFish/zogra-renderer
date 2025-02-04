@@ -6,7 +6,7 @@ export interface Keyframe<T>
     values: T,
 }
 
-interface AnimationFrameState<Frame, Target>
+interface AnimationFrameState<Frame extends {}, Target>
 {
     time: number,
     frameTime: number,
@@ -53,7 +53,7 @@ export function Timeline<Frame, Target = unknown>(timeline: SimpleTimeline<Frame
     return output;
 }
 
-type AnimationCallback<Frame, Target> = (frame: AnimationFrameState<Frame, Target>) => void;
+type AnimationCallback<Frame extends {}, Target> = (frame: AnimationFrameState<Frame, Target>) => void;
 
 export interface IPlayback<T>
 {
@@ -64,7 +64,7 @@ export interface IPlayback<T>
     reject(): void;
 }
 
-export class AnimationPlayback<Frame, Target> implements IPlayback<AnimationPlayback<Frame, Target>>
+export class AnimationPlayback<Frame extends {}, Target> implements IPlayback<AnimationPlayback<Frame, Target>>
 {
     frameTime: number = 0;
     time: number = 0;
@@ -283,13 +283,13 @@ class ProceduralPlayback implements IPlayback<void>
 
 }
 
-interface AnimatorEvent<T, Target>
+interface AnimatorEvent<T extends {}, Target>
 {
     start(timeline: AnimationPlayback<T, Target>, time: number): void,
     finish(timeline: AnimationPlayback<T, Target>): void,
 }
 
-export interface AnimationPlaybackOptions<Frame, Target = unknown>
+export interface AnimationPlaybackOptions<Frame extends {}, Target = unknown>
 {
     updater: AnimationCallback<Frame, Target>,
     playDuration: number,
@@ -297,7 +297,7 @@ export interface AnimationPlaybackOptions<Frame, Target = unknown>
     startTime: number,
 }
 
-export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
+export class Animator<AnimatorFrame extends {} = any, AnimatorTarget = undefined>
 {
     defaultTarget: AnimatorTarget | undefined;
     tracks: Array<IPlayback<unknown> | undefined> = [];
@@ -307,7 +307,7 @@ export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
         this.defaultTarget = target;
     }
 
-    playOn<Frame = AnimatorFrame, Target = AnimatorTarget>(
+    playOn<Frame extends {} = AnimatorFrame, Target = AnimatorTarget>(
         track: number,
         timeline: Timeline<Frame, Target>,
         target: Target = this.defaultTarget as unknown as Target,
@@ -324,7 +324,7 @@ export class Animator<AnimatorFrame = unknown, AnimatorTarget = undefined>
         return promise;
     }
 
-    play<Frame = AnimatorFrame, Target = AnimatorTarget>(
+    play<Frame extends {} = AnimatorFrame, Target = AnimatorTarget>(
         timeline: Timeline<Frame, Target>,
         target: Target = this.defaultTarget as unknown as Target,
         duration: number = timeline.duration,

@@ -1,4 +1,4 @@
-export class UnknownPhysics {
+export class NoPhysics {
     /** @internal */
     __addCollider() { }
     /** @internal */

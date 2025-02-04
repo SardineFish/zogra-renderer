@@ -42,6 +42,7 @@ export const BufferStructureInfo = {
     }
 };
 export class GLArrayBuffer extends Array {
+    get byteLength() { return this.length * this.structure.byteSize; }
     constructor(structure, items, createElementView = true, ctx = GlobalContext()) {
         super(items);
         this.static = true;
@@ -60,7 +61,6 @@ export class GLArrayBuffer extends Array {
         this.assetID = AssetManager.newAssetID(this);
         this.name = `GLArrayBuffer_${this.assetID}`;
     }
-    get byteLength() { return this.length * this.structure.byteSize; }
     valid() {
         return !this.destroyed;
     }

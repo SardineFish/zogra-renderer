@@ -5,7 +5,7 @@ import { Light } from "./light";
 import { EventDefinitions, EventEmitter, IEventSource, EventKeys } from "zogra-renderer";
 import { ConstructorType } from "../utils/util";
 import { IAsset, AssetManager } from "zogra-renderer";
-import { IPhysicsSystem, IPhysicsSystemClass, UnknownPhysics } from "../physics/physics-generic";
+import { IPhysicsSystem, IPhysicsSystemClass, NoPhysics } from "../physics/physics-generic";
 import { Physics2D } from "../2d/physics/physics-2d";
 import { Time, ZograEngine } from "./engine";
 
@@ -28,13 +28,19 @@ export class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> extends Enti
     private eventEmitter = new EventEmitter<SceneEvents>();
     private addsNextFrame: Map<Entity, Entity | null> = new Map();
     private removesNextFrame: Set<Entity> = new Set();
+    private _valid: boolean = true;
 
-    constructor(PhysicsSystem: ConstructorType<Physics>)
+    constructor(PhysicsSystem: ConstructorType<Physics> = NoPhysics as any)
     {
         super();
         this.assetID = AssetManager.newAssetID(this);
         this.name = `Scene_${this.assetID}`;
         this.physics = new PhysicsSystem();
+    }
+
+    valid(): boolean
+    {
+        return this._valid;
     }
 
     add(entity: Entity, parent: Entity | null = null)
@@ -96,6 +102,7 @@ export class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> extends Enti
     }
     destroy(): void
     {
+        this._valid = false;
         this.clearAll();
     }
     /** @internal */

@@ -6,7 +6,7 @@ export declare enum RenderOrder {
     NearToFar = 0,
     FarToNear = 1
 }
-export declare type RenderData<Extension = {}> = Extension & {
+export type RenderData<Extension = {}> = Extension & {
     camera: Camera;
     scene: Scene;
     cameraOutput: FrameBuffer;

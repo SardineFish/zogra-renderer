@@ -8,7 +8,7 @@ interface GameTime {
     time: Readonly<number>;
     deltaTime: Readonly<number>;
 }
-export declare type Time = Readonly<GameTime>;
+export type Time = Readonly<GameTime>;
 interface ZograEngineEvents {
     update: (t: Time) => void;
     render: (cameras: Camera[]) => void;

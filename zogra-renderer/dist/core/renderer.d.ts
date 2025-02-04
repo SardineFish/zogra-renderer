@@ -20,9 +20,9 @@ export declare class ZograRenderer {
     assets: BuiltinAssets;
     private width;
     private height;
-    viewProjectionMatrix: import("../types/mat4").Matrix4x4;
-    viewMatrix: import("../types/mat4").Matrix4x4;
-    projectionMatrix: import("../types/mat4").Matrix4x4;
+    viewProjectionMatrix: import("..").Matrix4x4;
+    viewMatrix: import("..").Matrix4x4;
+    projectionMatrix: import("..").Matrix4x4;
     private target;
     private shader;
     private scissor;

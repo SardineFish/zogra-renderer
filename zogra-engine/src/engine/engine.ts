@@ -3,7 +3,7 @@ import { ZograRenderPipeline, ZograRenderPipelineConstructor, PreviewRenderer, R
 import { Camera } from "./camera";
 import { ZograRenderer } from "zogra-renderer";
 import { EventEmitter, EventDefinitions, IEventSource, EventKeys } from "zogra-renderer";
-import { UnknownPhysics } from "../physics/physics-generic";
+import { NoPhysics } from "../physics/physics-generic";
 import { ConstructorType } from "../utils/util";
 
 interface GameTime
@@ -44,7 +44,7 @@ export class ZograEngine<RenderPipeline extends ZograRenderPipeline = PreviewRen
     {
         this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
         this.renderPipeline = new RenderPipeline(this.renderer);
-        this._scene = new Scene(UnknownPhysics);
+        this._scene = new Scene(NoPhysics);
         this.eventEmitter = new EventEmitter();
     }
     renderScene()

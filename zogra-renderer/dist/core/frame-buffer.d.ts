@@ -23,7 +23,7 @@ declare class CanvasBuffer implements IFrameBuffer {
     get assetID(): number;
     get width(): number;
     get height(): number;
-    get size(): import("../types/vec2").Vector2;
+    get size(): import("..").Vector2;
     bind(): void;
     destroy(): void;
 }

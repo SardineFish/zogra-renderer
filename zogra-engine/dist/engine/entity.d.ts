@@ -19,9 +19,11 @@ export declare class Entity extends Transform implements IAsset, IEventSource<En
     protected eventEmitter: EventEmitter<EntityEvents>;
     protected _destroyed: boolean;
     private _collider;
+    private _valid;
     get collider(): ICollider | null;
     set collider(value: ICollider | null);
     get destroyed(): boolean;
+    valid(): boolean;
     on<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void;
     off<T extends EventKeys<EntityEvents>>(event: T, listener: EntityEvents[T]): void;
     destroy(): void;

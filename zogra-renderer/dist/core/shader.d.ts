@@ -2,10 +2,10 @@ import { Asset } from "./asset";
 import { mat4 } from "../types/mat4";
 import { BufferStructure } from "./array-buffer";
 import { DefaultVertexData } from "./mesh";
-export declare type AttributeLocations<VertexStruct extends BufferStructure> = {
+export type AttributeLocations<VertexStruct extends BufferStructure> = {
     [key in keyof VertexStruct]: number;
 };
-export declare type ShaderAttributeNames<VertexStruct extends BufferStructure> = {
+export type ShaderAttributeNames<VertexStruct extends BufferStructure> = {
     [key in keyof VertexStruct]: string;
 };
 export declare enum DepthTest {

@@ -46,6 +46,7 @@ export const DefaultShaderAttributeNames = {
     normal: "aNormal",
 };
 export class Shader extends Asset {
+    get compiled() { return this._compiled; }
     constructor(vertexShader, fragmentShader, options = {}, gl = GL()) {
         super(options.name);
         /** @internal */
@@ -69,7 +70,6 @@ export class Shader extends Asset {
         this.setPipelineStateInternal(this.options);
         this.tryInit();
     }
-    get compiled() { return this._compiled; }
     uniformLocation(name) {
         this.tryInit(true);
         return this.gl.getUniformLocation(this.program, name);

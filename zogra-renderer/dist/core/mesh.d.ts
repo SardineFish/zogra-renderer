@@ -28,25 +28,25 @@ export declare class Mesh<VertexStruct extends BufferStructure = typeof DefaultV
     constructor(structure: VertexStruct);
     constructor(structure: VertexStruct, ctx: GLContext);
     /** @deprecated */
-    get verts(): import("../types/vec3").Vector3[];
+    get verts(): import("..").Vector3[];
     /** @deprecated */
-    set verts(verts: import("../types/vec3").Vector3[]);
+    set verts(verts: import("..").Vector3[]);
     /** @deprecated */
-    get uvs(): import("../types/vec2").Vector2[];
+    get uvs(): import("..").Vector2[];
     /** @deprecated */
-    set uvs(uvs: import("../types/vec2").Vector2[]);
+    set uvs(uvs: import("..").Vector2[]);
     /** @deprecated */
     get colors(): Color[];
     /** @deprecated */
     set colors(colors: Color[]);
     /** @deprecated */
-    get normals(): import("../types/vec3").Vector3[];
+    get normals(): import("..").Vector3[];
     /** @deprecated */
-    set normals(normals: import("../types/vec3").Vector3[]);
+    set normals(normals: import("..").Vector3[]);
     /** @deprecated */
-    get uv2(): import("../types/vec2").Vector2[];
+    get uv2(): import("..").Vector2[];
     /** @deprecated */
-    set uv2(uv2: import("../types/vec2").Vector2[]);
+    set uv2(uv2: import("..").Vector2[]);
     /** @deprecated */
     get triangles(): number[];
     /** @deprecated */

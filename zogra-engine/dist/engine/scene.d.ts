@@ -14,7 +14,9 @@ export declare class Scene<Physics extends IPhysicsSystem = IPhysicsSystem> exte
     private eventEmitter;
     private addsNextFrame;
     private removesNextFrame;
-    constructor(PhysicsSystem: ConstructorType<Physics>);
+    private _valid;
+    constructor(PhysicsSystem?: ConstructorType<Physics>);
+    valid(): boolean;
     add(entity: Entity, parent?: Entity | null): void;
     remove(entity: Entity): void;
     rootEntities(): Entity[];

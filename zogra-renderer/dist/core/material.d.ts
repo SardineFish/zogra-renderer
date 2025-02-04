@@ -7,7 +7,7 @@ import { UniformType } from "./types";
 import { Asset } from "./asset";
 import { BufferStructure } from "./array-buffer";
 import { DefaultVertexData } from "./mesh";
-declare type UniformPropertyStorageType<T extends UniformType> = T extends TextureUniformTypes | NumericUnifromTypes ? UniformValueType<T> : T extends NumericUniformArrayTypes ? Float32Array : never;
+type UniformPropertyStorageType<T extends UniformType> = T extends TextureUniformTypes | NumericUnifromTypes ? UniformValueType<T> : T extends NumericUniformArrayTypes ? Float32Array : never;
 interface FieldProperty {
     key: string;
     value?: never;
@@ -16,25 +16,25 @@ interface DynamicProperty<T extends UniformType> {
     key?: never;
     value: UniformValueType<T>;
 }
-declare type PropertyReference<T extends UniformType> = FieldProperty | DynamicProperty<T>;
-declare type PropertyBase<T extends UniformType> = PropertyReference<T> & {
+type PropertyReference<T extends UniformType> = FieldProperty | DynamicProperty<T>;
+type PropertyBase<T extends UniformType> = PropertyReference<T> & {
     type: T;
     location: WebGLUniformLocation | null;
 };
-declare type NumericProperty<T extends NumericUnifromTypes> = PropertyBase<T> & {
+type NumericProperty<T extends NumericUnifromTypes> = PropertyBase<T> & {
     uploaded?: UniformPropertyStorageType<T>;
 };
-declare type VectorArrayProperty<T extends NumericUniformArrayTypes> = PropertyBase<T> & {
+type VectorArrayProperty<T extends NumericUniformArrayTypes> = PropertyBase<T> & {
     uploaded?: UniformValueType<T>;
     buffer: Float32Array;
 };
-declare type TextureProperty<T extends TextureUniformTypes> = PropertyBase<T> & {
+type TextureProperty<T extends TextureUniformTypes> = PropertyBase<T> & {
     uploaded?: number;
 };
-declare type TextureArrayProperty<T extends TextureArrayUniformTypes> = PropertyBase<T> & {
+type TextureArrayProperty<T extends TextureArrayUniformTypes> = PropertyBase<T> & {
     uploaded?: number[];
 };
-declare type PropertyInfo<T extends UniformType = UniformType> = T extends NumericUnifromTypes ? NumericProperty<T> : T extends NumericUniformArrayTypes ? VectorArrayProperty<T> : T extends TextureUniformTypes ? TextureProperty<T> : T extends TextureArrayUniformTypes ? TextureArrayProperty<T> : never;
+type PropertyInfo<T extends UniformType = UniformType> = T extends NumericUnifromTypes ? NumericProperty<T> : T extends NumericUniformArrayTypes ? VectorArrayProperty<T> : T extends TextureUniformTypes ? TextureProperty<T> : T extends TextureArrayUniformTypes ? TextureArrayProperty<T> : never;
 export interface MaterialProperties {
     [uniformName: string]: PropertyInfo;
 }

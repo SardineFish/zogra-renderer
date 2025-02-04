@@ -5,19 +5,19 @@ import { vec4 } from "../types/vec4";
 import { IAsset } from "./asset";
 import { GLContext } from "./global";
 import { AttributeLocations } from "./shader";
-declare type IntTypes = "int" | "ivec2" | "ivec3" | "ivec4";
-declare type FloatTypes = "float" | "vec2" | "vec3" | "vec4" | "mat4";
-declare type BufferElementType = IntTypes | FloatTypes;
-declare type BufferElementViewType<T extends BufferElementType> = T extends IntTypes ? Int32Array : T extends FloatTypes ? Float32Array : never;
-export declare type BufferElementView<T extends BufferStructure> = {
+type IntTypes = "int" | "ivec2" | "ivec3" | "ivec4";
+type FloatTypes = "float" | "vec2" | "vec3" | "vec4" | "mat4";
+type BufferElementType = IntTypes | FloatTypes;
+type BufferElementViewType<T extends BufferElementType> = T extends IntTypes ? Int32Array : T extends FloatTypes ? Float32Array : never;
+export type BufferElementView<T extends BufferStructure> = {
     [key in keyof T]: BufferElementViewType<T[key]>;
 };
-export declare type BufferElementValue<T extends BufferElementType> = T extends "float" ? [number] : T extends "vec2" ? vec2 : T extends "vec3" ? vec3 : T extends "vec4" ? vec4 : T extends "mat4" ? mat4 : never;
+export type BufferElementValue<T extends BufferElementType> = T extends "float" ? [number] : T extends "vec2" ? vec2 : T extends "vec3" ? vec3 : T extends "vec4" ? vec4 : T extends "mat4" ? mat4 : never;
 export interface BufferStructure {
     [key: string]: BufferElementType;
 }
 export declare function BufferStructure<T extends BufferStructure>(structure: T): T;
-export declare type BufferElementInfo<Structure extends BufferStructure> = {
+export type BufferElementInfo<Structure extends BufferStructure> = {
     key: keyof Structure;
     type: BufferElementType;
     location: number;

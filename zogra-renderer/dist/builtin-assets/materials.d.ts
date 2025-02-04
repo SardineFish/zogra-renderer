@@ -7,10 +7,10 @@ import { BuiltinTextures } from "./textures";
 import { BufferStructure } from "../core/array-buffer";
 import { DefaultVertexData } from "../core";
 export declare function createBuiltinMaterial(gl: WebGL2RenderingContext, types: ReturnType<typeof createBuiltinMaterialTypes>, shaders: ReturnType<typeof compileBuiltinShaders>, textures: BuiltinTextures): {
-    error: Material<import("../core").DefaultVertexStruct>;
+    error: Material<import("..").DefaultVertexStruct>;
     default: DefaultMaterialType;
     blitCopy: BlitCopyType;
-    ColoredLine: Material<import("../core").DefaultVertexStruct>;
+    ColoredLine: Material<import("..").DefaultVertexStruct>;
 };
 export declare function createBuiltinMaterialTypes(gl: WebGL2RenderingContext, builtinTexs: BuiltinTextures, shaders: ReturnType<typeof compileBuiltinShaders>): {
     DefaultMaterial: typeof DefaultMaterialType;

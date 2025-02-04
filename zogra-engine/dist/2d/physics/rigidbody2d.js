@@ -1,5 +1,8 @@
 import { vec2 } from "zogra-renderer";
 export class Rigidbody2D {
+    get velocity() { return this._velocity; }
+    set velocity(v) { this._velocity.set(v); }
+    get acceleration() { return this._acceleration; }
     constructor(collider) {
         this.mass = 1;
         /** @internal */
@@ -10,9 +13,6 @@ export class Rigidbody2D {
         this._motion = vec2.zero();
         this.collider = collider;
     }
-    get velocity() { return this._velocity; }
-    set velocity(v) { this._velocity.set(v); }
-    get acceleration() { return this._acceleration; }
     addForce(force) {
         this._acceleration.x += force.x / this.mass;
         this._acceleration.y += force.y / this.mass;

@@ -26,6 +26,20 @@ interface CameraEvents extends EntityEvents
     "postrender": (camera: Camera, contect: RenderContext) => void;
 }
 
+/**
+ * ```
+ *       ^ Y-axis
+ *       |
+ *       |
+ *       |
+ *       |
+ *       *---------> X-axis
+ *      /
+ *     /
+ *    v
+ * Z-axis
+ * ```
+ */
 export class Camera extends Entity implements IEventSource<CameraEvents>
 {
     private ctx: GLContext;

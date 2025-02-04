@@ -12,7 +12,7 @@ export declare class AssetsPack {
 export interface AssetImporterPlugin<TOption, TAsset> {
     import(buffer: ArrayBuffer, options?: TOption, ctx?: GLContext): Promise<TAsset>;
 }
-declare type SerializableValueType = number | string | boolean | {
+type SerializableValueType = number | string | boolean | {
     [key: string]: SerializableValueType;
 } | SerializableValueType[];
 export interface AssetImportOptions {

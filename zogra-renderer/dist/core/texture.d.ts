@@ -31,7 +31,7 @@ export declare enum TextureResizing {
     KeepHigher = 5,
     Center = 6
 }
-export declare type TextureData = ArrayBufferView | TexImageSource;
+export type TextureData = ArrayBufferView | TexImageSource;
 declare class TextureBase extends Asset implements Texture {
     protected ctx: GLContext;
     format: TextureFormat;
@@ -44,7 +44,7 @@ declare class TextureBase extends Asset implements Texture {
     protected initialized: boolean;
     protected created: boolean;
     constructor(width: number, height: number, format?: TextureFormat, filterMode?: FilterMode, ctx?: GLContext);
-    get size(): import("../types/vec2").Vector2;
+    get size(): import("..").Vector2;
     glTex(): WebGLTexture;
     bind(unit: number): void;
     unbind(unit: number): void;

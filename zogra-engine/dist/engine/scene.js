@@ -1,8 +1,9 @@
 import { EntityManager } from "./entity";
 import { EventEmitter } from "zogra-renderer";
 import { AssetManager } from "zogra-renderer";
+import { NoPhysics } from "../physics/physics-generic";
 export class Scene extends EntityManager {
-    constructor(PhysicsSystem) {
+    constructor(PhysicsSystem = NoPhysics) {
         super();
         //private managers = new Map<Function, EntityManager>();
         /** @internal */
@@ -10,9 +11,13 @@ export class Scene extends EntityManager {
         this.eventEmitter = new EventEmitter();
         this.addsNextFrame = new Map();
         this.removesNextFrame = new Set();
+        this._valid = true;
         this.assetID = AssetManager.newAssetID(this);
         this.name = `Scene_${this.assetID}`;
         this.physics = new PhysicsSystem();
+    }
+    valid() {
+        return this._valid;
     }
     add(entity, parent = null) {
         if (entity.destroyed) {
@@ -59,6 +64,7 @@ export class Scene extends EntityManager {
         this.entityMap.clear();
     }
     destroy() {
+        this._valid = false;
         this.clearAll();
     }
     /** @internal */

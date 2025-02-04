@@ -1,8 +1,8 @@
 import { Vector3 } from "./vec3";
 import { Vector2 } from "./vec2";
 import { Vector, ZograMatrix } from "./generic";
-export declare type vec4 = Vector4;
-export declare type VecMathArgs<T, U> = T extends number[] ? {
+export type vec4 = Vector4;
+export type VecMathArgs<T, U> = T extends number[] ? {
     [key in keyof T]: U;
 } : never;
 declare const V4Constructor: new (...p: [number, number, number, number]) => [number, number, number, number];
@@ -41,67 +41,10 @@ export declare class Vector4 extends V4Constructor implements Vector, ZograMatri
     __to(type: Function): Vector2 | Vector4 | Vector3;
 }
 export declare function vec4(x: number): Vector4;
-export declare namespace vec4 {
-    var from: (src: Iterable<number>) => Vector4;
-    var floor: (v: Vector4) => Vector4;
-    var zero: typeof Vector4.zero;
-    var one: typeof Vector4.one;
-    var math: typeof Vector4.math;
-    var mathNonAlloc: typeof Vector4.mathNonAlloc;
-    var normalize: {
-        (args_0: Readonly<Vector4>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>): Vector4;
-        (out: Vector4, args_0: ArrayLike<number>): Vector4;
-        (args_0: ArrayLike<number>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-    };
-    var plus: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
-        (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
-    };
-    var minus: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
-        (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
-    };
-    var mul: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
-        (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
-    };
-    var div: {
-        (args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector4;
-        (out: Vector4, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
-        (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
-    };
-    var set: {
-        (args_0: Readonly<Vector4>): Vector4;
-        (out: Vector4, args_0: Readonly<Vector4>): Vector4;
-        (out: Vector4, args_0: ArrayLike<number>): Vector4;
-        (args_0: ArrayLike<number>): Vector4;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-    };
-    var fill: {
-        (args_0: number): Vector4;
-        (out: Vector4, args_0: number): Vector4;
-        (out: Vector4, args_0: number): Vector4;
-        (args_0: number): Vector4;
-        (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
-    };
-}
 export declare function vec4(x: number, y: number, z: number, w: number): Vector4;
 export declare namespace vec4 {
     var from: (src: Iterable<number>) => Vector4;
-    var floor: (v: Vector4) => Vector4;
+    var floor: (v: vec4) => Vector4;
     var zero: typeof Vector4.zero;
     var one: typeof Vector4.one;
     var math: typeof Vector4.math;

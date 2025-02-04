@@ -237,6 +237,8 @@ class TextureBase extends Asset implements Texture
     }
 }
 
+type TexImageSourceWithSize = TexImageSource & { width?: number, height?: number };
+
 export class Texture2D extends TextureBase implements ICloneable
 {
     constructor(width = 0, height = 0, format = TextureFormat.RGBA, filterMode = FilterMode.Linear, ctx = GlobalContext())
@@ -245,11 +247,11 @@ export class Texture2D extends TextureBase implements ICloneable
     }
     setData(pixels: TextureData)
     {
-        if ((pixels as TexImageSource).width !== undefined && (pixels as TexImageSource).height !== undefined)
+        if ((pixels as TexImageSourceWithSize).width !== undefined && (pixels as TexImageSourceWithSize).height !== undefined)
         {
             pixels = pixels as TexImageSource;
-            this.width = pixels.width;
-            this.height = pixels.height;
+            this.width = (pixels as TexImageSourceWithSize).width as number;
+            this.height = (pixels as TexImageSourceWithSize).height as number;
         }
 
         super.setData(pixels);
@@ -345,7 +347,7 @@ function flipTexture(
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapMode);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrapMode);
-    if ((src as TexImageSource).width !== undefined && (src as TexImageSource).height !== undefined)
+    if ((src as TexImageSourceWithSize).width !== undefined && (src as TexImageSourceWithSize).height !== undefined)
     {
         src = src as TexImageSource;
         gl.texImage2D(gl.TEXTURE_2D, mipmapLevel, internalFormat, format, type, src);

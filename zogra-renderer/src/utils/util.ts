@@ -42,9 +42,9 @@ export function decorator<T, TargetT = any, S = T>(name: string, defaultValue: T
         (target: TargetT, propKey?: string) =>
         {
             if (propKey === undefined)
-                return Reflect.getMetadata(metadataKey, target) as S;
+                return Reflect.getMetadata(metadataKey, target as any) as S;
             else
-                return Reflect.getMetadata(metadataKey, target, propKey) as S;
+                return Reflect.getMetadata(metadataKey, target as any, propKey) as S;
         }
     ];
 }

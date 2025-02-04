@@ -1,7 +1,7 @@
 import { VecMathArgs, Vector4 } from "./vec4";
 import { Vector2 } from "./vec2";
 import { Vector, ZograMatrix } from "./generic";
-export declare type vec3 = Vector3;
+export type vec3 = Vector3;
 declare const V3Constructor: new (...p: [number, number, number]) => [number, number, number];
 export declare class Vector3 extends V3Constructor implements Vector, ZograMatrix {
     get x(): number;
@@ -48,76 +48,6 @@ export declare class Vector3 extends V3Constructor implements Vector, ZograMatri
     __to(type: Function): Vector2 | Vector4 | Vector3;
 }
 export declare function vec3(x: number): Vector3;
-export declare namespace vec3 {
-    var from: (src: Iterable<number>) => Vector3;
-    var zero: typeof Vector3.zero;
-    var one: typeof Vector3.one;
-    var math: typeof Vector3.math;
-    var normalize: {
-        (args_0: Readonly<Vector3>): Vector3;
-        (out: Vector3, args_0: Readonly<Vector3>): Vector3;
-        (out: Vector3, args_0: ArrayLike<number>): Vector3;
-        (args_0: ArrayLike<number>): Vector3;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-    };
-    var inverse: {
-        (args_0: Readonly<Vector3>): Vector3;
-        (out: Vector3, args_0: Readonly<Vector3>): Vector3;
-        (out: Vector3, args_0: ArrayLike<number>): Vector3;
-        (args_0: ArrayLike<number>): Vector3;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-    };
-    var negate: {
-        (args_0: Readonly<Vector3>): Vector3;
-        (out: Vector3, args_0: Readonly<Vector3>): Vector3;
-        (out: Vector3, args_0: ArrayLike<number>): Vector3;
-        (args_0: ArrayLike<number>): Vector3;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-    };
-    var plus: {
-        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector3;
-        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector3;
-        (out: Vector3, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector3;
-        (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector3;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
-    };
-    var minus: {
-        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector3;
-        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector3;
-        (out: Vector3, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector3;
-        (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector3;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
-    };
-    var mul: {
-        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector3;
-        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector3;
-        (out: Vector3, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector3;
-        (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector3;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
-    };
-    var div: {
-        (args_0: Readonly<Vector3>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector3;
-        (out: Vector3, args_0: Readonly<Vector3>, args_1: Readonly<number | Vector2 | Vector4 | Vector3>): Vector3;
-        (out: Vector3, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector3;
-        (args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): Vector3;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>, args_1: number | ArrayLike<number>): ArrayLike<number>;
-    };
-    var set: {
-        (args_0: Readonly<Vector3>): Vector3;
-        (out: Vector3, args_0: Readonly<Vector3>): Vector3;
-        (out: Vector3, args_0: ArrayLike<number>): Vector3;
-        (args_0: ArrayLike<number>): Vector3;
-        (out: ArrayLike<number>, args_0: ArrayLike<number>): ArrayLike<number>;
-    };
-    var fill: {
-        (args_0: number): Vector3;
-        (out: Vector3, args_0: number): Vector3;
-        (out: Vector3, args_0: number): Vector3;
-        (args_0: number): Vector3;
-        (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
-    };
-    var distance: (u: Vector3, v: Vector3) => number;
-}
 export declare function vec3(x: number, y: number, z: number): Vector3;
 export declare namespace vec3 {
     var from: (src: Iterable<number>) => Vector3;
@@ -187,6 +117,6 @@ export declare namespace vec3 {
         (args_0: number): Vector3;
         (out: ArrayLike<number>, args_0: number): ArrayLike<number>;
     };
-    var distance: (u: Vector3, v: Vector3) => number;
+    var distance: (u: vec3, v: vec3) => number;
 }
 export {};

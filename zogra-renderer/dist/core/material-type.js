@@ -1,2 +1,2 @@
-import { Material } from "./material";
+export {};
 //# sourceMappingURL=material-type.js.map

@@ -20,6 +20,10 @@ class CanvasBuffer {
     destroy() { }
 }
 export class FrameBuffer extends GPUAsset {
+    get width() { return this.size.x; }
+    get height() { return this.size.y; }
+    get colorAttachments() { return this._colorAttachments; }
+    get depthAttachment() { return this._depthAttachment; }
     constructor(width = 0, height = 0, ctx = GlobalContext()) {
         super(ctx);
         this.frameBuffer = null;
@@ -30,10 +34,6 @@ export class FrameBuffer extends GPUAsset {
         this.size = vec2(Math.floor(width), Math.floor(height));
         this.tryInit(false);
     }
-    get width() { return this.size.x; }
-    get height() { return this.size.y; }
-    get colorAttachments() { return this._colorAttachments; }
-    get depthAttachment() { return this._depthAttachment; }
     /** @internal */
     glFBO() {
         this.tryInit(true);

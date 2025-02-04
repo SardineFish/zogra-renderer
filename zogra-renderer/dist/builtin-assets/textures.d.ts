@@ -5,4 +5,4 @@ export declare function createDefaultTextures(context: GLContext): {
     defaultNormal: Texture2D;
     error: Texture2D;
 };
-export declare type BuiltinTextures = ReturnType<typeof createDefaultTextures>;
+export type BuiltinTextures = ReturnType<typeof createDefaultTextures>;

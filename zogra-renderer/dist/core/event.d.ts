@@ -1,8 +1,8 @@
 export interface EventDefinitions {
     [key: string]: EventListener;
 }
-export declare type EventKeys<T> = keyof T;
-export declare type EventListener = (...args: any[]) => void;
+export type EventKeys<T> = keyof T;
+export type EventListener = (...args: any[]) => void;
 export interface IEventSource<TEvents> {
     on<T extends EventKeys<TEvents>>(event: T, listener: TEvents[T]): void;
     off<T extends EventKeys<TEvents>>(event: T, listener: TEvents[T]): void;

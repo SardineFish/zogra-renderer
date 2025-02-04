@@ -9,6 +9,7 @@ export class Entity extends Transform {
         this.eventEmitter = new EventEmitter();
         this._destroyed = false;
         this._collider = null;
+        this._valid = true;
     }
     get collider() { return this._collider; }
     set collider(value) {
@@ -20,6 +21,9 @@ export class Entity extends Transform {
     }
     get destroyed() { return this._destroyed; }
     ;
+    valid() {
+        return this._valid;
+    }
     on(event, listener) {
         return this.eventEmitter.on(event, listener);
     }
@@ -27,6 +31,7 @@ export class Entity extends Transform {
         this.eventEmitter.off(event, listener);
     }
     destroy() {
+        this._valid = false;
         this._destroyed = true;
         if (this.scene)
             this.scene.remove(this);

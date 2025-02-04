@@ -32,10 +32,10 @@ export interface Particle {
     size: number;
     color: Color;
 }
-export declare type ParticleScalarGenerator = ((system: ParticleSystem) => number) | [number, number] | number;
-export declare type ParticleScalarModifier = null | [number, number] | ((lifetime: number) => number);
-export declare type ParticleEmitter = (system: ParticleSystem, center: Readonly<vec3>, dirOut: vec3, posOut: vec3) => void;
-export declare type ParticlePropertySettings<T, U> = T extends Color ? {
+export type ParticleScalarGenerator = ((system: ParticleSystem) => number) | [number, number] | number;
+export type ParticleScalarModifier = null | [number, number] | ((lifetime: number) => number);
+export type ParticleEmitter = (system: ParticleSystem, center: Readonly<vec3>, dirOut: vec3, posOut: vec3) => void;
+export type ParticlePropertySettings<T, U> = T extends Color ? {
     r: U;
     g: U;
     b: U;

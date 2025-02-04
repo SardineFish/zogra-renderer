@@ -13,20 +13,21 @@ export var Projection;
     Projection[Projection["Perspective"] = 0] = "Perspective";
     Projection[Projection["Orthographic"] = 1] = "Orthographic";
 })(Projection || (Projection = {}));
+/**
+ * ```
+ *       ^ Y-axis
+ *       |
+ *       |
+ *       |
+ *       |
+ *       *---------> X-axis
+ *      /
+ *     /
+ *    v
+ * Z-axis
+ * ```
+ */
 export class Camera extends Entity {
-    constructor(ctx = GlobalContext()) {
-        super();
-        this.output = null;
-        this.FOV = 30;
-        this.near = 0.3;
-        this.far = 1000;
-        this.viewHeight = 1;
-        this.projection = Projection.Perspective;
-        this.clearColor = Color.black;
-        this.clearDepth = true;
-        this.postprocess = [];
-        this.ctx = ctx;
-    }
     get pixelSize() {
         if (this.output instanceof RenderTexture)
             return vec2(this.output.width, this.output.height);
@@ -43,6 +44,19 @@ export class Camera extends Entity {
         return this.projection === Projection.Perspective
             ? mat4.perspective(this.FOV * Deg2Rad, this.aspectRatio, this.near, this.far)
             : mat4.ortho(this.viewHeight, this.aspectRatio, this.near, this.far);
+    }
+    constructor(ctx = GlobalContext()) {
+        super();
+        this.output = null;
+        this.FOV = 30;
+        this.near = 0.3;
+        this.far = 1000;
+        this.viewHeight = 1;
+        this.projection = Projection.Perspective;
+        this.clearColor = Color.black;
+        this.clearDepth = true;
+        this.postprocess = [];
+        this.ctx = ctx;
     }
     on(event, listener) {
         this.eventEmitter.with().on(event, listener);

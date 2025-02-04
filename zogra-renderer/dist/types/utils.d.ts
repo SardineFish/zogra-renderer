@@ -1,6 +1,6 @@
 import { ZograMatrix } from "./generic";
-declare type MapArrayArgs<T> = T extends number ? number : T extends ZograMatrix ? ArrayLike<number> : T extends number | ZograMatrix ? ArrayLike<number> | number : never;
-declare type WrappedFunction<TOut, TReturn, TArgs extends any[]> = {
+type MapArrayArgs<T> = T extends number ? number : T extends ZograMatrix ? ArrayLike<number> : T extends number | ZograMatrix ? ArrayLike<number> | number : never;
+type WrappedFunction<TOut, TReturn, TArgs extends any[]> = {
     (...args: {
         [key in keyof TArgs]: Readonly<TArgs[key]>;
     }): TReturn;

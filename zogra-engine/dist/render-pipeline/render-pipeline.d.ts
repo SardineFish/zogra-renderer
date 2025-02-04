@@ -7,7 +7,7 @@ import { RenderOrder } from "./render-data";
 export interface ZograRenderPipelineConstructor {
     new (renderer: ZograRenderer): ZograRenderPipeline;
 }
-export declare type MaterialReplacer<T extends Material> = (original: T) => Material;
+export type MaterialReplacer<T extends Material> = (original: T) => Material;
 export interface ZograRenderPipeline {
     render(renderer: RenderContext, scene: Scene, cameras: Camera[]): void;
     replaceMaterial<T extends Material>(MaterialType: ConstructorType<T>, material: Material): void;

@@ -20,7 +20,7 @@ export interface IPhysicsSystem
 
 export type IPhysicsSystemClass<T extends IPhysicsSystemClass<T>> = (new (...args: any[]) => IPhysicsSystem) & { current(scene: Scene): InstanceType<T> };
 
-export class UnknownPhysics implements IPhysicsSystem
+export class NoPhysics implements IPhysicsSystem
 {
     /** @internal */
     __addCollider() { }

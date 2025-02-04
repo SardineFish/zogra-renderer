@@ -3,7 +3,7 @@ import { GPUAsset } from "./asset";
 import { GLContext } from "./global";
 import { ColorAttachment, DepthAttachment } from "./frame-buffer";
 import { TextureFormat } from "./texture-format";
-export declare type MSAASamples = 0 | 2 | 4 | 8;
+export type MSAASamples = 0 | 2 | 4 | 8;
 export declare class RenderBuffer extends GPUAsset implements ColorAttachment {
     size: vec2;
     multiSampling: MSAASamples;

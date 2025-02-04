@@ -3,16 +3,8 @@ import { PreviewRenderer, RenderContext } from "../render-pipeline";
 import { Camera } from "./camera";
 import { ZograRenderer } from "zogra-renderer";
 import { EventEmitter } from "zogra-renderer";
-import { UnknownPhysics } from "../physics/physics-generic";
+import { NoPhysics } from "../physics/physics-generic";
 export class ZograEngine {
-    constructor(canvas, RenderPipeline = PreviewRenderer) {
-        this.fixedDeltaTime = false;
-        this._time = { deltaTime: 0, time: 0 };
-        this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
-        this.renderPipeline = new RenderPipeline(this.renderer);
-        this._scene = new Scene(UnknownPhysics);
-        this.eventEmitter = new EventEmitter();
-    }
     get time() { return this._time; }
     get scene() { return this._scene; }
     set scene(value) {
@@ -20,6 +12,14 @@ export class ZograEngine {
         this._scene = value;
         value.engine = this;
         this.eventEmitter.emit("scene-change", value, previous);
+    }
+    constructor(canvas, RenderPipeline = PreviewRenderer) {
+        this.fixedDeltaTime = false;
+        this._time = { deltaTime: 0, time: 0 };
+        this.renderer = new ZograRenderer(canvas, canvas.width, canvas.height);
+        this.renderPipeline = new RenderPipeline(this.renderer);
+        this._scene = new Scene(NoPhysics);
+        this.eventEmitter = new EventEmitter();
     }
     renderScene() {
         const cameras = this.scene.getEntitiesOfType(Camera);
